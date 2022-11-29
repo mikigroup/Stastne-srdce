@@ -51,10 +51,10 @@ serve(async (req) => {
             item.quantity
           } Ks\n----\n`
       )}Konec`,
-      subject: `Šťastné srdce - Objednávka`, //* ${user.user_metadata.full_name}
+      subject: `Šťastné srdce - Objednávka`, 
     });
 
-    /* ${ user.user_metadata.full_name	} */
+   
 
     /* await mailgun.send({
 			to: user.user_metadata.email,

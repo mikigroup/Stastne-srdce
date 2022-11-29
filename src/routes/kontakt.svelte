@@ -1,6 +1,5 @@
 <script>
 	import { supabase } from './supabaseClient';
-	import { page } from '$app/stores';
 
 	let message = { success: null, display: '' };
 
@@ -59,7 +58,7 @@
 </svelte:head>
 
 <main>
-	<section class="form py-8 py-16 px-4 mx-auto max-w-screen-lg mt-4 bg-slate-100 rounded-lg">
+	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-slate-100 rounded-lg">
 		<div class="py-8 py-16 px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
 			<h1
 				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
