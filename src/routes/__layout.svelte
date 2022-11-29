@@ -4,20 +4,7 @@
 	import '../app.css';
 	import { supabase } from './supabaseClient';
 	import { user } from './Stores/stores';
-	import * as Sentry from "@sentry/svelte";
-	import { BrowserTracing } from "@sentry/tracing";	
 	user.set(supabase.auth.user())
-
-		// Initialize the Sentry SDK here
-	Sentry.init({
-  dsn: "https://945c529c21324f78bf290bf4f0662070@o4504123775188992.ingest.sentry.io/4504124579184640",
-  integrations: [new BrowserTracing()],
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-});
 </script>
 
 <Header />

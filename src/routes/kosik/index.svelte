@@ -176,7 +176,7 @@
 			{#if cartItems.length === 0}
 				<div class="w-full flex flex-col items-center justify-center overflow-hidden">
 					<div class="my-20 text-center font-bold text-2xl text-center">
-						<p>Pusto a prázdno :/</p>
+						<p>Pusto a prázdno =^.^=</p>
 					</div>
 				</div>
 			{/if}
