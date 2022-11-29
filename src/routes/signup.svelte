@@ -49,6 +49,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Vytvoření nového účtu</title>
+	<meta name="description" content="SingUp" />
 </svelte:head>
 <section>
 	<div class="pt-20 footer_fix">

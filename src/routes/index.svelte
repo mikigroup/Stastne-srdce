@@ -116,11 +116,11 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Úvod</title>
+	<meta name="description" content="Úvod" />
 </svelte:head>
 
 <main>
 	<!-- <GdprBanner {...options} on:analytics={initAnalytics} /> -->
-
 	<h1 class="">Šťastné srdce</h1>
 	<section>
 		<div

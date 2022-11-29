@@ -35,7 +35,8 @@
 	}
 </script>
 <svelte:head>
-	<title>Šťastné srdce - Úvod</title>
+	<title>Šťastné srdce - Login</title>
+	<meta name="description" content="Login" />
 </svelte:head>
 
 <section class="footer_fix">

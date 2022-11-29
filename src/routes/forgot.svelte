@@ -23,6 +23,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Zapomenuté heslo</title>
+  <meta name="description" content="Zapomenuté heslo" />
 </svelte:head>
 
 <section class="footer_fix">

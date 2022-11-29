@@ -55,6 +55,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Kontakt</title>
+	<meta name="description" content="Kontakt" />
 </svelte:head>
 
 <main>

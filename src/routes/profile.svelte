@@ -126,6 +126,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Účet</title>
+	<meta name="description" content="Účet" />
 </svelte:head>
 <section class="form py-8 py-16 px-4 mx-auto max-w-screen-lg mt-4 bg-slate-100 rounded-lg">
 	<div class="py-8 py-16 px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
