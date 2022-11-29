@@ -119,7 +119,8 @@ $: searchMenu = menus.filter((menu) => {
 </style>
 
 <svelte:head>
-	<title>Šťastné srdce - Jídelníček</title>
+	<title>Šťastné srdce - Jídelníček</title>	
+	<meta name="description" content="Jídelníček" />
 </svelte:head>
 
 <main>

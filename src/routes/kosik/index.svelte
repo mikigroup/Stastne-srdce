@@ -51,6 +51,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
+	<meta name="description" content="Košík" />
 </svelte:head>
 
 <main>

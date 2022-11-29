@@ -116,6 +116,7 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Úvod</title>
+	<meta name="description" content="Úvod" />
 </svelte:head>
 
 <main>

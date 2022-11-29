@@ -3,6 +3,7 @@
 </style>
 <svelte:head>
 	<title>Šťastné srdce - Děkujeme za objednávku</title>
+    <meta name="description" content="Objednávka" />
   </svelte:head>
 
 <div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-orange-50 rounded-lg ">

@@ -24,6 +24,7 @@
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Reset hesla</title>
+  <meta name="description" content="Reset" />
 </svelte:head>
 <section>
     <form on:submit|preventDefault={resetPass}>   
