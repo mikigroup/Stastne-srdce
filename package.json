@@ -1,6 +1,6 @@
 {
-	"name": "stastne_srdce",
-	"version": "1.0.alpha",
+	"name": "Stastne srdce",
+	"version": "1.0",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
