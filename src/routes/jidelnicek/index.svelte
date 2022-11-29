@@ -33,25 +33,25 @@
 	let currentDate = new Date();
 
 	let datumPrvniZalozkaEnd = new Date();
-	datumPrvniZalozkaEnd.setDate(datumPrvniZalozkaEnd.getDate() + 7);
+	datumPrvniZalozkaEnd.setDate(datumPrvniZalozkaEnd.getDate() + 10);
 
 	let datumDruhaZalozkaStart = new Date();
-	datumDruhaZalozkaStart.setDate(datumDruhaZalozkaStart.getDate() + 7);
+	datumDruhaZalozkaStart.setDate(datumDruhaZalozkaStart.getDate() + 10);
 
 	let datumDruhaZalozkaEnd = new Date();
-	datumDruhaZalozkaEnd.setDate(datumDruhaZalozkaEnd.getDate() + 14);
+	datumDruhaZalozkaEnd.setDate(datumDruhaZalozkaEnd.getDate() + 20);
 
 	let datumTretiZalozkaStart = new Date();
-	datumTretiZalozkaStart.setDate(datumTretiZalozkaStart.getDate() + 14);
+	datumTretiZalozkaStart.setDate(datumTretiZalozkaStart.getDate() + 20);
 
 	let datumTretiZalozkaEnd = new Date();
-	datumTretiZalozkaEnd.setDate(datumTretiZalozkaEnd.getDate() + 21);
+	datumTretiZalozkaEnd.setDate(datumTretiZalozkaEnd.getDate() + 30);
 
 	let datumCtvrtaZalozkaStart = new Date();
-	datumCtvrtaZalozkaStart.setDate(datumCtvrtaZalozkaStart.getDate() + 21);
+	datumCtvrtaZalozkaStart.setDate(datumCtvrtaZalozkaStart.getDate() + 30);
 
 	let datumCtvrtaZalozkaEnd = new Date();
-	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 28);
+	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 40);
 
 	function zalozkaPrvniTyden() {
 		loadmenu(currentDate, datumPrvniZalozkaEnd).then((response) => {
@@ -136,7 +136,6 @@ $: searchMenu = menus.filter((menu) => {
 				bg-white">
 				<p class="text-center mt-3">
 					<strong>Cena obědů je 95,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
-
 					<br />
 					<br />
 					<strong>
@@ -182,32 +181,9 @@ $: searchMenu = menus.filter((menu) => {
 							dark:focus:green-blue-500 dark:focus:border-green-500"
 							placeholder="Search"
 							required="" />
-					</div>
-					<button
-						type="submit"
-						class="p-2.5 ml-2 text-sm font-medium text-white bg-green-700 rounded-lg border
-						border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300
-						dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-						<svg
-							class="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-						</svg>
-						<span class="sr-only">Search</span>
-					</button>
-				</form>
-
-				<hr />
+					</div>					
+				</form>				
 			</div>
-
-			<!-- dát si do cyklu týdny do tabu -->
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
 				<div class="">
