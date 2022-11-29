@@ -31,11 +31,13 @@ serve(async (req) => {
       },
       { price: 0, quantity: 0 }
     );
+    
+    let noteBox = "";
 
     const mailResponse = await mailgun.send({
       to: user.email,
       cc: "stastnesrdceKK@seznam.cz",
-      bcc: "mikigroup@gmail.com",
+      /* bcc: "mikigroup@gmail.com", */
       from: "objednavky@stastnesrdce.cz",
       text: `Dobrý den, 
 				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${

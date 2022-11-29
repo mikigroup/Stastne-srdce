@@ -26,7 +26,6 @@ serve(async (req) => {
 
     await mailgun.send({
       to: "stastnesrdcekk@seznam.cz",
-      cc: "mikigroup@gmail.com",
       from: "formulak@stastnesrdce.cz",
       text: `Dobrý den,\nbyla Vám poslána zpráva přes formuláka.\nKontaktní osoba: ${data.name}\nEmail: ${data.email}\nTelefon: ${data.phone}\n\nObsah zprávy:\n${data.message}
 			`,
