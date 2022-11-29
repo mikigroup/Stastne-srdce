@@ -121,7 +121,6 @@
 
 <main>
 	<!-- <GdprBanner {...options} on:analytics={initAnalytics} /> -->
-
 	<h1 class="">Šťastné srdce</h1>
 	<section>
 		<div
