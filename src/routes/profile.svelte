@@ -52,7 +52,6 @@
 				first_name,
 				last_name,
 				telephone,
-				company_name,
 				street,
 				street_number,
 				city,
@@ -81,7 +80,6 @@
 	let avatar = null;
 	let last_name = null;
 	let telephone = null;
-	let company_name = null;
 	let street = null;
 	let street_number = null;
 	let city = null;
@@ -97,7 +95,7 @@
 			let { data, error, status } = await supabase
 				.from('profiles')
 				.select(
-					`first_name, last_name, telephone,company_name,street,street_number, city, ico, dic, company`
+					`first_name, last_name, telephone, street,street_number, city, ico, dic, company`
 				)
 				.eq('id', user.id)
 				.single();
@@ -108,7 +106,6 @@
 				first_name = data.first_name;
 				last_name = data.last_name;
 				telephone = data.telephone;
-				company_name = data.company_name;
 				street = data.street;
 				street_number = data.street_number;
 				ico = data.ico;
@@ -195,21 +192,6 @@
                     bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
                      focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                      required placeholder="Telefon"/>
-                     </div>
-            </div>
-            <hr class="w-32">
-          </div>
-          <div class="flex flex-col my-2">
-            <div class="flex flex-col md:flex-row items-center">     
-              <div class="flex justify-start basis-1/2">                     
-                  <label class="pr-2" for="company_name">Název firmy</label>
-                  </div>
-                  <div class="w-full basis-1/2">
-                  <input bind:value={company_name} type="company_name" id="company_name" class="form-control
-                   rounded-lg text-center appearance-none border border-gray-300 w-full py-2 px-4
-                    bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-                     focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                     required placeholder="Název firmy"/>
                      </div>
             </div>
             <hr class="w-32">
