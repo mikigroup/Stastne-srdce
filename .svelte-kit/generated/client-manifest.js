@@ -1,24 +1,24 @@
 export { matchers } from './client-matchers.js';
 
 export const components = [
-	() => import("..\\..\\src\\routes\\__layout.svelte"),
-	() => import("..\\..\\src\\routes\\__error.svelte"),
-	() => import("..\\..\\src\\routes\\CartComponents\\Card.svelte"),
-	() => import("..\\..\\src\\routes\\CartComponents\\CardWrapper.svelte"),
-	() => import("..\\..\\src\\routes\\CartComponents\\Checkout.svelte"),
-	() => import("..\\..\\src\\routes\\CartComponents\\CheckoutItem.svelte"),
-	() => import("..\\..\\src\\routes\\CartComponents\\Modal.svelte"),
-	() => import("..\\..\\src\\routes\\forgot.svelte"),
-	() => import("..\\..\\src\\routes\\index.svelte"),
-	() => import("..\\..\\src\\routes\\jidelnicek\\index.svelte"),
-	() => import("..\\..\\src\\routes\\kontakt.svelte"),
-	() => import("..\\..\\src\\routes\\kosik\\index.svelte"),
-	() => import("..\\..\\src\\routes\\login.svelte"),
-	() => import("..\\..\\src\\routes\\profile.svelte"),
-	() => import("..\\..\\src\\routes\\reset.svelte"),
-	() => import("..\\..\\src\\routes\\send.svelte"),
-	() => import("..\\..\\src\\routes\\signup.svelte"),
-	() => import("..\\..\\src\\routes\\thankyou.svelte")
+	() => import("../../src/routes/__layout.svelte"),
+	() => import("../../src/routes/__error.svelte"),
+	() => import("../../src/routes/CartComponents/Card.svelte"),
+	() => import("../../src/routes/CartComponents/CardWrapper.svelte"),
+	() => import("../../src/routes/CartComponents/Checkout.svelte"),
+	() => import("../../src/routes/CartComponents/CheckoutItem.svelte"),
+	() => import("../../src/routes/CartComponents/Modal.svelte"),
+	() => import("../../src/routes/forgot.svelte"),
+	() => import("../../src/routes/index.svelte"),
+	() => import("../../src/routes/jidelnicek/index.svelte"),
+	() => import("../../src/routes/kontakt.svelte"),
+	() => import("../../src/routes/kosik/index.svelte"),
+	() => import("../../src/routes/login.svelte"),
+	() => import("../../src/routes/profile.svelte"),
+	() => import("../../src/routes/reset.svelte"),
+	() => import("../../src/routes/send.svelte"),
+	() => import("../../src/routes/signup.svelte"),
+	() => import("../../src/routes/thankyou.svelte")
 ];
 
 export const dictionary = {
