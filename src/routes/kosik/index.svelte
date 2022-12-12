@@ -75,7 +75,7 @@
 				{/if}
 				{#each cartItems as cartItem, i (cartItem._id)}
 					<div class="mb-5 bg-stone-100 border-2 rounded-lg">
-						<div class="text-center bg-slate-300">
+						<div class="text-center bg-slate-300 rounded-lg">
 							<p>
 								<strong>Den</strong>
 							</p>
@@ -209,7 +209,7 @@
 					<div class="font-light text-center">
 						<p class="font-medium">{cartItem.price}</p>
 					</div>
-					<div class="font-light text-center break-word border-2 col-span-4">
+					<div class="font-light text-center border-x-2 break-word col-span-4">
 						{cartItem.description}
 					</div>
 					<div class="font-light text-center">
