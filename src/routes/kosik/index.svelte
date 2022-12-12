@@ -321,6 +321,20 @@
 				</div>
 			</div>
 		{/if}
+		<div>
+		<button
+										on:click={() => {
+											test();
+										}}
+										type="button"
+										data-bs-dismiss=""
+										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
+										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
+										duration-200 text-center shadow-md focus:outline-none focus:ring-2
+										focus:ring-offset-2 rounded-lg">
+										TEST
+									</button>
+		</div>	
 	</div>
 </main>
 
