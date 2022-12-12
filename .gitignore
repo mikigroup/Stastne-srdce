@@ -7,4 +7,4 @@ vite.config.ts.timestamp-*
 node_modules
 .svelte-kit
 package-lock.json
-node_modules
+studio/node_modules
