@@ -2,7 +2,8 @@
 .env
 .env.*
 !.env.example
-.svelte-kit
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 node_modules
+.svelte-kit
+package-lock.json
