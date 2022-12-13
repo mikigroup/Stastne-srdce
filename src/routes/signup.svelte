@@ -4,6 +4,8 @@
 	/*  import Profile from './Profile.svelte' */
 	user.set(supabase.auth.user());
 
+	console.log();
+
 	supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session.user);
 	});
