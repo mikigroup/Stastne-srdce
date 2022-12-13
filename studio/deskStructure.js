@@ -364,9 +364,9 @@ export default () =>
                         .schemaType('order')
                         .child((datefilter) =>
                           S.documentTypeList('order')
-                            .title('Objednávky Leden')
+                            .title('Objednávky - Leden')
                             .filter(
-                              '_type == "order" && releaseDate > "2022-12-31" && releaseDate < "2023-02-01"',
+                              '_type == "order" && releaseDate > "2022-12-01" && releaseDate < "2023-02-01"', //zde změnit
                             )
                             .params({ datefilter }),
                         ),
@@ -375,7 +375,7 @@ export default () =>
                         .schemaType('order')
                         .child((datefilter) =>
                           S.documentTypeList('order')
-                            .title('Objednávky Únor')
+                            .title('Objednávky - Únor')
                             .filter(
                               '_type == "order" && releaseDate > "2023-01-31" && releaseDate < "2023-03-01"',
                             )

@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient"; 
+	import createUserNote from "../sanityClient";
 
 	$: cartItems = $CartItemsStore;
 
@@ -40,16 +41,16 @@
 		});
 	}
 
-function test () {
-const doc = {
-  _type: 'order',
-  name: 'Sanity Tandem Extraordinaire',
+ function createUserNote () {
+    _type: 'note',
+    title: noteText,
+   
 }
 
-client.create(doc).then((res) => {
+client.create(createUserNote).then((res) => {
   console.log(`Bike was created, document ID is ${res._id}`)
 })
-}
+
 </script>
 
 <svelte:head>
@@ -324,10 +325,10 @@ client.create(doc).then((res) => {
 				</div>
 			</div>
 		{/if}
-		<div>
+		<div>			
 		<button
 										on:click={() => {
-											test();
+											createUserNote();
 										}}
 										type="button"
 										data-bs-dismiss=""
