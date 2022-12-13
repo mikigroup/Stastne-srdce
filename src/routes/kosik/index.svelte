@@ -27,11 +27,6 @@
 		}
 	});
 
-	/*let totalPrice = function {
-		 $CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0); 
-	}*/
-
 	$: totalPrice =
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0);
@@ -47,6 +42,17 @@
 			return [];
 		});
 	}
+
+const doc = {
+  _id: 'my-bike',
+  _type: 'bike',
+  name: 'Sanity Tandem Extraordinaire',
+  seats: 2,
+}
+
+client.createIfNotExists(doc).then((res) => {
+  console.log('Bike was created (or was already present)')
+})
 </script>
 
 <svelte:head>
