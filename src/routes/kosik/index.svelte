@@ -40,15 +40,16 @@
 		});
 	}
 
+function test () {
 const doc = {
   _type: 'order',
   name: 'Sanity Tandem Extraordinaire',
-  seats: 2,
 }
 
 client.create(doc).then((res) => {
   console.log(`Bike was created, document ID is ${res._id}`)
 })
+}
 </script>
 
 <svelte:head>
