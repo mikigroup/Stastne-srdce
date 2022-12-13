@@ -1,4 +1,3 @@
-import {writable} from "svelte/store";
 import client from "../sanityClient"; 
 
 /* zde doplnit currentdate, import funkce - loadmenu */

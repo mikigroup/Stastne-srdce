@@ -2,12 +2,9 @@
 	import CartItemsStore from '../Stores/stores';
 	import { get } from 'svelte/store';
 	import { supabase } from '../supabaseClient';
-	import Modal from '../CartComponents/Modal.svelte';
-	import { browser } from '$app/env';
-	import * as Sentry from '@sentry/svelte';
-	import { BrowserTracing } from '@sentry/tracing';
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
+	import client from "../sanityClient"; 
 
 	$: cartItems = $CartItemsStore;
 
@@ -44,14 +41,13 @@
 	}
 
 const doc = {
-  _id: 'my-bike',
-  _type: 'bike',
+  _type: 'order',
   name: 'Sanity Tandem Extraordinaire',
   seats: 2,
 }
 
-client.createIfNotExists(doc).then((res) => {
-  console.log('Bike was created (or was already present)')
+client.create(doc).then((res) => {
+  console.log(`Bike was created, document ID is ${res._id}`)
 })
 </script>
 
