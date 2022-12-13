@@ -16,7 +16,7 @@ serve(async (req) => {
     const mailgun = new Mailgun({
       key: "key-826025acce21b0c8a7aae4b4ae1f75c3",
       region: "eu",
-      domain: "stastnesrdce.cz", //zde zmenit na sandbox a melo by slapat
+      domain: "stastnesrdce.cz",
     });
 
     const { cart, user } = await req.json();
@@ -32,7 +32,6 @@ serve(async (req) => {
       { price: 0, quantity: 0 }
     );
     
-    let noteBox = "";
 
     const mailResponse = await mailgun.send({
       to: user.email,
@@ -76,6 +75,7 @@ serve(async (req) => {
 			)}Konec`,
 			subject: `Šťastné srdce - Objednávka ${user.user_metadata.full_name}`
 		}); */
+    
     console.log("mailResponse", mailResponse);
     return new Response(
       JSON.stringify({

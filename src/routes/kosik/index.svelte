@@ -51,7 +51,6 @@
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
-	<meta name="description" content="Košík" />
 </svelte:head>
 
 <main>
@@ -76,7 +75,7 @@
 				{/if}
 				{#each cartItems as cartItem, i (cartItem._id)}
 					<div class="mb-5 bg-stone-100 border-2 rounded-lg">
-						<div class="text-center bg-slate-300">
+						<div class="text-center bg-slate-300 rounded-lg">
 							<p>
 								<strong>Den</strong>
 							</p>
@@ -176,7 +175,7 @@
 			{#if cartItems.length === 0}
 				<div class="w-full flex flex-col items-center justify-center overflow-hidden">
 					<div class="my-20 text-center font-bold text-2xl text-center">
-						<p>Pusto a prázdno =^.^=</p>
+						<p>Pusto a prázdno :/</p>
 					</div>
 				</div>
 			{/if}
@@ -210,7 +209,7 @@
 					<div class="font-light text-center">
 						<p class="font-medium">{cartItem.price}</p>
 					</div>
-					<div class="font-light text-center break-word border-2 col-span-4">
+					<div class="font-light text-center border-x-2 break-word col-span-4">
 						{cartItem.description}
 					</div>
 					<div class="font-light text-center">
@@ -322,6 +321,20 @@
 				</div>
 			</div>
 		{/if}
+		<div>
+		<button
+										on:click={() => {
+											test();
+										}}
+										type="button"
+										data-bs-dismiss=""
+										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
+										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
+										duration-200 text-center shadow-md focus:outline-none focus:ring-2
+										focus:ring-offset-2 rounded-lg">
+										TEST
+									</button>
+		</div>	
 	</div>
 </main>
 
