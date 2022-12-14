@@ -96,18 +96,14 @@
 			}
 		});
 	}
-
+console.log(menu);
 	let search = '';
 
-	$: searchMenu = menu;
-
-$: searchMenu = menus.filter((menu) => {
+	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
 	});
 
-	$: totalPieces =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
+	$: totalPieces = $CartItemsStore.length && $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
 <style>

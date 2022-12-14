@@ -4,7 +4,9 @@
 	import { supabase } from '../supabaseClient';
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
-	import client from "../sanityClient"; 
+	import client from "../sanityClient";
+	export let dataOrder = []; 
+	export let menu = []; 
 	
 
 	$: cartItems = $CartItemsStore;
@@ -41,22 +43,31 @@
 		});
 	}
 
-
-
-
 const doc = {
     _type: 'order',
     note: 'První poznámka objednávky',
 		order_number: '2200000001',
 }
 
-function createUserNote() {
+function createOrder() {
+		checkOrderNumber( )
+		
+	}
+
+/* 	function createDoc {
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});
+	} */
+
+export async function checkOrderNumber() {
+		return client.fetch(
+			`*[_type == "order"] { order_number }`			
+		);
 	}
 
-
+console.log( menu ); //JSON.stringify
+console.log( dataOrder )
 </script>
 
 <svelte:head>
@@ -334,7 +345,7 @@ function createUserNote() {
 		<div>			
 		<button
 										on:click={() => {
-											createUserNote();
+											createOrder();
 										}}
 										type="button"
 										data-bs-dismiss=""
