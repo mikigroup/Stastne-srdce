@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient"; 
-	import createUserNote from "../sanityClient";
+	
 
 	$: cartItems = $CartItemsStore;
 
@@ -41,15 +41,20 @@
 		});
 	}
 
- function createUserNote () {
+
+
+
+const doc = {
     _type: 'note',
-    title: noteText,
-   
+    title: 'noteText',
 }
 
-client.create(createUserNote).then((res) => {
-  console.log(`Bike was created, document ID is ${res._id}`)
-})
+function createUserNote() {
+		client.create(doc).then((res) => {
+  console.log(`Note was created, document ID is ${res._id}`)
+		});
+	}
+
 
 </script>
 

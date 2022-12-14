@@ -259,14 +259,6 @@
             </div>
           </div>
           <hr class="w-32">
-				<!-- 	{#if message.success != null}
-				<div
-					class="alert {message.success ? 'alert-success' : 'alert-danger'}"
-					role="alert"
-				>
-					{message.display}
-				</div>
-			{/if} -->
 			</div>
        <div class="my-2">
             <div class="flex flex-col md:flex-row items-center">                          
