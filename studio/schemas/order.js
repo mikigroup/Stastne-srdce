@@ -7,9 +7,14 @@ export default {
   icon: MdFoodBank,
   fields: [
     {
-      name: 'title',
-      title: 'Title',
+      name: 'order_number',
+      title: 'Číslo objednávky',
       type: 'string',
-    },   
+    },
+    {
+      name: 'note',
+      title: 'Poznámka',
+      type: 'string',
+    },    
   ],
 }

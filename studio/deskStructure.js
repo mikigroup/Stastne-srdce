@@ -365,10 +365,10 @@ export default () =>
                         .child((datefilter) =>
                           S.documentTypeList('order')
                             .title('Objednávky - Leden')
-                            .filter(
+                            /* .filter(
                               '_type == "order" && releaseDate > "2022-12-01" && releaseDate < "2023-02-01"', //zde změnit
                             )
-                            .params({ datefilter }),
+                            .params({ datefilter }) */,
                         ),
                       S.listItem()
                         .title('Únor')

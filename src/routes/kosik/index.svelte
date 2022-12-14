@@ -45,13 +45,14 @@
 
 
 const doc = {
-    _type: 'note',
-    title: 'noteText',
+    _type: 'order',
+    note: 'První poznámka objednávky',
+		order_number: '2200000001',
 }
 
 function createUserNote() {
 		client.create(doc).then((res) => {
-  console.log(`Note was created, document ID is ${res._id}`)
+  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});
 	}
 
