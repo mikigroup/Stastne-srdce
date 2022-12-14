@@ -5,10 +5,8 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
-	export let dataOrder = []; 
-	export let menu = []; 
+	export let dataOrder = [];
 	
-
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -43,15 +41,37 @@
 		});
 	}
 
+/* export async function checkOrderNumber() {
+		return client.fetch(
+			`*[_type == "order"] { order_number }`			
+		);
+	} */
+
+/* let result = dataOrder.map(obj => parseInt(obj.order_number)); */
+
+let nevim = dataOrder[dataOrder.length - 1];
+
+let result = dataOrder.map(obj => parseInt(obj.order_number));
+let novaObj = result.reduce(function (accumVariable, curValue) {
+return accumVariable + curValue
+}, +1);
+
+console.log(dataOrder);
+console.log(result);
+console.log(novaObj);
+console.log(nevim);
+
+
 const doc = {
     _type: 'order',
     note: 'První poznámka objednávky',
-		order_number: '2200000001',
+		order_number: novaObj,
 }
 
 function createOrder() {
-		checkOrderNumber( )
-		
+		client.create(doc).then((res) => {
+  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+		});	
 	}
 
 /* 	function createDoc {
@@ -60,14 +80,6 @@ function createOrder() {
 		});
 	} */
 
-export async function checkOrderNumber() {
-		return client.fetch(
-			`*[_type == "order"] { order_number }`			
-		);
-	}
-
-console.log( menu ); //JSON.stringify
-console.log( dataOrder )
 </script>
 
 <svelte:head>

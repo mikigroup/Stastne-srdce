@@ -96,7 +96,8 @@
 			}
 		});
 	}
-console.log(menu);
+
+
 	let search = '';
 
 	$: searchMenu = menus.filter((menu) => {

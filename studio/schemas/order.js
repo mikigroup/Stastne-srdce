@@ -9,7 +9,7 @@ export default {
     {
       name: 'order_number',
       title: 'Číslo objednávky',
-      type: 'string',
+      type: 'number',
     },
     {
       name: 'note',
