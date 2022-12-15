@@ -41,16 +41,14 @@
 		});
 	}
 
-/* export async function checkOrderNumber() {
-		return client.fetch(
-			`*[_type == "order"] { order_number }`			
-		);
-	} */
 
+
+	
 /* let result = dataOrder.map(obj => parseInt(obj.order_number)); */
 
-let nevim = dataOrder[dataOrder.length - 1];
+/* let nevim = dataOrder[dataOrder.length - 1]; */
 
+/*
 let result = dataOrder.map(obj => parseInt(obj.order_number));
 let novaObj = result.reduce(function (accumVariable, curValue) {
 return accumVariable + curValue
@@ -60,7 +58,6 @@ console.log(dataOrder);
 console.log(result);
 console.log(novaObj);
 console.log(nevim);
-
 
 const doc = {
     _type: 'order',
@@ -73,12 +70,14 @@ function createOrder() {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
 	}
-
+ */
 /* 	function createDoc {
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});
 	} */
+console.log(dataOrder);
+console.log(order_number);
 
 </script>
 

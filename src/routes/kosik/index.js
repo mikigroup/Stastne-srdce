@@ -1,10 +1,7 @@
 import client from "../sanityClient"; 
 
 export async function GET() {    
-     const dataOrder = await client.fetch(`*[_type == "order"] { order_number }`);
-      const dataOrder2 = await client.fetch(`*[_type == "movie"][0...10]{title}`);
- /*  const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) { order_number }`); */
-  /* const data = await client.fetch(`*[_type == "menu"] | order(releaseDate) { _id, title, _createdAt, _type, description, price, releaseDate, quantity }`); */
+     const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { order_number }`);      
   if (dataOrder) {
     return {
       status: 200,
