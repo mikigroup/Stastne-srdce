@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
+	import { onMount } from "svelte";
 	export let dataOrder = [];
 	
 	$: cartItems = $CartItemsStore;
@@ -43,42 +44,52 @@
 
 
 
-	
-/* let result = dataOrder.map(obj => parseInt(obj.order_number)); */
-
-/* let nevim = dataOrder[dataOrder.length - 1]; */
-
-/*
-let result = dataOrder.map(obj => parseInt(obj.order_number));
-let novaObj = result.reduce(function (accumVariable, curValue) {
-return accumVariable + curValue
-}, +1);
-
-console.log(dataOrder);
-console.log(result);
-console.log(novaObj);
-console.log(nevim);
-
-const doc = {
-    _type: 'order',
-    note: 'První poznámka objednávky',
-		order_number: novaObj,
-}
-
-function createOrder() {
-		client.create(doc).then((res) => {
-  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
-		});	
-	}
- */
 /* 	function createDoc {
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});
 	} */
 console.log(dataOrder);
-console.log(order_number);
 
+/* const values = Object.values(dataOrder);
+const novaObj = values.reduce((accumulator, value) => {
+  return accumulator + value;
+}, +1); */	
+
+function createOrder() {		
+async function GET() {    
+     const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { order_number }`);      
+  if (dataOrder) {
+    return {
+      status: 200,
+      body: {        
+        dataOrder: dataOrder,      
+      }
+    };
+  }
+  return {
+    status: 500,
+    body: new Error("Internal Server Error")
+  };
+}
+
+
+
+		const values = Object.values(dataOrder);
+		const novaObj = values.reduce((accumulator, value) => {
+  	return accumulator + value;
+			}, +1);
+
+const doc = {
+    _type: 'order',
+    note: 'První poznámka objednávky',
+		order_number: novaObj,		
+}
+console.log(novaObj);
+		client.create(doc).then((res) => {
+  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+		});	
+	}
 </script>
 
 <svelte:head>
