@@ -7,6 +7,7 @@
 	import client from "../sanityClient";
 	import { onMount } from "svelte";
 	export let dataOrder = [];
+	export let dataOrder2 = [];
 	
 	$: cartItems = $CartItemsStore;
 
@@ -50,6 +51,7 @@
 		});
 	} */
 console.log(dataOrder);
+console.log(dataOrder2);
 
 /* const values = Object.values(dataOrder);
 const novaObj = values.reduce((accumulator, value) => {
@@ -57,29 +59,12 @@ const novaObj = values.reduce((accumulator, value) => {
 }, +1); */	
 
 function createOrder() {		
-async function GET() {    
-     const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { order_number }`);      
-  if (dataOrder) {
-    return {
-      status: 200,
-      body: {        
-        dataOrder: dataOrder,      
-      }
-    };
-  }
-  return {
-    status: 500,
-    body: new Error("Internal Server Error")
-  };
-}
-
-
-
+/* 
 		const values = Object.values(dataOrder);
 		const novaObj = values.reduce((accumulator, value) => {
   	return accumulator + value;
 			}, +1);
-
+ */
 const doc = {
     _type: 'order',
     note: 'První poznámka objednávky',

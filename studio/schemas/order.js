@@ -7,7 +7,7 @@ export default {
   icon: MdFoodBank,
   fields: [
     {
-      name: 'order_number',
+      name: 'orderNumber',
       title: 'Číslo objednávky',
       type: 'number',
     },
