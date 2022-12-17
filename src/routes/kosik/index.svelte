@@ -8,6 +8,7 @@
 	import { onMount } from "svelte";
 	export let dataOrder = [];
 	export let dataOrder2 = [];
+	export let dataOrder3 = [];
 	
 	$: cartItems = $CartItemsStore;
 
@@ -52,6 +53,7 @@
 	} */
 console.log(dataOrder);
 console.log(dataOrder2);
+console.log(dataOrder3);
 
 /* const values = Object.values(dataOrder);
 const novaObj = values.reduce((accumulator, value) => {

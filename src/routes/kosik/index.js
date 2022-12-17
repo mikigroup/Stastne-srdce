@@ -2,13 +2,15 @@ import client from "../sanityClient";
 
 export async function GET() {    
     const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { orderNumber }`);
-    const dataOrder2 = await client.fetch(`*[_type == 'order']{"order": count(_type)}`);     
+    const dataOrder2 = await client.fetch(`*[_type == 'order']{"order": count(_type)}`);
+    const dataOrder3 = await client.fetch(`*[_type == "order"] { orderNumber }  `);     
   if (dataOrder) {
     return {
       status: 200,
       body: {        
         dataOrder: dataOrder,      
         dataOrder2: dataOrder2,
+        dataOrder3: dataOrder3,
       }
     };
   }
