@@ -349,8 +349,73 @@
 								</button></a>
 							</div>
 						{/if}
-
-						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
+				<div class="">
+					<ul
+						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
+						id="tabs-tab"
+						role="tablist">
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()}>
+							<a
+								href="#tabs-1"
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent active"
+								id="tabs-1-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-1"
+								role="tab"
+								aria-controls="tabs-1">
+								1
+							</a>
+						</li>				
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()}>							
+							<a
+								href="#tabs-2"
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"
+								id="tabs-2-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-2"
+								role="tab"
+								aria-controls="tabs-2">
+								2
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()}>
+							<a
+								href="#tabs-3"
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"
+								id="tabs-messages-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-3"
+								role="tab"
+								aria-controls="tabs-3"
+								aria-selected="false">
+								3
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()}>
+							<a
+								href="#tabs-4"
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"
+								id="tabs-contact-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-4"
+								role="tab"
+								aria-controls="#tabs-4"
+								aria-selected="false">
+								4
+							</a>
+						</li>
+					</ul>
+				</div>
+						
+				<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
 								focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
@@ -361,10 +426,11 @@
 										duration: 1500,
 										offset: 480
 									})}>
-								<p>Skoč nahoru</p>
+								Skoč nahoru
 							</button>
-						</div>
-					</div>
+						</div>	
+
+					</div>					
 				</div>
 			</div>
 		</div>
