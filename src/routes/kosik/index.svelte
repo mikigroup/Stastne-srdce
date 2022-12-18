@@ -61,22 +61,22 @@ const novaObj = values.reduce((accumulator, value) => {
 }, +1); */	
 
 function createOrder() {		
-/* 
 		const values = Object.values(dataOrder);
 		const novaObj = values.reduce((accumulator, value) => {
   	return accumulator + value;
 			}, +1);
- */
+ 
 const doc = {
     _type: 'order',
+		orderNumber: 	'',	
     note: 'První poznámka objednávky',
-		order_number: novaObj,		
+		/* orderNumber: novaObj,		 */
 }
 console.log(novaObj);
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
-	}
+	}	
 </script>
 
 <svelte:head>
@@ -362,7 +362,7 @@ console.log(novaObj);
 										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
 										duration-200 text-center shadow-md focus:outline-none focus:ring-2
 										focus:ring-offset-2 rounded-lg">
-										TEST
+										<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">TEST</a>
 									</button>
 		</div>	
 	</div>
