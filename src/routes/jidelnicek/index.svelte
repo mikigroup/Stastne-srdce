@@ -51,7 +51,7 @@
 	datumCtvrtaZalozkaStart.setDate(datumCtvrtaZalozkaStart.getDate() + 30);
 
 	let datumCtvrtaZalozkaEnd = new Date();
-	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 40);
+	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 42);
 
 	function zalozkaPrvniTyden() {
 		loadmenu(currentDate, datumPrvniZalozkaEnd).then((response) => {
@@ -136,18 +136,19 @@
 					<br />
 					<br />
 					<strong>
-						Platbu můžete provést přes účet 43-6168890227/0100, teminálem platební nebo stravenkovou
-						kartou, vždy ale jen po předchozí domluvě na emailu nebo telefonicky. Platba v hotovosti
-						je stále možná.
-					</strong>
+						Platbu můžete provést přes účet 43-6168890227/0100, terminálem platební nebo stravenkovou
+						kartou</strong>, vždy ale jen po předchozí domluvě na emailu nebo telefonicky. <strong>Platba v hotovosti je stále možná a vítána.</strong>
+						Pokud potřebujete fakturu, dejte vědět.					
 					<br />
 					<br />
-					Pro nové zájemce o naše obědy, prosíme o telefonický kontakt na tel. 724 448 377 a pokud
-					nezvedáme, zašlete sms, případně na email stastnesrdcekk@seznam.cz. Napíšeme nebo zavoláme
-					zpět a domluvíme se.
+					<strong>Pro nové zájemce o naši stravu.</strong>
+					<br />
+					Poslední  roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně, prosíme o kontakt  na tel. 724 448 377 a pokud nezvedáme, zašlete sms, případně na email stastnesrdcekk@seznam.cz. Napíšeme nebo zavoláme zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás přínosem.
+					<br />
+					Na  každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
 					<br />
 					<br />
-					<strong>Všem strávníkům děkujeme za přízeň a těm novým, vydržte s námi :) !</strong>
+					<strong>Všem strávníkům děkujeme za přízeň a těm novým: " Vydržte s námi :) !".</strong>
 				</p>
 				<br />
 
@@ -349,7 +350,7 @@
 								</button></a>
 							</div>
 						{/if}
-				<div class="">
+				<!-- <div class="">
 					<ul
 						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
 						id="tabs-tab"
@@ -413,7 +414,7 @@
 							</a>
 						</li>
 					</ul>
-				</div>
+				</div> -->
 						
 				<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button

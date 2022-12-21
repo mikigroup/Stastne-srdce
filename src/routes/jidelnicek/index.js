@@ -3,7 +3,7 @@ import client from "../sanityClient";
 let currentDate = new Date();
 
 let toDate = new Date(currentDate);
-	toDate.setDate(currentDate.getDate() + 7);
+	toDate.setDate(currentDate.getDate() + 10);
 
 
  export async function GET() {  
