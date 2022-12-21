@@ -51,7 +51,7 @@
 	datumCtvrtaZalozkaStart.setDate(datumCtvrtaZalozkaStart.getDate() + 30);
 
 	let datumCtvrtaZalozkaEnd = new Date();
-	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 40);
+	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 42);
 
 	function zalozkaPrvniTyden() {
 		loadmenu(currentDate, datumPrvniZalozkaEnd).then((response) => {
