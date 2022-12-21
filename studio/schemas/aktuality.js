@@ -11,13 +11,13 @@ export default {
     icon: MdFoodBank,
     fields: [
       
-     {
-        title: 'Kde:',
-        name: 'where',
+     /*  {
+        title: 'Název menu',
+        name: 'title',
         type: 'string',
         icon: MdOutlineFastfood,
-        readOnly: true,
-      },
+        validation: Rule => Rule.required()
+      }, */
       /*  {
         title: 'Datum',
         name: 'releaseDate',
@@ -28,26 +28,29 @@ export default {
         },
         validation: Rule => Rule.required()
       }, */  
-  /*     {
+      {
         title: 'Název',
         name: 'title',
         type: 'string',             
-      }, */
-      {
-        title: 'Nadpis',
-        name: 'title',
-        type: 'string',
       },
       {
-      title: 'Content', 
-      name: 'content',
-      type: 'array', 
-      of: [{type: 'block'}]
+        title: 'Popis',
+        name: 'description',
+        type: 'text',
       },     
-    ],  
+    ],
+    orderings: [
+      {
+        title: 'Dle datumu',
+        name: 'releaseDate',
+        by: [
+          {field: 'releaseDate', direction: 'desc'}
+        ]
+      }],  
       preview: {
-        select: {          
-          title: 'where' // zde se prohazuje název a datum, aby datum byl na prvním místě v přehledu meníček
+        select: {
+          date: 'title',
+          title: 'releaseDate' // zde se prohazuje název a datum, aby datum byl na prvním místě v přehledu meníček
         },
         prepare(selection) {
           const { date, title } = selection
