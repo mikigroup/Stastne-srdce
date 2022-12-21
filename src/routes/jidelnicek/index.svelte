@@ -125,7 +125,7 @@
 		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
 			<h1
 				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-				dark:text-white">
+				">
 				Jídelníček
 			</h1>
 			<div
