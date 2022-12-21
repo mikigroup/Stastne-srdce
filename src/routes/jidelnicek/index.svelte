@@ -148,7 +148,7 @@
 					Na  každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
 					<br />
 					<br />
-					<strong>Všem strávníkům děkujeme za přízeň a těm novým: " Vydržte s námi :) !".</strong>
+					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br />
 
