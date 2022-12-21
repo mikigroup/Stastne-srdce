@@ -99,7 +99,7 @@
 		<div class="grid grid-cols-2 md:grid-cols-3 gap-2 m-2 px-4 max-w-8xl mx-auto">
 			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0">
 				<div class="nounderjiri">
-					<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+					<span class="self-center whitespace-nowrap text-xl font-semibold">
 						<a href="/">
 						Šťastné srdce</a>
 					</span>
