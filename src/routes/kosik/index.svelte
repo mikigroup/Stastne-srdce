@@ -373,7 +373,7 @@ client.createIfNotExists(doc).then((res) => {
 			</div>
 		{/if}
 		<div>			
-		<button
+		<!-- <button
 										on:click={() => {
 											createOrder();
 										}}
@@ -384,7 +384,7 @@ client.createIfNotExists(doc).then((res) => {
 										duration-200 text-center shadow-md focus:outline-none focus:ring-2
 										focus:ring-offset-2 rounded-lg">
 										<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">TEST</a>
-									</button>
+									</button> -->
 		</div>	
 	</div>
 </main>
