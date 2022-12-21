@@ -56,15 +56,15 @@
 <section>
 	<div class="pt-20 footer_fix">
 		<div
-			class="mt-20 flex flex-col max-w-md px-4 pt-7 pb-2 bg-white rounded-lg shadow dark:bg-gray-800
+			class="mt-20 flex flex-col max-w-md px-4 pt-7 pb-2 bg-white rounded-lg shadow 
 			sm:px-6 md:px-8 lg:px-10 mx-auto">
 			<div
 				class="self-center mb-2 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl
-				dark:text-white">
+				">
 				Vytvoření nového účtu
 			</div>
 			<span
-				class="justify-center text-sm text-center text-gray-500 flex-items-center dark:text-gray-400">
+				class="justify-center text-sm text-center text-gray-500 flex-items-center">
 				Máte již účet?
 				<a href="/login" class="text-sm text-blue-500 underline hover:text-blue-700">Přihlášení</a>
 			</span>
@@ -187,7 +187,7 @@
 		<div class="form-widget">
 					<div
 						class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow
-						dark:bg-gray-800 sm:px-6 md:px-8 lg:px-10">
+					 sm:px-6 md:px-8 lg:px-10">
 						<form on:submit|preventDefault={signInWithGoogle}>
 							<div class="">
 								<button

@@ -124,25 +124,25 @@
 	<h1 class="">Šťastné srdce</h1>
 	<section>
 		<div
-			class="max-w-screen-xl p-4 bg-white dark:bg-gray-800 mx-auto px-4 sm:px-6 lg:px-8 py-26
+			class="max-w-screen-xl p-4 bg-white mx-auto px-4 sm:px-6 lg:px-8 py-26
 			lg:mt-10">
 			<div class="">
 				<div class="mt-20 lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 					<div
-						class="mt-20 py-10 px-10 bg-white shadow-lg rounded-md dark:bg-gray-800 lg:col-start-2
+						class="mt-20 py-10 px-10 bg-white shadow-lg rounded-md  lg:col-start-2
 						lg:max-w-2xl ml-auto">
 						<h4
-							class="mt-2 leading-8 font-extrabold text-slate-700 dark:text-white text-2xl
+							class="mt-2 leading-8 font-extrabold text-slate-700  text-2xl
 							lg:text-3xl sm:leading-9">
 							Vítejte na stránkách Šťastného srdce
 						</h4>
-						<p class="text-md leading-6 text-gray-500 dark:text-gray-300">Vaříme zdravé jídlo</p>
+						<p class="text-md leading-6 text-gray-500 ">Vaříme zdravé jídlo</p>
 						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1">
 							<li class="mt-6 lg:mt-0">
 								<div class="flex">
 									<span
 										class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full
-										bg-green-100 text-green-800 dark:text-green-500 drark:bg-transparent">
+										bg-green-100 text-green-800  ">
 										<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 											<path
 												fill-rule="evenodd"
@@ -151,7 +151,7 @@
 												clip-rule="evenodd" />
 										</svg>
 									</span>
-									<span class="ml-4 text-base leading-6 text-gray-600 dark:text-gray-200">
+									<span class="ml-4 text-base leading-6 text-gray-600 ">
 										Vegetariánské jídlo
 									</span>
 								</div>
@@ -160,7 +160,7 @@
 								<div class="flex">
 									<span
 										class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full
-										bg-green-100 text-green-800 dark:text-green-500 drark:bg-transparent">
+										bg-green-100 text-green-800 ">
 										<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 											<path
 												fill-rule="evenodd"
@@ -170,7 +170,7 @@
 										</svg>
 									</span>
 									<span
-										class="ml-4 text-base leading-6 font-medium text-gray-600 dark:text-gray-200">
+										class="ml-4 text-base leading-6 font-medium text-gray-600 ">
 										Rozvoz jídla
 									</span>
 								</div>
@@ -179,7 +179,7 @@
 								<div class="flex">
 									<span
 										class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full
-										bg-green-100 text-green-800 dark:text-green-500 drark:bg-transparent">
+										bg-green-100 text-green-800 ">
 										<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 											<path
 												fill-rule="evenodd"
@@ -189,7 +189,7 @@
 										</svg>
 									</span>
 									<span
-										class="ml-4 text-base leading-6 font-medium text-gray-600 dark:text-gray-200">
+										class="ml-4 text-base leading-6 font-medium text-gray-600 ">
 										Cena 95,-
 									</span>
 								</div>
@@ -198,7 +198,7 @@
 								<div class="flex">
 									<span
 										class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full
-										bg-green-100 text-green-800 dark:text-green-500 drark:bg-transparent">
+										bg-green-100 text-green-800 ">
 										<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 											<path
 												fill-rule="evenodd"
@@ -208,7 +208,7 @@
 										</svg>
 									</span>
 									<span
-										class="ml-4 text-base leading-6 font-medium text-gray-600 dark:text-gray-200">
+										class="ml-4 text-base leading-6 font-medium text-gray-600 ">
 										Do krabičky nebo ešusu
 									</span>
 								</div>
@@ -257,7 +257,7 @@
 			<div class="mt-20">
 				<h2
 					class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-					dark:text-white">
+					">
 					Info koutek
 				</h2>
 
@@ -265,12 +265,12 @@
 			<div class="md:container md:mx-auto justify-center items-center gap-8 sm:flex flex-wrap">
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 bg-white shadow-lg rounded-lg
-					dark:bg-gray-800">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold dark:text-white pt-4">
+					">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
 						Info na Prosinec 2022
 					</h3>
 					<hr />
-					<p class="text-md text-gray-500 dark:text-gray-300 py-4 text-justify">
+					<p class="text-md text-gray-500 py-4 text-justify">
 						Rok 2022 končí a my musíme vybrat ještě nějakou tu dovolenou, řádně oslavit svátky a
 						trochu se zklidnit . 23.12., 30.12. dovolená. 26.12. Vánoční svátek. A 27.12., 28.12.,
 						29.12. vaříme jen jedno jídlo.
@@ -278,12 +278,12 @@
 				</div>
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 py-4 bg-white mt-6 shadow-lg rounded-lg
-					dark:bg-gray-800">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold dark:text-white pt-4">
+					">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
 						2023 a kudy kam
 					</h3>
 					<hr />
-					<p class="text-md text-gray-500 dark:text-gray-300 py-4 text-justify">
+					<p class="text-md text-gray-500 py-4 text-justify">
 						Kam si to v tom Šťastném srdci směřujeme? Vize "Kudy kam" pro další roky máme. Zda je
 						naplníme, je teď ve hvězdách. Nicméně trpělivě a krok po kroku k naplnění míříme. A tak
 						pro tento rok, chceme rozšířit záhony s bylinami a zeleninou, pokračovat v uvědomělém
@@ -293,12 +293,12 @@
 				</div>
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 py-4 mt-6 sm:mt-16 md:mt-20 lg:mt-24
-					bg-white shadow-lg rounded-lg dark:bg-gray-800">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold dark:text-white pt-4">
+					bg-white shadow-lg rounded-lg ">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
 						Pro vegetariány a vegany!
 					</h3>
 					<hr />
-					<p class="text-md text-gray-500 dark:text-gray-300 py-4 text-justify">
+					<p class="text-md text-gray-500  py-4 text-justify">
 						Naše "bezmasé trojky", potřebují posunout na vyšší level. Strávníků, kteří nechtějí jíst
 						každý den maso přibývá. A my máme radost, že se trojky svým množstvím vyrovnají masitým
 						meníčkům. Jenomže k nám nepřichází veganská (vegetariánská) inspirace a tak vyzýváme

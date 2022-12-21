@@ -1,7 +1,7 @@
 <script>
 </script>
 <footer class="">
-  <div class="grid md:grid-cols-5 text-gray-500 dark:text-gray-400 mt-40 p-4 border-2 md:mx-4 rounded-lg">    
+  <div class="grid md:grid-cols-5 text-gray-500 mt-40 p-4 border-2 md:mx-4 rounded-lg">    
     <div class="text-sm grid col-span-2">
 <p>Copyright © 2022 Šťastné srdce Všechny práva vyhrazena.</p>     
     </div>    

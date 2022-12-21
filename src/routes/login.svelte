@@ -45,18 +45,18 @@
 			<div class="pt-20 form-widget">
 				<div
 					class="mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow
-					dark:bg-gray-800 sm:px-6 md:px-8 lg:px-10">
+					 sm:px-6 md:px-8 lg:px-10">
 					{#if $user}
 						<div class="flex w-full text-xl">
 							<p>Jste přihlášeni :)</p>
 						</div>
 					{:else}
-						<div class="self-center mb-2 text-3xl sm:text-2xl font-light dark:text-white">
+						<div class="self-center mb-2 text-3xl sm:text-2xl font-light">
 							Přihlášení do účtu
 						</div>
 						<span
 							class="justify-center text-sm text-center text-gray-500 flex-items-center
-							dark:text-gray-400">
+							">
 							Ještě nemáte účet?
 							<a href="/signup" class="text-sm text-blue-500 underline hover:text-blue-700">
 								Přidej se
@@ -129,8 +129,8 @@
 								<div class="flex ml-auto">
 									<a
 										href="/forgot"
-										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm dark:text-gray-100
-										hover:text-gray-700 dark:hover:text-white">
+										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm 
+										hover:text-gray-700 ">
 										Zapoměli jste heslo?
 									</a>
 								</div>
@@ -158,7 +158,7 @@
 	</div>
 	<div class="form-widget">
 		<div
-			class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow dark:bg-gray-800
+			class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow 
 			sm:px-6 md:px-8 lg:px-10">
 			<div class="">
 				<button

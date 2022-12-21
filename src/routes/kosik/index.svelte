@@ -87,7 +87,7 @@ console.log(novaObj);
 	<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-slate-100 rounded-lg footer_fix mb-10">
 		<h1
 			class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-			dark:text-white">
+			">
 			Košík
 		</h1>
 
@@ -261,7 +261,7 @@ console.log(novaObj);
 						{#if $user}
 					<p
 						class="justify-center text-sm text-center text-gray-500 flex-items-center
-						dark:text-gray-400">
+						">
 						Máte již vyplněný
 						<a href="/profile" class="text-sm text-blue-500 underline hover:text-blue-700">účet?</a>
 					</p>

@@ -63,7 +63,7 @@
 		<div class="py-8 py-16 px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
 			<h1
 				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-				dark:text-white">
+				">
 				Kontakt
 			</h1>
 			<div class="grid grid-cols-1 md:grid-cols-1 border-2 p-5 rounded-lg bg-white">
@@ -80,7 +80,7 @@
 					</p>
 				</div> -->
 				<div
-					class="mb-4 font-light text-center text-gray-500 dark:text-gray-400 text-xl md:text-xl">
+					class="mb-4 font-light text-center text-gray-500 text-xl md:text-xl">
 					<p>
 						<span class="text-2xl">Kuchyň K&K</span>
 						<br />
@@ -114,7 +114,7 @@
 						name="email"
 						id="email"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						dark:border-gray-600 dark:placeholder-gray-400 dark:shadow-sm-light appearance-none
+						appearance-none
 						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700"
 						placeholder="franta@vomacka.com"
@@ -128,7 +128,7 @@
 						name="name"
 						id="name"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						dark:border-gray-600 dark:placeholder-gray-400 dark:shadow-sm-light appearance-none
+						 appearance-none
 						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700"
 						placeholder="Franta Vomáčka"
@@ -142,7 +142,7 @@
 						name="phone"
 						id="phone"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						dark:border-gray-600 dark:placeholder-gray-400 dark:shadow-sm-light appearance-none
+						 appearance-none
 						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700"
 						placeholder="+420 777 111 222"
@@ -157,7 +157,7 @@
 						id="message"
 						rows="6"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						dark:border-gray-600 dark:placeholder-gray-400 dark:shadow-sm-light appearance-none
+						 appearance-none
 						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700"
 						placeholder="Zanechte zprávu ..." />
