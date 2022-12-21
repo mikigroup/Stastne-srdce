@@ -20,10 +20,10 @@
 	--column-margin-top: 4rem;
 }
 
-/* .bg-green-600 {
+.bg-green-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(5 122 85 / var(--tw-bg-opacity));
-} */
+}
 
 body {
 	min-height: 100vh;
