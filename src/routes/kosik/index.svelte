@@ -8,16 +8,13 @@
 	import { BrowserTracing } from '@sentry/tracing';
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
-<<<<<<< HEAD
 	import client from "../sanityClient";
 	import { onMount } from "svelte";
+
 	export let dataOrder = [];
 	export let dataOrder2 = [];
 	export let dataOrder3 = [];
 	
-=======
-
->>>>>>> parent of 66f1e7ac2 (1)
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -52,7 +49,6 @@
 		});
 	}
 
-<<<<<<< HEAD
 
 
 /* 	function createDoc {
@@ -86,7 +82,7 @@ console.log(novaObj);
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
 	}	
-=======
+
 const doc = {
   _id: 'my-bike',
   _type: 'bike',
@@ -97,7 +93,7 @@ const doc = {
 client.createIfNotExists(doc).then((res) => {
   console.log('Bike was created (or was already present)')
 })
->>>>>>> parent of 66f1e7ac2 (1)
+
 </script>
 
 <svelte:head>
