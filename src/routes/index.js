@@ -10,8 +10,7 @@ export async function GET() {
     return {
       status: 200,
       body: {
-        menu: data,
-        title: data2
+        menu: data,        
       }
     };
   }
@@ -20,12 +19,3 @@ export async function GET() {
     body: new Error("Internal Server Error")
   };
 }
-/* export let data, menu; */
-
-
-/* let { name, price } = item; */
-
-
-
-
-

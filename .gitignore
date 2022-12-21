@@ -8,3 +8,4 @@ vite.config.ts.timestamp-*
 node_modules
 .svelte-kit
 package-lock.json
+studio/config/.checksums

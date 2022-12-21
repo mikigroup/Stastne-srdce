@@ -10,8 +10,6 @@
 		minute: '2-digit'
 	});
 
-	// import logo from './svelte-logo.svg';
-
 	import { user } from '../routes/Stores/stores';
 	import { supabase } from '../routes/supabaseClient';
 	user.set(supabase.auth.user());
@@ -51,14 +49,6 @@
 			menuBox.style.display = 'block';
 		}
 	}
-
-/* 	const items = document.querySelectorAll('ul li');
-	items.forEach((item) => {
-		item.addEventListener('click', () => {
-			document.querySelector('li.active').classList.remove('active');
-			item.classList.add('active');
-		});
-	}); */ 
 
 	$: totalPieces =
 		$CartItemsStore.length &&

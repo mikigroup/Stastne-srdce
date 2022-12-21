@@ -2,13 +2,14 @@
 	import CartItemsStore from '../Stores/stores';
 	import { get } from 'svelte/store';
 	import { supabase } from '../supabaseClient';
-	import Modal from '../CartComponents/Modal.svelte';
-	import { browser } from '$app/env';
-	import * as Sentry from '@sentry/svelte';
-	import { BrowserTracing } from '@sentry/tracing';
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
-
+	import client from "../sanityClient";
+	import { onMount } from "svelte";
+	export let dataOrder = [];
+	export let dataOrder2 = [];
+	export let dataOrder3 = [];
+	
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -27,11 +28,6 @@
 		}
 	});
 
-	/*let totalPrice = function {
-		 $CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0); 
-	}*/
-
 	$: totalPrice =
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0);
@@ -47,6 +43,40 @@
 			return [];
 		});
 	}
+
+
+
+/* 	function createDoc {
+		client.create(doc).then((res) => {
+  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+		});
+	} */
+console.log(dataOrder);
+console.log(dataOrder2);
+console.log(dataOrder3);
+
+/* const values = Object.values(dataOrder);
+const novaObj = values.reduce((accumulator, value) => {
+  return accumulator + value;
+}, +1); */	
+
+function createOrder() {		
+		const values = Object.values(dataOrder);
+		const novaObj = values.reduce((accumulator, value) => {
+  	return accumulator + value;
+			}, +1);
+ 
+const doc = {
+    _type: 'order',
+		orderNumber: 	'',	
+    note: 'První poznámka objednávky',
+		/* orderNumber: novaObj,		 */
+}
+console.log(novaObj);
+		client.create(doc).then((res) => {
+  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+		});	
+	}	
 </script>
 
 <svelte:head>
@@ -321,10 +351,10 @@
 				</div>
 			</div>
 		{/if}
-		<div>
+		<div>			
 		<button
 										on:click={() => {
-											test();
+											createOrder();
 										}}
 										type="button"
 										data-bs-dismiss=""
@@ -332,7 +362,7 @@
 										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
 										duration-200 text-center shadow-md focus:outline-none focus:ring-2
 										focus:ring-offset-2 rounded-lg">
-										TEST
+										<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">TEST</a>
 									</button>
 		</div>	
 	</div>

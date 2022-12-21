@@ -4,43 +4,10 @@
   import { get } from 'svelte/store';
 	user.set(supabase.auth.user());
   
-
 	const session = supabase.auth.session();
 	supabase.auth.onAuthStateChange((_, session) => {
 		user.set(session.user);
 	});
-
-
-	/* let loading = true
-  let user_name = null
-  let website = null
-  let avatar_url = null
-  let email = $user.email;
-
-  function getProfile(node) {
-  try {
-    loading = true;
-    const user = supabase.auth.user();
-
-    supabase
-      .from("profiles")
-      .select(`user_name, website, avatar_url`)
-      .eq("id", user?.id)
-      .single()
-      .then(({ data, error, status }) => {
-        if (data) {
-          user_name = data.user_name;
-          website = data.website;
-          avatar_url = data.avatar_url;
-        }
-        if (error && status !== 406) throw error;
-      });
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      loading = false;
-    }
-  } */
 
 	async function updateProfile() {
 		try {
@@ -55,8 +22,7 @@
 				company_name,
 				street,
 				street_number,
-				city,
-				avatar_url,
+				city,				
         ico,
         dic,
         company,
@@ -76,9 +42,7 @@
 	}
 
 	let loading = true;
-	let first_name = null;
-	let avatar_url = null;
-	let avatar = null;
+	let first_name = null;	
 	let last_name = null;
 	let telephone = null;
 	let company_name = null;
@@ -97,7 +61,7 @@
 			let { data, error, status } = await supabase
 				.from('profiles')
 				.select(
-					`first_name, last_name, telephone,company_name,street,street_number, city, ico, dic, company`
+					`first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
 				)
 				.eq('id', user.id)
 				.single();
@@ -259,14 +223,6 @@
             </div>
           </div>
           <hr class="w-32">
-				<!-- 	{#if message.success != null}
-				<div
-					class="alert {message.success ? 'alert-success' : 'alert-danger'}"
-					role="alert"
-				>
-					{message.display}
-				</div>
-			{/if} -->
 			</div>
        <div class="my-2">
             <div class="flex flex-col md:flex-row items-center">                          
