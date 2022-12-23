@@ -2,7 +2,7 @@
     import { user } from './Stores/stores';
     import { supabase } from "./supabaseClient";
     user.set(supabase.auth.user());
-    
+
 supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'PASSWORD_RECOVERY' && session.user);
 	});
@@ -14,13 +14,13 @@ supabase.auth.onAuthStateChange((state, session) => {
     let message = { success: null, display: '' }; 
 
     const reset = async () => {
-      /* 	if (password = null) {
+    	if (password = null) {
 			message = {
 				success: false,
 				display: 'Zadejte heslo'
 			};
 			return;
-		} */
+		}
    
     try {
 			loading = true;
@@ -77,7 +77,7 @@ supabase.auth.onAuthStateChange((state, session) => {
                     Nastavení hesla
                 </button>
                 </div>                            
-                 {#if message}
+               <!--   {#if message}
                  <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{message}</p>
                 </div>
@@ -86,7 +86,7 @@ supabase.auth.onAuthStateChange((state, session) => {
                 <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{error}</p>
                 </div>
-              {/if}
+              {/if} -->
              
               </div>
              
