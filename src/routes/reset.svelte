@@ -1,7 +1,12 @@
 <script>
     import { user } from './Stores/stores';
     import { supabase } from "./supabaseClient";
+    user.set(supabase.auth.user());
     
+supabase.auth.onAuthStateChange((state, session) => {
+		user.set(state === 'PASSWORD_RECOVERY' && session.user);
+	});
+
 
     let error, password;
     let loading = false;
