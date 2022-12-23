@@ -1,7 +1,7 @@
 <script>
     import { user } from './Stores/stores';
     import { supabase } from "./supabaseClient";
-    user.set(supabase.auth.user());
+    
 
     let error, password;
     let loading = false;
@@ -19,7 +19,8 @@
    
     try {
 			loading = true;
-			const { error } = await supabase.auth.update(accessToken, { password });
+			const { user, error } = await supabase.auth.update({ password });
+
 			console.log(error);
 			if (error) throw error;
 			message = {
