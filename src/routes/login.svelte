@@ -1,5 +1,4 @@
 <script>
-	import { navigate } from 'svelte-routing';
 	import { supabase } from './supabaseClient';
 	import { user } from '../routes/Stores/stores';
 

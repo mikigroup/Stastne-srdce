@@ -3,9 +3,6 @@
     import { supabase } from "./supabaseClient";
     user.set(supabase.auth.user());
 
-
-
-
     let error, password;
     let loading = false;
     let accessToken= '';
