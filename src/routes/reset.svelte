@@ -1,6 +1,15 @@
 <script>
     import { supabase } from "./supabaseClient";
+    user.set(supabase.auth.user());
     
+  supabase.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    // redirect user to the page where it creates a new password
+  } else {
+    // save the user session
+  }
+})
+
 
     let error = '', message = '', loading = false, accessToken= '', password = '';
 
@@ -10,7 +19,7 @@
     password = '';
     loading = true;
 
-    const { error: err } = supabase.auth.updateUser({password: '',})    
+    const { error: err } = supabase.auth.update({password: '',})    
     if (err)
       error = 'Něco je špatně...'
     else
@@ -19,6 +28,7 @@
     }	
 
     console.log(password);
+    console.log();
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Reset hesla</title>
