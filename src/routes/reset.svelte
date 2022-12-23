@@ -1,31 +1,51 @@
 <script>
+    import { user } from './Stores/stores';
     import { supabase } from "./supabaseClient";
     user.set(supabase.auth.user());
-    
-  supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "PASSWORD_RECOVERY") {
-    // redirect user to the page where it creates a new password
-  } else {
-    // save the user session
-  }
-})
 
 
-    let error = '', message = '', loading = false, accessToken= '', password = '';
 
-    async function resetPass() {
-    error = '';
-    message = '';
-    password = '';
-    loading = true;
 
-    const { error: err } = supabase.auth.update({password: '',})    
+    let error, password;
+    let loading = false;
+    let accessToken= '';
+    let message = { success: null, display: '' }; 
+
+    const reset = async () => {
+      /* 	if (password = null) {
+			message = {
+				success: false,
+				display: 'Zadejte heslo'
+			};
+			return;
+		} */
+   
+    try {
+			loading = true;
+			const { error } = await supabase.auth.update(accessToken, { password });
+			console.log(error);
+			if (error) throw error;
+			message = {
+				success: true,
+				display:
+					'Heslo změněno.'
+			};
+		} catch (error) {
+			console.log(error);
+			let errorMsg = error.error_description || error.message;
+			message = { success: false, display: errorMsg };
+		} finally {
+			loading = false;
+		}
+	};
+
+ /*    const { error: err } = await supabase.auth.update({password: '',})    
     if (err)
       error = 'Něco je špatně...'
     else
       message = 'Nastaveno'
     loading = false
-    }	
+    }	 */
 
     console.log(password);
     console.log();
@@ -35,7 +55,7 @@
   <meta name="description" content="Reset" />
 </svelte:head>
 <section>
-    <form on:submit|preventDefault={resetPass}>   
+    <form on:submit|preventDefault={reset}>   
         <div class="pt-20 form-widget">                             
               <div class="mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10">
                 <div class="self-center mb-4 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl">Nové heslo</div>
