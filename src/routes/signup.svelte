@@ -1,10 +1,8 @@
 <script class="module">
 	import { user } from './Stores/stores';
-	import { supabase } from './supabaseClient';
-	/*  import Profile from './Profile.svelte' */
+	import { supabase } from './supabaseClient';	
 	user.set(supabase.auth.user());
-
-	console.log();
+	
 
 	supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session.user);
