@@ -7,7 +7,7 @@
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  let error, password;
+  /* let error, password;
   let loading = false;
   let accessToken = "";
   let message = { success: null, display: "" };
@@ -38,15 +38,24 @@
     } finally {
       loading = false;
     }
-  };
+  }; */
 
-  /*    const { error: err } = await supabase.auth.update({password: '',})    
+   let error = '', message = '', loading = false, accessToken= '', password = '';
+
+    async function reset() {
+    error = '';
+    message = '';
+    password = '';
+    loading = true;
+
+    const { error: err } = supabase.auth.update({password: '',})
+    /* const { error: err } = await supabase.auth.api.resetPasswordForEmail(email) */
     if (err)
       error = 'Něco je špatně...'
     else
       message = 'Nastaveno'
     loading = false
-    }	 */
+    };
 
   console.log(password);
 
