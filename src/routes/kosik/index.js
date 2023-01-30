@@ -1,6 +1,6 @@
 import client from "../sanityClient"; 
 
-export async function GET() {    
+/* export async function GET() {    
     const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { orderNumber }`);
     const dataOrder2 = await client.fetch(`*[_type == 'order']{"order": count(_type)}`);
     const dataOrder3 = await client.fetch(`*[_type == "order"] { orderNumber }  `);     
@@ -18,7 +18,7 @@ export async function GET() {
     status: 500,
     body: new Error("Internal Server Error")
   };
-}
+} */
 // Returns number of elements in array 'actors' on each movie
 // *[_type == 'movie']{"actorCount": count(actors)} 
 

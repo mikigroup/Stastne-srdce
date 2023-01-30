@@ -6,9 +6,9 @@
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
 	import { onMount } from "svelte";
-	export let dataOrder = [];
+	/* export let dataOrder = [];
 	export let dataOrder2 = [];
-	export let dataOrder3 = [];
+	export let dataOrder3 = []; */
 	
 	$: cartItems = $CartItemsStore;
 
@@ -44,6 +44,16 @@
 		});
 	}
 
+	
+		function sendOrderBySendGrid() {
+		supabase.functions.invoke('sendOrderBySendGrid', {
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() })
+		});
+		CartItemsStore.update(() => {
+			return [];
+		});
+	}
+
 
 
 /* 	function createDoc {
@@ -51,16 +61,16 @@
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});
 	} */
-console.log(dataOrder);
+/* console.log(dataOrder);
 console.log(dataOrder2);
-console.log(dataOrder3);
+console.log(dataOrder3); */
 
 /* const values = Object.values(dataOrder);
 const novaObj = values.reduce((accumulator, value) => {
   return accumulator + value;
 }, +1); */	
 
-function createOrder() {		
+/* function createOrder() {		
 		const values = Object.values(dataOrder);
 		const novaObj = values.reduce((accumulator, value) => {
   	return accumulator + value;
@@ -70,13 +80,13 @@ const doc = {
     _type: 'order',
 		orderNumber: 	'',	
     note: 'První poznámka objednávky',
-		/* orderNumber: novaObj,		 */
+		/* orderNumber: novaObj,		 
 }
 console.log(novaObj);
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
-	}	
+	}	 */
 </script>
 
 <svelte:head>
@@ -334,7 +344,7 @@ console.log(novaObj);
 									</button>
 									<button
 										on:click={() => {
-											sendOrder();
+											sendOrderBySendGrid();
 										}}
 										type="button"
 										data-bs-dismiss="modal"

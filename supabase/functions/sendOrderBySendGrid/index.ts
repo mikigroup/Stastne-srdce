@@ -21,17 +21,42 @@ serve(async (req) => {
 
   console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 
+  const sum = cart.reduce(
+    (acc: any, cartItem: any) => {
+      acc.price += cartItem.quantity * cartItem.price;
+      acc.quantity += cartItem.quantity;
+      return acc;
+    },
+    { price: 0, quantity: 0 }
+  );
+
     let mail: IRequestBody = {
       personalizations: [
         {
-          subject: "Objednávka",
-          to: [{ name: "Greg Pasquariello", email: "mikigroup@gmail.com" }],
+          subject: "Šťastné srdce - Objednávka",
+          to: [{ email: user.email }],
+          // cc: "stastnesrdceKK@seznam.cz",
         },
       ],
-      from: { email: "mikigroup@gmail.com" },
+      from: { email: "objednavky@stastnesrdce.cz" },
       content: [
-        // { type: "text/plain", value: "Dobrý den, " },
-        { type: "text/html", value: "<h1>Dobrý den,</h1>" },
+        {
+          type: "text/plain",
+          value: `Dobrý den, 
+				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${
+          sum.price
+        } CZK\nCelkový počet meníček: ${
+            sum.quantity
+          }\n\nSouhrn položek:\n----\n${cart.map(
+            (item: any) =>
+              `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
+                month: "long",
+                day: "numeric",
+              })}\n ${item.title}\n ${item.description} \n\n${
+                item.quantity
+              } Ks\n----\n`
+          )}Konec`,
+        },
       ],
     };
 
