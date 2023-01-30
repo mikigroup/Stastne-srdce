@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
-import Mailgun from "https://deno.land/x/mailgun@v1.1.1/index.ts";
+import { sendMail, IRequestBody } from "https://deno.land/x/sendgrid/mod.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,11 +13,8 @@ serve(async (req) => {
   }
 
   if (req.method === "POST") {
-    const mailgun = new Mailgun({
-      key: "key-826025acce21b0c8a7aae4b4ae1f75c3",
-      region: "eu",
-      domain: "stastnesrdce.cz",
-    });
+    /* const cart = "CART";
+  const user  = "USER"; */
 
     const { cart, user } = await req.json();
 
@@ -31,52 +28,58 @@ serve(async (req) => {
       },
       { price: 0, quantity: 0 }
     );
-    
 
-    const mailResponse = await mailgun.send({
-      to: user.email,
-      cc: "stastnesrdceKK@seznam.cz",
-      /* bcc: "mikigroup@gmail.com", */
-      from: "objednavky@stastnesrdce.cz",
-      text: `Dobrý den, 
+    let mail: IRequestBody = {
+      personalizations: [
+        {
+          subject: "Šťastné srdce - Objednávka",
+          to: [{ email: user.email }],
+          cc: [{ email: "stastnesrdceKK@seznam.cz" }],
+        },
+      ],
+      from: { email: "objednavky@stastnesrdce.cz" },
+      content: [
+        {
+          type: "text/plain",
+          value: `Dobrý den, 
 				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${
           sum.price
         } CZK\nCelkový počet meníček: ${
-        sum.quantity
-      }\n\nSouhrn položek:\n----\n${cart.map(
-        (item: any) =>
-          `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
-            month: "long",
-            day: "numeric",
-          })}\n ${item.title}\n ${item.description} \n\n${
-            item.quantity
-          } Ks\n----\n`
-      )}Konec`,
-      subject: `Šťastné srdce - Objednávka`, 
+            sum.quantity
+          }\n\nSouhrn položek:\n----\n${cart.map(
+            (item: any) =>
+              `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
+                month: "long",
+                day: "numeric",
+              })}\n ${item.title}\n ${item.description} \n\n${
+                item.quantity
+              } Ks\n----\n`
+          )}Konec`,
+        },
+      ],
+    };
+
+    let response = await sendMail(mail, {
+      apiKey:
+        "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",
     });
 
-   
+    /* await sendSimpleMail(
+    {
+      subject: "Hello world",
+      to: [{ email: "mikigroup@gmail.com" }],
+      from: { email: "mikigroup@gmail.com" },
+      content: [
+        { type: "text/plain", value: "Hello world" },
+        { type: "text/html", value: "<h1>Hello world</h1>" },
+      ],
+    },
+    {
+      apiKey:
+        "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",
+    }
+  ); */
 
-    /* await mailgun.send({
-			to: user.user_metadata.email,
-			cc: 'stastnesrdceKK@seznam.cz',
-			bcc:'mikigroup@gmail.com',
-			from: 'objednavky@stastnesrdce.cz',
-			text: `Dobrý den, ${
-				user.user_metadata.full_name
-			},\nděkujeme za objednávku.\n\nCelková suma objednávky: ${
-				sum.price
-			} CZK\nCelkový počet meníček: ${sum.quantity}\n\nSouhrn položek:\n----\n${cart.map(
-				(item: any) =>
-					`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
-						month: 'long',
-						day: 'numeric'
-					})}\n ${item.title}\n ${item.description} \n\n${item.quantity} Ks\n----\n`
-			)}Konec`,
-			subject: `Šťastné srdce - Objednávka ${user.user_metadata.full_name}`
-		}); */
-    
-    console.log("mailResponse", mailResponse);
     return new Response(
       JSON.stringify({
         done: true,
