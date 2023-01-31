@@ -7,7 +7,7 @@
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  /* let error, password;
+  let error, password;
   let loading = false;
   let accessToken = "";
   let message = { success: null, display: "" };
@@ -38,8 +38,10 @@
     } finally {
       loading = false;
     }
-  }; */
+  }; 
 
+
+/* 
    let error = '', message = '', loading = false, accessToken= '', password = '';
 
     async function reset() {
@@ -49,13 +51,13 @@
     loading = true;
 
     const { error: err } = supabase.auth.update({password: '',})
-    /* const { error: err } = await supabase.auth.api.resetPasswordForEmail(email) */
+    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email) 
     if (err)
       error = 'Něco je špatně...'
     else
       message = 'Nastaveno'
     loading = false
-    };
+    };*/
 
   console.log(password);
 
@@ -112,7 +114,7 @@
             Nastavit heslo
           </button>
         </div>
-        <!--   {#if message}
+         {#if message}
                  <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{message}</p>
                 </div>
@@ -121,7 +123,7 @@
                 <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{error}</p>
                 </div>
-              {/if} -->
+              {/if} 
       </div>
     </div>
   </form>
