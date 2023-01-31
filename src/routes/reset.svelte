@@ -43,7 +43,7 @@ useEffect(() => {
 
     try {
       loading = true;
-      const { data, error } = await supabase.auth.update({ password: newPassword });
+      const { user, error } = await supabase.auth.update({ password: newPassword });
 
       console.log(error);
       if (error) throw error;
@@ -80,7 +80,7 @@ useEffect(() => {
     };*/
 
   console.log(newPassword);
-  console.log(data);
+  console.log();
 
 </script>
 
