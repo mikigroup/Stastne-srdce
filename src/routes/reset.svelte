@@ -3,17 +3,37 @@
   import { supabase } from "./supabaseClient";
   user.set(supabase.auth.user());
 
+
+  /**
+ * Step 2: Once the user is redirected back to your application,
+ * ask the user to reset their password.
+ 
+useEffect(() => {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event == "PASSWORD_RECOVERY") {
+      const newPassword = prompt("What would you like your new password to be?");
+      const { data, error } = await supabase.auth.update({
+        password: newPassword,
+      })
+
+      if (data) alert("Password updated successfully!")
+      if (error) alert("There was an error updating your password.")
+    }
+  })
+}, [])
+*/
+
+
   supabase.auth.onAuthStateChange((state, session) => {
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  let error, password;
+  let error, password, newPassword;
   let loading = false;
-  let accessToken = "";
   let message = { success: null, display: "" };
 
   const reset = async () => {
-    if ((password = null)) {
+    if ((newPassword == null)) {
       message = {
         success: false,
         display: "Zadejte heslo",
@@ -23,7 +43,7 @@
 
     try {
       loading = true;
-      const { user, error } = await supabase.auth.update({ password });
+      const { data, error } = await supabase.auth.update({ password: newPassword });
 
       console.log(error);
       if (error) throw error;
@@ -59,7 +79,8 @@
     loading = false
     };*/
 
-  console.log(password);
+  console.log(newPassword);
+  console.log(data);
 
 </script>
 
@@ -101,7 +122,7 @@
             label="Heslo"
             placeholder="Zadej svoje nové heslo"
             icon="password"
-            bind:value={password}
+            bind:value={newPassword}
           />
         </div>
         <div class="flex w-full my-4">
