@@ -28,9 +28,9 @@ useEffect(() => {
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  let error, password, newPassword;
+  let error, newPassword;
   let loading = false;
-  let message = { success: null, display: "" };
+  let message = '';  // { success: null, display: "" };
 
   const reset = async () => {
     if ((newPassword == null)) {
@@ -42,6 +42,7 @@ useEffect(() => {
     }
 
     try {
+
       loading = true;
       const { user, error } = await supabase.auth.update({ password: newPassword });
 
@@ -136,7 +137,7 @@ useEffect(() => {
           </button>
         </div>
          {#if message}
-                 <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{message}</p>
                 </div>
                 {/if}
