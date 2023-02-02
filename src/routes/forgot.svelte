@@ -13,6 +13,7 @@
     const { error: err } = await supabase.auth.api.resetPasswordForEmail(email, {
         redirectTo: 'https://www.stastnesrdce.cz/reset',
       })
+      
     if (err)
       error = 'Něco je špatně...'
     else

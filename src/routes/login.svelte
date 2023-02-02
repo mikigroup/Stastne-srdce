@@ -2,9 +2,32 @@
 	import { supabase } from './supabaseClient';
 	import { user } from '../routes/Stores/stores';
 
-	let loading = false;
+
+
+		let error = '', message = '', loading = false, email = '', password = '';
+
+    async function handleLogin() {
+    error = ''
+    message = ''
+    loading = true
+
+    const { error: err } = await supabase.auth.signIn({ email, password })
+      window.location = '/jidelnicek';
+    if (err)
+      error = 'Něco je špatně...'
+    else
+      message = ''
+
+    loading = false
+    }	
+
+
+
+	/* let loading = false;
+	let error = '';
 	let email, password;
 	let message = { success: null, display: '' };
+	
 
 	const handleLogin = async () => {
 		try {
@@ -19,7 +42,7 @@
 		} finally {
 			loading = false;
 		}
-	};
+	}; */
 
 	async function signInWithGoogle() {
 		const { user, session, error } = await supabase.auth.signIn({
@@ -174,7 +197,16 @@
 					<img src="/google.svg" alt="" width="40" height="40" />
 				</button>
 			</div>
-		
+					{#if message}
+                 <div class="flex w-full my-4 border rounded-lg p-2">
+                <p>{message}</p>
+                </div>
+                {/if}
+                {#if error}
+                <div class="flex w-full my-4 border rounded-lg p-2">
+                <p>{error}</p>
+                </div>
+          {/if}
 		</div>
 	</div>
 </section>
