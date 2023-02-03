@@ -8,12 +8,16 @@
     email = "",
     password = "";
 
-  async function handleLogin() {
+  async function handleLogin() {		
     const { error: err } = await supabase.auth.signIn({ email, password });
     // window.location = '/jidelnicek';
-    if (err) error = "Něco je špatně...";
-    else message = "";
+    if (err)
+     error = "Email nebo heslo není správně";     
+    else
+     message = "";
     loading = false;
+    if ($user)
+      window.location = '/jidelnicek';		
   }
 
   /* let loading = false;
@@ -48,6 +52,8 @@
       provider: "facebook",
     });
   }
+
+  console.log($user);
 </script>
 
 <svelte:head>
