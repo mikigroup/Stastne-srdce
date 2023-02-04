@@ -111,7 +111,7 @@
 <style>
 	.nav-tabs,
 	.nav-link.active {
-		border-color: green;
+		border-color: green !important;
 		color: black;
 	}
 </style>
@@ -192,7 +192,7 @@
 						role="tablist">
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()}>
 							<a
-								href="#tabs-1"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent active"
@@ -206,7 +206,7 @@
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()}>
 							<a
-								href="#tabs-2"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -214,13 +214,14 @@
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-2"
 								role="tab"
-								aria-controls="tabs-2">
+								aria-controls="tabs-2"
+								aria-selected="false">								
 								2
 							</a>
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()}>
 							<a
-								href="#tabs-3"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -235,7 +236,7 @@
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()}>
 							<a
-								href="#tabs-4"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -351,7 +352,85 @@
 								</button></a>
 							</div>
 						{/if}
-
+	<div class="">
+					<ul
+						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
+						id="tabs-tab"
+						role="tablist">
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
+							<a
+								href=""
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent active"
+								id="tabs-1-tab-but"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-1"
+								role="tab"
+								aria-controls="tabs-1">
+								1
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
+							<a
+								href=""
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"								
+								data-bs-toggle="pill"								
+								role="tab"								
+								aria-selected="false">
+								2
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
+							<a
+								href=""
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"
+								id="tabs-messages-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-3"
+								role="tab"
+								aria-controls="tabs-3"
+								aria-selected="false">
+								3
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
+							<a
+								href=""
+								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"
+								id="tabs-contact-tab"
+								data-bs-toggle="pill"
+								data-bs-target="#tabs-4"
+								role="tab"
+								aria-controls="#tabs-4"
+								aria-selected="false">
+								4
+							</a>
+						</li>
+					</ul>
+				</div>
 						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
