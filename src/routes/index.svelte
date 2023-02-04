@@ -83,13 +83,13 @@
 
 <style>
 	.floating-img {
-		transform: translateY(-10%);
-		animation: floater-y 30s infinite;
+		transform: translateY(0%);
+ 		/* animation: floater-y 30s infinite; */
 		transition: ease 0.5s;
 	}
 	.floating-img2 {
-		transform: translateX(-10%);
-		animation: floater-x 30s infinite;
+		transform: translateX(0%);
+		/* animation: floater-x 30s infinite; */
 		transition: ease 0.5s;
 	}
 	@keyframes floater-y {
@@ -137,7 +137,7 @@
 							Vítejte na stránkách Šťastného srdce
 						</h4>
 						<p class="text-md leading-6 text-gray-500 ">Vaříme zdravé jídlo</p>
-						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1">
+						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1 bg-slate-50 p-5 rounded-lg">
 							<li class="mt-6 lg:mt-0">
 								<div class="flex">
 									<span
@@ -260,30 +260,29 @@
 					">
 					Info koutek
 				</h2>
-
 			</div>
 			<div class="md:container md:mx-auto justify-center items-center gap-8 sm:flex flex-wrap">
 				<div
-					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 bg-white shadow-lg rounded-lg
+					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50
 					">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						Info na Prosinec 2022
 					</h3>
-					<hr />
-					<p class="text-md text-gray-500 py-4 text-justify">
+					<hr class="mx-5" />
+					<p class="text-md text-gray-600 p-5 mb-5">
 						Rok 2022 končí a my musíme vybrat ještě nějakou tu dovolenou, řádně oslavit svátky a
 						trochu se zklidnit . 23.12., 30.12. dovolená. 26.12. Vánoční svátek. A 27.12., 28.12.,
 						29.12. vaříme jen jedno jídlo.
 					</p>
 				</div>
 				<div
-					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 py-4 bg-white mt-6 shadow-lg rounded-lg
+					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50
 					">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						2023 a kudy kam
 					</h3>
-					<hr />
-					<p class="text-md text-gray-500 py-4 text-justify">
+					<hr class="mx-5" />
+					<p class="text-md text-gray-600 p-5 mb-5">
 						Kam si to v tom Šťastném srdci směřujeme? Vize "Kudy kam" pro další roky máme. Zda je
 						naplníme, je teď ve hvězdách. Nicméně trpělivě a krok po kroku k naplnění míříme. A tak
 						pro tento rok, chceme rozšířit záhony s bylinami a zeleninou, pokračovat v uvědomělém
@@ -292,13 +291,12 @@
 					</p>
 				</div>
 				<div
-					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 py-4 mt-6 sm:mt-16 md:mt-20 lg:mt-24
-					bg-white shadow-lg rounded-lg ">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold pt-4">
+					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50">
+					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						Pro vegetariány a vegany!
 					</h3>
-					<hr />
-					<p class="text-md text-gray-500  py-4 text-justify">
+					<hr class="mx-5" />
+					<p class="text-md text-gray-600 p-5 mb-5">
 						Naše "bezmasé trojky", potřebují posunout na vyšší level. Strávníků, kteří nechtějí jíst
 						každý den maso přibývá. A my máme radost, že se trojky svým množstvím vyrovnají masitým
 						meníčkům. Jenomže k nám nepřichází veganská (vegetariánská) inspirace a tak vyzýváme
