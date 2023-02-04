@@ -95,7 +95,7 @@ console.log(novaObj);
 </svelte:head>
 
 <main>
-	<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-slate-100 rounded-lg footer_fix mb-10">
+	<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-stone-100 rounded-lg footer_fix mb-10">
 		<h1
 			class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
 			">
@@ -167,7 +167,7 @@ console.log(novaObj);
 								<strong>Popis</strong>
 							</p>
 						</div>
-						<div class="mb-5 font-light text-center col-span-4">{cartItem.description}</div>
+						<div class="mb-5 font-light p-8 col-span-4">{cartItem.description}</div>
 						<hr />
 						<div class="font-light text-center">
 							<button
@@ -187,8 +187,8 @@ console.log(novaObj);
 			class="mt-5 py-4 px-4 mx-auto max-w-screen-xl rounded-lg border-2 hidden md:grid
 			border-b-transparen">
 			<div
-				class="grid grid-cols-9 border border-slate-600 rounded-lg text-lg items-center divide-x
-				bg-slate-300">
+				class="grid grid-cols-9 border border-slate-600 rounded-lg text-xl items-center divide-x
+				bg-slate-300 pl-5 p-2">
 				<div class="font-light text-center">
 					<p>Den</p>
 				</div>
@@ -224,19 +224,19 @@ console.log(novaObj);
 			{#each cartItems as cartItem, i (cartItem._id)}
 				<div
 					class="my-1 md:grid-cols-9 border-2 rounded-lg items-center text-lg bg-stone-100 hidden
-					md:grid">
+					md:grid pl-5">
 					<div class="text-center">
-						<p class="">
+						<p class="border-r-2 border-slate-300">
 							{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
 								month: 'long',
 								day: 'numeric'
 							})}
 						</p>
 					</div>
-					<div class="font-light text-center">
-						<p class="font-medium">{cartItem.title}</p>
+					<div class="text-center">
+						<p class="border-r-2 border-slate-300">{cartItem.title}</p>
 					</div>
-					<div class="font-light text-center">
+					<div class="text-center">
 						<input
 							min="0"
 							max="99"
@@ -247,19 +247,19 @@ console.log(novaObj);
 								CartItemsStore.update((items) => items);
 							}} />
 					</div>
-					<div class="font-light text-center">
-						<p class="font-medium">{cartItem.price}</p>
-					</div>
-					<div class="font-light text-center border-x-2 break-word col-span-4">
+					<div class="text-center">
+						<p class="">{cartItem.price},-</p>
+					</div>					
+					<div class="font-light border-x-2 break-word col-span-4 p-8">
 						{cartItem.description}
 					</div>
-					<div class="font-light text-center">
+					<div class="text-center">
 						<button
 							class=""
 							on:click={() => {
 								removeItem(cartItem._id);
 							}}>
-							✕
+							X
 						</button>
 					</div>
 				</div>

@@ -6,6 +6,6 @@
 <p>Copyright © 2022 Šťastné srdce Všechny práva vyhrazena.</p>     
     </div>    
     <div class="grid col-span-3 text-sm justify-end">
-      <a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">With <i class="fa fa-regular fa-hand-spock"></i> by Mikigroup™ ver_1.0</a>            
+      <a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">With <i class="fa fa-regular fa-hand-spock"></i> by Mikigroup™ ver_1.1</a>            
   </div>
 </footer>

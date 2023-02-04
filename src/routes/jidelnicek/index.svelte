@@ -178,14 +178,15 @@
 							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
-							placeholder="Search"
-							required="" />
-					</div>					
-				</form>				
+							placeholder="př. rizoto"
+							/>
+					</div>										
+				</form>	
+				<div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							
 			</div>
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
-				<div class="">
+				<!-- <div class="">
 					<ul
 						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
 						id="tabs-tab"
@@ -250,7 +251,7 @@
 							</a>
 						</li>
 					</ul>
-				</div>
+				</div> -->
 
 				<div class="tab-content pb-10" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel" aria-labelledby="">
@@ -314,7 +315,7 @@
 																month: 'long',
 																day: 'numeric'
 															})}
-														</p>
+														</p>														
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
@@ -364,7 +365,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								class="nav-link block font-medium text-xs leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent active"
 								id="tabs-1-tab-but"
@@ -372,7 +373,7 @@
 								data-bs-target="#tabs-1"
 								role="tab"
 								aria-controls="tabs-1">
-								1
+								1. týden
 							</a>
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()} on:click={() => animateScroll.scrollTo({
@@ -382,13 +383,13 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								class="nav-link block font-medium text-xs leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"								
 								data-bs-toggle="pill"								
 								role="tab"								
 								aria-selected="false">
-								2
+								2. týden
 							</a>
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()} on:click={() => animateScroll.scrollTo({
@@ -398,7 +399,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								class="nav-link block font-medium text-xs leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-messages-tab"
@@ -407,7 +408,7 @@
 								role="tab"
 								aria-controls="tabs-3"
 								aria-selected="false">
-								3
+								3. týden
 							</a>
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()} on:click={() => animateScroll.scrollTo({
@@ -417,7 +418,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								class="nav-link block font-medium text-xs leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-contact-tab"
@@ -426,7 +427,7 @@
 								role="tab"
 								aria-controls="#tabs-4"
 								aria-selected="false">
-								4
+								4. týden
 							</a>
 						</li>
 					</ul>
