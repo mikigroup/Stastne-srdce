@@ -1,7 +1,8 @@
 <script>
-    import { supabase } from "./supabaseClient";
+    // import { supabase } from "./supabaseClient";
+    import { supabase } from "../lib/initSupabase";
 
-    export let supabaseClient;
+    export let initSupabase;
 
     let error = '', message = '', loading = false, email = '';
 

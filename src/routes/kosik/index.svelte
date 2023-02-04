@@ -1,7 +1,8 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
 	import { get } from 'svelte/store';
-	import { supabase } from '../supabaseClient';
+	// import { supabase } from '../supabaseClient';
+	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
