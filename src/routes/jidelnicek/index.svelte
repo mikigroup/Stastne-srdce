@@ -122,15 +122,15 @@
 </svelte:head>
 
 <main>
-	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-slate-100 rounded-lg">
-		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
+	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
+		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
 			<h1
 				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
 				">
 				Jídelníček
 			</h1>
 			<div
-				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto px-2 border-2 pb-2
+				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
 				<p class="text-center mt-3">
 					<strong>Cena obědů je 95,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
@@ -144,7 +144,7 @@
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední  roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně, prosíme o kontakt  na tel. 724 448 377 a pokud nezvedáme, zašlete sms, případně na email stastnesrdcekk@seznam.cz. Napíšeme nebo zavoláme zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás přínosem.
+					Poslední  roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně, prosíme o kontakt  na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás přínosem.
 					<br />
 					Na  každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
 					<br />
@@ -275,7 +275,7 @@
 															})}
 														</p>
 													</div>
-													<div class="pl-3 text-lg sm:py-3 py-1 my-3 border rounded-lg shadow-md">
+													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
 														<p>{menu.description}</p>
 													</div>
@@ -301,7 +301,7 @@
 											{/each}
 										{:else if menu && menu.length}
 											{#each searchMenu as menu}
-												<div class="border rounded-lg my-3 p-2">
+												<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
 														bg-green-600">
@@ -317,7 +317,7 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="text-justify">{menu.description}</p>
+														<p class="">{menu.description}</p>
 													</div>
 													<hr class="px-5" />
 												</div>

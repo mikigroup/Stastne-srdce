@@ -7,6 +7,8 @@
     "paths": {
       "$lib": ["src/lib"],
       "$lib/*": ["src/lib/*"],
+      "$env/": ["src/env/*"],
+      "$env/*": ["src/env/*"],
     },
     /**
      * svelte-preprocess cannot figure out whether you have
