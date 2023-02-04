@@ -6,13 +6,15 @@
 	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";	
 	import { page } from '$app/stores'; 	
+  import {PortableText} from '@portabletext/svelte'
+
 	user.set(supabase.auth.user());
 	const session = supabase.auth.session();
 	export let menu = [];
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
-			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, price, releaseDate, quantity }`
+			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
 
 		/* 	if (data) {
@@ -69,12 +71,13 @@
 	function zalozkaTretiTyden() {
 		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
 			menus = response;
+			console.log(menu);
 		});
 	}
 
 	function zalozkaCtvrtyTyden() {
 		loadmenu(datumCtvrtaZalozkaStart, datumCtvrtaZalozkaEnd).then((response) => {
-			menus = response;
+			menus = response;			
 		});
 	}
 
@@ -97,7 +100,6 @@
 			}
 		});
 	}
-
 
 	let search = '';
 
@@ -279,7 +281,8 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p>{menu.description}</p>
+														<p>{menu.description}	</p>
+													
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -319,9 +322,9 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="">{menu.description}</p>
+														<p class="">{menu.description}</p>													
 													</div>
-													<hr class="px-5" />
+													<hr class="px-5" />													
 												</div>
 											{/each}
 										{:else}
@@ -342,17 +345,7 @@
 							{#each menus as menu}{/each}
 						{:else}{/if} -->
 
-						{#if totalPieces > 0 && $user}
-							<div class="flex text-md pt-10">
-								<a class="btn btn-success py-2 mx-10 bg-green-600 hover:bg-green-700
-									focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
-									duration-200 w-full text-center shadow-md focus:outline-none focus:ring-2
-									focus:ring-offset-2 rounded-lg" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
-									class="">									
-									Košík						
-								</button></a>
-							</div>
-						{/if}
+						
 	<div class="">
 					<ul
 						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
@@ -365,7 +358,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight border-x-0
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent active"
 								id="tabs-1-tab-but"
@@ -383,7 +376,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight border-x-0
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"								
 								data-bs-toggle="pill"								
@@ -399,7 +392,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight border-x-0
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-messages-tab"
@@ -418,7 +411,7 @@
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs leading-tight border-x-0
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-contact-tab"
@@ -449,6 +442,18 @@
 					</div>
 				</div>
 			</div>
+			{#if totalPieces > 0 && $user}
+							<div class="flex text-md">
+								<a class="btn btn-success py-2 bg-green-600 hover:bg-green-700
+									focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
+									duration-200 w-full text-center shadow-md focus:outline-none focus:ring-2
+									focus:ring-offset-2 rounded-lg" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
+									class="">									
+									Košík						
+								</button></a>
+							</div>
+						{/if}
 		</div>
+		
 	</section>
 </main>

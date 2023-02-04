@@ -2,7 +2,7 @@ import client from "../sanityClient";
 
 
 export async function GET() {
-  const data = await client.fetch(`*[_type == "menu"] | order(_createdAt) { _id, title, _createdAt, _type, description, price, releaseDate }`);
+  const data = await client.fetch(`*[_type == "menu"] | order(_createdAt) { _id, title, _createdAt, _type, description, content, price, releaseDate }`);
   const data2 = await client.fetch(`*[_type == "menu"] { title }`); //testík
 
 

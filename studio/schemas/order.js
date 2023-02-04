@@ -11,7 +11,7 @@ export default {
       title: 'Číslo objednávky',
       type: 'number',
       readOnly: true,    
-      options: {
+      options: {/* 
           source: (document, options) => {
                     const params = { ref: document.category._ref };
           const params2 = { ref: document.orderNumber[0] };                
@@ -24,7 +24,7 @@ export default {
             .replace(/\s+/g, "-")
             .replace(/[^\w-]+/g, "");
         },
-        isUnique: true
+        isUnique: true */
       }
       
 

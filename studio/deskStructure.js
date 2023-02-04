@@ -347,7 +347,7 @@ export default () =>
                 ),
             ]),
         ),
-   S.listItem()
+   /* S.listItem()
         .title('Objednávky')
         .child(
           S.list()
@@ -368,7 +368,7 @@ export default () =>
                             /* .filter(
                               '_type == "order" && releaseDate > "2022-12-01" && releaseDate < "2023-02-01"', //zde změnit
                             )
-                            .params({ datefilter }) */,
+                            .params({ datefilter }) ,
                         ),
                       S.listItem()
                         .title('Únor')
@@ -494,5 +494,5 @@ export default () =>
                     ]),
                 ),
             ]),
-        ),
+        ) */,
     ])
