@@ -29,7 +29,7 @@ useEffect(() => {
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  let error, newPassword;
+  /* let error, newPassword;
   let loading = false;
   let message = '';  // { success: null, display: "" };
 
@@ -60,7 +60,24 @@ useEffect(() => {
     } finally {
       loading = false;
     }
-  }; 
+  };  */
+
+  let error, newPassword = '', message = '', loading = false, email = '';
+
+    async function reset() {
+  
+
+    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.stastnesrdce.cz/reset',
+      })
+
+    if (err)
+      error = 'Něco je špatně...'
+    else
+      message = 'Heslo změněno'
+
+    loading = false
+    }	
 
 
 /* 
@@ -125,6 +142,7 @@ useEffect(() => {
             placeholder="Zadej svoje nové heslo"
             icon="password"
             bind:value={newPassword}
+            required
           />
         </div>
         <div class="flex w-full my-4">

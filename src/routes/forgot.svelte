@@ -18,7 +18,7 @@
     if (err)
       error = 'Něco je špatně...'
     else
-      message = 'Do schránky jsme ti poslali instrukce'
+      message = 'Do emailové schránky jsme ti poslali instrukce'
 
     loading = false
     }	

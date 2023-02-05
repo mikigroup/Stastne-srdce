@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+
 // import { NEXT_PUBLIC_SUPABASE_URL } from '$env/static/public';
 
 /* const supabaseUrl = import.meta.env.NEXT_PUBLIC_SUPABASE_URL;

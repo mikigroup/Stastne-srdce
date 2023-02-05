@@ -101,6 +101,8 @@
 		});
 	}
 
+	// console.log(menu);
+
 	let search = '';
 
 	$: searchMenu = menus.filter((menu) => {
@@ -282,7 +284,7 @@
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
 														<p>{menu.description}	</p>
-													
+														
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -324,6 +326,11 @@
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
 														<p class="">{menu.description}</p>													
 													</div>
+<!-- 													TEST
+													<PortableText
+  block=
+{menu.content}
+/> -->
 													<hr class="px-5" />													
 												</div>
 											{/each}
