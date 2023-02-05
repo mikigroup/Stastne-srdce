@@ -65,6 +65,10 @@ useEffect(() => {
   let error, newPassword = '', message = '', loading = false, email = '';
 
     async function reset() {
+      error = ''
+    message = ''
+    loading = true
+
     const { user, error } = await supabase.auth.update({ password: newPassword });
 
     if (err)
