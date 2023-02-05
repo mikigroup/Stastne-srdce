@@ -65,18 +65,13 @@ useEffect(() => {
   let error, newPassword = '', message = '', loading = false, email = '';
 
     async function reset() {
-  
-
-    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email, {
-        redirectTo: 'https://www.stastnesrdce.cz/reset',
-      })
+    const { user, error } = await supabase.auth.update({ password: newPassword });
 
     if (err)
       error = 'Něco je špatně...'
     else
       message = 'Heslo změněno'
-
-    loading = false
+      loading = false
     }	
 
 
