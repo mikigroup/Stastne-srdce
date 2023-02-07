@@ -62,20 +62,20 @@ useEffect(() => {
     }
   };  */
 
-  let error, newPassword = '', message = '', loading = false, email = '';
+  let error, newPassword = '', messageSuc, messageFalse = '', loading = false;
 
-    async function reset() {
-      error = ''
-    message = ''
-    loading = true
-
-    const { user, error } = await supabase.auth.update({ password: newPassword });
-
-    if (err)
-      error = 'Něco je špatně...'
-    else
+    async function reset() {      
+    messageFalse = 'Nepodařilo se změnit heslo.'
+    messageSuc = 'Heslo změněno.'
+    
+    const { data, error } = await supabase.auth.update({ password: newPassword });
+     
+    if (error) throw error
+      messageFalse
+/*     else
       message = 'Heslo změněno'
-      loading = false
+      loading = false */
+    return messageSuc      
     }	
 
 
@@ -96,10 +96,6 @@ useEffect(() => {
       message = 'Nastaveno'
     loading = false
     };*/
-
-  console.log(newPassword);
-  console.log();
-
 </script>
 
 <svelte:head>
@@ -154,14 +150,14 @@ useEffect(() => {
             Nastavit heslo
           </button>
         </div>
-         {#if message}
+         {#if messageFalse}
                 <div class="flex w-full my-4 border rounded-lg p-2">
-                <p>{message}</p>
+                <p>{messageFalse}</p>
                 </div>
                 {/if}
-                {#if error}
+                {#if messageSuc}
                 <div class="flex w-full my-4 border rounded-lg p-2">
-                <p>{error}</p>
+                <p>{messageSuc}</p>
                 </div>
               {/if} 
       </div>

@@ -3,8 +3,7 @@
   import { supabase } from "../lib/initSupabase";
   import { user } from "../routes/Stores/stores";
 
-  let error = "",
-    message = "",
+  let error = "",    
     loading = false,
     email = "",
     password = "";
