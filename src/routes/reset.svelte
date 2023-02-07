@@ -67,7 +67,7 @@ useEffect(() => {
     async function reset() {      
     // messageSuc = 'Heslo změněno.'
     
-    const { user, error } = await supabase.auth.update({ password: newPassword });
+    const { user, data, error } = await supabase.auth.update({ password: newPassword });
      
    /*  if (error) throw error
       message = 'Nepodařilo se změnit heslo.'
@@ -80,9 +80,9 @@ useEffect(() => {
     }	 */
 
     if (error) 
-      message = 'Něco je špatně...'
+      message = 'Nepodařilo se změnit heslo'
     else
-      message = 'Do emailové schránky jsme ti poslali instrukce'
+      message = 'Heslo změněno'
       loading = false
     return
     }	
@@ -146,6 +146,7 @@ useEffect(() => {
             placeholder="Zadej svoje nové heslo"
             icon="password"
             bind:value={newPassword}
+            minlength="6"
             required
           />
         </div>

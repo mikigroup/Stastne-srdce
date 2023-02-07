@@ -126,7 +126,8 @@
 								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-								placeholder="Heslo" 
+								placeholder="Heslo"
+								minlength="6" 
 								required
 								/>
 						</div>
@@ -157,7 +158,8 @@
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								name="potvrzenihesla"
-								placeholder="Potvrzení hesla" 
+								placeholder="Potvrzení hesla"
+								minlength="6" 
 								required
 								/>
 						</div>
