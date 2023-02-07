@@ -7,7 +7,7 @@
     let error = '', message = '', loading = false, email = '';
 
     async function forgotPass() {
-    error = ''
+    // error = ''
     message = ''
     loading = true
 
@@ -19,8 +19,7 @@
       error = 'Něco je špatně...'
     else
       message = 'Do emailové schránky jsme ti poslali instrukce'
-
-    loading = false
+      loading = false
     }	
 </script>
 
@@ -30,7 +29,7 @@
   <meta name="description" content="Zapomenuté heslo" />
 </svelte:head>
 
-<section class="footer_fix">
+<section class="footer_fix2">
     <form on:submit|preventDefault={forgotPass}>   
         <div class="pt-20 form-widget">                  
            <!--  <img
@@ -66,8 +65,7 @@
                 <p>{error}</p>
                 </div>
               {/if}
-             
-              </div>
-             
+            
+              </div>             
         </div>
 </section>

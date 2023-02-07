@@ -36,6 +36,10 @@ body {
 	padding-bottom: 230px;
 }
 
+.footer_fix2 {
+	padding-bottom: 250px;
+}
+
 
 body::before {
 	content: '';

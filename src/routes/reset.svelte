@@ -62,20 +62,28 @@ useEffect(() => {
     }
   };  */
 
-  let error, newPassword = '', messageSuc, messageFalse = '', loading = false;
+  let error, newPassword = '', messageSuc, messageFalse,  message = '', loading = false;
 
     async function reset() {      
-    messageFalse = 'Nepodařilo se změnit heslo.'
-    messageSuc = 'Heslo změněno.'
+    // messageSuc = 'Heslo změněno.'
     
     const { data, error } = await supabase.auth.update({ password: newPassword });
      
-    if (error) throw error
-      messageFalse
+   /*  if (error) throw error
+      message = 'Nepodařilo se změnit heslo.'
 /*     else
       message = 'Heslo změněno'
       loading = false */
-    return messageSuc      
+   /*    if (data) throw data
+        message = 'Nepodařilo se změnit heslo.'        
+    return       
+    }	 */
+
+    if (error)
+      message = 'Něco je špatně...'
+    else
+      message = 'Do emailové schránky jsme ti poslali instrukce'
+      loading = false
     }	
 
 
@@ -102,7 +110,7 @@ useEffect(() => {
   <title>Šťastné srdce - Reset hesla</title>
   <meta name="description" content="Reset" />
 </svelte:head>
-<section>
+<section class="footer_fix2">
   <form on:submit|preventDefault={reset}>
     <div class="pt-20 form-widget">
       <div
@@ -158,6 +166,16 @@ useEffect(() => {
                 {#if messageSuc}
                 <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{messageSuc}</p>
+                </div>
+              {/if}
+               {#if message}
+                <div class="flex w-full my-4 border rounded-lg p-2">
+                <p>{message}</p>
+                </div>
+              {/if}  
+               {#if error}
+                <div class="flex w-full my-4 border rounded-lg p-2">
+                <p>{error}</p>
                 </div>
               {/if} 
       </div>
