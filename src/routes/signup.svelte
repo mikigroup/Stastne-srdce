@@ -8,8 +8,9 @@
 	supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session.user);
 	});
-
-	let email, password, confirmpassword;
+	
+	let email = "@" // doplnění value email
+	let password, confirmpassword;
 	let loading = false;
 	let message = { success: null, display: '' };
 
@@ -46,6 +47,8 @@
 			provider: 'google'
 		});
 	}
+
+	
 </script>
 
 <svelte:head>
@@ -92,10 +95,11 @@
 							<input
 								bind:value={email}
 								type="email"
-								id="email"
+								id="email"								
 								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
 								required
 								/>
@@ -126,7 +130,7 @@
 								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-								placeholder="Heslo"
+								placeholder="Heslo (min 6 znaků)"
 								minlength="6" 
 								required
 								/>
@@ -158,7 +162,7 @@
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								name="potvrzenihesla"
-								placeholder="Potvrzení hesla"
+								placeholder="Potvrzení hesla (napiš stejné heslo)"
 								minlength="6" 
 								required
 								/>
