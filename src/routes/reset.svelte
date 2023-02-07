@@ -1,5 +1,5 @@
 <script>
-  import { user } from "./Stores/stores";
+  // import { user } from "./Stores/stores";
   // import { supabase } from "./supabaseClient";
   import { supabase } from "../lib/initSupabase";
   user.set(supabase.auth.user());
@@ -67,7 +67,7 @@ useEffect(() => {
     async function reset() {      
     // messageSuc = 'Heslo změněno.'
     
-    const { data, error } = await supabase.auth.update({ password: newPassword });
+    const { user, error } = await supabase.auth.update({ password: newPassword });
      
    /*  if (error) throw error
       message = 'Nepodařilo se změnit heslo.'
@@ -79,7 +79,7 @@ useEffect(() => {
     return       
     }	 */
 
-    if (error)
+    if (error) 
       message = 'Něco je špatně...'
     else
       message = 'Do emailové schránky jsme ti poslali instrukce'
