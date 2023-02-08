@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { sendMail, IRequestBody } from "https://deno.land/x/sendgrid/mod.ts";
 
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
@@ -17,7 +16,7 @@ serve(async (req) => {
   /* const cart = "CART";
   const user  = "USER"; */
 
-  const { cart, user } = await req.json();
+  const { cart, user, note } = await req.json();
 
   console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 

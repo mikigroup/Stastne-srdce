@@ -1,6 +1,5 @@
 import { subscribe } from 'svelte/internal';
-import { writable } from 'svelte/store';
-import { readable } from 'svelte/store';
+import { writable  , readable } from 'svelte/store';
 import { browser } from '$app/env';
 
 /* const storeCartItems = localStorage?.getItem("cart");
@@ -12,7 +11,7 @@ if (typeof localStorage == "undefined")
 else {
 	const storeCartItems = localStorage?.getItem("cart");
 	initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems);
-};
+};  
  
 //vytváří v localStorage key "cart"
 const CartItemsStore = writable(initialStoreValue);
@@ -23,8 +22,8 @@ CartItemsStore.subscribe(value => {
 	}
 });
 
+export const note = writable();
 	
-
 
 //vytváří v localStorage key "totalPieces"
 /* const totalPiecesStore = writable();
@@ -61,7 +60,7 @@ export const time = readable(new Date(), function start(set) {
 });
 
 // export const currentCartItems = writable();
-export const user = writable(null);
+export const user = writable();
 export default CartItemsStore;
 
 

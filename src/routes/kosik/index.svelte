@@ -44,14 +44,19 @@
 			return [];
 		});
 	}
-
+	
+//	let note = $note;
+	$: note = "";
 			function sendOrderBySendGrid() {
-		supabase.functions.invoke('sendOrderBySendGrid', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user()})
+		/*  supabase.functions.invoke('sendOrderBySendGrid', {
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), note: {note} })
 		});
 		CartItemsStore.update(() => {
-			return [];
-		});
+			return []; 
+		}); */
+		console.log(get(CartItemsStore));
+		console.log(get(CartItemsStore));
+		$: note = "";
 	}
 
 
@@ -349,9 +354,7 @@ console.log(novaObj);
 										Zavřít
 									</button>
 									<button
-										on:click={() => {
-											sendOrderBySendGrid();
-										}}
+										on:click={() => {sendOrderBySendGrid();}}
 										type="button"
 										data-bs-dismiss="modal"
 										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
