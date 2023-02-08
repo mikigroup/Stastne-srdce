@@ -29,7 +29,7 @@ serve(async (req) => {
     },
     { price: 0, quantity: 0 }
   );
-
+  
     let mail: IRequestBody = {
       personalizations: [
         {

@@ -45,10 +45,9 @@
 		});
 	}
 
-	
-		function sendOrderBySendGrid() {
+			function sendOrderBySendGrid() {
 		supabase.functions.invoke('sendOrderBySendGrid', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() })
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user()})
 		});
 		CartItemsStore.update(() => {
 			return [];
@@ -88,6 +87,8 @@ console.log(novaObj);
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
 	}	 */
+
+
 </script>
 
 <svelte:head>
@@ -216,7 +217,7 @@ console.log(novaObj);
 			{#if cartItems.length === 0}
 				<div class="w-full flex flex-col items-center justify-center overflow-hidden">
 					<div class="my-20 text-center font-bold text-2xl text-center">
-						<p>Pusto a prázdno :/</p>
+						<p>Pusto a prázdno...</p>
 					</div>
 				</div>
 			{/if}
@@ -270,6 +271,10 @@ console.log(novaObj);
 			<div class="mt-5 border-2 rounded-lg">
 				<div class="p-5 grid justify-items-end border-b-2">
 						{#if $user}
+						<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
+						focus:ring-2 focus:ring-green-700 mb-5" name="note" id="note" rows="4" placeholder="poznámka k objednávce">
+						</textarea>
 					<p
 						class="justify-center text-sm text-center text-gray-500 flex-items-center
 						">
@@ -329,7 +334,7 @@ console.log(novaObj);
 										aria-label="Close" />
 								</div>
 								<div class="modal-body relative p-4 text-center">
-									Opravdu chcete potvrdit košík a poslat?
+									Opravdu chcete potvrdit košík a odeslat?
 								</div>
 								<div
 									class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4
@@ -359,29 +364,15 @@ console.log(novaObj);
 							</div>
 						</div>
 					</div>
+					<!-- Konec modal -->
 				</div>
 			</div>
 		{/if}
+		<!-- spodní část -> celková cena a tlačítko potvrdit -->
 		<div>			
-		<!-- <button
-										on:click={() => {
-											createOrder();
-										}}
-										type="button"
-										data-bs-dismiss=""
-										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
-										duration-200 text-center shadow-md focus:outline-none focus:ring-2
-										focus:ring-offset-2 rounded-lg">
-										<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">TEST</a>
-									</button> -->
+		
 		</div>	
 	</div>
 </main>
 
-<!-- <Navbar on:nav={navHandler} />
-  {#if nav === 'home'}
-	 <CardWrapper /> 
-  {:else}
- <Checkout />
-  {/if} -->
+

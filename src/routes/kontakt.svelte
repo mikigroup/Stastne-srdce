@@ -10,8 +10,7 @@
 		for (let field of formData) {
 			const [key, value] = field;
 			data[key] = value;
-		}
-		console.log(data);
+		}		
 		supabase.functions.invoke('sendForm', {
 			body: JSON.stringify({ data: data })
 		});
@@ -24,28 +23,6 @@
 		}
 		
 	}
-	/* window.location='/send'; */
-
-	/*  const onSubmit = async () => {	
-  if (data != confirmpassword) {
-	message = { success: false, display: "Heslo a potvrzovací heslo není stejné, zadejte je prosím znovu" };
-	return;
-  }
-
-  try {
-	loading = true;
-	const { error } = await supabase.auth.signUp({ email, password });
-	console.log(error);
-	if (error) throw error;
-	message = { success: true, display: "Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte." };	
-  } catch (error) {
-	console.log(error);
-	let errorMsg = error.error_description || error.message;
-	message = { success: false, display: errorMsg };
-  } finally {
-	loading = false;
-  }
-}; */
 </script>
 
 <style>
@@ -68,18 +45,6 @@
 				Kontakt
 			</h1>
 			<div class="grid grid-cols-1 md:grid-cols-1 border-2 p-5 rounded-lg bg-white">
-				<!-- <div
-					class="mb-8 lg:my-8 font-light text-center text-gray-500 dark:text-gray-400 text-xl md:text-lg">
-					<p>
-						Dietologická poradna
-						<br />
-						Dukelská 456 (ambulantní služba)
-						<br />
-						Jeseník 79001
-						<br />
-						<span class="text-sm"></span> 724 448 377<br> <span class="text-sm"></span> stastnesrdcekk@seznam.cz
-					</p>
-				</div> -->
 				<div
 					class="mb-4 font-light text-center text-gray-500 text-xl md:text-xl">
 					<p>
