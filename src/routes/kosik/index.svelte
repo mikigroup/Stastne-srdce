@@ -4,7 +4,7 @@
 	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
-	import { user } from '../Stores/stores';
+	import { user, note } from '../Stores/stores';
 	import client from "../sanityClient";
 	import { onMount } from "svelte";
 	/* export let dataOrder = [];
@@ -45,8 +45,8 @@
 		});
 	}
 	
-//	let note = $note;
-	$: note = "";
+	
+	// $: note = "";
 			function sendOrderBySendGrid() {
 		/*  supabase.functions.invoke('sendOrderBySendGrid', {
 			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), note: {note} })
@@ -55,8 +55,7 @@
 			return []; 
 		}); */
 		console.log(get(CartItemsStore));
-		console.log(get(CartItemsStore));
-		$: note = "";
+		console.log($note);		
 	}
 
 
@@ -276,10 +275,10 @@ console.log(novaObj);
 			<div class="mt-5 border-2 rounded-lg">
 				<div class="p-5 grid justify-items-end border-b-2">
 						{#if $user}
-						<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+						<textarea  class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700 mb-5" name="note" id="note" rows="4" placeholder="poznámka k objednávce">
-						</textarea>
+						</textarea>						
 					<p
 						class="justify-center text-sm text-center text-gray-500 flex-items-center
 						">

@@ -22,9 +22,6 @@ CartItemsStore.subscribe(value => {
 	}
 });
 
-export const note = writable();
-	
-
 //vytváří v localStorage key "totalPieces"
 /* const totalPiecesStore = writable();
 totalPiecesStore.subscribe(value => {
@@ -62,7 +59,7 @@ export const time = readable(new Date(), function start(set) {
 // export const currentCartItems = writable();
 export const user = writable();
 export default CartItemsStore;
-
+export const note = writable();
 
 //modal kosik
 export function booleanStore(initial) {
