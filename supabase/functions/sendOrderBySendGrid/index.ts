@@ -16,9 +16,9 @@ serve(async (req) => {
   /* const cart = "CART";
   const user  = "USER"; */
 
-  const { cart, user, note } = await req.json();
+  const { cart, user, txt } = await req.json();
 
-  console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
+  // console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 
   const sum = cart.reduce(
     (acc: any, cartItem: any) => {
@@ -33,7 +33,7 @@ serve(async (req) => {
       personalizations: [
         {
           subject: "Šťastné srdce - Objednávka",
-          to: [{ email: user.email }],          
+          to: [{ email: user.email }],
           cc: [{ email: "stastnesrdceKK@seznam.cz" }],
         },
       ],
@@ -51,10 +51,10 @@ serve(async (req) => {
               `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
                 month: "long",
                 day: "numeric",
-              })}\n ${item.title}\n ${item.description} \n\n${
+              })}\n${item.title}\n${item.description}\n\n${
                 item.quantity
               } Ks\n----\n`
-          )}Konec`,
+          )}\nPoznámka:${txt}\n----\nKonec`,
         },
       ],
     };

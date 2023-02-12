@@ -18,12 +18,7 @@ serve(async (req) => {
 
     const { cart, user, txt } = await req.json();
 
-    console.log(
-      "sending order",
-      JSON.stringify(user),
-      JSON.stringify(cart),
-      JSON.stringify(txt)
-    );
+    // console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 
     const sum = cart.reduce(
       (acc: any, cartItem: any) => {
@@ -34,12 +29,12 @@ serve(async (req) => {
       { price: 0, quantity: 0 }
     );
 
-    /* let mail: IRequestBody = {
+    let mail: IRequestBody = {
       personalizations: [
         {
           subject: "Šťastné srdce - Objednávka",
           to: [{ email: user.email }],
-          cc: [{ email: "stastnesrdceKK@seznam.cz" }],
+          //  cc: [{ email: "stastnesrdceKK@seznam.cz" }],
         },
       ],
       from: { email: "objednavky@stastnesrdce.cz" },
@@ -56,10 +51,10 @@ serve(async (req) => {
               `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
                 month: "long",
                 day: "numeric",
-              })}\n ${item.title}\n ${item.description} \n\n${
+              })}\n${item.title}\n${item.description}\n\n${
                 item.quantity
               } Ks\n----\n`
-          )}Konec`,
+          )}\nPoznámka:${txt}\n----\nKonec`,
         },
       ],
     };
@@ -67,7 +62,7 @@ serve(async (req) => {
     let response = await sendMail(mail, {
       apiKey:
         "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",
-    }); */
+    });
 
     /* await sendSimpleMail(
     {

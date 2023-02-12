@@ -156,8 +156,8 @@
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br />
-
-				<form class="flex items-center">
+				<h6 class="pb-2">Vyhledávání</h6>
+				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
 						<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">

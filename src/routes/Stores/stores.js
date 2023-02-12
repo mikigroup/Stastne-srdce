@@ -59,7 +59,6 @@ export const time = readable(new Date(), function start(set) {
 // export const currentCartItems = writable();
 export const user = writable();
 export default CartItemsStore;
-export const note = writable();
 
 //modal kosik
 export function booleanStore(initial) {

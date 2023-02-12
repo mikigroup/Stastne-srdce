@@ -4,7 +4,7 @@
 	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
-	import { user, note } from '../Stores/stores';
+	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
 	import { onMount } from "svelte";
 	/* export let dataOrder = [];
@@ -46,22 +46,16 @@
 	} */
 	
 
-
-	
-
 	// sendOrderBySendGrid
 	// $: note = "";
 			function sendOrderBySendGrid() {
 			var txt = document.getElementById('txt');	
-		  supabase.functions.invoke('				', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), note: {note}, txt: txt.value })
+		  supabase.functions.invoke('sendOrderBySendGrid', {
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
 		});
 		CartItemsStore.update(() => {
 			return [];
 		});
-		console.log(cartItems);				
-		console.log(txt);
-		console.log(txt.value);
 	}
 
 
@@ -282,7 +276,7 @@ console.log(novaObj);
 				
 				<div class="p-5 grid border-b-2">
 					<label for="txt" class="block mb-2 text-sm text-left font-medium text-gray-900">
-						<p class="text-lg">Poznámka</p>
+						<p class="note">Poznámka</p>
 						</label>
 						<textarea id="txt" class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
