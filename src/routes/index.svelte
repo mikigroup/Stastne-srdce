@@ -127,16 +127,16 @@
 			class="max-w-screen-xl p-4 bg-white mx-auto px-4 sm:px-6 lg:px-8 py-26
 			lg:mt-10">
 			<div class="">
-				<div class="mt-20 lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
+				<div class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 					<div
 						class="mt-20 py-10 px-10 bg-white shadow-lg rounded-md  lg:col-start-2
 						lg:max-w-2xl ml-auto">
-						<h4
+						<h2
 							class="mt-2 leading-8 font-extrabold text-slate-700  text-2xl
 							lg:text-4xl sm:leading-9">
 							Vítejte na stránkách Šťastného srdce
-						</h4>
-						<p class="text-xl leading-6 text-gray-500 ">Vaříme zdravé jídlo</p>
+						</h2>
+						<h3 class="text-xl leading-6 text-gray-500 ">Vaříme zdravé jídlo</h3>
 						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1 bg-slate-50 p-5 rounded-lg">
 							<li class="mt-6 lg:mt-0">
 								<div class="flex text-xl">
