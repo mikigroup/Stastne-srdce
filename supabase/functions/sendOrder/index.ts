@@ -16,9 +16,14 @@ serve(async (req) => {
     /* const cart = "CART";
   const user  = "USER"; */
 
-    const { cart, user } = await req.json();
+    const { cart, user, txt } = await req.json();
 
-    console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
+    console.log(
+      "sending order",
+      JSON.stringify(user),
+      JSON.stringify(cart),
+      JSON.stringify(txt)
+    );
 
     const sum = cart.reduce(
       (acc: any, cartItem: any) => {
@@ -29,7 +34,7 @@ serve(async (req) => {
       { price: 0, quantity: 0 }
     );
 
-    let mail: IRequestBody = {
+    /* let mail: IRequestBody = {
       personalizations: [
         {
           subject: "Šťastné srdce - Objednávka",
@@ -62,7 +67,7 @@ serve(async (req) => {
     let response = await sendMail(mail, {
       apiKey:
         "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",
-    });
+    }); */
 
     /* await sendSimpleMail(
     {

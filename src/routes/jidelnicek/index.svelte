@@ -129,7 +129,7 @@
 	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
 		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
 			<h1
-				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
+				class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
 				">
 				Jídelníček
 			</h1>

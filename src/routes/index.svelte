@@ -133,13 +133,13 @@
 						lg:max-w-2xl ml-auto">
 						<h4
 							class="mt-2 leading-8 font-extrabold text-slate-700  text-2xl
-							lg:text-3xl sm:leading-9">
+							lg:text-4xl sm:leading-9">
 							Vítejte na stránkách Šťastného srdce
 						</h4>
-						<p class="text-md leading-6 text-gray-500 ">Vaříme zdravé jídlo</p>
+						<p class="text-xl leading-6 text-gray-500 ">Vaříme zdravé jídlo</p>
 						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1 bg-slate-50 p-5 rounded-lg">
 							<li class="mt-6 lg:mt-0">
-								<div class="flex">
+								<div class="flex text-xl">
 									<span
 										class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full
 										bg-green-100 text-green-800  ">
@@ -151,7 +151,7 @@
 												clip-rule="evenodd" />
 										</svg>
 									</span>
-									<span class="ml-4 text-base leading-6 text-gray-600 ">
+									<span class="ml-4 text-base leading-6 text-gray-600">
 										Vegetariánské jídlo
 									</span>
 								</div>
@@ -256,7 +256,7 @@
 		<div class="">
 			<div class="mt-20">
 				<h2
-					class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
+					class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
 					">
 					Info koutek
 				</h2>
@@ -265,7 +265,7 @@
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50
 					">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
+					<h3 class="text-3xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						Info na Prosinec 2022
 					</h3>
 					<hr class="mx-5" />
@@ -278,7 +278,7 @@
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50
 					">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
+					<h3 class="text-3xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						2023 a kudy kam
 					</h3>
 					<hr class="mx-5" />
@@ -292,7 +292,7 @@
 				</div>
 				<div
 					class="w-full sm:w-1/2 md:w-1/2 lg:w-1/4 px-4 shadow-lg rounded-lg bg-slate-50">
-					<h3 class="text-2xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
+					<h3 class="text-3xl sm:text-xl text-gray-700 font-semibold px-5 pt-10">
 						Pro vegetariány a vegany!
 					</h3>
 					<hr class="mx-5" />

@@ -36,26 +36,32 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
-	function sendOrder() {
+	/* function sendOrder() {
 		supabase.functions.invoke('sendOrder', {
 			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() })
 		});
 		CartItemsStore.update(() => {
 			return [];
 		});
-	}
+	} */
 	
+
+
 	
+
+	// sendOrderBySendGrid
 	// $: note = "";
 			function sendOrderBySendGrid() {
-		/*  supabase.functions.invoke('sendOrderBySendGrid', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), note: {note} })
+			var txt = document.getElementById('txt');	
+		  supabase.functions.invoke('				', {
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), note: {note}, txt: txt.value })
 		});
 		CartItemsStore.update(() => {
-			return []; 
-		}); */
-		console.log(get(CartItemsStore));
-		console.log($note);		
+			return [];
+		});
+		console.log(cartItems);				
+		console.log(txt);
+		console.log(txt.value);
 	}
 
 
@@ -102,7 +108,7 @@ console.log(novaObj);
 <main>
 	<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-stone-100 rounded-lg footer_fix mb-10">
 		<h1
-			class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
+			class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
 			">
 			Košík
 		</h1>
@@ -114,7 +120,7 @@ console.log(novaObj);
 				{#if cartItems.length === 0}
 					<div class="w-full flex flex-col items-center justify-center overflow-hidden">
 						<div class="my-20 font-bold text-xl md:text-2xl text-center">
-							<p>Pusto a prázdno :/</p>
+							<p>Košík je prázdný...</p>
 						</div>
 					</div>
 					<!-- obsah košíku pro mobile -->
@@ -221,7 +227,7 @@ console.log(novaObj);
 			{#if cartItems.length === 0}
 				<div class="w-full flex flex-col items-center justify-center overflow-hidden">
 					<div class="my-20 text-center font-bold text-2xl text-center">
-						<p>Pusto a prázdno...</p>
+						<p>Košík je prázdný...</p>
 					</div>
 				</div>
 			{/if}
@@ -273,12 +279,19 @@ console.log(novaObj);
 		<!-- spodní část -> celková cena a tlačítko potvrdit -->
 		{#if cartItems.length !== 0}
 			<div class="mt-5 border-2 rounded-lg">
-				<div class="p-5 grid justify-items-end border-b-2">
-						{#if $user}
-						<textarea  class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+				
+				<div class="p-5 grid border-b-2">
+					<label for="txt" class="block mb-2 text-sm text-left font-medium text-gray-900">
+						<p class="text-lg">Poznámka</p>
+						</label>
+						<textarea id="txt" class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="note" id="note" rows="4" placeholder="poznámka k objednávce">
-						</textarea>						
+						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" placeholder="poznámka k objednávce">
+						</textarea>
+				</div>
+				
+				<div class="p-5 grid justify-items-end border-b-2">
+						{#if $user}			
 					<p
 						class="justify-center text-sm text-center text-gray-500 flex-items-center
 						">
