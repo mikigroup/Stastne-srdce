@@ -322,7 +322,7 @@ console.log(novaObj);
 					
 					<!-- Modal -->
 					<div
-						class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden
+						class="modal fade fixed mt-20 top-20 left-50 hidden outline-none overflow-x-hidden
 						overflow-y-auto"
 						id="Modal"
 						tabindex="-1"
