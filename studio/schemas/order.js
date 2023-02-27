@@ -3,21 +3,32 @@ import { MdFoodBank, MdOutlineFastfood } from 'react-icons/md'
 export default {
   title: 'Objednávky',
   name: 'order',
-  icon: MdFoodBank,  
   type: 'document',
-    /* initialValue:  {
-    orderNumber: 1,
-     }, */
+  icon: MdFoodBank,
   fields: [
     {
       name: 'orderNumber',
       title: 'Číslo objednávky',
       type: 'number',
       readOnly: true,    
-      options: {
-        
+      options: {/* 
+          source: (document, options) => {
+                    const params = { ref: document.category._ref };
+          const params2 = { ref: document.orderNumber[0] };                
+          };
+          return cattitle;
+        },
+        slugify: input => {
+          return input
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "");
+        },
+        isUnique: true */
       }
       
+
+
       /* readOnly: ({currentUser}) => {
       return !(currentUser.roles.find(({name}) => name === 'administrator')) 
   }   */   
@@ -26,12 +37,10 @@ export default {
       name: 'note',
       title: 'Poznámka',
       type: 'string',
-    },
-      {
-      name: 'tel',
-      title: 'Tel',
-      type: 'string',
-    },
-       
-  ],    
+    },     
+  ],
+    initialValue: () => ({
+    orderNumber: false,
+    releaseDate: (new Date()).toISOString()
+  })
 }

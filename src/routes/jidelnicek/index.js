@@ -8,8 +8,8 @@ let toDate = new Date(currentDate);
 
 
  export async function GET() {  
-  const data = await client.fetch(`*[_type == "menu" && releaseDate > "${currentDate.toISOString()}" && releaseDate < "${toDate.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, price, releaseDate, quantity }`);
-  
+  const data = await client.fetch(`*[_type == "menu" && releaseDate > "${currentDate.toISOString()}" && releaseDate < "${toDate.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`);
+  // const data2 = await client.fetch(`*[_type == "menu"] { title }`); //testík
   if (data) {
     return {
       status: 200,

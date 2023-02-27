@@ -11,7 +11,8 @@
 	});
 
 	import { user } from '../routes/Stores/stores';
-	import { supabase } from '../routes/supabaseClient';
+	// import { supabase } from '../routes/supabaseClient';
+	import { supabase } from "../lib/initSupabase";
 	user.set(supabase.auth.user());
 
 	const session = supabase.auth.session();
@@ -56,6 +57,11 @@
 </script>
 
 <style>
+	.textmenu {
+		font-size: 0.9em;
+	}
+
+
 	header {
 		position: fixed;
 		top: 0px;
@@ -99,7 +105,7 @@
 		<div class="grid grid-cols-2 md:grid-cols-3 gap-2 m-2 px-4 max-w-8xl mx-auto">
 			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0">
 				<div class="nounderjiri">
-					<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+					<span class="self-center whitespace-nowrap text-xl font-semibold">
 						<a href="/">
 						Šťastné srdce</a>
 					</span>
@@ -109,22 +115,22 @@
 			</div>
 			<!-- menu -->
 			<div
-				class="grid grid-cols-4 border-2 rounded-full text-center items-center text-sm hidden
-				md:grid tracking-wide">
-				<div class="test" id="navItem">
+				class="grid grid-cols-4 border-2 rounded-full text-center items-center textmenu hidden
+				md:grid tracking-wide bg-slate-50">
+				<div class="border-r-2" id="">
 					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
 				</div>
-				<div>
+				<div class="border-r-2">
 					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
 						Jídelníček
 					</a>
 				</div>
-				<div>
-					<a class="navItem" activeClass={$page.url.pathname === '/kotankt'} href="/kontakt">
+				<div class="border-r-2">
+					<a class="navItem" activeClass={$page.url.pathname === '/kontakt'} href="/kontakt">
 						Kontakt
 					</a>
 				</div>
-				<div>
+				<div class="">
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
 						Košík
 						{#if $user}

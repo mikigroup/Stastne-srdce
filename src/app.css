@@ -20,14 +20,27 @@
 	--column-margin-top: 4rem;
 }
 
+
+.bg-green-600 {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(5 122 85 / var(--tw-bg-opacity)) !important;
+}
+
 body {
 	min-height: 100vh;
 	margin: 0;
 }
 
+.note {
+	font-size: 1rem;
+}
 
 .footer_fix {
 	padding-bottom: 230px;
+}
+
+.footer_fix2 {
+	padding-bottom: 250px;
 }
 
 
@@ -91,6 +104,19 @@ input,
 button {
 	font-size: inherit;
 	font-family: inherit;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: rgba(224, 224, 224, 0.952) !important; 
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: rgba(224, 224, 224, 0.952) !important; 
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: rgba(224, 224, 224, 0.952) !important; 
 }
 
 button:focus:not(:focus-visible) {

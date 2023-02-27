@@ -1,22 +1,25 @@
 <script>
-    import { supabase } from "./supabaseClient";
+    // import { supabase } from "./supabaseClient";
+    import { supabase } from "../lib/initSupabase";
 
-    export let supabaseClient;
+    export let initSupabase;
 
     let error = '', message = '', loading = false, email = '';
 
     async function forgotPass() {
-    error = ''
+    // error = ''
     message = ''
     loading = true
 
-    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email)
+    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.stastnesrdce.cz/reset',
+      })
+
     if (err)
       error = 'Něco je špatně...'
     else
-      message = 'Do schránky jsme ti poslali instrukce'
-
-    loading = false
+      message = 'Do emailové schránky jsme ti poslali instrukce'
+      loading = false
     }	
 </script>
 
@@ -26,7 +29,7 @@
   <meta name="description" content="Zapomenuté heslo" />
 </svelte:head>
 
-<section class="footer_fix">
+<section class="footer_fix2">
     <form on:submit|preventDefault={forgotPass}>   
         <div class="pt-20 form-widget">                  
            <!--  <img
@@ -34,8 +37,8 @@
 									width="200"
 									src="/"
 									alt="1" /> -->
-              <div class="h-80 mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow dark:bg-gray-800 sm:px-6 md:px-8 lg:px-10">
-                <div class="self-center mb-4 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl dark:text-white">Zapomenuté heslo</div>
+              <div class="h-80 mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10">
+                <div class="self-center mb-4 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl">Zapomenuté heslo</div>
                 <div class="flex w-full text-xl">
                   <span class="rounded-l-md inline-flex  items-center px-3 border-t bg-white border-l border-b  border-gray-300 text-gray-500 shadow-sm text-sm">
                               <svg width="15" height="15" fill="currentColor" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
@@ -44,7 +47,7 @@
                               </svg>
                           </span>
                     <!-- <input bind:value={email} type="email" id="email" class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" placeholder="Email"/>                 -->
-                    <input class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" name="email" type="email" label="Email address" placeholder="Zadej svoji mailovou adresu" icon="mail" bind:value={email}/>
+                    <input class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" name="email" type="email" label="Email address" placeholder="Zadej svoji mailovou adresu" icon="mail" bind:value={email} required/>
                 </div>
                 <div class="flex w-full my-4">
                 <button {loading} 
@@ -62,8 +65,7 @@
                 <p>{error}</p>
                 </div>
               {/if}
-             
-              </div>
-             
+            
+              </div>             
         </div>
 </section>

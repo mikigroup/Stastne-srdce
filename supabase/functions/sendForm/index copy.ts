@@ -1,5 +1,8 @@
+// Follow this setup guide to integrate the Deno language server with your editor:
+// https://deno.land/manual/getting_started/setup_your_environment
+// This enables autocomplete, go to definition, etc.
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
-import { sendMail, IRequestBody } from "https://deno.land/x/sendgrid/mod.ts";
+import Mailgun from "https://deno.land/x/mailgun@v1.1.1/index.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -12,37 +15,7 @@ serve(async (req) => {
     });
   }
 
-if (req.method === "POST") {
-  /* const cart = "CART";
-  const user  = "USER"; */
-
-  const { data } = await req.json();
-
-      let mail: IRequestBody = {
-        personalizations: [
-          {
-            subject: "Šťastné srdce - Formulář",
-            to: [{ email: "stastnesrdcekk@seznam.cz" }],
-            // cc: [{ email: "stastnesrdceKK@seznam.cz" }],
-          },
-        ],
-        from: { email: "formulak@stastnesrdce.cz" },
-        content: [
-          {
-            type: "text/plain",
-            value: `Dobrý den,\nbyla Vám poslána zpráva přes formuláka.\nKontaktní osoba: ${data.name}\nEmail: ${data.email}\nTelefon: ${data.phone}\n\nObsah zprávy:\n${data.message}`,
-          },
-        ],
-      };
-
-    let response = await sendMail(mail, {
-      apiKey:
-        "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",
-    });
-
-
- //stare
- /*  if (req.method === "POST") {
+  if (req.method === "POST") {
     const mailgun = new Mailgun({
       key: "key-826025acce21b0c8a7aae4b4ae1f75c3",
       region: "eu",
@@ -57,7 +30,7 @@ if (req.method === "POST") {
       text: `Dobrý den,\nbyla Vám poslána zpráva přes formuláka.\nKontaktní osoba: ${data.name}\nEmail: ${data.email}\nTelefon: ${data.phone}\n\nObsah zprávy:\n${data.message}
 			`,
       subject: `Šťastné srdce - Zpráva z kontaktního formuláka`,
-    }); */
+    });
 
     return new Response(
       JSON.stringify({

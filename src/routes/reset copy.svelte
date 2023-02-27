@@ -2,39 +2,19 @@
   import { user } from "./Stores/stores";
   // import { supabase } from "./supabaseClient";
   import { supabase } from "../lib/initSupabase";
-  // user.set(supabase.auth.user());
-
-
-  /**
- * Step 2: Once the user is redirected back to your application,
- * ask the user to reset their password.
- 
-useEffect(() => {
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event == "PASSWORD_RECOVERY") {
-      const newPassword = prompt("What would you like your new password to be?");
-      const { data, error } = await supabase.auth.update({
-        password: newPassword,
-      })
-
-      if (data) alert("Password updated successfully!")
-      if (error) alert("There was an error updating your password.")
-    }
-  })
-}, [])
-*/
-
+  user.set(supabase.auth.user());
 
   supabase.auth.onAuthStateChange((state, session) => {
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
-  /* let error, newPassword;
+  let error, password;
   let loading = false;
-  let message = '';  // { success: null, display: "" };
+  let accessToken = "";
+  let message = { success: null, display: "" };
 
   const reset = async () => {
-    if ((newPassword == null)) {
+    if ((password = null)) {
       message = {
         success: false,
         display: "Zadejte heslo",
@@ -43,9 +23,8 @@ useEffect(() => {
     }
 
     try {
-
       loading = true;
-      const { user, error } = await supabase.auth.update({ password: newPassword });
+      const { user, error } = await supabase.auth.update({ password });
 
       console.log(error);
       if (error) throw error;
@@ -60,32 +39,7 @@ useEffect(() => {
     } finally {
       loading = false;
     }
-  };  */
-
-  let error, newPassword = '', messageSuc, messageFalse,  message = '', loading = false;
-
-    async function reset() {      
-    // messageSuc = 'Heslo změněno.'
-    
-    const { user, data, error } = await supabase.auth.update({ password: newPassword });
-     
-   /*  if (error) throw error
-      message = 'Nepodařilo se změnit heslo.'
-/*     else
-      message = 'Heslo změněno'
-      loading = false */
-   /*    if (data) throw data
-        message = 'Nepodařilo se změnit heslo.'        
-    return       
-    }	 */
-
-    if (error) 
-      message = 'Nepodařilo se změnit heslo'
-    else
-      message = 'Heslo změněno'
-      loading = false
-    return
-    }	
+  }; 
 
 
 /* 
@@ -105,13 +59,16 @@ useEffect(() => {
       message = 'Nastaveno'
     loading = false
     };*/
+
+  console.log(password);
+
 </script>
 
 <svelte:head>
   <title>Šťastné srdce - Reset hesla</title>
   <meta name="description" content="Reset" />
 </svelte:head>
-<section class="footer_fix2">
+<section>
   <form on:submit|preventDefault={reset}>
     <div class="pt-20 form-widget">
       <div
@@ -145,9 +102,7 @@ useEffect(() => {
             label="Heslo"
             placeholder="Zadej svoje nové heslo"
             icon="password"
-            bind:value={newPassword}
-            minlength="6"
-            required
+            bind:value={password}
           />
         </div>
         <div class="flex w-full my-4">
@@ -160,22 +115,12 @@ useEffect(() => {
             Nastavit heslo
           </button>
         </div>
-         {#if messageFalse}
-                <div class="flex w-full my-4 border rounded-lg p-2">
-                <p>{messageFalse}</p>
-                </div>
-                {/if}
-                {#if messageSuc}
-                <div class="flex w-full my-4 border rounded-lg p-2">
-                <p>{messageSuc}</p>
-                </div>
-              {/if}
-               {#if message}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+         {#if message}
+                 <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{message}</p>
                 </div>
-              {/if}  
-               {#if error}
+                {/if}
+                {#if error}
                 <div class="flex w-full my-4 border rounded-lg p-2">
                 <p>{error}</p>
                 </div>

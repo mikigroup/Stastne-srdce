@@ -3,15 +3,18 @@
 	import * as animateScroll from 'svelte-scrollto';
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';
-	import { supabase } from '../supabaseClient';
-	import { page } from '$app/stores';
+	// import { supabase } from '../supabaseClient';
+	import { supabase } from "$lib/initSupabase";	
+	import { page } from '$app/stores'; 	
+  import {PortableText} from '@portabletext/svelte'
+
 	user.set(supabase.auth.user());
 	const session = supabase.auth.session();
 	export let menu = [];
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
-			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, price, releaseDate, quantity }`
+			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
 
 		/* 	if (data) {
@@ -68,12 +71,13 @@
 	function zalozkaTretiTyden() {
 		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
 			menus = response;
+			console.log(menu);
 		});
 	}
 
 	function zalozkaCtvrtyTyden() {
 		loadmenu(datumCtvrtaZalozkaStart, datumCtvrtaZalozkaEnd).then((response) => {
-			menus = response;
+			menus = response;			
 		});
 	}
 
@@ -97,6 +101,7 @@
 		});
 	}
 
+	// console.log(menu);
 
 	let search = '';
 
@@ -110,7 +115,7 @@
 <style>
 	.nav-tabs,
 	.nav-link.active {
-		border-color: green;
+		border-color: green !important;
 		color: black;
 	}
 </style>
@@ -121,15 +126,15 @@
 </svelte:head>
 
 <main>
-	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-slate-100 rounded-lg">
-		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
+	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
+		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
 			<h1
-				class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-				dark:text-white">
+				class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
+				">
 				Jídelníček
 			</h1>
 			<div
-				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto px-2 border-2 pb-2
+				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
 				<p class="text-center mt-3">
 					<strong>Cena obědů je 95,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
@@ -143,7 +148,7 @@
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední  roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně, prosíme o kontakt  na tel. 724 448 377 a pokud nezvedáme, zašlete sms, případně na email stastnesrdcekk@seznam.cz. Napíšeme nebo zavoláme zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás přínosem.
+					Poslední  roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně, prosíme o kontakt  na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás přínosem.
 					<br />
 					Na  každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
 					<br />
@@ -151,8 +156,8 @@
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br />
-
-				<form class="flex items-center">
+				<h6 class="pb-2">Vyhledávání</h6>
+				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
 						<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
@@ -177,21 +182,22 @@
 							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
-							placeholder="Search"
-							required="" />
-					</div>					
-				</form>				
+							placeholder="př. rizoto"
+							/>
+					</div>										
+				</form>	
+				<div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							
 			</div>
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
-				<div class="">
+				<!-- <div class="">
 					<ul
 						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
 						id="tabs-tab"
 						role="tablist">
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()}>
 							<a
-								href="#tabs-1"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent active"
@@ -205,7 +211,7 @@
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()}>
 							<a
-								href="#tabs-2"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -213,13 +219,14 @@
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-2"
 								role="tab"
-								aria-controls="tabs-2">
+								aria-controls="tabs-2"
+								aria-selected="false">								
 								2
 							</a>
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()}>
 							<a
-								href="#tabs-3"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -234,7 +241,7 @@
 						</li>
 						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()}>
 							<a
-								href="#tabs-4"
+								href=""
 								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
@@ -248,7 +255,7 @@
 							</a>
 						</li>
 					</ul>
-				</div>
+				</div> -->
 
 				<div class="tab-content pb-10" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel" aria-labelledby="">
@@ -274,9 +281,10 @@
 															})}
 														</p>
 													</div>
-													<div class="pl-3 text-lg sm:py-3 py-1 my-3 border rounded-lg shadow-md">
+													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p>{menu.description}</p>
+														<p>{menu.description}	</p>
+														
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -300,7 +308,7 @@
 											{/each}
 										{:else if menu && menu.length}
 											{#each searchMenu as menu}
-												<div class="border rounded-lg my-3 p-2">
+												<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
 														bg-green-600">
@@ -312,13 +320,18 @@
 																month: 'long',
 																day: 'numeric'
 															})}
-														</p>
+														</p>														
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="text-justify">{menu.description}</p>
+														<p class="">{menu.description}</p>													
 													</div>
-													<hr class="px-5" />
+<!-- 													TEST
+													<PortableText
+  block=
+{menu.content}
+/> -->
+													<hr class="px-5" />													
 												</div>
 											{/each}
 										{:else}
@@ -339,54 +352,54 @@
 							{#each menus as menu}{/each}
 						{:else}{/if} -->
 
-						{#if totalPieces > 0 && $user}
-							<div class="flex text-md pt-10">
-								<a class="btn btn-success py-2 mx-10 bg-green-600 hover:bg-green-700
-									focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
-									duration-200 w-full text-center shadow-md focus:outline-none focus:ring-2
-									focus:ring-offset-2 rounded-lg" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
-									class="">									
-									Košík						
-								</button></a>
-							</div>
-						{/if}
-				<!-- <div class="">
+						
+	<div class="">
 					<ul
 						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
 						id="tabs-tab"
 						role="tablist">
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()}>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
 							<a
-								href="#tabs-1"
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								href=""
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent active"
-								id="tabs-1-tab"
+								id="tabs-1-tab-but"
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-1"
 								role="tab"
 								aria-controls="tabs-1">
-								1
-							</a>
-						</li>				
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()}>							
-							<a
-								href="#tabs-2"
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
-								id="tabs-2-tab"
-								data-bs-toggle="pill"
-								data-bs-target="#tabs-2"
-								role="tab"
-								aria-controls="tabs-2">
-								2
+								1. týden
 							</a>
 						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()}>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
 							<a
-								href="#tabs-3"
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								href=""
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
+								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
+								hover:bg-gray-100 focus:border-transparent"								
+								data-bs-toggle="pill"								
+								role="tab"								
+								aria-selected="false">
+								2. týden
+							</a>
+						</li>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
+							<a
+								href=""
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-messages-tab"
@@ -395,13 +408,17 @@
 								role="tab"
 								aria-controls="tabs-3"
 								aria-selected="false">
-								3
+								3. týden
 							</a>
 						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()}>
+						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()} on:click={() => animateScroll.scrollTo({
+										element: 'tabs-1-tab',
+										duration: 1500,
+										offset: 480
+									})}>
 							<a
-								href="#tabs-4"
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
+								href=""
+								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
 								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
 								hover:bg-gray-100 focus:border-transparent"
 								id="tabs-contact-tab"
@@ -410,13 +427,12 @@
 								role="tab"
 								aria-controls="#tabs-4"
 								aria-selected="false">
-								4
+								4. týden
 							</a>
 						</li>
 					</ul>
-				</div> -->
-						
-				<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
+				</div>
+						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
 								focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
@@ -427,13 +443,24 @@
 										duration: 1500,
 										offset: 480
 									})}>
-								Skoč nahoru
+								<p>Skoč nahoru</p>
 							</button>
-						</div>	
-
-					</div>					
+						</div>
+					</div>
 				</div>
 			</div>
+			{#if totalPieces > 0 && $user}
+							<div class="flex text-md">
+								<a class="btn btn-success py-2 bg-green-600 hover:bg-green-700
+									focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
+									duration-200 w-full text-center shadow-md focus:outline-none focus:ring-2
+									focus:ring-offset-2 rounded-lg" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
+									class="">									
+									Košík						
+								</button></a>
+							</div>
+						{/if}
 		</div>
+		
 	</section>
 </main>

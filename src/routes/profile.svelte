@@ -1,5 +1,6 @@
 <script>
-	import { supabase } from './supabaseClient';
+	// import { supabase } from './supabaseClient';
+  import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';
   import { get } from 'svelte/store';
 	user.set(supabase.auth.user());
@@ -96,13 +97,13 @@
 	<div class="py-8 py-16 px-4 mx-auto max-w-screen-md bg-slate-100 rounded-lg">
 		<h1
 			class="mb-10 mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900
-			dark:text-white">
+			">
 			Profil účtu
 		</h1>
     <form use:getProfile class="form-widget" on:submit|preventDefault={updateProfile}>					
 		<div class="border-2 p-5 rounded-lg bg-white">
 			<div
-				class="mb-8 lg:mb-16 font-light text-center text-gray-500 dark:text-gray-400 text-xl
+				class="mb-8 lg:mb-16 font-light text-center text-gray-500  text-xl
 				md:text-lg">				
            <div class="my-2">
               <div class="flex flex-col md:flex-row items-center">                          

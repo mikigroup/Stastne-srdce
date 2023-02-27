@@ -1,16 +1,16 @@
 <script class="module">
 	import { user } from './Stores/stores';
-	import { supabase } from './supabaseClient';
-	/*  import Profile from './Profile.svelte' */
+	// import { supabase } from './supabaseClient';
+	import { supabase } from "../lib/initSupabase";	
 	user.set(supabase.auth.user());
-
-	console.log();
+	
 
 	supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session.user);
 	});
-
-	let email, password, confirmpassword;
+	
+	let email = "@" // doplnění value email
+	let password, confirmpassword;
 	let loading = false;
 	let message = { success: null, display: '' };
 
@@ -47,6 +47,8 @@
 			provider: 'google'
 		});
 	}
+
+	
 </script>
 
 <svelte:head>
@@ -56,15 +58,15 @@
 <section>
 	<div class="pt-20 footer_fix">
 		<div
-			class="mt-20 flex flex-col max-w-md px-4 pt-7 pb-2 bg-white rounded-lg shadow dark:bg-gray-800
+			class="mt-20 flex flex-col max-w-md px-4 pt-7 pb-2 bg-white rounded-lg shadow 
 			sm:px-6 md:px-8 lg:px-10 mx-auto">
 			<div
 				class="self-center mb-2 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl
-				dark:text-white">
+				">
 				Vytvoření nového účtu
 			</div>
 			<span
-				class="justify-center text-sm text-center text-gray-500 flex-items-center dark:text-gray-400">
+				class="justify-center text-sm text-center text-gray-500 flex-items-center">
 				Máte již účet?
 				<a href="/login" class="text-sm text-blue-500 underline hover:text-blue-700">Přihlášení</a>
 			</span>
@@ -93,10 +95,11 @@
 							<input
 								bind:value={email}
 								type="email"
-								id="email"
+								id="email"								
 								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
 								required
 								/>
@@ -127,7 +130,8 @@
 								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-								placeholder="Heslo" 
+								placeholder="Heslo (min 6 znaků)"
+								minlength="6" 
 								required
 								/>
 						</div>
@@ -158,7 +162,8 @@
 								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
 								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								name="potvrzenihesla"
-								placeholder="Potvrzení hesla" 
+								placeholder="Potvrzení hesla (napiš stejné heslo)"
+								minlength="6" 
 								required
 								/>
 						</div>
@@ -187,7 +192,7 @@
 		<div class="form-widget">
 					<div
 						class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow
-						dark:bg-gray-800 sm:px-6 md:px-8 lg:px-10">
+					 sm:px-6 md:px-8 lg:px-10">
 						<form on:submit|preventDefault={signInWithGoogle}>
 							<div class="">
 								<button
