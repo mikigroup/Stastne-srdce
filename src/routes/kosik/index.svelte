@@ -334,7 +334,7 @@ console.log(novaObj);
           </p>
         </div>
         <div class="m-5">
-          {#if $user}
+         <!--  {#if $user}
             <button
               class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
 						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
@@ -352,9 +352,10 @@ console.log(novaObj);
             >
               <a href="/login">Přihlaš se</a>
             </button>
-          {/if}
+          {/if} -->
 
           <!-- Button trigger modal tailwind-elements -->
+          {#if $user}
           <button
             type="button"
             class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
@@ -365,13 +366,21 @@ console.log(novaObj);
             data-te-ripple-init
             data-te-ripple-color="light"
           >
-            TEST
+          Potvrzení košíku
           </button>
-
+          {:else}
+          <button
+              class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
+						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
+						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+            >
+              <a href="/login">Přihlaš se</a>
+            </button>
+          {/if} 
           <!-- Modal tailwind-elements -->
           <div
             data-te-modal-init
-            class="fixed pt-10 top-28 left-0 z-[1055] hidden h-full w-full overflow-y-auto overflow-x-hidden outline-none"
+            class="fixed pt-10 top-28 left-0 z-[1055] hidden h-full w-full outline-none"
             id="staticBackdrop"
             data-te-backdrop="static"
             data-te-keyboard="false"
