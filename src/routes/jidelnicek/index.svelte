@@ -283,8 +283,7 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<span style="white-space: pre-line">{menu.description}</span>
-														<p>TEST</p>													
+														<span style="white-space: pre-line">{menu.description}</span>																					
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -324,7 +323,7 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="">{menu.description}</p>													
+														<span style="white-space: pre-line">{menu.description}</span>														
 													</div>
 <!-- 													TEST
 													<PortableText
