@@ -432,6 +432,9 @@
 						</li>
 					</ul>
 				</div>
+
+			<hr>
+
 						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
