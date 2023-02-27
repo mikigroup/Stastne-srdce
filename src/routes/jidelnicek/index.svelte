@@ -325,11 +325,6 @@
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
 														<span style="white-space: pre-line">{menu.description}</span>														
 													</div>
-<!-- 													TEST
-													<PortableText
-  block=
-{menu.content}
-/> -->
 													<hr class="px-5" />													
 												</div>
 											{/each}
