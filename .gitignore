@@ -10,3 +10,4 @@ node_modules
 package-lock.json
 studio/config/.checksums
 studio/yarn.lock
+*.lock
