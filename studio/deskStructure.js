@@ -347,7 +347,7 @@ export default () =>
                 ),
             ]),
         ),
-   /* S.listItem()
+    S.listItem()
         .title('Objednávky')
         .child(
           S.list()
@@ -360,13 +360,13 @@ export default () =>
                     .title('Měsíce')
                     .items([
                       S.listItem()
-                        .title('Leden')
+                        .title('Všechny pro mazání')
                         .schemaType('order')
                         .child((datefilter) =>
                           S.documentTypeList('order')
                             .title('Objednávky - Leden')
-                            /* .filter(
-                              '_type == "order" && releaseDate > "2022-12-01" && releaseDate < "2023-02-01"', //zde změnit
+                             .filter(
+                              '_type == "order" ', //zde změnit
                             )
                             .params({ datefilter }) ,
                         ),
@@ -388,7 +388,7 @@ export default () =>
                           S.documentTypeList('order')
                             .title('Objednávky Březen')
                             .filter(
-                              '_type == "order" && releaseDate > "2023-02-28" && releaseDate < "2023-04-01"',
+                              '_type == "order" && _createdAt > "2023-02-28" && _createdAt < "2023-04-01"',
                             )
                             .params({ datefilter }),
                         ),
@@ -396,7 +396,7 @@ export default () =>
                         .title('Duben')
                         .schemaType('order')
                         .child((datefilter) =>
-                          S.documentTypeList('menorderu')
+                          S.documentTypeList('order')
                             .title('Objednávky Duben')
                             .filter(
                               '_type == "order" && releaseDate > "2023-03-31" && releaseDate < "2023-05-01"',
@@ -494,5 +494,5 @@ export default () =>
                     ]),
                 ),
             ]),
-        ) */,
+        ) ,
     ])

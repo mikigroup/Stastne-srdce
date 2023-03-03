@@ -39,17 +39,6 @@
     $CartItemsStore.length &&
     $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
-  /* function sendOrder() {
-		supabase.functions.invoke('sendOrder', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() })
-		});
-		CartItemsStore.update(() => {
-			return [];
-		});
-	} */
-
-  // sendOrderBySendGrid
-  // $: note = "";
   function sendOrderBySendGrid() {
     var txt = document.getElementById("txt");
     supabase.functions.invoke("sendOrderBySendGrid", {
@@ -64,14 +53,21 @@
     });
   }
 
-  /* 	function createDoc {
+const doc = {
+    _type: 'order',			
+    note: 'První poznámka objednávky',				 
+}
+
+
+
+ 	function createDoc() {
 		client.create(doc).then((res) => {
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
-		});
-	} */
-  /* console.log(dataOrder);
-console.log(dataOrder2);
-console.log(dataOrder3); */
+		})
+	};
+
+console.log();
+
 
   /* const values = Object.values(dataOrder);
 const novaObj = values.reduce((accumulator, value) => {
@@ -111,6 +107,14 @@ console.log(novaObj);
     >
       Košík
     </h1>
+
+    <button
+      on:click={() => {createDoc();
+      }}
+      type="button"    
+      >TEST
+    </button>
+
 
     <!-- vrchní část -->
     <div class="md:hidden bg-orange-50 py-4 px-4 mx-auto max-w-screen-xl">
@@ -333,26 +337,7 @@ console.log(novaObj);
             Kč
           </p>
         </div>
-        <div class="m-5">
-         <!--  {#if $user}
-            <button
-              class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
-						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
-						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-              data-bs-toggle="modal"
-              data-bs-target="#Modal"
-            >
-              <span>Potvrzení košíku</span>
-            </button>
-          {:else}
-            <button
-              class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
-						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
-						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-            >
-              <a href="/login">Přihlaš se</a>
-            </button>
-          {/if} -->
+        <div class="m-5">        
 
           <!-- Button trigger modal tailwind-elements -->
           {#if $user}

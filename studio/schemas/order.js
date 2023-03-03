@@ -5,42 +5,20 @@ export default {
   name: 'order',
   type: 'document',
   icon: MdFoodBank,
-  fields: [
+  fields: [   
     {
-      name: 'orderNumber',
-      title: 'Číslo objednávky',
-      type: 'number',
-      readOnly: true,    
-      options: {/* 
-          source: (document, options) => {
-                    const params = { ref: document.category._ref };
-          const params2 = { ref: document.orderNumber[0] };                
-          };
-          return cattitle;
-        },
-        slugify: input => {
-          return input
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^\w-]+/g, "");
-        },
-        isUnique: true */
-      }
-      
-
-
-      /* readOnly: ({currentUser}) => {
-      return !(currentUser.roles.find(({name}) => name === 'administrator')) 
-  }   */   
+      name: 'id',
+      title: 'Objednávka:',
+      type: 'string',
+      readOnly: true,     
     },
     {
       name: 'note',
       title: 'Poznámka',
       type: 'string',
-    },     
+    },    
   ],
-    initialValue: () => ({
-    orderNumber: false,
+    /* initialValue: () => ({    
     releaseDate: (new Date()).toISOString()
-  })
+  }) */
 }
