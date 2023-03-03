@@ -9,3 +9,4 @@ node_modules
 .svelte-kit
 package-lock.json
 studio/config/.checksums
+studio/yarn.lock
