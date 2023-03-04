@@ -283,8 +283,7 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p>{menu.description}	</p>
-														
+														<span style="white-space: pre-line">{menu.description}</span>																					
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -324,13 +323,8 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="">{menu.description}</p>													
+														<span style="white-space: pre-line">{menu.description}</span>														
 													</div>
-<!-- 													TEST
-													<PortableText
-  block=
-{menu.content}
-/> -->
 													<hr class="px-5" />													
 												</div>
 											{/each}
@@ -432,6 +426,9 @@
 						</li>
 					</ul>
 				</div>
+
+			<hr>
+
 						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700

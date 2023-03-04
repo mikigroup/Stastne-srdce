@@ -2,7 +2,6 @@
 	import Header from '$lib/Header.svelte';
 	import Footer from '$lib/footer/Footer.svelte';
 	import '../app.css';
-	// import { supabase } from './supabaseClient';
 	import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';
 	user.set(supabase.auth.user())
