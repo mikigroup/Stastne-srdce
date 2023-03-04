@@ -382,6 +382,11 @@ console.log(novaObj);
 		
 		</div>	
 	</div>
+	{#if $user}
+	<div class="">
+
+	</div>	
+	{/if}
 </main>
 
 

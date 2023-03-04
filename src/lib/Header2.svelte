@@ -111,7 +111,7 @@
 					</span>
 				</div>
 				<!-- čas -->
-				<div class="items-center pl-10 ml-10 md:ml-5 md:pl-5">{formatter.format($time)}</div>
+				<time><div class="items-center pl-10 ml-10 md:ml-5 md:pl-5">{formatter.format($time)}</div></time>
 			</div>
 			<!-- menu -->
 			<div

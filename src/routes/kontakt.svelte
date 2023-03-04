@@ -77,6 +77,7 @@
 						<p class="text-lg">Váš mail</p>
 					</label>
 					<input
+						type="email"
 						name="email"
 						id="email"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
@@ -105,6 +106,7 @@
 						<p class="text-lg">Telefon</p>
 					</label>
 					<input
+						type="tel"
 						name="phone"
 						id="phone"
 						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
@@ -112,6 +114,7 @@
 						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700"
 						placeholder="+420 777 111 222"
+						pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
 						required />
 				</div>
 				<div class="sm:col-span-2">
