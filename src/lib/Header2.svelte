@@ -1,8 +1,9 @@
 <script>
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { time } from '../routes/Stores/stores';
 	import CartItemsStore from '../routes/Stores/stores';
+	
+	let src = '/android-chrome-192x192.png';
 
 	const formatter = new Intl.DateTimeFormat('en', {
 		hour12: false,
@@ -104,12 +105,11 @@
 	<nav>
 		<div class="grid grid-cols-2 md:grid-cols-3 gap-2 m-2 px-4 max-w-8xl mx-auto">
 			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0">
-				<div class="nounderjiri">
-					<span class="self-center whitespace-nowrap text-xl font-semibold">
+				<div class="self-center whitespace-nowrap text-xl font-semibold">
 						<a href="/">
 						Šťastné srdce</a>
-					</span>
-				</div>
+						<img {src} alt="staste srdce" width="20" height="20">					
+				</div>				
 				<!-- čas -->
 				<time><div class="items-center pl-10 ml-10 md:ml-5 md:pl-5">{formatter.format($time)}</div></time>
 			</div>
