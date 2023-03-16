@@ -103,15 +103,15 @@
 
 <header class="bg-white">
 	<nav>
-		<div class="grid grid-cols-2 md:grid-cols-3 gap-2 m-2 px-4 max-w-8xl mx-auto">
-			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0">
-				<div class="self-center whitespace-nowrap text-xl font-semibold">
+		<div class="grid grid-cols-2 md:grid-cols-3 m-2 px-4 max-w-8xl mx-auto"> <!-- gap-2  -->
+			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0 w-full">
+				<div class="grid grid-cols-2 text-xl font-semibold w-80">
 						<a href="/">
 						Šťastné srdce</a>
-						<img {src} alt="staste srdce" width="20" height="20">					
+						<img {src} alt="staste srdce" class="pt-1" width="20" height="20">
 				</div>				
 				<!-- čas -->
-				<time><div class="items-center pl-10 ml-10 md:ml-5 md:pl-5">{formatter.format($time)}</div></time>
+				<div class="grid justify-end w-44"><time>{formatter.format($time)}</time></div>  <!-- items-center pl-12 ml-12 md:ml-5 md:pl-5 -->
 			</div>
 			<!-- menu -->
 			<div
