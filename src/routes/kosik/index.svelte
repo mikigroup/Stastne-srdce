@@ -6,7 +6,7 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
-	import { onMount } from "svelte";
+	// import { onMount } from "svelte";
 	/* export let dataOrder = [];
 	export let dataOrder2 = [];
 	export let dataOrder3 = []; */
@@ -59,15 +59,24 @@
 	}
 
 
+// let test = cartItems.description;
+// let test2 = CartItemsStore.description;
 
-/* 	function createDoc {
+function createDoc() {
+var txt2 = document.getElementById('txt2').value;		
+var itemsOrder = get(CartItemsStore);
+console.log(itemsOrder);
+// console.log(test2); 
+	const doc = {
+    _type: 'order',			
+		itemsOrder: JSON.stringify(itemsOrder.price),
+		note: JSON.stringify(txt2)
+	}	
 		client.create(doc).then((res) => {
-  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
-		});
-	} */
-/* console.log(dataOrder);
-console.log(dataOrder2);
-console.log(dataOrder3); */
+  	console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+	});
+};
+
 
 /* const values = Object.values(dataOrder);
 const novaObj = values.reduce((accumulator, value) => {
@@ -91,8 +100,6 @@ console.log(novaObj);
   console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 		});	
 	}	 */
-
-
 </script>
 
 <svelte:head>
@@ -106,6 +113,22 @@ console.log(novaObj);
 			">
 			Košík
 		</h1>
+
+
+		<!-- TEST -->
+		<button class="border rounded-lg border-slate-600 p-2 hover:bg-slate-200 " on:click={() => {
+									createDoc();
+								}} >
+								Odeslat košík a vytvořit objednávku
+		</button>
+		<div class="p-5 grid border-b-2">									
+					  <p><label for="txt2">Poznámka</label></p>
+  					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
+						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
+		</div>
+
+
 
 		<!-- vrchní část -->
 		<div class="md:hidden bg-orange-50 py-4 px-4 mx-auto max-w-screen-xl">
@@ -274,14 +297,11 @@ console.log(novaObj);
 		{#if cartItems.length !== 0}
 			<div class="mt-5 border-2 rounded-lg">
 				
-				<div class="p-5 grid border-b-2">
-					<label for="txt" class="block mb-2 text-sm text-left font-medium text-gray-900">
-						<p class="note">Poznámka</p>
-						</label>
-						<textarea id="txt" class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+				<div class="p-5 grid border-b-2">									
+					  <p><label for="txt">Poznámka</label></p>
+  					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" placeholder="poznámka k objednávce">
-						</textarea>
+						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
 				</div>
 				
 				<div class="p-5 grid justify-items-end border-b-2">
