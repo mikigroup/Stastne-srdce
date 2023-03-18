@@ -108,7 +108,7 @@
 				<div class="grid grid-cols-2 text-xl font-semibold w-80">
 						<a href="/">
 						Šťastné srdce</a>
-						<img {src} alt="staste srdce" class="pt-1" width="20" height="20">
+						<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20">
 				</div>				
 				<!-- čas -->
 				<div class="grid justify-end w-44"><time>{formatter.format($time)}</time></div>  <!-- items-center pl-12 ml-12 md:ml-5 md:pl-5 -->

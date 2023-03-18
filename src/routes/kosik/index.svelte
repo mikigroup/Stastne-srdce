@@ -61,21 +61,39 @@
 
 // let test = cartItems.description;
 // let test2 = CartItemsStore.description;
+		
+
+console.log(cartItems);
+// Get all values from localStorage
+// Get all values from localStorage
+/* for (const key in cartItems) {
+  const value = localStorage.getItem(cart);
+  console.log(key, value);
+} */
+
 
 function createDoc() {
-var txt2 = document.getElementById('txt2').value;		
-var itemsOrder = get(CartItemsStore);
+var txt2  = document.getElementById('txt2').value;		
+var itemsOrder = { cart: get(CartItemsStore)};
+
+let myObject = [];
+
+const description = myObject.cart[0].description;
+
 console.log(itemsOrder);
-// console.log(test2); 
+console.log(description);
+
+
+
 	const doc = {
     _type: 'order',			
-		itemsOrder: JSON.stringify(itemsOrder.price),
-		note: JSON.stringify(txt2)
+		itemsOrder: itemsOrder,
+		note: txt2
 	}	
 		client.create(doc).then((res) => {
   	console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
 	});
-};
+}; 
 
 
 /* const values = Object.values(dataOrder);
@@ -125,7 +143,7 @@ console.log(novaObj);
 					  <p><label for="txt2">Poznámka</label></p>
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
+						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" id="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
 		</div>
 
 
