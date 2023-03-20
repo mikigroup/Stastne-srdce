@@ -1,16 +1,13 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
+	import theme from '../Stores/stores';
 	import { get } from 'svelte/store';
-	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
-	// import { onMount } from "svelte";
-	/* export let dataOrder = [];
-	export let dataOrder2 = [];
-	export let dataOrder3 = []; */
-	
+	import { onMount } from "svelte"; // pro využití localstorage
+
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -19,7 +16,7 @@
 		});
 	}
 
-	//mazání pokud object/item v cart dosáhne qty
+	//mazání pokud object/item v cart dosáhne qty = 0
 	$: $CartItemsStore.map((currentCartItems, index, menuid) => {
 		if (currentCartItems.quantity === 0) {
 			$CartItemsStore.splice(index, 1) &&
@@ -47,7 +44,6 @@
 	
 
 	// sendOrderBySendGrid
-	// $: note = "";
 			function sendOrderBySendGrid() {
 			var txt = document.getElementById('txt');	
 		  supabase.functions.invoke('sendOrderBySendGrid', {
@@ -63,7 +59,7 @@
 // let test2 = CartItemsStore.description;
 		
 
-console.log(cartItems);
+
 // Get all values from localStorage
 // Get all values from localStorage
 /* for (const key in cartItems) {
@@ -71,19 +67,36 @@ console.log(cartItems);
   console.log(key, value);
 } */
 
+let ls = null;
+let foo = `Cannot read "foo".`;
+
+const read = () => !!ls && (ls.getItem(`cart`));
+		
+onMount(() => {
+        typeof localStorage !== `undefined` && (ls = localStorage);				
+				const cartObj = JSON.parse(foo);	
+        foo = read();
+											
+});
+
+
+
+
+
+
+
+
+var test = get(CartItemsStore);
 
 function createDoc() {
 var txt2  = document.getElementById('txt2').value;		
-var itemsOrder = { cart: get(CartItemsStore)};
-
-let myObject = [];
-
-const description = myObject.cart[0].description;
-
-console.log(itemsOrder);
-console.log(description);
+var itemsOrder = foo;
+// var itemsOrder = ;
 
 
+// let myObject = [];
+
+// const description = myObject.cart[0].description;
 
 	const doc = {
     _type: 'order',			
@@ -91,7 +104,7 @@ console.log(description);
 		note: txt2
 	}	
 		client.create(doc).then((res) => {
-  	console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
+  	console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
 	});
 }; 
 
@@ -145,6 +158,9 @@ console.log(novaObj);
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" id="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
 		</div>
+
+		
+<p>Value of foo: <samp>{foo}</samp></p>
 
 
 

@@ -3,10 +3,9 @@
 	import * as animateScroll from 'svelte-scrollto';
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';
-	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";	
-	import { page } from '$app/stores'; 	
-  import {PortableText} from '@portabletext/svelte'
+	import { page } from '$app/stores';
+  
 
 	user.set(supabase.auth.user());
 	const session = supabase.auth.session();
@@ -301,7 +300,7 @@
 																	Přidat do košíku
 																</div>
 															</div>
-														</button>
+														</button>																											
 													</div>
 												</div>
 											{/each}

@@ -5,6 +5,7 @@ import { browser } from '$app/env';
 /* const storeCartItems = localStorage?.getItem("cart");
 const initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems) */
 
+//vytváří v localStorage key "cart"
 let initialStoreValue;
 if (typeof localStorage == "undefined")
 { initialStoreValue = [];}
@@ -12,8 +13,7 @@ else {
 	const storeCartItems = localStorage?.getItem("cart");
 	initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems);
 };  
- 
-//vytváří v localStorage key "cart"
+
 const CartItemsStore = writable(initialStoreValue);
 CartItemsStore.subscribe(value => {
 	if (typeof localStorage != "undefined")
@@ -21,6 +21,7 @@ CartItemsStore.subscribe(value => {
 			localStorage.setItem("cart" , JSON.stringify(value));
 	}
 });
+
 
 //vytváří v localStorage key "totalPieces"
 /* const totalPiecesStore = writable();
@@ -59,6 +60,14 @@ export const time = readable(new Date(), function start(set) {
 // export const currentCartItems = writable();
 export const user = writable();
 export default CartItemsStore;
+
+
+/* export default () => {
+    return {CartItemsStore, theme};
+} */
+
+
+
 
 //modal kosik
 export function booleanStore(initial) {
