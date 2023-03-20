@@ -54,58 +54,35 @@
 		});
 	}
 
-
-// let test = cartItems.description;
-// let test2 = CartItemsStore.description;
-		
-
-
-// Get all values from localStorage
-// Get all values from localStorage
-/* for (const key in cartItems) {
-  const value = localStorage.getItem(cart);
-  console.log(key, value);
-} */
-
-let ls = null;
+/* let ls = null;
 let foo = `Cannot read "foo".`;
+const read = () => !!ls && (ls.getItem(`cart`)); */
 
-const read = () => !!ls && (ls.getItem(`cart`));
-		
 onMount(() => {
-        typeof localStorage !== `undefined` && (ls = localStorage);				
-				const cartObj = JSON.parse(foo);	
-        foo = read();
-											
+	
+
+//console.log(description);											
 });
 
-
-
-
-
-
-
-
-var test = get(CartItemsStore);
-
 function createDoc() {
-var txt2  = document.getElementById('txt2').value;		
-var itemsOrder = foo;
-// var itemsOrder = ;
+var txt2  = document.getElementById('txt2').value;
+const cart = JSON.parse(localStorage.getItem('cart'));
 
-
-// let myObject = [];
-
-// const description = myObject.cart[0].description;
+	for (const obj of cart) {
+		console.log(obj.title);
+		console.log(obj.description);
+		console.log(obj.quantity);
+	}		
 
 	const doc = {
     _type: 'order',			
-		itemsOrder: itemsOrder,
+		itemsOrder: {obj.title},
 		note: txt2
 	}	
 		client.create(doc).then((res) => {
   	console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
 	});
+
 }; 
 
 
@@ -160,10 +137,6 @@ console.log(novaObj);
 		</div>
 
 		
-<p>Value of foo: <samp>{foo}</samp></p>
-
-
-
 		<!-- vrchní část -->
 		<div class="md:hidden bg-orange-50 py-4 px-4 mx-auto max-w-screen-xl">
 			<!-- obsah košíku pokud je prázdný pro mobile -->
