@@ -1,12 +1,12 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
-	import theme from '../Stores/stores';
 	import { get } from 'svelte/store';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
-	import { onMount } from "svelte"; // pro využití localstorage
+	// import { onMount } from "svelte"; // pro využití localstorage
+	
 
 	$: cartItems = $CartItemsStore;
 
@@ -33,16 +33,6 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
-	/* function sendOrder() {
-		supabase.functions.invoke('sendOrder', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() })
-		});
-		CartItemsStore.update(() => {
-			return [];
-		});
-	} */
-	
-
 	// sendOrderBySendGrid
 			function sendOrderBySendGrid() {
 			var txt = document.getElementById('txt');	
@@ -54,60 +44,50 @@
 		});
 	}
 
-/* let ls = null;
-let foo = `Cannot read "foo".`;
-const read = () => !!ls && (ls.getItem(`cart`)); */
 
-onMount(() => {
-	
-
-//console.log(description);											
-});
-
-function createDoc() {
-var txt2  = document.getElementById('txt2').value;
-const cart = JSON.parse(localStorage.getItem('cart'));
-
+// V1
+/* function createDoc() {
+  var txt2  = document.getElementById('txt2').value;
+	const cart = JSON.parse(localStorage.getItem('cart'));
+	const items = [];
 	for (const obj of cart) {
-		console.log(obj.title);
-		console.log(obj.description);
-		console.log(obj.quantity);
-	}		
+		items.push({
+			title: obj.title,
+			description: obj.description,
+			quantity: obj.quantity
+		});
+  }
+	console.log(items);
+  const doc = {
+    _type: 'order',      
+    itemsOrder: JSON.stringify(items),
+    note: txt2
+  }   
+  client.create(doc).then((res) => {
+    console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
+  });
+}; */
 
-	const doc = {
-    _type: 'order',			
-		itemsOrder: {obj.title},
-		note: txt2
-	}	
-		client.create(doc).then((res) => {
-  	console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
-	});
-
-}; 
-
-
-/* const values = Object.values(dataOrder);
-const novaObj = values.reduce((accumulator, value) => {
-  return accumulator + value;
-}, +1); */	
-
-/* function createOrder() {		
-		const values = Object.values(dataOrder);
-		const novaObj = values.reduce((accumulator, value) => {
-  	return accumulator + value;
-			}, +1);
- 
-const doc = {
+// V2
+function createDoc() {
+  var txt2  = document.getElementById('txt2').value;
+	const cart = JSON.parse(localStorage.getItem('cart'));
+	const titles = [];
+	for (const obj of cart) {		
+	titles.push(obj.title);
+	titles.push(obj.description);
+	titles.push(obj.quantity);
+  }
+  const doc = {
     _type: 'order',
-		orderNumber: 	'',	
-    note: 'První poznámka objednávky',
-		/* orderNumber: novaObj,		 
-}
-console.log(novaObj);
-		client.create(doc).then((res) => {
-  console.log(`Objednávka byla vytvořena , document ID is ${res._id}`)
-		});	
-	}	 */
+		// customer: ,      
+    itemsOrder: titles,
+    note: txt2
+  }   
+  client.create(doc).then((res) => {
+    console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
+  });
+};
 </script>
 
 <svelte:head>
