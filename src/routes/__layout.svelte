@@ -9,7 +9,8 @@
 
 <Header />
 
-<slot />
+<div class="mt-10 pt-5"  ></div>
+<slot class="mt-10" />
 	
 <Footer />
 	

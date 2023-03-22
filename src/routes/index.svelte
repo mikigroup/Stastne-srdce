@@ -132,11 +132,11 @@
 						class="mt-20 py-10 px-10 bg-white shadow-lg rounded-md  lg:col-start-2
 						lg:max-w-2xl ml-auto">
 						<h2
-							class="mt-2 leading-8 font-extrabold text-slate-700  text-2xl
+							class="mt-2 leading-8 font-extrabold text-slate-700  text-3xl
 							lg:text-4xl sm:leading-9">
 							Vítejte na stránkách Šťastného srdce
 						</h2>
-						<h3 class="text-xl leading-6 text-gray-500 ">Vaříme zdravé jídlo</h3>
+						<h3 class="text-xl leading-6 text-gray-500 mt-3">Vaříme zdravé jídlo</h3>
 						<ul class="mt-8 md:grid md:grid-cols-2 md:gap-3 sm:gap-1 bg-slate-50 p-5 rounded-lg">
 							<li class="mt-6 lg:mt-0">
 								<div class="flex text-xl">
@@ -256,7 +256,7 @@
 		<div class="">
 			<div class="mt-20">
 				<h2
-					class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
+					class="mb-10 mb-4 text-4xl lg:text-5xl tracking-tight font-extrabold text-center text-gray-900
 					">
 					Info koutek
 				</h2>
