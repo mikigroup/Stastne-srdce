@@ -104,7 +104,7 @@ function createDoc() {
 
 
 		<!-- TEST -->
-		<button class="border rounded-lg border-slate-600 p-2 hover:bg-slate-200 " on:click={() => {
+		<!-- <button class="border rounded-lg border-slate-600 p-2 hover:bg-slate-200 " on:click={() => {
 									createDoc();
 								}} >
 								Odeslat košík a vytvořit objednávku
@@ -114,7 +114,7 @@ function createDoc() {
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" id="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
-		</div>
+		</div> -->
 
 		
 		<!-- vrchní část -->

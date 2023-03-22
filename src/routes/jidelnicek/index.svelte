@@ -69,8 +69,7 @@
 
 	function zalozkaTretiTyden() {
 		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
-			menus = response;
-			console.log(menu);
+			menus = response;			
 		});
 	}
 
@@ -102,11 +101,11 @@
 
 	// console.log(menu);
 
-	let search = '';
+	/* let search = '';
 
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
-	});
+	}); */
 
 	$: totalPieces = $CartItemsStore.length && $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
@@ -175,14 +174,14 @@
 						</div>
 						<input
 							type="text"
-							bind:value={search}
+							
 							id="search"
 							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
 							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
 							placeholder="př. rizoto"
-							/>
+							/> <!-- bind:value={search} -->
 					</div>										
 				</form>	
 				<div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							
@@ -265,7 +264,7 @@
 									<!-- karta menu -->
 									<div class="mb-5">
 										{#if $user && menu && menu.length}
-											{#each searchMenu as menu}
+											{#each menus as menu}  <!-- //searchMenu -->
 												<div class="border rounded-lg my-3 p-2 bg-stone-100">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
@@ -305,7 +304,7 @@
 												</div>
 											{/each}
 										{:else if menu && menu.length}
-											{#each searchMenu as menu}
+											{#each menus as menu}  <!-- // searchMenu -->
 												<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
