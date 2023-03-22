@@ -154,7 +154,7 @@
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br />
-				<h6 class="pb-2">Vyhledávání</h6>
+				<!-- <h6 class="pb-2">Vyhledávání</h6> 
 				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
@@ -181,10 +181,10 @@
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
 							placeholder="př. rizoto"
-							/> <!-- bind:value={search} -->
+							/>  bind:value={search} 
 					</div>										
-				</form>	
-				<div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							
+				</form>
+				 <div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							 -->
 			</div>
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
