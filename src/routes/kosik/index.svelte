@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
+  import { onMount } from 'svelte/internal';
 	// import { onMount } from "svelte"; // pro využití localstorage
 	
 
@@ -34,15 +35,27 @@
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
 	// sendOrderBySendGrid
+
+	
+
+function refreshPage() {
+    //ensure reloading from server instead of cache
+    location.reload(true);
+}
+	function delayRefreshPage(mileSeconds) {
+    window.setTimeout(refreshPage, mileSeconds);
+}
 			function sendOrderBySendGrid() {
 			var txt = document.getElementById('txt');	
 		  supabase.functions.invoke('sendOrderBySendGrid', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() }) //txt: txt.value
 		});
 		CartItemsStore.update(() => {
 			return [];
-		});
-	}
+		});		 
+		 delayRefreshPage(2000);
+	 }
+	
 
 
 // V1
@@ -285,10 +298,10 @@ function createDoc() {
 			<div class="mt-5 border-2 rounded-lg">
 				
 				<div class="p-5 grid border-b-2">									
-					  <p><label for="txt">Poznámka</label></p>
+					  <!-- <p><label for="txt">Poznámka</label></p>
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
+						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  --> 				
 				</div>
 				
 				<div class="p-5 grid justify-items-end border-b-2">
@@ -309,15 +322,18 @@ function createDoc() {
 					</p>
 				</div>				
 				<div class="m-5">
-						{#if $user}	
+						{#if $user}			
 					<button
+						type="button"
 						class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
 						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
 						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-						data-bs-toggle="modal"
-						data-bs-target="#Modal">
+						data-te-toggle="modal"
+						data-te-target="#exampleModal"
+						data-te-ripple-init
+						data-te-ripple-color="light">
 						<span>Potvrzení košíku</span>
-					</button>
+					</button>					
 					{:else}
 					<button
 						class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
@@ -325,11 +341,80 @@ function createDoc() {
 						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
 						<a href="/login">Přihlaš se</a>
 					</button>
-					{/if}
-					
+					{/if}					
 					<!-- Modal -->
 					<div
-						class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden
+						data-te-modal-init
+						class="fixed top-0 left-0 z-[1055] hidden h-full w-full overflow-y-auto overflow-x-hidden outline-none"
+						id="exampleModal"
+						tabindex="-1"
+						aria-labelledby="exampleModalLabel"
+						aria-hidden="true">
+						<div
+							data-te-modal-dialog-ref
+							class="pointer-events-none relative w-auto translate-y-[-50px] opacity-0 transition-all duration-300 ease-in-out min-[576px]:mx-auto min-[576px]:mt-7 min-[576px]:max-w-[500px]">
+							<div
+								class="min-[576px]:shadow-[0_0.5rem_1rem_rgba(#000, 0.15)] pointer-events-auto relative flex w-full flex-col rounded-md border-none bg-white bg-clip-padding text-current shadow-lg outline-none dark:bg-neutral-600">
+								<div
+									class="flex flex-shrink-0 items-center justify-between rounded-t-md border-b-2 border-neutral-100 border-opacity-100 p-4 dark:border-opacity-50">
+									<h5
+										class="text-xl font-medium leading-normal text-neutral-800 dark:text-neutral-200"
+										id="exampleModalLabel">
+										Upozornění
+									</h5>
+									<button
+										type="button"
+										class="box-content rounded-none border-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
+										data-te-modal-dismiss
+										aria-label="Close">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke-width="1.5"
+											stroke="currentColor"
+											class="h-6 w-6">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M6 18L18 6M6 6l12 12" />
+										</svg>
+									</button>
+								</div>
+								<div class="relative flex-auto p-4" data-te-modal-body-ref>
+									Opravdu chcete potvrdit košík a odeslat
+								</div>
+								<div
+									class="flex flex-shrink-0 flex-wrap items-center justify-end rounded-b-md border-t-2 border-neutral-100 border-opacity-100 p-4 dark:border-opacity-50">
+									<button
+										type="button"
+										class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
+										focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
+										duration-200 text-center shadow-md focus:outline-none focus:ring-2
+										focus:ring-offset-2 rounded-lg mr-2"
+										data-te-modal-dismiss
+										data-te-ripple-init
+										data-te-ripple-color="light">
+										Zavřít
+									</button>
+									<button
+										on:click={() => {sendOrderBySendGrid();}}
+										type="button"
+										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
+										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
+										duration-200 text-center shadow-md focus:outline-none focus:ring-2
+										focus:ring-offset-2 rounded-lg"
+										data-te-ripple-init
+										data-te-ripple-color="light">	<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Modal -->
+					<div
+						class="modal fade fixed top-0 left-0 hidden w-full md:w-1/2 h-full outline-none overflow-x-hidden
 						overflow-y-auto"
 						id="Modal"
 						tabindex="-1"
@@ -337,7 +422,7 @@ function createDoc() {
 						aria-hidden="true">
 						<div class="modal-dialog relative w-auto pointer-events-none">
 							<div
-								class="modal-content border-none shadow-lg relative flex flex-col w-full
+								class="modal-content border-none shadow-lg flex flex-col w-full
 								pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
 								<div
 									class="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b
@@ -374,7 +459,7 @@ function createDoc() {
 										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
 										duration-200 text-center shadow-md focus:outline-none focus:ring-2
 										focus:ring-offset-2 rounded-lg">
-										<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
+										
 									</button>
 								</div>
 							</div>
