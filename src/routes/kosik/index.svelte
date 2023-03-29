@@ -37,23 +37,25 @@
 	// sendOrderBySendGrid
 
 	
+let txt3 = document.getElementById('txt');
+console.log(txt3);
 
 function refreshPage() {
     //ensure reloading from server instead of cache
     location.reload(true);
 }
-	function delayRefreshPage(mileSeconds) {
+function delayRefreshPage(mileSeconds) {
     window.setTimeout(refreshPage, mileSeconds);
-}
-			function sendOrderBySendGrid() {
-			var txt = document.getElementById('txt');	
-		  supabase.functions.invoke('sendOrderBySendGrid', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() }) //txt: txt.value
+	}
+function sendOrderBySendGrid() {
+		var txt = document.getElementById('txt');	
+		supabase.functions.invoke('sendOrderBySendGrid', {
+		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
 		});
 		CartItemsStore.update(() => {
 			return [];
 		});		 
-		 delayRefreshPage(2000);
+		delayRefreshPage(2000);
 	 }
 	
 
@@ -298,10 +300,10 @@ function createDoc() {
 			<div class="mt-5 border-2 rounded-lg">
 				
 				<div class="p-5 grid border-b-2">									
-					  <!-- <p><label for="txt">Poznámka</label></p>
+					  <p><label for="txt">Poznámka</label></p>
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  --> 				
+						focus:ring-2 focus:ring-green-700 mb-5" id="txt" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>		
 				</div>
 				
 				<div class="p-5 grid justify-items-end border-b-2">
