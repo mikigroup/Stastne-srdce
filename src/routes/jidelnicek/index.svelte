@@ -3,10 +3,9 @@
 	import * as animateScroll from 'svelte-scrollto';
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';
-	// import { supabase } from '../supabaseClient';
 	import { supabase } from "$lib/initSupabase";	
-	import { page } from '$app/stores'; 	
-  import {PortableText} from '@portabletext/svelte'
+	import { page } from '$app/stores';
+  
 
 	user.set(supabase.auth.user());
 	const session = supabase.auth.session();
@@ -70,8 +69,7 @@
 
 	function zalozkaTretiTyden() {
 		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
-			menus = response;
-			console.log(menu);
+			menus = response;			
 		});
 	}
 
@@ -103,11 +101,11 @@
 
 	// console.log(menu);
 
-	let search = '';
+	/* let search = '';
 
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
-	});
+	}); */
 
 	$: totalPieces = $CartItemsStore.length && $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
@@ -156,7 +154,7 @@
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br />
-				<h6 class="pb-2">Vyhledávání</h6>
+				<!-- <h6 class="pb-2">Vyhledávání</h6> 
 				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
@@ -176,17 +174,17 @@
 						</div>
 						<input
 							type="text"
-							bind:value={search}
+							
 							id="search"
 							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
 							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
 							placeholder="př. rizoto"
-							/>
+							/>  bind:value={search} 
 					</div>										
-				</form>	
-				<div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							
+				</form>
+				 <div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							 -->
 			</div>
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
@@ -266,7 +264,7 @@
 									<!-- karta menu -->
 									<div class="mb-5">
 										{#if $user && menu && menu.length}
-											{#each searchMenu as menu}
+											{#each menus as menu}  <!-- //searchMenu -->
 												<div class="border rounded-lg my-3 p-2 bg-stone-100">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
@@ -283,8 +281,7 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p>{menu.description}	</p>
-														
+														<span style="white-space: pre-line">{menu.description}</span>																					
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end basis-4 pt-2">
@@ -302,12 +299,12 @@
 																	Přidat do košíku
 																</div>
 															</div>
-														</button>
+														</button>																											
 													</div>
 												</div>
 											{/each}
 										{:else if menu && menu.length}
-											{#each searchMenu as menu}
+											{#each menus as menu}  <!-- // searchMenu -->
 												<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
@@ -324,13 +321,8 @@
 													</div>
 													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
 														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<p class="">{menu.description}</p>													
+														<span style="white-space: pre-line">{menu.description}</span>														
 													</div>
-<!-- 													TEST
-													<PortableText
-  block=
-{menu.content}
-/> -->
 													<hr class="px-5" />													
 												</div>
 											{/each}
@@ -432,6 +424,9 @@
 						</li>
 					</ul>
 				</div>
+
+			<hr>
+
 						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
 							<button
 								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700

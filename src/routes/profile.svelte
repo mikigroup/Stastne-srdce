@@ -5,7 +5,6 @@
   import { get } from 'svelte/store';
 	user.set(supabase.auth.user());
   
-	const session = supabase.auth.session();
 	supabase.auth.onAuthStateChange((_, session) => {
 		user.set(session.user);
 	});

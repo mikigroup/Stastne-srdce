@@ -53,7 +53,7 @@
     });
   }
 
-  console.log($user);
+
 </script>
 
 <svelte:head>
