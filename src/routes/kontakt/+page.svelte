@@ -1,6 +1,6 @@
 <script>
 	// import { supabase } from './supabaseClient';
-	import { supabase } from "../lib/initSupabase";
+	import { supabase } from "$lib/initSupabase";
 
 	let message = { success: null, display: '' };
 

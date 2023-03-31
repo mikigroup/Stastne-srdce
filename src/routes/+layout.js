@@ -1,0 +1,1 @@
+export const trailingSlash = 'never'; // or 'always' or 'ignore', depending on what you want

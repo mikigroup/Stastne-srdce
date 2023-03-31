@@ -1,6 +1,6 @@
 import { subscribe } from 'svelte/internal';
 import { writable  , readable } from 'svelte/store';
-import { browser } from '$app/env';
+import { browser } from '$app/environment';
 
 /* const storeCartItems = localStorage?.getItem("cart");
 const initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems) */

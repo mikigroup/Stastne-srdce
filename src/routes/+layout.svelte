@@ -5,9 +5,7 @@
 	import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';
 	// user.set(supabase.auth.user())
-
-
-
+	// export let data;
 
 export function getData() {
   return async (dispatch) => {

@@ -13,7 +13,8 @@
 
 
 
-	export let menu = [];
+	// let menu = [];
+  export let data;
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
@@ -35,7 +36,7 @@
 		}; */
 	}
 
-	let menus = menu;
+// 	let menus = menu;
 	let currentDate = new Date();
 
 	let datumPrvniZalozkaEnd = new Date();
@@ -135,6 +136,16 @@
 				">
 				Jídelníček
 			</h1>
+
+			{#if menus && menus.length}
+<ul>
+  {#each menus as menu}
+	<li>{menu.description}</li>
+  {/each}
+</ul>
+{:else}
+	<p>No pets found.</p>
+{/if}
 			<div
 				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
