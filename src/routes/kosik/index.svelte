@@ -3,7 +3,7 @@
 	import { get } from 'svelte/store';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
-	import { user } from '../Stores/stores';
+	// import { user } from '../Stores/stores';
 	import client from "../sanityClient";
   import { onMount } from 'svelte/internal';
 	// import { onMount } from "svelte"; // pro využití localstorage
@@ -34,33 +34,7 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
-	// sendOrderBySendGrid
-
-	
-let txt3 = document.getElementById('txt');
-console.log(txt3);
-
-function refreshPage() {
-    //ensure reloading from server instead of cache
-    location.reload(true);
-}
-function delayRefreshPage(mileSeconds) {
-    window.setTimeout(refreshPage, mileSeconds);
-	}
-function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt');	
-		supabase.functions.invoke('sendOrderBySendGrid', {
-		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
-		});
-		CartItemsStore.update(() => {
-			return [];
-		});		 
-		delayRefreshPage(2000);
-	 }
-	
-
-
-// V1
+// V1 create order
 /* function createDoc() {
   var txt2  = document.getElementById('txt2').value;
 	const cart = JSON.parse(localStorage.getItem('cart'));
@@ -83,26 +57,57 @@ function sendOrderBySendGrid() {
   });
 }; */
 
-// V2
+// V2 create order
+// const email = supabase.user_metadata.email;
+/* const {
+  data: { user },
+} = supabase.auth.getUser()
+let metadata = user.user_metadata */
+
+const user = supabase.auth.api.user()
+
+// console.log(user); 
+
 function createDoc() {
-  var txt2  = document.getElementById('txt2').value;
+  var txt  = document.getElementById('txt').value;
 	const cart = JSON.parse(localStorage.getItem('cart'));
 	const titles = [];
 	for (const obj of cart) {		
 	titles.push(obj.title);
 	titles.push(obj.description);
 	titles.push(obj.quantity);
-  }
-  const doc = {
+}
+
+const doc = {
     _type: 'order',
 		// customer: ,      
     itemsOrder: titles,
-    note: txt2
+    note: txt
   }   
   client.create(doc).then((res) => {
     console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
   });
 };
+
+// sendOrderBySendGrid
+function refreshPage() {
+    //ensure reloading from server instead of cache
+    location.reload(true);
+}
+function delayRefreshPage(mileSeconds) {
+    window.setTimeout(refreshPage, mileSeconds);
+	}
+function sendOrderBySendGrid() {
+		var txt = document.getElementById('txt');	
+		supabase.functions.invoke('sendOrderBySendGrid_T', {
+		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
+		});
+		CartItemsStore.update(() => {
+			return [];
+		});		 
+		delayRefreshPage(2000);
+	 }
+	
 </script>
 
 <svelte:head>
@@ -116,6 +121,7 @@ function createDoc() {
 			">
 			Košík
 		</h1>
+		<div>Hello {user.email}</div>
 
 
 		<!-- TEST -->
