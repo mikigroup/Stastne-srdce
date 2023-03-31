@@ -11,8 +11,7 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
-		"@beyonk/gdpr-cookie-consent-banner": "^9.0.4",
-		"@portabletext/svelte": "^1.0.1",
+		"@beyonk/gdpr-cookie-consent-banner": "^9.0.4",		
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-replace": "^4.0.0",
 		"@sveltejs/adapter-auto": "next",
@@ -33,9 +32,7 @@
 	"dependencies": {
 		"@fontsource/fira-mono": "^4.5.0",
 		"@sanity/client": "^3.3.2",
-		"@sentry/svelte": "^7.18.0",
-		"@sentry/tracing": "^7.18.0",
-		"@supabase/supabase-js": "^1.35.6",
+		"@supabase/supabase-js": "^2.13.1",
 		"@svelteuidev/composables": "^0.7.0",
 		"@svelteuidev/core": "^0.7.0",
 		"@svelteuidev/dates": "^0.7.0",

@@ -4,7 +4,28 @@
 	import '../app.css';
 	import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';
-	user.set(supabase.auth.user())
+	// user.set(supabase.auth.user())
+
+
+
+
+export function getData() {
+  return async (dispatch) => {
+    try {
+     const {
+				data: { session },
+			} = await supabase.auth.getSession()
+			const { user } = session
+    	} catch(err) {
+      console.log('error: ', err)
+    }
+  }
+}
+
+
+
+	
+
 </script>
 
 <Header />

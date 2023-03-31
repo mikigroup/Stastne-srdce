@@ -3,11 +3,14 @@
 	import { get } from 'svelte/store';
 	import { supabase } from "$lib/initSupabase";
 	import { page } from '$app/stores';
-	// import { user } from '../Stores/stores';
+	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
   import { onMount } from 'svelte/internal';
 	// import { onMount } from "svelte"; // pro využití localstorage
 	
+
+
+
 
 	$: cartItems = $CartItemsStore;
 
@@ -64,7 +67,7 @@
 } = supabase.auth.getUser()
 let metadata = user.user_metadata */
 
-const user = supabase.auth.api.user()
+// const user = supabase.auth.api.user()
 
 // console.log(user); 
 
@@ -121,7 +124,7 @@ function sendOrderBySendGrid() {
 			">
 			Košík
 		</h1>
-		<div>Hello {user.email}</div>
+		
 
 
 		<!-- TEST -->

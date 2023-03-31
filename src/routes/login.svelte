@@ -9,14 +9,19 @@
     password = "";
 
   async function handleLogin() {		
-    const { error: err } = await supabase.auth.signIn({ email, password });
+        const {
+      data: { user },
+      err,
+    } = await supabase
+      .auth
+      .signInWithPassword({ email, password })
     // window.location = '/jidelnicek';
     if (err)
      error = "Email nebo heslo není správně";     
     else
      message = "";
     loading = false;
-    if ($user)
+    if (user)
       window.location = '/jidelnicek';		
   }
 

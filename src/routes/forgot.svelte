@@ -1,6 +1,6 @@
 <script>
     // import { supabase } from "./supabaseClient";
-    import { supabase } from "../lib/initSupabase";
+    import { supabase } from "../lib/initSupabase_v1";
 
     export let initSupabase;
 

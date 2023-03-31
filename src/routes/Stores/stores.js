@@ -60,6 +60,18 @@ export const time = readable(new Date(), function start(set) {
 // export const currentCartItems = writable();
 export const user = writable();
 export default CartItemsStore;
+export function getData() {
+  return async (dispatch) => {
+    try {
+     const {
+				data: { session },
+			} = await supabase.auth.getSession()
+			const { user } = session
+    	} catch(err) {
+      console.log('error: ', err)
+    }
+  }
+}
 
 //modal kosik
 export function booleanStore(initial) {

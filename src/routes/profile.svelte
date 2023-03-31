@@ -3,7 +3,7 @@
   import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';
   import { get } from 'svelte/store';
-	user.set(supabase.auth.user());
+	// user.set(supabase.auth.user());
   
 	supabase.auth.onAuthStateChange((_, session) => {
 		user.set(session.user);

@@ -13,13 +13,25 @@
 
 	import { user } from '../routes/Stores/stores';
 	// import { supabase } from '../routes/supabaseClient';
-	import { supabase } from "../lib/initSupabase";
-	user.set(supabase.auth.user());
+	import { supabase } from "./initSupabase";
+	// user.set(supabase.auth.user());
+	export function getData() {
+  return async (dispatch) => {
+    try {
+     const {
+				data: { session },
+			} = await supabase.auth.getSession()
+			const { user } = session
+    	} catch(err) {
+      console.log('error: ', err)
+    }
+  }
+}
 
-	const session = supabase.auth.session();
-	$: isLoggedIn = !supabase.auth.user;
+	// const session = supabase.auth.session();
+/* 	$: isLoggedIn = !supabase.auth.user;
 	$: usertest = supabase.auth.user;
-	$: username = $user !== null ? $user.username : ' there!';
+	$: username = $user !== null ? $user.username : ' there!'; */
 
 	supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session);

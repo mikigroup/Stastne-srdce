@@ -6,9 +6,13 @@
 	import { supabase } from "$lib/initSupabase";	
 	import { page } from '$app/stores';
   
+	//V1
+	/* user.set(supabase.auth.user());
+	const session = supabase.auth.session(); */
+  //V2
 
-	user.set(supabase.auth.user());
-	const session = supabase.auth.session();
+
+
 	export let menu = [];
 
 	export async function loadmenu(from, to) {
