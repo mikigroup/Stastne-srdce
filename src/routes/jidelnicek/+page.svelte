@@ -2,9 +2,8 @@
 	import CartItemsStore from '../Stores/stores';
 	import * as animateScroll from 'svelte-scrollto';
 	import client from '../sanityClient';
-	import { user } from '../Stores/stores';
-	import { supabase } from "$lib/initSupabase";	
-	import { page } from '$app/stores';
+	import { user } from '../Stores/stores';	
+	import { page } from '$app/stores';	
   
 	//V1
 	/* user.set(supabase.auth.user());
@@ -13,30 +12,13 @@
 
 
 
-	// let menu = [];
-  export let data;
-
+	let menu = [];
 	export async function loadmenu(from, to) {
-		return client.fetch(
-			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
+		return client.fetch(`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
+	};
 
-		/* 	if (data) {
-			return {
-				status: 200,
-				body: {
-					menu: data,
-					srpen: data2       
-				}
-			};
-		}
-		return {
-			status: 500,
-			body: new Error("Internal Server Error")
-		}; */
-	}
-
-// 	let menus = menu;
+ 	let menus = menu;
 	let currentDate = new Date();
 
 	let datumPrvniZalozkaEnd = new Date();
@@ -136,16 +118,6 @@
 				">
 				Jídelníček
 			</h1>
-
-			{#if menus && menus.length}
-<ul>
-  {#each menus as menu}
-	<li>{menu.description}</li>
-  {/each}
-</ul>
-{:else}
-	<p>No pets found.</p>
-{/if}
 			<div
 				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
@@ -278,7 +250,7 @@
 									<!-- <p class="text-xl font-semibold tracking-wide mb-3">Jídla</p> -->
 									<!-- karta menu -->
 									<div class="mb-5">
-										{#if $user && menu && menu.length}
+										{#if $user && menus && menus.length}
 											{#each menus as menu}  <!-- //searchMenu -->
 												<div class="border rounded-lg my-3 p-2 bg-stone-100">
 													<div
@@ -318,7 +290,7 @@
 													</div>
 												</div>
 											{/each}
-										{:else if menu && menu.length}
+										{:else if menus && menus.length}
 											{#each menus as menu}  <!-- // searchMenu -->
 												<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div

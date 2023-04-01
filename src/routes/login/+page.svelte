@@ -1,7 +1,6 @@
 <script>
-  // import { supabase } from "./supabaseClient";
-  import { supabase } from "../lib/initSupabase";
-  import { user } from "../routes/Stores/stores";
+  import { supabase } from "$lib/initSupabase";
+  import { user } from "../Stores/stores";
 
   let error = "",    
     loading = false,

@@ -1,8 +1,6 @@
-<script class="module">
-	import { user } from './Stores/stores';
-	// import { supabase } from './supabaseClient';
-	import { supabase } from "../lib/initSupabase";	
-	// user.set(supabase.auth.user());
+<script>
+  import { supabase } from "$lib/initSupabase";
+  import { user } from "../Stores/stores";
 	
 
 	supabase.auth.onAuthStateChange((state, session) => {
