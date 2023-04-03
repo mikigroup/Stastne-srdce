@@ -86,7 +86,7 @@
 		});
 	}
 
-	// console.log(menu);
+	
 
 	/* let search = '';
 
@@ -109,6 +109,18 @@
 	<title>Šťastné srdce - Jídelníček</title>	
 	<meta name="description" content="Jídelníček" />
 </svelte:head>
+
+<!--  test -->
+
+{#if menus && menus.length}
+<ul>
+  {#each menus as menu}
+	<li>{menu.name}</li>
+  {/each}
+</ul>
+{:else}
+	<p>No menu found.</p>
+{/if}
 
 <main>
 	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">

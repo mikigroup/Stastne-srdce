@@ -1,4 +1,4 @@
-/* import { error } from '@sveltejs/kit';
+ import { error } from '@sveltejs/kit';
 import client from "../sanityClient"; 
 
 let currentDate = new Date();
@@ -17,7 +17,7 @@ export async function load() {
    throw error(404, 'Not found');  
 };
 
- */
+
 
 
 
