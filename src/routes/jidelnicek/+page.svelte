@@ -4,13 +4,15 @@
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';	
 	import { page } from '$app/stores';	
+  import { json } from '@sveltejs/kit';
   
 	//V1
 	/* user.set(supabase.auth.user());
 	const session = supabase.auth.session(); */
   //V2
 
-
+	
+  export let data
 
 	let menu = [];
 	export async function loadmenu(from, to) {
@@ -110,18 +112,6 @@
 	<meta name="description" content="Jídelníček" />
 </svelte:head>
 
-<!--  test -->
-
-{#if menus && menus.length}
-<ul>
-  {#each menus as menu}
-	<li>{menu.name}</li>
-  {/each}
-</ul>
-{:else}
-	<p>No menu found.</p>
-{/if}
-
 <main>
 	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
 		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
@@ -130,6 +120,10 @@
 				">
 				Jídelníček
 			</h1>
+			<h2>Use the {data.propName}</h2>				
+											
+			
+			
 			<div
 				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
@@ -255,7 +249,7 @@
 				</div> -->
 
 				<div class="tab-content pb-10" id="tabs-tabContent">
-					<div class="tab-pane fade show active" id="" role="tabpanel" aria-labelledby="">
+					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 md:mx-10 md:p-5 border-2 bg-orange-50">
 							<div id="" class="">
 								<div class="">

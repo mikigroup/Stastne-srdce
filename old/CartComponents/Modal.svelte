@@ -4,7 +4,7 @@
   const modalList = []
 </script>
 <script>
-	import { booleanStore } from '../Stores/stores'
+	import { booleanStore } from '../../routes/Stores/stores'
 
   const store = booleanStore(false)
   const { isOpen, open, close } = store
