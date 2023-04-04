@@ -3,8 +3,7 @@
 	import * as animateScroll from 'svelte-scrollto';
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';	
-	import { page } from '$app/stores';	
-  import { json } from '@sveltejs/kit';
+	import { page } from '$app/stores';	  
   
 	//V1
 	/* user.set(supabase.auth.user());
@@ -12,15 +11,13 @@
   //V2
 
 	
-  export let data
-
-	let menu = [];
+	export let data;
+		
 	export async function loadmenu(from, to) {
 		return client.fetch(`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
 	};
 
- 	let menus = menu;
 	let currentDate = new Date();
 
 	let datumPrvniZalozkaEnd = new Date();
@@ -46,25 +43,25 @@
 
 	function zalozkaPrvniTyden() {
 		loadmenu(currentDate, datumPrvniZalozkaEnd).then((response) => {
-			menus = response;
+			data.menus = response;
 		});
 	}
 
 	function zalozkaDruhyTyden() {
 		loadmenu(datumDruhaZalozkaStart, datumDruhaZalozkaEnd).then((response) => {
-			menus = response;
+			data.menus = response;
 		});
 	}
 
 	function zalozkaTretiTyden() {
 		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
-			menus = response;			
+			data.menus = response;			
 		});
 	}
 
 	function zalozkaCtvrtyTyden() {
 		loadmenu(datumCtvrtaZalozkaStart, datumCtvrtaZalozkaEnd).then((response) => {
-			menus = response;			
+			data.menus = response;			
 		});
 	}
 
@@ -87,11 +84,7 @@
 			}
 		});
 	}
-
-	
-
 	/* let search = '';
-
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
 	}); */
@@ -111,7 +104,6 @@
 	<title>Šťastné srdce - Jídelníček</title>	
 	<meta name="description" content="Jídelníček" />
 </svelte:head>
-
 <main>
 	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
 		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
@@ -120,10 +112,6 @@
 				">
 				Jídelníček
 			</h1>
-			<h2>Use the {data.propName}</h2>				
-											
-			
-			
 			<div
 				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
 				bg-white">
@@ -181,83 +169,15 @@
 			</div>
 
 			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
-				<!-- <div class="">
-					<ul
-						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
-						id="tabs-tab"
-						role="tablist">
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()}>
-							<a
-								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent active"
-								id="tabs-1-tab"
-								data-bs-toggle="pill"
-								data-bs-target="#tabs-1"
-								role="tab"
-								aria-controls="tabs-1">
-								1
-							</a>
-						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()}>
-							<a
-								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
-								id="tabs-2-tab"
-								data-bs-toggle="pill"
-								data-bs-target="#tabs-2"
-								role="tab"
-								aria-controls="tabs-2"
-								aria-selected="false">								
-								2
-							</a>
-						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()}>
-							<a
-								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
-								id="tabs-messages-tab"
-								data-bs-toggle="pill"
-								data-bs-target="#tabs-3"
-								role="tab"
-								aria-controls="tabs-3"
-								aria-selected="false">
-								3
-							</a>
-						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()}>
-							<a
-								href=""
-								class="nav-link block font-medium text-xs leading-tight uppercase border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
-								id="tabs-contact-tab"
-								data-bs-toggle="pill"
-								data-bs-target="#tabs-4"
-								role="tab"
-								aria-controls="#tabs-4"
-								aria-selected="false">
-								4
-							</a>
-						</li>
-					</ul>
-				</div> -->
-
 				<div class="tab-content pb-10" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 md:mx-10 md:p-5 border-2 bg-orange-50">
-							<div id="" class="">
-								<div class="">
-									<!-- <p class="text-xl font-semibold tracking-wide mb-3">Jídla</p> -->
-									<!-- karta menu -->
-									<div class="mb-5">
-										{#if $user && menus && menus.length}
-											{#each menus as menu}  <!-- //searchMenu -->
+							<div id="" class="">													
+								<div class="">									
+									<!-- karta menu -->					
+									<div class="mb-5">												
+										{#if $user && data.menus && data.menus.length}
+											{#each data.menus as menu}  <!-- //searchMenu -->
 												<div class="border rounded-lg my-3 p-2 bg-stone-100">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
@@ -296,9 +216,32 @@
 													</div>
 												</div>
 											{/each}
-										{:else if menus && menus.length}
-											{#each menus as menu}  <!-- // searchMenu -->
+										{:else if data.menus && data.menus.length}
+											{#each data.menus as menu}  <!-- // searchMenu -->
 												<div class="border rounded-lg bg-stone-100 my-3 p-2">
+													<div
+														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
+														bg-green-600">
+														<p
+															class="text-gray-200 pl-3 tracking-tight font-bold text-xl
+															dark:text-white">
+															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
+																weekday: 'long',
+																month: 'long',
+																day: 'numeric'
+															})}
+														</p>														
+													</div>													
+													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
+														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
+														<span style="white-space: pre-line">{menu.description}</span>														
+													</div>
+													<hr class="px-5" />													
+												</div>
+											{/each}
+										<!-- 	{:else if data.menus && data.menus.length}										
+												{#each data.menus as menu}
+													<div class="border rounded-lg bg-stone-100 my-3 p-2">
 													<div
 														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
 														bg-green-600">
@@ -318,10 +261,10 @@
 													</div>
 													<hr class="px-5" />													
 												</div>
-											{/each}
-										{:else}
-											<p>Žádný jídelníček nenalezen</p>
-										{/if}
+												{/each}			 -->																
+											{:else}
+												<p>Žádný jídelníček nenalezen</p>
+											{/if}
 									</div>
 								</div>
 								<div class="grid justify-items-end btn-group rounded-lg border-2" role="group" />
