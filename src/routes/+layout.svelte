@@ -3,7 +3,7 @@
 	import '../app.css';
 	import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';	
-	import CartItemsStore from '../routes/Stores/stores';
+	import CartItemsStore from '../routes/Stores/stores';  
 
 	//V2
 	export function getData() {

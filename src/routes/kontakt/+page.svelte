@@ -1,5 +1,4 @@
 <script>
-	// import { supabase } from './supabaseClient';
 	import { supabase } from "$lib/initSupabase";
 
 	let message = { success: null, display: '' };
@@ -35,18 +34,16 @@
 	<title>Šťastné srdce - Kontakt</title>
 	<meta name="description" content="Kontakt" />
 </svelte:head>
-
 <main>
-	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
-		<div class="py-8 py-16 px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
+	<section class="">
+		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 			<h1
-				class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
-				">
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 ">
 				Kontakt
 			</h1>
-			<div class="grid grid-cols-1 md:grid-cols-1 border-2 p-5 rounded-lg bg-white">
+			<div class="grid grid-cols-1 p-5 bg-white border-2 rounded-lg md:grid-cols-1">
 				<div
-					class="mb-4 font-light text-center text-gray-500 text-xl md:text-xl">
+					class="mb-4 text-xl font-light text-center text-gray-500 md:text-xl">
 					<p>
 						<span class="text-2xl">Kuchyň K&K</span>
 						<br />
@@ -60,8 +57,8 @@
 						stastnesrdcekk@seznam.cz
 					</p>
 				</div>
-			</div>
-			<div class="justify-center rounded-lg border-2">
+			</div>			
+			<div class="justify-center border-2 rounded-lg">
 				<iframe
 					class="w-full aspect-auto"
 					src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
@@ -71,7 +68,7 @@
 					referrerpolicy="no-referrer-when-downgrade"
 					title="Šťastné srdce" />
 			</div>
-			<form on:submit|preventDefault={onSubmit} class="space-y-8 mt-10">
+			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
 				<div>
 					<label for="email" class="block mb-2 text-sm font-medium text-gray-900">
 						<p class="text-lg">Váš mail</p>
@@ -134,9 +131,7 @@
 				<button
 					type="submit"
 					value="submit"
-					class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
-					ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
-					shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+					class="w-full px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 					Odeslat
 				</button>
 				<div class="flex">{message.display}</div>

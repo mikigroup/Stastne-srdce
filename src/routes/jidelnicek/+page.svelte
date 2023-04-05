@@ -105,17 +105,15 @@
 	<meta name="description" content="Jídelníček" />
 </svelte:head>
 <main>
-	<section class="form py-8 py-16 md:px-4 mx-auto max-w-screen-lg mt-4 bg-stone-100 rounded-lg">
-		<div class="py-8 py-16 md:px-4 mx-auto max-w-screen-md bg-stone-100 rounded-lg">
+	<section class="">
+		<div class="max-w-screen-lg py-8 py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
 			<h1
-				class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
-				">
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 ">
 				Jídelníček
 			</h1>
 			<div
-				class="rounded-lg max-w-4xl lg:mx-auto max-w-3xl mx-auto p-5 border-2 pb-2
-				bg-white">
-				<p class="text-center mt-3">
+				class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+				<p class="mt-3 text-center">
 					<strong>Cena obědů je 95,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
 					<br />
@@ -139,7 +137,7 @@
 				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
-						<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+						<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 							<svg
 								aria-hidden="true"
 								class="w-5 h-5 text-gray-500 dark:text-gray-400"
@@ -168,23 +166,21 @@
 				 <div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							 -->
 			</div>
 
-			<div class="mt-5 rounded-lg border-2 mx-auto max-w-4xl bg-white">
-				<div class="tab-content pb-10" id="tabs-tabContent">
+			<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">
+				<div class="pb-10 tab-content" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
-						<div class="mt-10 md:mx-10 md:p-5 border-2 bg-orange-50">
+						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
 							<div id="" class="">													
 								<div class="">									
 									<!-- karta menu -->					
 									<div class="mb-5">												
 										{#if $user && data.menus && data.menus.length}
 											{#each data.menus as menu}  <!-- //searchMenu -->
-												<div class="border rounded-lg my-3 p-2 bg-stone-100">
+												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
-														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
-														bg-green-600">
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
-															class="text-gray-200 pl-3 tracking-tight font-bold text-xl
-															dark:text-white">
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
 															  {new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
 																weekday: 'long',
 																month: 'long',
@@ -192,12 +188,12 @@
 															})}
 														</p>
 													</div>
-													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
-														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<span style="white-space: pre-line">{menu.description}</span>																					
+													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+														<span style="white-space: pre-line"><p class="pt-2 text-lg">{menu.description}</p></span>
 													</div>
 													<hr class="px-5" />
-													<div class="flex justify-end basis-4 pt-2">
+													<div class="flex justify-end pt-2 basis-4">
 														<button class="text-sm" on:click={() => addToCart(menu)}>
 															<div
 																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
@@ -208,7 +204,7 @@
 																<div class="flex justify-end">
 																	<p class="text-base">{menu.price} Kč</p>
 																</div>
-																<div class="uppercase flex justify-end text-sm">
+																<div class="flex justify-end text-sm uppercase">
 																	Přidat do košíku
 																</div>
 															</div>
@@ -218,13 +214,11 @@
 											{/each}
 										{:else if data.menus && data.menus.length}
 											{#each data.menus as menu}  <!-- // searchMenu -->
-												<div class="border rounded-lg bg-stone-100 my-3 p-2">
+												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
-														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
-														bg-green-600">
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
-															class="text-gray-200 pl-3 tracking-tight font-bold text-xl
-															dark:text-white">
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
 															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
 																weekday: 'long',
 																month: 'long',
@@ -232,22 +226,20 @@
 															})}
 														</p>														
 													</div>													
-													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
-														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
-														<span style="white-space: pre-line">{menu.description}</span>														
+													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+														<span style="white-space: pre-line"><p class="pt-2 text-lg">{menu.description}</p></span>														
 													</div>
 													<hr class="px-5" />													
 												</div>
 											{/each}
 										<!-- 	{:else if data.menus && data.menus.length}										
 												{#each data.menus as menu}
-													<div class="border rounded-lg bg-stone-100 my-3 p-2">
+													<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
-														class="sm:py-3 py-1 shadow-md rounded-lg border shadow-green-700/40
-														bg-green-600">
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
-															class="text-gray-200 pl-3 tracking-tight font-bold text-xl
-															dark:text-white">
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
 															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
 																weekday: 'long',
 																month: 'long',
@@ -255,8 +247,8 @@
 															})}
 														</p>														
 													</div>
-													<div class="p-5 text-lg my-3 border rounded-lg shadow-md">
-														<p class="pb-1 underline-offset-8 underline ">{menu.title}</p>
+													<div class="p-5 my-3 text-lg border rounded-lg shadow-md">
+														<p class="pb-1 underline underline-offset-8 ">{menu.title}</p>
 														<span style="white-space: pre-line">{menu.description}</span>														
 													</div>
 													<hr class="px-5" />													
@@ -267,7 +259,7 @@
 											{/if}
 									</div>
 								</div>
-								<div class="grid justify-items-end btn-group rounded-lg border-2" role="group" />
+								<div class="grid border-2 rounded-lg justify-items-end btn-group" role="group" />
 							</div>
 							<hr />
 						</div>
@@ -283,19 +275,17 @@
 						
 	<div class="">
 					<ul
-						class="flex items-center nav nav-tabs list-none border-b-0 pl-0 mb-4 text-center"
+						class="flex items-center pl-0 mb-4 text-center list-none border-b-0 nav nav-tabs"
 						id="tabs-tab"
 						role="tablist">
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaPrvniTyden()} on:click={() => animateScroll.scrollTo({
+						<li class="w-full nav-item" role="presentation" on:click={() => zalozkaPrvniTyden()} on:click={() => animateScroll.scrollTo({
 										element: 'tabs-1-tab',
 										duration: 1500,
 										offset: 480
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent active"
+								class="block px-6 py-3 my-2 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent nav-link md:text-lg border-x-0 hover:border-transparent hover:bg-gray-100 focus:border-transparent active"
 								id="tabs-1-tab-but"
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-1"
@@ -304,32 +294,28 @@
 								1. týden
 							</a>
 						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaDruhyTyden()} on:click={() => animateScroll.scrollTo({
+						<li class="w-full nav-item" role="presentation" on:click={() => zalozkaDruhyTyden()} on:click={() => animateScroll.scrollTo({
 										element: 'tabs-1-tab',
 										duration: 1500,
 										offset: 480
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"								
+								class="block px-6 py-3 my-2 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent nav-link md:text-lg border-x-0 hover:border-transparent hover:bg-gray-100 focus:border-transparent"								
 								data-bs-toggle="pill"								
 								role="tab"								
 								aria-selected="false">
 								2. týden
 							</a>
 						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaTretiTyden()} on:click={() => animateScroll.scrollTo({
+						<li class="w-full nav-item" role="presentation" on:click={() => zalozkaTretiTyden()} on:click={() => animateScroll.scrollTo({
 										element: 'tabs-1-tab',
 										duration: 1500,
 										offset: 480
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
+								class="block px-6 py-3 my-2 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent nav-link md:text-lg border-x-0 hover:border-transparent hover:bg-gray-100 focus:border-transparent"
 								id="tabs-messages-tab"
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-3"
@@ -339,16 +325,14 @@
 								3. týden
 							</a>
 						</li>
-						<li class="nav-item w-full" role="presentation" on:click={() => zalozkaCtvrtyTyden()} on:click={() => animateScroll.scrollTo({
+						<li class="w-full nav-item" role="presentation" on:click={() => zalozkaCtvrtyTyden()} on:click={() => animateScroll.scrollTo({
 										element: 'tabs-1-tab',
 										duration: 1500,
 										offset: 480
 									})}>
 							<a
 								href=""
-								class="nav-link block font-medium text-xs md:text-lg leading-tight border-x-0
-								border-t-0 border-b-2 border-transparent px-6 py-3 my-2 hover:border-transparent
-								hover:bg-gray-100 focus:border-transparent"
+								class="block px-6 py-3 my-2 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent nav-link md:text-lg border-x-0 hover:border-transparent hover:bg-gray-100 focus:border-transparent"
 								id="tabs-contact-tab"
 								data-bs-toggle="pill"
 								data-bs-target="#tabs-4"
@@ -363,12 +347,9 @@
 
 			<hr>
 
-						<div class="flex justify-end text-md pt-10 active:text-lg pr-5">
+						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
-								class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-								focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
-								duration-200 text-center shadow-md focus:outline-none focus:ring-2
-								focus:ring-offset-2 rounded-lg"
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 								on:click={() => animateScroll.scrollTo({
 										element: 'tabs-1-tab',
 										duration: 1500,
@@ -382,10 +363,7 @@
 			</div>
 			{#if totalPieces > 0 && $user}
 							<div class="flex text-md">
-								<a class="btn btn-success py-2 bg-green-600 hover:bg-green-700
-									focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
-									duration-200 w-full text-center shadow-md focus:outline-none focus:ring-2
-									focus:ring-offset-2 rounded-lg" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
+								<a class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
 									class="">									
 									Košík						
 								</button></a>
