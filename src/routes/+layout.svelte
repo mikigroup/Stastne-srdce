@@ -6,6 +6,7 @@
 	import { page } from '$app/stores';
 	import { time } from '../routes/Stores/stores';
 
+	
 	//V2
 	export function getData() {
 		return async (dispatch) => {
@@ -28,14 +29,21 @@
 		minute: '2-digit'
 	});
 
-	// const session = supabase.auth.session();
+// const session = supabase.auth.session();
 /* 	$: isLoggedIn = !supabase.auth.user;
 	$: usertest = supabase.auth.user;
 	$: username = $user !== null ? $user.username : ' there!'; */
 
-	supabase.auth.onAuthStateChange((state, session) => {
-		user.set(state === 'SIGNED_IN' && session);
-	});
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event == 'SIGNED_IN') console.log('SIGNED_IN', session)
+})
+
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log(event, session)
+})
+
+
 
 	async function logOut() {
 		try {
@@ -103,7 +111,8 @@
 						Košík
 						{#if $user}
 							<strong>{totalPieces}</strong>
-						{:else}{/if}
+						{:else}
+						{/if}
 					</a>
 				</div>
 			</div>

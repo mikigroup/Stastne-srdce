@@ -7,6 +7,8 @@
     email = "",
     password = "";
 
+
+    
   async function handleLogin() {		
         const {
       data: { user },
@@ -45,18 +47,29 @@
 		}
 	}; */
 
-  async function signInWithGoogle() {
+/*   async function signInWithGoogle() {
     const { user, session, error } = await supabase.auth.signIn({
       provider: "google",
     });
-  }
+  } */
+
+  async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  })
+}
 
   async function signInWithFacebook() {
     const { user, data, error } = await supabase.auth.signIn({
       provider: "facebook",
     });
   }
-
 
 </script>
 
@@ -70,20 +83,18 @@
     <form on:submit|preventDefault={handleLogin}>
       <div class="pt-20 form-widget">
         <div
-          class="mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow
-					 sm:px-6 md:px-8 lg:px-10"
+          class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
         >
           {#if $user}
             <div class="flex w-full text-xl">
               <p>Jste přihlášeni.</p>
             </div>
           {:else}
-            <div class="self-center mb-2 text-3xl sm:text-2xl font-light">
+            <div class="self-center mb-2 text-3xl font-light sm:text-2xl">
               Přihlášení do účtu
             </div>
             <span
-              class="justify-center text-sm text-center text-gray-500 flex-items-center
-							"
+              class="justify-center text-sm text-center text-gray-500 flex-items-center "
             >
               Ještě nemáte účet?
               <a
@@ -96,10 +107,9 @@
             <div class="mt-8">
               <!--  <form action="#" autoComplete="on"> -->
               <div class="flex flex-col mb-2">
-                <div class="flex relative ">
+                <div class="relative flex ">
                   <span
-                    class="rounded-l-md inline-flex items-center px-3 border-t bg-white border-l
-										border-b border-gray-300 text-gray-500 shadow-sm text-sm"
+                    class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md"
                   >
                     <svg
                       width="15"
@@ -123,19 +133,16 @@
                     bind:value={email}
                     type="email"
                     id="email"
-                    class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
-										w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-										focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                    class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                     required
                     placeholder="Email"
                   />
                 </div>
               </div>
               <div class="flex flex-col mb-6">
-                <div class="flex relative ">
+                <div class="relative flex ">
                   <span
-                    class="rounded-l-md inline-flex items-center px-3 border-t bg-white border-l
-										border-b border-gray-300 text-gray-500 shadow-sm text-sm"
+                    class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md"
                   >
                     <svg
                       width="15"
@@ -156,9 +163,7 @@
                     bind:value={password}
                     type="password"
                     id="password"
-                    class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
-										w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-										focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                    class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                     required
                     placeholder="Heslo"
                   />
@@ -168,8 +173,7 @@
                 <div class="flex ml-auto">
                   <a
                     href="/forgot"
-                    class="inline-flex text-xs font-thin text-gray-500 sm:text-sm 
-										hover:text-gray-700 "
+                    class="inline-flex text-xs font-thin text-gray-500 sm:text-sm hover:text-gray-700 "
                   >
                     Zapoměli jste heslo?
                   </a>
@@ -182,16 +186,13 @@
                   disabled={loading}
                   id="btn-success"
                   type="submit"
-                  class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-									focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition
-									ease-in duration-200 text-center text-base font-semibold shadow-md
-									focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+                  class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   Přihlásit se
                 </button>
               </div>
               {#if error}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full p-2 my-4 border rounded-lg">
                   <p>{error}</p>
                 </div>
               {/if}
@@ -202,7 +203,7 @@
 				{#if !$user}
         <div class="form-widget">
           <div
-            class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
+            class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10"
           >
             <div class="">
               <button
@@ -213,9 +214,7 @@
                 disabled={loading}
                 id="btn-success"
                 type="submit"
-                class="btn btn-success py-2 px-4 hover:bg-green-700 transition ease-in duration-200 text-center
-					text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2
-					rounded-lg"
+                class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 <img src="/google.svg" alt="" width="40" height="40" />
               </button>
