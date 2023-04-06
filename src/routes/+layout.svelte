@@ -1,9 +1,10 @@
 <script>
-	import Header from '$lib/Header.svelte';	
 	import '../app.css';
 	import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';	
-	import CartItemsStore from '../routes/Stores/stores';  
+	import CartItemsStore from '../routes/Stores/stores';
+	import { page } from '$app/stores';
+	import { time } from '../routes/Stores/stores';
 
 	//V2
 	export function getData() {
@@ -68,49 +69,231 @@
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
-<Header />
+<!-- <Header /> -->
+<header class="bg-white">
+	<nav>
+		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl"> <!-- gap-2  -->
+			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
+				<div class="grid grid-cols-2 text-xl font-semibold w-80">
+						<a href="/">
+						Šťastné srdce</a>
+						<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20">
+				</div>				
+				<!-- čas -->
+				<div class="grid justify-end w-44"><time>{formatter.format($time)}</time></div>  <!-- items-center pl-12 ml-12 md:ml-5 md:pl-5 -->
+			</div>
+			<!-- menu -->
+			<div
+				class="grid items-center hidden grid-cols-4 tracking-wide text-center border-2 rounded-full textmenu md:grid bg-slate-50">
+				<div class="border-r-2" id="">
+					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
+				</div>
+				<div class="border-r-2">
+					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
+						Jídelníček
+					</a>
+				</div>
+				<div class="border-r-2">
+					<a class="navItem" activeClass={$page.url.pathname === '/kontakt'} href="/kontakt">
+						Kontakt
+					</a>
+				</div>
+				<div class="">
+					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
+						Košík
+						{#if $user}
+							<strong>{totalPieces}</strong>
+						{:else}{/if}
+					</a>
+				</div>
+			</div>
 
-<div class="mt-10 pt-5"  ></div>
+			<div class="flex items-center justify-self-end">
+				{#if $user}
+					<!-- <div class=""> 
+          <p class="font-semibold">Ahoj {usertest}</p> 
+        </div> -->
+
+					<!-- 	<a activeClass={$page.url.pathname === '/orders'} href="/orders">
+						<Button outline color="green" pill={true}>Objednávky</Button>
+					</a> -->
+
+					<!-- pravá část menu -->
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
+						<div class="pr-2">
+							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
+								<button
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Účet
+								</button>
+							</a>
+						</div>
+						<div class="">
+							<button
+								on:click={logOut}
+								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+								Odhlásit
+							</button>
+						</div>
+					</div>
+				{:else}
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
+						<div class="pr-2">
+							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
+								<button
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Přihlásit
+								</button>
+							</a>
+						</div>
+						<div class="">
+							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
+								<button
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Přidej se
+								</button>
+							</a>
+						</div>
+					</div>
+				{/if}
+				<div class="md:hidden">
+					<button class="" id="menu" on:click={() => toggleMenu()}>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="w-6 h-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 6h16M4 12h16M4 18h16" />
+						</svg>
+					</button>
+				</div>
+				<div class="md:hidden">
+					{#if !totalPieces}											
+						{:else}
+						<strong>{totalPieces}</strong>
+					{/if}
+				</div>
+			</div>
+		</div>
+		<div
+			class="flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white md:hidden">
+			<ul id="menu-box" style="" class="hidden mb-4">
+				<hr />				
+				<div class="mt-4">
+					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
+				</div>
+				<div>
+					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
+						Jídelníček
+					</a>
+				</div>
+				<div>
+					<a class="navItem" activeClass={$page.url.pathname === '/kotankt'} href="/kontakt">
+						Kontakt
+					</a>
+				</div>
+				<div>
+					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">Košík</a>
+				</div>
+				<div class="grid grid-cols-2 mt-6">
+				{#if $user}				
+					<div class="col-end-2 pr-2">
+							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
+								<button
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Účet
+								</button>
+							</a>
+						</div>
+						<div class="">
+							<button
+								on:click={logOut}
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+								Odhlásit
+							</button>
+						</div>
+					{:else}					
+						<div class="col-end-2 pr-2">
+							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
+								<button
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Přihlásit
+								</button>
+							</a>
+						</div>
+						<div class="">
+							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
+								<button
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+									Přidej se
+								</button>
+							</a>
+							</div>			
+				{/if}
+				</div>								
+			</ul>						
+		</div>
+		<hr class="mx-4" />
+	</nav>
+</header>
+
+<div class="pt-5 mt-10"  ></div>
 <slot class="mt-10" />
 	
 <footer class="">
-  <div class="grid md:grid-cols-5 text-gray-500 mt-40 p-4 border-2 md:mx-4 rounded-lg">    
-    <div class="text-sm grid col-span-2">
+  <div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">    
+    <div class="grid col-span-2 text-sm">
 <p>Copyright © 2022 Šťastné srdce Všechny práva vyhrazena.</p>     
     </div>    
-    <div class="grid col-span-3 text-sm justify-end">
+    <div class="grid justify-end col-span-3 text-sm">
       <a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">With <i class="fa fa-regular fa-hand-spock"></i> by Mikigroup™ ver_1.1</a>            
   </div>
 </footer>
 	
 
-<style>
-	/* main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
+<style lang="postcss">
+	.textmenu {
+		font-size: 0.9em;
+	}
+	header {
+		position: fixed;
+		top: 0px;
 		width: 100%;
-		max-width: 1024px;
-		margin: 0 auto;
-		box-sizing: border-box;
+		height: 100px;
+		z-index: 1;
+	}
+	.navItem {
+		text-decoration: none;
+		position: relative;
+		display: inline-block;
 	}
 
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 40px;
+	.navItem::after {
+		content: '';
+		background: #d2691e;
+		height: 1px;
+		position: absolute;
+		bottom: 0;
+		transition: 0.16s all 0.025s;
 	}
 
-	footer a {
-		font-weight: bold;
+	.navItem::after {
+		left: 100%;
+		right: 0;
 	}
 
-	@media (min-width: 480px) {
-		footer {
-			padding: 40px 0;
-		}
-	} */
+	.navItem:hover ~ a::after {
+		left: 0;
+		right: 100%;
+	}
+
+	.navItem:hover::after {
+		left: 0;
+		right: 0;
+	}
 </style>

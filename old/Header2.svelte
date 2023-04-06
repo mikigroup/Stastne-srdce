@@ -69,12 +69,10 @@
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
-<style>
+<style lang="postcss">
 	.textmenu {
 		font-size: 0.9em;
 	}
-
-
 	header {
 		position: fixed;
 		top: 0px;
@@ -115,8 +113,8 @@
 
 <header class="bg-white">
 	<nav>
-		<div class="grid grid-cols-2 md:grid-cols-3 m-2 px-4 max-w-8xl mx-auto"> <!-- gap-2  -->
-			<div class="grid grid-cols-2 items-center py-4 lg:px-8 mx-4 lg:mx-0 w-full">
+		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl"> <!-- gap-2  -->
+			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 text-xl font-semibold w-80">
 						<a href="/">
 						Šťastné srdce</a>
@@ -127,8 +125,7 @@
 			</div>
 			<!-- menu -->
 			<div
-				class="grid grid-cols-4 border-2 rounded-full text-center items-center textmenu hidden
-				md:grid tracking-wide bg-slate-50">
+				class="grid items-center hidden grid-cols-4 tracking-wide text-center border-2 rounded-full textmenu md:grid bg-slate-50">
 				<div class="border-r-2" id="">
 					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
 				</div>
@@ -152,7 +149,7 @@
 				</div>
 			</div>
 
-			<div class="justify-self-end flex items-center">
+			<div class="flex items-center justify-self-end">
 				{#if $user}
 					<!-- <div class=""> 
           <p class="font-semibold">Ahoj {usertest}</p> 
@@ -163,12 +160,11 @@
 					</a> -->
 
 					<!-- pravá část menu -->
-					<div class="grid grid-cols-2 relative hidden md:flex items-center ml-auto">
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
 						<div class="pr-2">
 							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
 								<button
-									class="btn border rounded-3xl p-2 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800">
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Účet
 								</button>
 							</a>
@@ -176,19 +172,17 @@
 						<div class="">
 							<button
 								on:click={logOut}
-								class="btn border rounded-3xl p-2 px-6 border-green-700 text-green-800
-								hover:text-white hover:bg-green-800">
+								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
 						</div>
 					</div>
 				{:else}
-					<div class="grid grid-cols-2 relative hidden md:flex items-center ml-auto">
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
 						<div class="pr-2">
 							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
 								<button
-									class="btn border rounded-3xl p-2 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800">
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Přihlásit
 								</button>
 							</a>
@@ -196,8 +190,7 @@
 						<div class="">
 							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
 								<button
-									class="btn border rounded-3xl p-2 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800">
+									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Přidej se
 								</button>
 							</a>
@@ -229,8 +222,7 @@
 			</div>
 		</div>
 		<div
-			class="flex flex-row-reverse md:hidden justify-center tracking-wide text-center text-lg
-			bg-white">
+			class="flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white md:hidden">
 			<ul id="menu-box" style="" class="hidden mb-4">
 				<hr />				
 				<div class="mt-4">
@@ -249,13 +241,12 @@
 				<div>
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">Košík</a>
 				</div>
-				<div class="mt-6 grid grid-cols-2">
+				<div class="grid grid-cols-2 mt-6">
 				{#if $user}				
-					<div class="pr-2 col-end-2">
+					<div class="col-end-2 pr-2">
 							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
 								<button
-									class="btn border rounded-3xl p-1 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800 text-sm">
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Účet
 								</button>
 							</a>
@@ -263,17 +254,15 @@
 						<div class="">
 							<button
 								on:click={logOut}
-								class="btn border rounded-3xl p-1 px-6 border-green-700 text-green-800
-								hover:text-white hover:bg-green-800 text-sm">
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
 						</div>
 					{:else}					
-						<div class="pr-2 col-end-2">
+						<div class="col-end-2 pr-2">
 							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
 								<button
-									class="btn border rounded-3xl p-1 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800 text-sm">
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Přihlásit
 								</button>
 							</a>
@@ -281,8 +270,7 @@
 						<div class="">
 							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
 								<button
-									class="btn border rounded-3xl p-1 px-6 border-green-700 text-green-800
-									hover:text-white hover:bg-green-800 text-sm">
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Přidej se
 								</button>
 							</a>
