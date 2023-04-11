@@ -1,13 +1,11 @@
 <script>
 	import '../app.css';
-	import { goto } from "$app/navigation";
-	// import { supabase } from "../lib/initSupabase";
-	import { user } from './Stores/stores';	
+	import { goto } from "$app/navigation";	
 	import CartItemsStore from '../routes/Stores/stores';
 	import { page } from '$app/stores';
-	import { time } from '../routes/Stores/stores';
 	import { getSession, handleSession } from "$lib/session";
   import { supabaseClient, signOut } from "$lib/initSupabase";
+	import { readable } from 'svelte/store';
 	
 	//V2
 	/* export function getData() {
@@ -30,6 +28,16 @@
 		hour: 'numeric',
 		minute: '2-digit'
 	});
+
+	const time = readable(new Date(), function start(set) {
+	const interval = setInterval(() => {
+		set(new Date());
+	}, 1000);
+
+	return function stop() {
+		clearInterval(interval);
+	};
+});
 
 // const session = supabase.auth.session();
 /* 	$: isLoggedIn = !supabase.auth.user;
@@ -115,7 +123,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 			<div
 				class="grid items-center hidden grid-cols-4 tracking-wide text-center border-2 rounded-full textmenu md:grid bg-slate-50">
 				<div class="border-r-2" id="">
-					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
+					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>					
 				</div>
 				<div class="border-r-2">
 					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
@@ -130,7 +138,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 				<div class="">
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
 						Košík
-						{#if $user}
+						{#if $session}
 							<strong>{totalPieces}</strong>
 						{:else}
 						{/if}
@@ -139,7 +147,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 			</div>
 
 			<div class="flex items-center justify-self-end">
-				{#if $user}
+				{#if $session}
 					<!-- <div class=""> 
           <p class="font-semibold">Ahoj {usertest}</p> 
         </div> -->
@@ -160,7 +168,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 						</div>
 						<div class="">
 							<button
-								on:click={logOut}
+								on:click={signOut}
 								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
@@ -231,9 +239,9 @@ supabase.auth.onAuthStateChange((event, session) => {
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">Košík</a>
 				</div>
 				<div class="grid grid-cols-2 mt-6">
-				{#if $user}				
-					<div class="col-end-2 pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
+				{#if $session}				
+					<div class="col-end-2 pr-2">							
+								<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
 								<button
 									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 									Účet
@@ -242,7 +250,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 						</div>
 						<div class="">
 							<button
-								on:click={logOut}
+								on:click={signOut}
 								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
@@ -278,13 +286,13 @@ supabase.auth.onAuthStateChange((event, session) => {
 <footer class="">
   <div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">    
     <div class="grid col-span-2 text-sm">
-<p>Copyright © 2022-2023 Šťastné srdce Všechny práva vyhrazena.</p>     
+			<p><a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">Vytvořeno <i class="fa fa-regular fa-hand-spock"></i> Mikigroup™</a></p>                 
     </div>    
     <div class="grid justify-end col-span-3 text-sm">
-      <a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">With <i class="fa fa-regular fa-hand-spock"></i> by Mikigroup™ ver_1.1</a>            
+			<p>Copyright © 2022-2023 Šťastné srdce Všechny práva vyhrazena. <a href="https://www.mikigroup.cz/">ver_1.02</a>  </p>
   </div>
 </footer>
-	
+
 
 <style lang="postcss">
 	.textmenu {

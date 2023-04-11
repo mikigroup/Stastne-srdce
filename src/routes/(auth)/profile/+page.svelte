@@ -1,9 +1,6 @@
-<script lang="ts">
-  import { signIn } from "$lib/supabase";
-  import { get } from "svelte/store";
+<script> 
   import { getSession } from "$lib/session";
   import { supabaseClient, signOut, updateProfile } from "$lib/initSupabase";
-  import { onMount } from "svelte";
   const { session } = getSession();
 
 

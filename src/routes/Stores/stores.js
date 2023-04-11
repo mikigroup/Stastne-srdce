@@ -48,7 +48,7 @@ enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
   user.subscribe((value) => localStorage.user = JSON.stringify(value))
 } */
 
-export const time = readable(new Date(), function start(set) {
+/* export const time = readable(new Date(), function start(set) {
 	const interval = setInterval(() => {
 		set(new Date());
 	}, 1000);
@@ -57,7 +57,7 @@ export const time = readable(new Date(), function start(set) {
 		clearInterval(interval);
 	};
 });
-
+ */
 // export const currentCartItems = writable();
 export const user = writable(); //false ?
 export default CartItemsStore;
