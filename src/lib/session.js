@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit'
 import { setContext, getContext, hasContext } from 'svelte'
 import { writable } from 'svelte/store'
 
+
 const keys = { session: Symbol() }
 
 const initSession = () => {

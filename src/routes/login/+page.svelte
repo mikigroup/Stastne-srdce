@@ -1,5 +1,5 @@
 <script>
-  import { supabase } from "$lib/initSupabase";
+ /*  import { supabase } from "$lib/initSupabase";
   import { user } from "../Stores/stores";
 
   let error = "",    
@@ -24,7 +24,7 @@
     loading = false;
     if (user)
       window.location = '/jidelnicek';		
-  }
+  } */
 
   /* let loading = false;
 	let error = '';
@@ -53,7 +53,35 @@
     });
   } */
 
-  async function signInWithGoogle() {
+
+  import { signIn } from '$lib/initSupabase'
+  import { getSession, handleSession } from "$lib/session";
+  import { page } from "$app/stores";
+
+  const { session } = getSession();
+  $session = $page.data.user;
+
+  let loading = false;
+	let email, password;
+	let message = { success: null, display: '' };
+
+  const handleLogin = async () => {
+		try {
+			loading = true;
+			const { error } = await supabase.auth.signIn({ email, password });
+			if (error) throw error;
+			message = { success: true, display: 'Úspěšně zalogován' };
+			window.location = '/jidelnicek';
+		} catch (error) {
+			let errorMsg = error.error_description || error.message;
+			message = { success: false, display: errorMsg };
+		} finally {
+			loading = false;
+		}
+	};
+
+
+ /* async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -69,8 +97,8 @@
     const { user, data, error } = await supabase.auth.signIn({
       provider: "facebook",
     });
-  }
-
+  }  */
+  
 </script>
 
 <svelte:head>
@@ -80,12 +108,12 @@
 
 <section class="footer_fix">
   <div class="">
-    <form on:submit|preventDefault={handleLogin}>
+    <form on:submit|preventDefault={signIn}>
       <div class="pt-20 form-widget">
         <div
           class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
         >
-          {#if $user}
+          {#if $session}
             <div class="flex w-full text-xl">
               <p>Jste přihlášeni.</p>
             </div>
@@ -191,16 +219,12 @@
                   Přihlásit se
                 </button>
               </div>
-              {#if error}
-                <div class="flex w-full p-2 my-4 border rounded-lg">
-                  <p>{error}</p>
-                </div>
-              {/if}
+              
               <div />
             </div>
           {/if}
         </div>
-				{#if !$user}
+				{#if ! $session}
         <div class="form-widget">
           <div
             class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10"
@@ -208,7 +232,7 @@
             <div class="">
               <button
                 on:click={() => {
-                  signInWithGoogle();
+                  signIn();
                 }}
                 value={loading ? "Loading" : "Log in with Google"}
                 disabled={loading}

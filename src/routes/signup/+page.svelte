@@ -1,9 +1,9 @@
 <script>
-  import { supabase } from "$lib/initSupabase";
+  import { supabaseClient, signIn, signOut } from "$lib/initSupabase";
   import { user } from "../Stores/stores";
 	
 
-	supabase.auth.onAuthStateChange((state, session) => {
+	/* supabase.auth.onAuthStateChange((state, session) => {
 		user.set(state === 'SIGNED_IN' && session.user);
 	});
 	
@@ -45,6 +45,15 @@
 			provider: 'google'
 		});
 	}
+ */
+
+	supabaseClient.auth.onAuthStateChange((state, session) => {
+		user.set(state === 'SIGNED_IN' && session.user);
+	});
+
+	let email, password, confirmpassword;
+	let loading = false;
+	let message = { success: null, display: '' };
 
 	
 </script>
@@ -56,11 +65,9 @@
 <section>
 	<div class="pt-20 footer_fix">
 		<div
-			class="mt-20 flex flex-col max-w-md px-4 pt-7 pb-2 bg-white rounded-lg shadow 
-			sm:px-6 md:px-8 lg:px-10 mx-auto">
+			class="flex flex-col max-w-md px-4 pb-2 mx-auto mt-20 bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
 			<div
-				class="self-center mb-2 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl
-				">
+				class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl ">
 				Vytvoření nového účtu
 			</div>
 			<span
@@ -71,10 +78,9 @@
 			<div class="mt-8">
 				<form on:submit|preventDefault={handleSignup}>
 					<div class="flex flex-col mb-2">
-						<div class="flex relative">
+						<div class="relative flex">
 							<span
-								class="rounded-l-md inline-flex items-center px-3 border-t bg-white border-l
-								border-b border-gray-300 text-gray-500 shadow-sm text-sm">
+								class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
 								<svg
 									width="15"
 									height="15"
@@ -94,9 +100,7 @@
 								bind:value={email}
 								type="email"
 								id="email"								
-								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
-								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
 								required
@@ -104,10 +108,9 @@
 						</div>
 					</div>
 					<div class="flex flex-col mb-2">
-						<div class="flex relative">
+						<div class="relative flex">
 							<span
-								class="rounded-l-md inline-flex items-center px-3 border-t bg-white border-l
-								border-b border-gray-300 text-gray-500 shadow-sm text-sm">
+								class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
 								<svg
 									width="15"
 									height="15"
@@ -125,9 +128,7 @@
 								bind:value={password}
 								type="password"
 								id="password"
-								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
-								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								placeholder="Heslo (min 6 znaků)"
 								minlength="6" 
 								required
@@ -135,10 +136,9 @@
 						</div>
 					</div>
 					<div class="flex flex-col mb-2">
-						<div class="flex relative">
+						<div class="relative flex">
 							<span
-								class="rounded-l-md inline-flex items-center px-3 border-t bg-white border-l
-								border-b border-gray-300 text-gray-500 shadow-sm text-sm">
+								class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
 								<svg
 									width="15"
 									height="15"
@@ -156,9 +156,7 @@
 								bind:value={confirmpassword}
 								type="password"
 								id="confirmpassword"
-								class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300
-								w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-								focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
 								name="potvrzenihesla"
 								placeholder="Potvrzení hesla (napiš stejné heslo)"
 								minlength="6" 
@@ -169,10 +167,7 @@
 					<div class="flex w-full my-4">
 						<button
 							type="submit"
-							class="py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500
-							focus:ring-offset-green-200 text-white w-full transition ease-in duration-200
-							text-center text-base font-semibold hover:text-yellow shadow-md focus:outline-none
-							focus:ring-2 focus:ring-offset-2 rounded-lg ">
+							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 hover:text-yellow focus:outline-none focus:ring-2 focus:ring-offset-2 ">
 							Registrace
 						</button>
 
@@ -189,8 +184,7 @@
 		</div>
 		<div class="form-widget">
 					<div
-						class="mx-auto flex flex-col-2 gap-2 max-w-md px-4 py-8 bg-white rounded-lg shadow
-					 sm:px-6 md:px-8 lg:px-10">
+						class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
 						<form on:submit|preventDefault={signInWithGoogle}>
 							<div class="">
 								<button
@@ -198,9 +192,7 @@
 									disabled={loading}
 									id="btn-success"
 									type="submit"
-									class="btn btn-success py-2 px-4 hover:bg-green-700 transition ease-in
-									duration-200 text-center text-base font-semibold shadow-md focus:outline-none
-									focus:ring-2 focus:ring-offset-2 rounded-lg">
+									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2">
 									<img src="/google.svg" alt="" width="40" height="40" />
 								</button>
 							</div>

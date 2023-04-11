@@ -1,5 +1,6 @@
 <script>
-	import { supabase } from "$lib/initSupabase";
+	// import { supabase } from "$lib/initSupabase";
+	import { supabaseClient } from "$lib/initSupabase";
 
 	let message = { success: null, display: '' };
 
@@ -10,7 +11,7 @@
 			const [key, value] = field;
 			data[key] = value;
 		}		
-		supabase.functions.invoke('sendForm', {
+		supabaseClient.auth.functions.invoke('sendForm', {
 			body: JSON.stringify({ data: data })
 		});
 		if (data != null) {

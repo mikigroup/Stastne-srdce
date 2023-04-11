@@ -1,14 +1,16 @@
 <script>
 	import '../app.css';
-	import { supabase } from "../lib/initSupabase";
+	import { goto } from "$app/navigation";
+	// import { supabase } from "../lib/initSupabase";
 	import { user } from './Stores/stores';	
 	import CartItemsStore from '../routes/Stores/stores';
 	import { page } from '$app/stores';
 	import { time } from '../routes/Stores/stores';
-
+	import { getSession, handleSession } from "$lib/session";
+  import { supabaseClient, signOut } from "$lib/initSupabase";
 	
 	//V2
-	export function getData() {
+	/* export function getData() {
 		return async (dispatch) => {
 			try {
 			const {
@@ -19,7 +21,7 @@
 				console.log('error: ', err)
 			}
 		}
-	}
+	} */
 
 	let src = '/android-chrome-192x192.png';
 
@@ -34,18 +36,37 @@
 	$: usertest = supabase.auth.user;
 	$: username = $user !== null ? $user.username : ' there!'; */
 
+const { session } = getSession();
 
-supabase.auth.onAuthStateChange((event, session) => {
+$session = $page.data.user;
+
+  supabaseClient.auth.onAuthStateChange(async (event, seshun) => {
+    console.log(event, seshun);
+    await handleSession(event, seshun, `/api/cookie`);
+    console.log("client", supabaseClient);
+    console.log("user", await supabaseClient.auth.getUser());
+    if (event === "SIGNED_OUT") {
+      $session = null;
+      goto("/");
+    }
+    if (event === "SIGNED_IN") {
+      $session = seshun.user;
+      goto("/");
+    }
+  });
+
+
+/* supabase.auth.onAuthStateChange((event, session) => {
   if (event == 'SIGNED_IN') console.log('SIGNED_IN', session)
 })
 
 supabase.auth.onAuthStateChange((event, session) => {
   console.log(event, session)
 })
+ */
 
 
-
-	async function logOut() {
+	/* async function logOut() {
 		try {
 			loading = true;
 			let { error } = await supabase.auth.signOut();
@@ -56,10 +77,10 @@ supabase.auth.onAuthStateChange((event, session) => {
 			loading = false;
 			window.location = '/';
 		}
-	}
+	} */
 
-	let loading = false;
-	let message = { success: null, display: '' };
+	/* let loading = false;
+	let message = { success: null, display: '' }; */
 
 	function toggleMenu() {
 		var menuBox = document.getElementById('menu-box');
@@ -257,7 +278,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 <footer class="">
   <div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">    
     <div class="grid col-span-2 text-sm">
-<p>Copyright © 2022 Šťastné srdce Všechny práva vyhrazena.</p>     
+<p>Copyright © 2022-2023 Šťastné srdce Všechny práva vyhrazena.</p>     
     </div>    
     <div class="grid justify-end col-span-3 text-sm">
       <a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">With <i class="fa fa-regular fa-hand-spock"></i> by Mikigroup™ ver_1.1</a>            

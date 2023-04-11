@@ -1,7 +1,7 @@
 import { subscribe } from 'svelte/internal';
 import { writable  , readable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { supabase } from "$lib/initSupabase";
+
 
 /* const storeCartItems = localStorage?.getItem("cart");
 const initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems) */
@@ -61,7 +61,8 @@ export const time = readable(new Date(), function start(set) {
 // export const currentCartItems = writable();
 export const user = writable(); //false ?
 export default CartItemsStore;
-export function getData() {
+
+/* export function getData() {
   return async (dispatch) => {
     try {
      const {
@@ -72,16 +73,16 @@ export function getData() {
       console.log('error: ', err)
     }
   }
-}
+} */
 
 
-supabase.auth.onAuthStateChange((event, session) => {
+/* supabase.auth.onAuthStateChange((event, session) => {
 	if (event == 'SIGNED_IN' && session) {
 		userStore.set(session.user);
 	} else if (event == 'SIGNED_OUT') {
 		userStore.set(null);
 	}
-});
+}); */
 
 //modal kosik
 export function booleanStore(initial) {

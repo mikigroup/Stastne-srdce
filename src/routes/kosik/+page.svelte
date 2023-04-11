@@ -1,11 +1,11 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
-	import { get } from 'svelte/store';
-	import { supabase } from "$lib/initSupabase";
+	import { get } from 'svelte/store';	
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
   import { onMount } from 'svelte/internal';
+	import { supabaseClient } from "$lib/initSupabase";
 	// import { onMount } from "svelte"; // pro využití localstorage
 	
 
@@ -102,7 +102,7 @@ function delayRefreshPage(mileSeconds) {
 	}
 function sendOrderBySendGrid() {
 		var txt = document.getElementById('txt');	
-		supabase.functions.invoke('sendOrderBySendGrid_T', {
+		supabaseClient.auth.functions.functions.invoke('sendOrderBySendGrid_T', {
 		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
 		});
 		CartItemsStore.update(() => {
