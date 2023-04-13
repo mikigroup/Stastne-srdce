@@ -39,9 +39,7 @@
 	<title>Šťastné srdce - Úvod</title>
 	<meta name="description" content="Úvod" />
 </svelte:head>
-
 <main>	
-	<h1 class="">Šťastné srdce</h1>	
 	<section>
 		<div
 			class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">

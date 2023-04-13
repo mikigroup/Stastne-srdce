@@ -9,7 +9,7 @@
 		"lint": "prettier --check --plugin-search-dir=. .",
 		"format": "prettier --write --plugin-search-dir=. .",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
 		"@rollup/plugin-json": "^4.1.0",
@@ -31,7 +31,7 @@
 	"dependencies": {
 		"@fontsource/fira-mono": "^4.5.0",
 		"@sanity/client": "^3.3.2",
-		"@supabase/auth-helpers-sveltekit": "^0.9.1",
+		"@supabase/auth-helpers-sveltekit": "^0.9.3",
 		"@supabase/supabase-js": "^2.13.1",
 		"@svelteuidev/composables": "^0.7.0",
 		"@svelteuidev/core": "^0.7.0",

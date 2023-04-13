@@ -48,11 +48,20 @@ const { session } = getSession();
 
 $session = $page.data.user;
 
+/* supabaseClient.auth.onAuthStateChange((event, session) => {
+	if (event == 'SIGNED_IN' && session) {
+		userStore.set(session.user);
+	} else if (event == 'SIGNED_OUT') {
+		userStore.set(null);
+	}
+}); */
+
+
   supabaseClient.auth.onAuthStateChange(async (event, seshun) => {
-    console.log(event, seshun);
+    // console.log(event, seshun);
     await handleSession(event, seshun, `/api/cookie`);
-    console.log("client", supabaseClient);
-    console.log("user", await supabaseClient.auth.getUser());
+    // console.log("client", supabaseClient);
+    // console.log("user", await supabaseClient.auth.getUser());
     if (event === "SIGNED_OUT") {
       $session = null;
       goto("/");
@@ -111,9 +120,9 @@ supabase.auth.onAuthStateChange((event, session) => {
 	<nav>
 		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl"> <!-- gap-2  -->
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
-				<div class="grid grid-cols-2 text-xl font-semibold w-80">
-						<a href="/">
-						Šťastné srdce</a>
+				<div class="grid grid-cols-2 w-80">
+						<h1 class="text-xl font-semibold"><a href="/">
+						Šťastné srdce</a></h1>
 						<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20">
 				</div>				
 				<!-- čas -->
@@ -139,8 +148,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
 						Košík
 						{#if $session}
-							<strong>{totalPieces}</strong>
-						{:else}
+							<strong>{totalPieces}</strong>						
 						{/if}
 					</a>
 				</div>

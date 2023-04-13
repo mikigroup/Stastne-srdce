@@ -1,4 +1,4 @@
-<script> 
+<script>
   import { getSession } from "$lib/session";
   import { supabaseClient, signOut, updateProfile } from "$lib/initSupabase";
   const { session } = getSession();
@@ -228,7 +228,7 @@
               <hr class="w-32" />
             </div>
             <div class="flex flex-col my-2">
-              <div class="flex flex-col items-center md:flex-row">
+              <!-- <div class="flex flex-col items-center md:flex-row">
                 <div class="flex justify-start basis-1/2">
                   <label class="pr-2" for="company_name">Název firmy</label>
                 </div>
@@ -242,9 +242,9 @@
                     placeholder="Název firmy"
                   />
                 </div>
-              </div>
+              </div> 
               <hr class="w-32" />
-            </div>
+            </div>-->
             <div class="my-2">
               <div class="flex flex-col items-center md:flex-row">
                 <div class="flex justify-start basis-1/2">
