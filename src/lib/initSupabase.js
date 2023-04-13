@@ -28,7 +28,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, options); */
 import { createClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { dev } from '$app/environment';
-import { page } from '$app/stores';
 
 /* v2 supabase-js */
 export const supabaseClient = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);

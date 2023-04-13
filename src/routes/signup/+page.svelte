@@ -47,10 +47,7 @@
 	}
  */
 
-	supabaseClient.auth.onAuthStateChange((state, session) => {
-		user.set(state === 'SIGNED_IN' && session.user);
-	});
-
+ 
 	let email, password, confirmpassword;
 	let loading = false;
 	let message = { success: null, display: '' };

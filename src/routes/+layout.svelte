@@ -1,12 +1,15 @@
 <script>
+	import { getSession, handleSession } from "$lib/session";
 	import '../app.css';
 	import { goto } from "$app/navigation";	
 	import CartItemsStore from '../routes/Stores/stores';
-	import { page } from '$app/stores';
-	import { getSession, handleSession } from "$lib/session";
+	import { page } from '$app/stores';	
   import { supabaseClient, signOut } from "$lib/initSupabase";
 	import { readable } from 'svelte/store';
-	
+
+
+
+
 	//V2
 	/* export function getData() {
 		return async (dispatch) => {
@@ -44,9 +47,27 @@
 	$: usertest = supabase.auth.user;
 	$: username = $user !== null ? $user.username : ' there!'; */
 
-const { session } = getSession();
 
-$session = $page.data.user;
+const  session  = getSession();
+
+// const { data, error } = await supabaseClient.auth.getSession()
+// const { data: { user } } = await supabaseClient.auth.getUser()
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log('User signed in')
+    
+  } else if (event === 'SIGNED_OUT') {
+    console.log('User signed out')
+    
+  }
+})
+
+// $session = $page.data.user;
+
+
+    
+
 
 /* supabaseClient.auth.onAuthStateChange((event, session) => {
 	if (event == 'SIGNED_IN' && session) {
@@ -57,7 +78,7 @@ $session = $page.data.user;
 }); */
 
 
-  supabaseClient.auth.onAuthStateChange(async (event, seshun) => {
+/*   supabaseClient.auth.onAuthStateChange(async (event, seshun) => {
     // console.log(event, seshun);
     await handleSession(event, seshun, `/api/cookie`);
     // console.log("client", supabaseClient);
@@ -70,15 +91,12 @@ $session = $page.data.user;
       $session = seshun.user;
       goto("/");
     }
-  });
+  }); */
+
 
 
 /* supabase.auth.onAuthStateChange((event, session) => {
-  if (event == 'SIGNED_IN') console.log('SIGNED_IN', session)
-})
-
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log(event, session)
+  
 })
  */
 
@@ -147,9 +165,12 @@ supabase.auth.onAuthStateChange((event, session) => {
 				<div class="">
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
 						Košík
-						{#if $session}
+						{#if $session }
 							<strong>{totalPieces}</strong>						
 						{/if}
+			<!-- 			{#if $user}
+							<strong>{totalPieces}</strong>						
+						{/if} -->
 					</a>
 				</div>
 			</div>

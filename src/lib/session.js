@@ -3,6 +3,8 @@ import { setContext, getContext, hasContext } from 'svelte'
 import { writable } from 'svelte/store'
 
 
+export const session = writable(null);
+
 const keys = { session: Symbol() }
 
 const initSession = () => {
@@ -33,6 +35,5 @@ export const handleSession = async (event, session, api) => {
   if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
     await setCookie('POST', JSON.stringify(session))
   }
+  return true
 }
-
-
