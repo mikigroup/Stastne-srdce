@@ -325,7 +325,8 @@ function createDoc() {
 				</div>				
 				<div class="m-5">
 						{#if $user}			
-					<button
+					<button				
+						on:click={() => {sendOrderBySendGrid();}}
 						type="button"
 						class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
 						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
@@ -334,7 +335,8 @@ function createDoc() {
 						data-te-target="#exampleModal"
 						data-te-ripple-init
 						data-te-ripple-color="light">
-						<span>Potvrzení košíku</span>
+						<!-- <span>Potvrzení a odeslaní košíku</span> -->
+						<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Potvrzení a odeslaní košíku</a>
 					</button>					
 					{:else}
 					<button
