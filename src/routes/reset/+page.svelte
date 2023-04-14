@@ -1,8 +1,7 @@
 <script>
-  import { user } from "./Stores/stores";
-  // import { supabase } from "./supabaseClient";
-  import { supabase } from "../lib/initSupabase_v1";
-  // user.set(supabase.auth.user());
+  import { user } from "./Stores/stores";  
+  import { supabaseClient } from "$lib/supabaseClient";
+  
 
 
   /**

@@ -1,5 +1,5 @@
 <script>
-  import { supabaseClient, signIn, signOut } from "$lib/initSupabase";
+  import { supabaseClient, signIn, signOut } from "$lib/supabaseClient";
   import { user } from "../Stores/stores";
 	
 

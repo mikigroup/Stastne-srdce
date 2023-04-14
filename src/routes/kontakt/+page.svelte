@@ -1,5 +1,4 @@
 <script>
-	// import { supabase } from "$lib/initSupabase";
 	import { supabaseClient } from "$lib/supabaseClient";
 
 	let message = { success: null, display: '' };

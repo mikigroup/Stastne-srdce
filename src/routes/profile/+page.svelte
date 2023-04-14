@@ -1,11 +1,6 @@
 <script>
-  import { getSession } from "$lib/session_backup";
-  import { supabaseClient, signOut, updateProfile } from "$lib/initSupabase";
-  const { session } = getSession();
-
-
-
-
+  import { supabaseClient, signOut, updateProfile } from "$lib/supabaseClient";
+  
   /* let loading = false;
   let username: string | null = null;
   let website: string | null = null;

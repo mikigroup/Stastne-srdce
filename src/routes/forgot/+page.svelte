@@ -1,6 +1,5 @@
-<script>
-    // import { supabase } from "./supabaseClient";
-    import { supabase } from "../../lib/initSupabase_v1";
+<script>    
+    import { supabaseClient } from "$lib/supabaseClient";
 
     export let initSupabase;
 
@@ -11,7 +10,7 @@
     message = ''
     loading = true
 
-    const { error: err } = await supabase.auth.api.resetPasswordForEmail(email, {
+    const { error: err } = await supabaseClient.auth.api.resetPasswordForEmail(email, {
         redirectTo: 'https://www.stastnesrdce.cz/reset',
       })
 

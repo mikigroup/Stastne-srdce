@@ -54,12 +54,8 @@
   } */
 
 
-  import { signIn } from '$lib/initSupabase'
-  import { getSession, handleSession } from "$lib/session_backup";
+  import { supabaseClient } from '$lib/supabaseClient'
   import { page } from "$app/stores";
-
-  const { session } = getSession();
-  $session = $page.data.user;
 
   let loading = false;
 	let email, password;
@@ -68,7 +64,7 @@
   const handleLogin = async () => {
 		try {
 			loading = true;
-			const { error } = await supabase.auth.signIn({ email, password });
+			const { error } = await supabaseClient.auth.signIn({ email, password });
 			if (error) throw error;
 			message = { success: true, display: 'Úspěšně zalogován' };
 			window.location = '/jidelnicek';
@@ -81,8 +77,26 @@
 	};
 
 
- /* async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+/*   let loading = false
+	let email: string
+
+	const handleLogin = async () => {
+		try {
+			loading = true
+			const { error } = await supabaseClient.auth.signInWithOtp({ email })
+			if (error) throw error
+			alert('Check your email for the login link!')
+		} catch (error) {
+			if (error instanceof Error) {
+				alert(error.message)
+			}
+		} finally {
+			loading = false
+		}
+	} */
+
+ async function signInWithGoogle() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       queryParams: {
@@ -93,6 +107,7 @@
   })
 }
 
+/* 
   async function signInWithFacebook() {
     const { user, data, error } = await supabase.auth.signIn({
       provider: "facebook",
@@ -113,7 +128,7 @@
         <div
           class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
         >
-          {#if $session}
+          {#if $page.data.session}
             <div class="flex w-full text-xl">
               <p>Jste přihlášeni.</p>
             </div>
@@ -224,7 +239,7 @@
             </div>
           {/if}
         </div>
-				{#if ! $session}
+				{#if ! $page.data.session}
         <div class="form-widget">
           <div
             class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10"
@@ -232,7 +247,7 @@
             <div class="">
               <button
                 on:click={() => {
-                  signIn();
+                  signInWithGoogle();
                 }}
                 value={loading ? "Loading" : "Log in with Google"}
                 disabled={loading}
