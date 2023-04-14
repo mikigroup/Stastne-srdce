@@ -1,21 +1,15 @@
 <script>
-  import { supabaseClient, signIn, signOut } from "$lib/supabaseClient";
-  import { user } from "../Stores/stores";
-	
-
-	/* supabase.auth.onAuthStateChange((state, session) => {
-		user.set(state === 'SIGNED_IN' && session.user);
-	});
+  import { supabaseClient } from "$lib/supabaseClient";  
 	
 	let email = "@" // doplnění value email
 	let password, confirmpassword;
 	let loading = false;
-	let message = { success: null, display: '' };
+	let message = { success: '', display: '' };
 
 	const handleSignup = async () => {
 		if (password != confirmpassword) {
 			message = {
-				success: false,
+				success: '',
 				display: 'Heslo a potvrzovací heslo není stejné, zadejte je prosím znovu'
 			};
 			return;
@@ -23,7 +17,7 @@
 
 		try {
 			loading = true;
-			const { error } = await supabase.auth.signUp({ email, password });
+			const { error } = await supabaseClient.auth.signUp({ email, password });
 			console.log(error);
 			if (error) throw error;
 			message = {
@@ -40,18 +34,16 @@
 		}
 	};
 
-	async function signInWithGoogle() {
+/* 	async function signInWithGoogle() {
 		const { user, session, error } = await supabase.auth.signIn({
 			provider: 'google'
 		});
 	}
- */
-
  
 	let email, password, confirmpassword;
 	let loading = false;
 	let message = { success: null, display: '' };
-
+ */
 	
 </script>
 

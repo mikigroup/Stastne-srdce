@@ -58,13 +58,14 @@
   import { page } from "$app/stores";
 
   let loading = false;
-	let email, password;
+	let email = [];
+  let password = [];
 	let message = { success: null, display: '' };
-
+ 
   const handleLogin = async () => {
 		try {
 			loading = true;
-			const { error } = await supabaseClient.auth.signIn({ email, password });
+			const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 			if (error) throw error;
 			message = { success: true, display: 'Úspěšně zalogován' };
 			window.location = '/jidelnicek';
@@ -107,6 +108,7 @@
   })
 }
 
+
 /* 
   async function signInWithFacebook() {
     const { user, data, error } = await supabase.auth.signIn({
@@ -123,7 +125,7 @@
 
 <section class="footer_fix">
   <div class="">
-    <form on:submit|preventDefault={signIn}>
+    <form on:submit|preventDefault={handleLogin}>
       <div class="pt-20 form-widget">
         <div
           class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"

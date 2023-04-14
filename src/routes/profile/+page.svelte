@@ -1,5 +1,5 @@
 <script>
-  import { supabaseClient, signOut, updateProfile } from "$lib/supabaseClient";
+  import { supabaseClient } from "$lib/supabaseClient";
   
   /* let loading = false;
   let username: string | null = null;

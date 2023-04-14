@@ -1,8 +1,7 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
 	import * as animateScroll from 'svelte-scrollto';
-	import client from '../sanityClient';
-	import { user } from '../Stores/stores';	
+	import client from '../sanityClient';	
 	import { page } from '$app/stores';	  
   	
 	export let data;
@@ -167,7 +166,7 @@
 								<div class="">									
 									<!-- karta menu -->					
 									<div class="mb-5">												
-										{#if $user && data.menus && data.menus.length}
+										{#if $page.data.session && data.menus && data.menus.length}
 											{#each data.menus as menu}  <!-- //searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
@@ -354,7 +353,7 @@
 					</div>
 				</div>
 			</div>
-			{#if totalPieces > 0 && $user}
+			{#if totalPieces > 0 && $page.data.session}
 							<div class="flex text-md">
 								<a class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2" activeClass={$page.url.pathname === '/kosik'} href="/kosik"><button
 									class="">									

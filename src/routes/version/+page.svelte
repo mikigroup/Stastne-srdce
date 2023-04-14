@@ -4,4 +4,4 @@ v1.02
 - redesign
 - doplnění loga
 - úprava textů
-
+- možnost dopsání poznámky k objednávce
