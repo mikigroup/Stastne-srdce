@@ -42,6 +42,12 @@
 	<meta name="description" content="Úvod" />
 </svelte:head>
 
+{#if !$page.data.session}
+	<Auth />
+{:else}
+	<Account session={$page.data.session} />
+{/if}
+
  <main>	
 	<section>
 		<div

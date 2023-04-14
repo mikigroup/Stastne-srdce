@@ -1,5 +1,5 @@
 <script>
-	import './app.css';	
+	import './app.css';
 	import CartItemsStore from '../routes/Stores/stores';
 	import { page } from '$app/stores';	
   import { supabaseClient } from "$lib/supabaseClient";
@@ -47,7 +47,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   }
 })
 
-	function toggleMenu() {
+	function toggleMenu() {		
 		var menuBox = document.getElementById('menu-box');
 		if (menuBox.style.display == 'block') {
 			// if is menuBox displayed, hide it
@@ -55,6 +55,21 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 		} else {
 			// if is menuBox hidden, display it
 			menuBox.style.display = 'block';
+		}
+	}
+
+	let loading = false;
+	async function signOut() {
+		try {
+			loading = true
+			let { error } = await supabaseClient.auth.signOut()
+			if (error) throw error
+		} catch (error) {
+			if (error instanceof Error) {
+				alert(error.message)
+			}
+		} finally {
+			loading = false
 		}
 	}
 
@@ -98,9 +113,6 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 						{#if $page.data.session }
 							<strong>{totalPieces}</strong>						
 						{/if}
-			<!-- 			{#if $user}
-							<strong>{totalPieces}</strong>						
-						{/if} -->
 					</a>
 				</div>
 			</div>
@@ -126,8 +138,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 							</a>
 						</div>
 						<div class="">
-							<button
-								
+							<button										
+								on:click={signOut} disabled={loading}
 								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
@@ -209,7 +221,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 						</div>
 						<div class="">
 							<button
-								
+								on:click={signOut} disabled={loading}
 								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>

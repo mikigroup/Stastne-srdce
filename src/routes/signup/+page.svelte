@@ -34,16 +34,18 @@
 		}
 	};
 
-/* 	async function signInWithGoogle() {
-		const { user, session, error } = await supabase.auth.signIn({
-			provider: 'google'
-		});
-	}
- 
-	let email, password, confirmpassword;
-	let loading = false;
-	let message = { success: null, display: '' };
- */
+	
+ async function signInWithGoogle() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  })
+}
 	
 </script>
 

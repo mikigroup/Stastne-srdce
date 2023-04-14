@@ -207,10 +207,6 @@
 				<div
 					class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg"
 				>
-				<div>
-		<label for="email">Email</label>
-		<input id="email" type="text" value={session.user.email} disabled />
-	</div>
 	<div>
 		<label for="username">Name</label>
 		<input id="username" type="text" bind:value={username} />
@@ -226,16 +222,7 @@
 							</div>
 							<div class="w-full basis-1/2">
 								<input value={session.user.email} disabled type="email" id="email" class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg shadow-sm appearance-none form-control bg-slate-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"                  
-                  placeholder="Email" />
-								<!-- <input                  
-                  value={session.user.email}
-                  disabled
-                  type="email"
-                  id="email"
-                  class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg shadow-sm appearance-none form-control bg-slate-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"                  
-                  placeholder="Email"
-                /> -->
-								<input id="email" type="text" disabled />
+                  placeholder="Email" />																
 							</div>
 						</div>
 						<hr class="w-32" />
@@ -268,7 +255,7 @@
 										type="last_name"
 										id="last_name"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-										required
+										
 										placeholder="Příjmení"
 									/>
 								</div>
@@ -286,7 +273,7 @@
 										type="telephone"
 										id="telephone"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-										required
+										
 										placeholder="Telefon"
 									/>
 								</div>
@@ -322,7 +309,7 @@
 											type="street"
 											id="street"
 											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											required
+											
 											placeholder="Ulice"
 										/>
 									</div>
@@ -340,7 +327,7 @@
 											type="street_number"
 											id="street_number"
 											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											required
+											
 											placeholder="Číslo popisné"
 										/>
 									</div>
@@ -362,7 +349,7 @@
                    rounded-lg text-center appearance-none border border-gray-300 w-full py-2 px-4
                     bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
                      focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											required
+											
 											placeholder="Město"
 										/>
 									</div>
