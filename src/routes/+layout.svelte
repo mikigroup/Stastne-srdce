@@ -8,9 +8,7 @@
 	import { readable } from 'svelte/store';
 
 
-
-
-	//V2
+	 	//V2
 	/* export function getData() {
 		return async (dispatch) => {
 			try {
@@ -48,13 +46,13 @@
 	$: username = $user !== null ? $user.username : ' there!'; */
 
 
-const  session  = getSession();
+const { session } = getSession();
 
 // const { data, error } = await supabaseClient.auth.getSession()
 // const { data: { user } } = await supabaseClient.auth.getUser()
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN') {
+  if (event === 'SIGNED_IN') {		
     console.log('User signed in')
     
   } else if (event === 'SIGNED_OUT') {
@@ -63,7 +61,9 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   }
 })
 
-// $session = $page.data.user;
+$session = $page.data.user;
+
+console.log(session);
 
 
     

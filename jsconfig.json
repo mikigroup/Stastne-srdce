@@ -37,5 +37,5 @@
    * Use global.d.ts instead of compilerOptions.types
    * to avoid limiting type declarations.
    */
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "backup_postcss.config.js", "postcss.config.js", "src/routes/+layout.server.ts"],
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "backup_postcss.config.js", "postcss.config.js", "src/routes/+layout.server.ts", "src/hooks.client.ts", "src/routes/+layout.ts"],
 }

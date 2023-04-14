@@ -61,6 +61,7 @@ enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
 // export const currentCartItems = writable();
 export const user = writable(); //false ?
 export default CartItemsStore;
+export const session = writable(null);
 
 /* export function getData() {
   return async (dispatch) => {

@@ -2,8 +2,8 @@ import { error } from '@sveltejs/kit'
 import { setContext, getContext, hasContext } from 'svelte'
 import { writable } from 'svelte/store'
 
-
 export const session = writable(null);
+
 
 const keys = { session: Symbol() }
 
