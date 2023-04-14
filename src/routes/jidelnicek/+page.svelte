@@ -4,22 +4,15 @@
 	import client from '../sanityClient';
 	import { user } from '../Stores/stores';	
 	import { page } from '$app/stores';	  
-  
-	//V1
-	/* user.set(supabase.auth.user());
-	const session = supabase.auth.session(); */
-  //V2
-
-	
+  	
 	export let data;
-		
 	export async function loadmenu(from, to) {
 		return client.fetch(`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
 	};
 
 	let currentDate = new Date();
-
+	
 	let datumPrvniZalozkaEnd = new Date();
 	datumPrvniZalozkaEnd.setDate(datumPrvniZalozkaEnd.getDate() + 10);
 

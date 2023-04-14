@@ -5,7 +5,7 @@
 	import { user } from '../Stores/stores';
 	import client from "../sanityClient";
   import { onMount } from 'svelte/internal';
-	import { supabaseClient } from "$lib/initSupabase";
+	import { supabaseClient } from "$lib/supabaseClient";
 	// import { onMount } from "svelte"; // pro využití localstorage
 	
 

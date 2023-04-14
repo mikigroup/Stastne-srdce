@@ -55,7 +55,7 @@
 
 
   import { signIn } from '$lib/initSupabase'
-  import { getSession, handleSession } from "$lib/session";
+  import { getSession, handleSession } from "$lib/session_backup";
   import { page } from "$app/stores";
 
   const { session } = getSession();

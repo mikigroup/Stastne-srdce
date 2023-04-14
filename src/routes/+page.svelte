@@ -1,5 +1,7 @@
 <script>
-	 
+	 import { page } from '$app/stores'
+	 import Account from './Account.svelte'
+	 import Auth from './Auth.svelte'
 </script>
 
 <style lang="postcss">
@@ -39,7 +41,8 @@
 	<title>Šťastné srdce - Úvod</title>
 	<meta name="description" content="Úvod" />
 </svelte:head>
-<main>	
+
+ <main>	
 	<section>
 		<div
 			class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">

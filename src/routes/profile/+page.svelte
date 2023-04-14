@@ -1,5 +1,5 @@
 <script>
-  import { getSession } from "$lib/session";
+  import { getSession } from "$lib/session_backup";
   import { supabaseClient, signOut, updateProfile } from "$lib/initSupabase";
   const { session } = getSession();
 

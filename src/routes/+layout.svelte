@@ -1,26 +1,23 @@
 <script>
-	import { getSession, handleSession } from "$lib/session";
-	import '../app.css';
-	import { goto } from "$app/navigation";	
+	import './app.css';	
 	import CartItemsStore from '../routes/Stores/stores';
 	import { page } from '$app/stores';	
-  import { supabaseClient, signOut } from "$lib/initSupabase";
+  import { supabaseClient } from "$lib/supabaseClient";
 	import { readable } from 'svelte/store';
+	import { invalidate } from '$app/navigation'
+	import { onMount } from 'svelte'
 
+	onMount(() => {
+		const {
+			data: { subscription }
+		} = supabaseClient.auth.onAuthStateChange(() => {
+			invalidate('supabase:auth')
+		})
 
-	 	//V2
-	/* export function getData() {
-		return async (dispatch) => {
-			try {
-			const {
-					data: { session },
-				} = await supabase.auth.getSession()
-				const { user } = session
-				} catch(err) {
-				console.log('error: ', err)
-			}
+		return () => {
+			subscription.unsubscribe()
 		}
-	} */
+	})
 
 	let src = '/android-chrome-192x192.png';
 
@@ -40,17 +37,6 @@
 	};
 });
 
-// const session = supabase.auth.session();
-/* 	$: isLoggedIn = !supabase.auth.user;
-	$: usertest = supabase.auth.user;
-	$: username = $user !== null ? $user.username : ' there!'; */
-
-
-const { session } = getSession();
-
-// const { data, error } = await supabaseClient.auth.getSession()
-// const { data: { user } } = await supabaseClient.auth.getUser()
-
 supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN') {		
     console.log('User signed in')
@@ -60,62 +46,6 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     
   }
 })
-
-$session = $page.data.user;
-
-console.log(session);
-
-
-    
-
-
-/* supabaseClient.auth.onAuthStateChange((event, session) => {
-	if (event == 'SIGNED_IN' && session) {
-		userStore.set(session.user);
-	} else if (event == 'SIGNED_OUT') {
-		userStore.set(null);
-	}
-}); */
-
-
-/*   supabaseClient.auth.onAuthStateChange(async (event, seshun) => {
-    // console.log(event, seshun);
-    await handleSession(event, seshun, `/api/cookie`);
-    // console.log("client", supabaseClient);
-    // console.log("user", await supabaseClient.auth.getUser());
-    if (event === "SIGNED_OUT") {
-      $session = null;
-      goto("/");
-    }
-    if (event === "SIGNED_IN") {
-      $session = seshun.user;
-      goto("/");
-    }
-  }); */
-
-
-
-/* supabase.auth.onAuthStateChange((event, session) => {
-  
-})
- */
-
-
-	/* async function logOut() {
-		try {
-			loading = true;
-			let { error } = await supabase.auth.signOut();
-			if (error) throw error;			
-		} catch (error) {
-			message = { success: false, display: error.message };
-		} finally {
-			loading = false;
-			window.location = '/';
-		}
-	} */
-
-	/* let loading = false;
-	let message = { success: null, display: '' }; */
 
 	function toggleMenu() {
 		var menuBox = document.getElementById('menu-box');
@@ -165,7 +95,7 @@ console.log(session);
 				<div class="">
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
 						Košík
-						{#if $session }
+						{#if $page.data.session }
 							<strong>{totalPieces}</strong>						
 						{/if}
 			<!-- 			{#if $user}
@@ -176,7 +106,7 @@ console.log(session);
 			</div>
 
 			<div class="flex items-center justify-self-end">
-				{#if $session}
+				{#if $page.data.session}
 					<!-- <div class=""> 
           <p class="font-semibold">Ahoj {usertest}</p> 
         </div> -->
@@ -197,7 +127,7 @@ console.log(session);
 						</div>
 						<div class="">
 							<button
-								on:click={signOut}
+								
 								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
@@ -268,7 +198,7 @@ console.log(session);
 					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">Košík</a>
 				</div>
 				<div class="grid grid-cols-2 mt-6">
-				{#if $session}				
+				{#if $page.data.session}				
 					<div class="col-end-2 pr-2">							
 								<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
 								<button
@@ -279,7 +209,7 @@ console.log(session);
 						</div>
 						<div class="">
 							<button
-								on:click={signOut}
+								
 								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
 								Odhlásit
 							</button>
