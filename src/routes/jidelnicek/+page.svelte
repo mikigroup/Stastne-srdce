@@ -1,7 +1,7 @@
 <script>
 	import CartItemsStore from '../Stores/stores';
 	import * as animateScroll from 'svelte-scrollto';
-	import client from '../sanityClient';	
+	import client from '../../lib/sanityClient';	
 	import { page } from '$app/stores';	  
   	
 	export let data;

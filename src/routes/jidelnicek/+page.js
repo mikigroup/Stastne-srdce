@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import client from "../sanityClient"; 
+import client from "$lib/sanityClient"; 
 
  let currentDate = new Date();
 

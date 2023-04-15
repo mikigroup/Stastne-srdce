@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { supabaseClient } from '$lib/supabaseClient'
-	import { onMount } from 'svelte'
-	import type { AuthSession } from '@supabase/supabase-js'
 	import Account from './Account.svelte'
 	import { page } from "$app/stores";
 
-	export let session: AuthSession
+//	export let session: AuthSession
   
   
 	/* let loading = false

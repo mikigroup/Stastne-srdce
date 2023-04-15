@@ -3,14 +3,8 @@
 	import { get } from 'svelte/store';	
 	import { page } from '$app/stores';
 	import { user } from '../Stores/stores';
-	import client from "../sanityClient";
-  import { onMount } from 'svelte/internal';
+	import client from "../../lib/sanityClient";  
 	import { supabaseClient } from "$lib/supabaseClient";
-	// import { onMount } from "svelte"; // pro využití localstorage
-	
-
-
-
 
 	$: cartItems = $CartItemsStore;
 
@@ -36,40 +30,6 @@
 	$: totalPieces =
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
-
-// V1 create order
-/* function createDoc() {
-  var txt2  = document.getElementById('txt2').value;
-	const cart = JSON.parse(localStorage.getItem('cart'));
-	const items = [];
-	for (const obj of cart) {
-		items.push({
-			title: obj.title,
-			description: obj.description,
-			quantity: obj.quantity
-		});
-  }
-	console.log(items);
-  const doc = {
-    _type: 'order',      
-    itemsOrder: JSON.stringify(items),
-    note: txt2
-  }   
-  client.create(doc).then((res) => {
-    console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
-  });
-}; */
-
-// V2 create order
-// const email = supabase.user_metadata.email;
-/* const {
-  data: { user },
-} = supabase.auth.getUser()
-let metadata = user.user_metadata */
-
-// const user = supabase.auth.api.user()
-
-// console.log(user); 
 
 function createDoc() {
   var txt  = document.getElementById('txt').value;
@@ -110,13 +70,19 @@ function sendOrderBySendGrid() {
 		});		 
 		delayRefreshPage(2000);
 	 }
-	
+	 
+	// Modal
+	import Modal,{getModal} from './Modal.svelte'
+	let name = 'world';
+	let selection
+	// Callback function provided to the `open` function, it receives the value given to the `close` function call, or `undefined` if the Modal was closed with escape or clicking the X, etc.
+	function setSelection(res){
+		selection=res
+	}
 </script>
-
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
 </svelte:head>
-
 <main>
 	<section>
 	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
@@ -124,6 +90,34 @@ function sendOrderBySendGrid() {
 			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 ">
 			Košík
 		</h1>
+
+<button on:click={()=>getModal().open()}>
+	Open First Popup
+</button>
+<!-- the modal without an `id` -->
+<Modal>
+	<h1>Hello {name}!</h1>
+	<!-- opening a model with an `id` and specifying a callback	 -->
+	<button on:click={()=>getModal('second').open(setSelection)}>
+		Open Nested Popup
+	</button>
+	{#if selection}
+	<p>
+		Your selection was: {selection}
+	</p>
+	{/if}
+</Modal>
+
+<Modal id="second">
+	Inner window
+	<!-- Passing a value back to the callback function	 -->
+	<button class="green" on:click={()=>getModal('second').close(1)}>
+		Select 1
+	</button>
+	<button class="green" on:click={()=>getModal('second').close(2)}>
+		Select 2
+	</button>
+</Modal>
 		<!-- TEST -->
 		<!-- <button class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200 " on:click={() => {
 									createDoc();
@@ -136,8 +130,6 @@ function sendOrderBySendGrid() {
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" id="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
 		</div> -->
-
-		
 		<!-- vrchní část -->
 		<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
 			<!-- obsah košíku pokud je prázdný pro mobile -->
@@ -310,7 +302,7 @@ function sendOrderBySendGrid() {
 				</div>
 				
 				<div class="grid p-5 border-b-2 justify-items-end">
-						{#if $user}			
+						{#if $page.data.session}			
 					<p
 						class="justify-center text-sm text-center text-gray-500 flex-items-center ">
 						Máte již vyplněný
@@ -326,7 +318,7 @@ function sendOrderBySendGrid() {
 					</p>
 				</div>				
 				<div class="m-5">
-						{#if $user}			
+						{#if $page.data.session}			
 					<button
 						type="button"
 						class="w-full px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"

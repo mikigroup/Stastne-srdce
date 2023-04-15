@@ -86,7 +86,7 @@ export const session = writable(null);
 }); */
 
 //modal kosik
-export function booleanStore(initial) {
+/* export function booleanStore(initial) {
   const isOpen = writable(initial)
   const { set, update } = isOpen
   return {
@@ -95,6 +95,6 @@ export function booleanStore(initial) {
     close: () => set(false),
     toggle: () => update((n) => !n),
   }
-}
+} */
 
 
