@@ -1,7 +1,5 @@
 <script>
-	 import { page } from '$app/stores'
-	 import Account from './Account.svelte'
-	 import Auth from './Auth.svelte'
+	 
 </script>
 
 <style lang="postcss">
@@ -41,13 +39,6 @@
 	<title>Šťastné srdce - Úvod</title>
 	<meta name="description" content="Úvod" />
 </svelte:head>
-
-{#if !$page.data.session}
-	<Auth />
-{:else}
-	<Account session={$page.data.session} />
-{/if}
-
  <main>	
 	<section>
 		<div

@@ -70,11 +70,8 @@ function sendOrderBySendGrid() {
 		});		 
 		delayRefreshPage(2000);
 	 }
-	 
 	// Modal
 	import Modal,{getModal} from './Modal.svelte'
-	let name = 'world';
-	let selection
 	// Callback function provided to the `open` function, it receives the value given to the `close` function call, or `undefined` if the Modal was closed with escape or clicking the X, etc.
 	function setSelection(res){
 		selection=res
@@ -92,30 +89,14 @@ function sendOrderBySendGrid() {
 		</h1>
 
 <button on:click={()=>getModal().open()}>
-	Open First Popup
+	Modal - otevři
 </button>
 <!-- the modal without an `id` -->
 <Modal>
-	<h1>Hello {name}!</h1>
+	<p class="text-3xl">Nadpis</p>
 	<!-- opening a model with an `id` and specifying a callback	 -->
 	<button on:click={()=>getModal('second').open(setSelection)}>
-		Open Nested Popup
-	</button>
-	{#if selection}
-	<p>
-		Your selection was: {selection}
-	</p>
-	{/if}
-</Modal>
-
-<Modal id="second">
-	Inner window
-	<!-- Passing a value back to the callback function	 -->
-	<button class="green" on:click={()=>getModal('second').close(1)}>
-		Select 1
-	</button>
-	<button class="green" on:click={()=>getModal('second').close(2)}>
-		Select 2
+		Text těla
 	</button>
 </Modal>
 		<!-- TEST -->

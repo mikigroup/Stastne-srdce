@@ -5,76 +5,6 @@
 
 	export let session: AuthSession
 
-	/* let loading = false;
-  let username: string | null = null;
-  let website: string | null = null;
-  onMount(() => {
-    getProfile();
-  });
-
-  const getProfile = async () => {
-    try {
-      loading = true;
-
-      const { user } = session;
-      const { data, error, status } = await supabaseClient
-        .from("profiles")
-        .select(`username, website`)
-        .eq("id", user.id)
-        .single();
-      if (data) {
-        username = data.username;
-        website = data.website;
-        avatarUrl = data.avatar_url;
-      }
-
-      if (error && status !== 406) throw error;
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-      }
-    } finally {
-      loading = false;
-    }
-  }; */
-
-	/* 
-	const session = supabase.auth.session();
-	supabase.auth.onAuthStateChange((_, session) => {
-		user.set(session.user);
-	}); */
-
-	/* let loading = true
-  let user_name = null
-  let website = null
-  let avatar_url = null
-  let email = $user.email;
-
-  function getProfile(node) {
-  try {
-    loading = true;
-    const user = supabase.auth.user();
-
-    supabase
-      .from("profiles")
-      .select(`user_name, website, avatar_url`)
-      .eq("id", user?.id)
-      .single()
-      .then(({ data, error, status }) => {
-        if (data) {
-          user_name = data.user_name;
-          website = data.website;
-          avatar_url = data.avatar_url;
-        }
-        if (error && status !== 406) throw error;
-      });
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      loading = false;
-    }
-  } */
-
 	let loading = false
 	let username: string | null = null
 	let website: string | null = null
@@ -140,6 +70,7 @@
 				id: user.id,
 				avatar_url: avatarUrl,
 				updated_at: new Date(),
+				first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company,
 				username,
 				website
 			}
@@ -155,55 +86,21 @@
 			loading = false
 		}
 	}
-
-	/* async function getProfile() {
-    try {
-      loading = true;
-      /* const user = supabaseClient.auth.user();
-
-      let { data, error, status } = await supabaseClient
-        .from("profile")
-        .select(
-          `first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
-        )
-        .eq("id", $session.id)
-        .single();
-
-      if (error && status !== 406) throw error;
-
-      if (data) {
-        first_name = data.first_name;
-        last_name = data.last_name;
-        telephone = data.telephone;
-        company_name = data.company_name;
-        street = data.street;
-        street_number = data.street_number;
-        ico = data.ico;
-        dic = data.dic;
-        company = data.company;
-        city = data.city;
-      }
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      loading = false;
-    }
-  }  */
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Účet</title>
 	<meta name="description" content="Účet" />
 </svelte:head>
-<section class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-4 rounded-lg form bg-slate-100">
-	<div class="max-w-screen-md px-4 py-8 py-16 mx-auto rounded-lg bg-slate-100">
+<section>
+	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 		<h1
-			class="mb-4 mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 dark:text-white"
+			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900"
 		>
 			Profil účtu
 		</h1>
 
 		<form class="form-widget" on:submit|preventDefault={updateProfile}>
-			<div class="p-5 bg-white border-2 rounded-lg">
+			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div
 					class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg"
 				>
@@ -367,6 +264,23 @@
 							<div class="my-2">
 								<div class="flex flex-col items-center md:flex-row">
 									<div class="flex justify-start basis-1/2">
+										<label class="pr-2" for="company">Firma</label>
+									</div>
+									<div class="w-full basis-1/2">
+										<input
+											bind:value={company}
+											type="company"
+											id="company"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											placeholder="Firma"
+										/>
+									</div>
+								</div>
+								<hr class="w-32" />
+							</div>
+							<div class="my-2">
+								<div class="flex flex-col items-center md:flex-row">
+									<div class="flex justify-start basis-1/2">
 										<label class="pr-2" for="ico">IČO</label>
 									</div>
 									<div class="w-full basis-1/2">
@@ -397,24 +311,7 @@
 									</div>
 								</div>
 								<hr class="w-32" />
-							</div>
-							<div class="my-2">
-								<div class="flex flex-col items-center md:flex-row">
-									<div class="flex justify-start basis-1/2">
-										<label class="pr-2" for="company">Firma</label>
-									</div>
-									<div class="w-full basis-1/2">
-										<input
-											bind:value={company}
-											type="company"
-											id="company"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											placeholder="Firma"
-										/>
-									</div>
-								</div>
-								<hr class="w-32" />
-							</div>
+							</div>							
 						</div>
 						<div class="mt-10">
 							<button
