@@ -74,7 +74,6 @@ function sendOrderBySendGrid() {
 		
 //modal
 let showModal = false;
-
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
@@ -91,18 +90,17 @@ let showModal = false;
 	Modal - otevři
 </button>
 <Modal bind:showModal>
-<h5 class="p-5 text-xl">Upozornění</h5>
-	<div class="grid grid-cols-2 justify-items-center">
+	<div class="">
 				<button
 					on:click={() => {
 						sendOrderBySendGrid()
 					}}
 					type="button"
-					class="px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
+					class="px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black w-full"
 				>
 					<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
 				</button>
-				<button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button>
+				<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->				
 			</div>
 </Modal>
 

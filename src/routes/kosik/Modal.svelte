@@ -7,25 +7,26 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<dialog
+<dialog class="w-full lg:w-1/2 xl:1/3"
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
 	on:click|self={() => dialog.close()}
 >
 	<div on:click|stopPropagation>
-		<slot name="header" />
-		<hr />
-		<slot />
-		<hr />
-		<!-- svelte-ignore a11y-autofocus -->
-		<button class="p-2 border hover:bg-slate-400" autofocus on:click={() => dialog.close()}>Zavřít</button>
+		<div class="m-3 md:m-10">
+			<h5 class="text-center pb-10 text-2xl md:text-3xl">Upozornění</h5>
+			<div class="grid grid-cols-2 gap-8">
+				<slot />
+				<div class=""><button class="px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black w-full" autofocus on:click={() => dialog.close()}>Zavřít</button>
+				</div>
+			</div>
+		</div>
 	</div>
 </dialog>
 
 <style>
-	dialog {
-		max-width: 32em;
-		border-radius: 0.2em;
+	dialog {		
+		border-radius: 0.6em;
 		border: none;
 		padding: 0;
 	}
