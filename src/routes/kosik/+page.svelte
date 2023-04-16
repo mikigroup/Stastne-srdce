@@ -91,13 +91,18 @@ function sendOrderBySendGrid() {
 <button on:click={()=>getModal().open()}>
 	Modal - otevři
 </button>
-<!-- the modal without an `id` -->
+
 <Modal>
-	<p class="text-3xl">Nadpis</p>
-	<!-- opening a model with an `id` and specifying a callback	 -->
-	<button on:click={()=>getModal('second').open(setSelection)}>
-		Text těla
-	</button>
+	<div>
+		<p class="text-3xl">Opravdu chcete odeslat objednávku?</p>
+		<!-- opening a model with an `id` and specifying a callback	 -->
+			<div>
+			<button on:click={()=>getModal('second').open(setSelection)}>
+				Ano
+			</button>
+			<button>NE</button>
+			</div>
+		</div>
 </Modal>
 		<!-- TEST -->
 		<!-- <button class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200 " on:click={() => {
