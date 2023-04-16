@@ -5,7 +5,7 @@
 	import { user } from '../Stores/stores';
 	import client from "../../lib/sanityClient";  
 	import { supabaseClient } from "$lib/supabaseClient";
-	import Modal,{getModal} from './Modal.svelte'
+	import Modal from './Modal.svelte'	
 
 	$: cartItems = $CartItemsStore;
 
@@ -63,8 +63,8 @@ function delayRefreshPage(mileSeconds) {
 	}
 function sendOrderBySendGrid() {
 		var txt = document.getElementById('txt');	
-		supabaseClient.auth.functions.functions.invoke('sendOrderBySendGrid_T', {
-		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
+		supabaseClient.auth.functions.invoke('sendOrderBySendGrid_T', {
+		body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.user(), txt: txt.value })
 		});
 		CartItemsStore.update(() => {
 			return [];
@@ -72,10 +72,9 @@ function sendOrderBySendGrid() {
 		delayRefreshPage(2000);
 	 }
 		
-	// Callback function provided to the `open` function, it receives the value given to the `close` function call, or `undefined` if the Modal was closed with escape or clicking the X, etc.
-	function setSelection(res){
-		selection=res
-	}
+//modal
+let showModal = false;
+
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
@@ -88,10 +87,10 @@ function sendOrderBySendGrid() {
 			Košík
 		</h1>
 
-<button on:click={()=>getModal().open()}>
+<button on:click={() => (showModal = true)}>
 	Modal - otevři
 </button>
-<Modal>
+<Modal bind:showModal>
 <h5 class="p-5 text-xl">Upozornění</h5>
 	<div class="grid grid-cols-2 justify-items-center">
 				<button

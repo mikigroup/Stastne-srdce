@@ -1,141 +1,63 @@
-<script context="module" lang="ts">
-	import { page } from '$app/stores'
-	let onTop //keeping track of which open modal is on top
-	const modals = {} //all modals get registered here for easy future access
+<script>
+	export let showModal; // boolean
 
-	// 	returns an object for the modal specified by `id`, which contains the API functions (`open` and `close` )
-	export function getModal(id = '') {
-		return modals[id]
-	}
+	let dialog; // HTMLDialogElement
+
+	$: if (dialog && showModal) dialog.showModal();
 </script>
 
-<script lang="ts">
-	import { onDestroy } from 'svelte'
-
-	let topDiv
-	let visible = false
-	let prevOnTop
-	let closeCallback
-
-	export let id = ''
-
-	function keyPress(ev) {
-		//only respond if the current modal is the top one
-		if (ev.key == 'Escape' && onTop == topDiv) close() //ESC
-	}
-
-	/**  API **/
-	function open(callback) {
-		closeCallback = callback
-		if (visible) return
-		prevOnTop = onTop
-		onTop = topDiv
-		window.addEventListener('keydown', keyPress)
-
-		//this prevents scrolling of the main window on larger screens
-		document.body.style.overflow = 'hidden'
-
-		visible = true
-		//Move the modal in the DOM to be the last child of <BODY> so that it can be on top of everything
-		document.body.appendChild(topDiv)
-	}
-
-	function close(retVal) {
-		if (!visible) return
-		window.removeEventListener('keydown', keyPress)
-		onTop = prevOnTop
-		if (onTop == null) document.body.style.overflow = ''
-		visible = false
-		if (closeCallback) closeCallback(retVal)
-	}
-
-	//expose the API
-	modals[id] = { open, close }
-
-	onDestroy(() => {
-		delete modals[id]
-		window.removeEventListener('keydown', keyPress)
-	})
-</script>
-
-<!-- <div id="topModal" class:visible bind:this={topDiv} on:click={()=>close()}>
-	<div id='modal' on:click|stopPropagation={()=>{}}>	
-		<svg id="close" on:click={()=>close()} 
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke-width="1.5"
-											stroke="currentColor"
-											class="w-6 h-6">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												d="M6 18L18 6M6 6l12 12" />
-										</svg>
-		<div id='modal-content'>
-			<slot></slot>
-		</div>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<dialog
+	bind:this={dialog}
+	on:close={() => (showModal = false)}
+	on:click|self={() => dialog.close()}
+>
+	<div on:click|stopPropagation>
+		<slot name="header" />
+		<hr />
+		<slot />
+		<hr />
+		<!-- svelte-ignore a11y-autofocus -->
+		<button class="p-2 border hover:bg-slate-400" autofocus on:click={() => dialog.close()}>Zavřít</button>
 	</div>
-</div>
- -->
-
-<div id="topModal" class:visible bind:this={topDiv} on:click={() => close()}>
-	<div id="modal" class="" on:click|stopPropagation={() => {}}>		
-		<div id="modal-content">			
-			<slot />
-		</div>
-	</div>
-</div>
+</dialog>
 
 <style>
-	#topModal {
-		visibility: hidden;
-		z-index: 9999;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: #4448;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-			
+	dialog {
+		max-width: 32em;
+		border-radius: 0.2em;
+		border: none;
+		padding: 0;
 	}
-	#modal {
-		position: relative;
-		border-radius: 6px;
-		background: white;
-		filter: drop-shadow(5px 5px 5px #555);
-		padding: 2em;
+	dialog::backdrop {
+		background: rgba(0, 0, 0, 0.3);
 	}
-
-	.visible {
-		visibility: visible !important;
+	dialog > div {
+		padding: 1em;
 	}
-
-	#close {
-		position: absolute;
-		top: -12px;
-		right: -12px;
-		width: 24px;
-		height: 24px;
-		cursor: pointer;
-		fill: #f44;
-		transition: transform 0.3s;
+	dialog[open] {
+		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
-
-	#close:hover {
-		transform: scale(2);
+	@keyframes zoom {
+		from {
+			transform: scale(0.95);
+		}
+		to {
+			transform: scale(1);
+		}
 	}
-
-	#close line {
-		stroke: #fff;
-		stroke-width: 2;
+	dialog[open]::backdrop {
+		animation: fade 0.2s ease-out;
 	}
-	#modal-content {
-		max-width: calc(100vw - 20px);
-		max-height: calc(100vh - 20px);
-		overflow: auto;
+	@keyframes fade {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	button {
+		display: block;
 	}
 </style>
