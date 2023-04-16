@@ -5,6 +5,7 @@
 	import { user } from '../Stores/stores';
 	import client from "../../lib/sanityClient";  
 	import { supabaseClient } from "$lib/supabaseClient";
+	import Modal,{getModal} from './Modal.svelte'
 
 	$: cartItems = $CartItemsStore;
 
@@ -70,8 +71,7 @@ function sendOrderBySendGrid() {
 		});		 
 		delayRefreshPage(2000);
 	 }
-	// Modal
-	import Modal,{getModal} from './Modal.svelte'
+		
 	// Callback function provided to the `open` function, it receives the value given to the `close` function call, or `undefined` if the Modal was closed with escape or clicking the X, etc.
 	function setSelection(res){
 		selection=res
@@ -91,19 +91,25 @@ function sendOrderBySendGrid() {
 <button on:click={()=>getModal().open()}>
 	Modal - otevři
 </button>
-
 <Modal>
-	<div>
-		<p class="text-3xl">Opravdu chcete odeslat objednávku?</p>
-		<!-- opening a model with an `id` and specifying a callback	 -->
-			<div>
-			<button on:click={()=>getModal('second').open(setSelection)}>
-				Ano
-			</button>
-			<button>NE</button>
+<h5 class="p-5 text-xl">Upozornění</h5>
+	<div class="grid grid-cols-2 justify-items-center">
+				<button
+					on:click={() => {
+						sendOrderBySendGrid()
+					}}
+					type="button"
+					class="px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
+				>
+					<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
+				</button>
+				<button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button>
 			</div>
-		</div>
 </Modal>
+
+
+<div class="">			
+
 		<!-- TEST -->
 		<!-- <button class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200 " on:click={() => {
 									createDoc();
