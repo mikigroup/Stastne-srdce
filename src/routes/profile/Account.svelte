@@ -86,7 +86,11 @@
 			loading = false
 		}
 	}
+	const email = session.user.email;
+	localStorage.setItem('userEmail', email);// your script goes here
+	console.log(email);
 </script>
+
 <svelte:head>
 	<title>Šťastné srdce - Účet</title>
 	<meta name="description" content="Účet" />

@@ -1,6 +1,9 @@
-import { serve } from 'https://deno.land/std@0.131.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { sendMail, IRequestBody } from 'https://deno.land/x/sendgrid/mod.ts'
+// import { createClient } from '@supabase/supabase-js'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+/* const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY) */
 
 serve(async (req) => {
 	if (req.method === 'OPTIONS') {
@@ -16,22 +19,25 @@ serve(async (req) => {
 	if (req.method === 'POST') {
 		/* const cart = "CART";
   const user  = "USER"; */
-  const supabaseClient = createClient(
-		// Supabase API URL - env var exported by default.
-		Deno.env.get('https://orgshebezwfizhmlmeum.supabase.co') ?? '',
-		// Supabase API ANON KEY - env var exported by default.
-		Deno.env.get(
-			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74'
-		) ?? '',
-		// Create client with Auth context of the user that called the function.
-		// This way your row-level-security (RLS) policies are applied.
-		{ global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-	)
+		const supabaseClient = createClient(
+			// Supabase API URL - env var exported by default.
+			Deno.env.get('https://orgshebezwfizhmlmeum.supabase.co') ?? '',
+			// Supabase API ANON KEY - env var exported by default.
+			Deno.env.get(
+				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74'
+			) ?? '',
+			// Create client with Auth context of the user that called the function.
+			// This way your row-level-security (RLS) policies are applied.
+			{ global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+		)
+		// Now we can get the session or user object
+		const {
+			data: { user }
+		} = await supabaseClient.auth.getUser()
 
+		const { cart, txt } = await req.json()
 
-		const { cart, user, txt } = await req.json()
-    console.log(user.email)
-    
+		console.log('TEST')
 
 		// console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 
@@ -48,7 +54,7 @@ serve(async (req) => {
 			personalizations: [
 				{
 					subject: 'Šťastné srdce - Objednávka',
-					to: [{ email: user.email }]
+					to: [{ email: 'mikigroup@gmail.com' }]
 				}
 			],
 			from: { email: 'objednavky@stastnesrdce.cz' },
@@ -56,15 +62,7 @@ serve(async (req) => {
 				{
 					type: 'text/plain',
 					value: `Dobrý den, 
-				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${sum.price} CZK\nCelkový počet meníček: ${
-						sum.quantity
-					}\n\nSouhrn položek:\n----\n${cart.map(
-						(item: any) =>
-							`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
-								month: 'long',
-								day: 'numeric'
-							})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
-					)}\nPoznámka:${txt}\n----\nKonec`
+				Konec`
 				}
 			]
 		}

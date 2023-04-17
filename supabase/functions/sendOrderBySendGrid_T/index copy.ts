@@ -33,10 +33,10 @@ serve(async (req: Request) => {
 				{ global: { headers: { Authorization: req.headers.get('Authorization')! } } }
 			)
 			// Now we can get the session or user object
-			/* const {
+			const {
 			data: { user }
-		} = await supabaseClient.auth.getUser() */
-			const { user } = await req.json() // vymazáno txt, cart
+		} = await supabaseClient.auth.getUser()
+			/* const { user } = await req.json() */ // vymazáno txt, cart
 
 			/* const sum = cart.reduce(
 				(acc: any, cartItem: any) => {
