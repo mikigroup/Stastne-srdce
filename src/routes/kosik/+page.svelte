@@ -63,8 +63,8 @@ function delayRefreshPage(mileSeconds) {
 	}
 function sendOrderBySendGrid() {
 		var txt = document.getElementById('txt');	
-		supabaseClient.auth.functions.invoke('sendOrderBySendGrid_T', {
-		body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.user(), txt: txt.value })
+		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+		body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser(), }) //txt: txt.value
 		});
 		CartItemsStore.update(() => {
 			return [];
@@ -96,14 +96,13 @@ let showModal = false;
 						sendOrderBySendGrid()
 					}}
 					type="button"
-					class="px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black w-full"
+					class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
 				>
 					<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
 				</button>
 				<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->				
 			</div>
 </Modal>
-
 
 <div class="">			
 

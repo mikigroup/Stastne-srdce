@@ -1,70 +1,79 @@
-import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
-import { sendMail, IRequestBody } from "https://deno.land/x/sendgrid/mod.ts";
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendMail, IRequestBody } from 'https://deno.land/x/sendgrid/mod.ts'
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-          "authorization, x-client-info, apikey, content-type,x-my-custom-header",
-      },
-    });
-  }
+	if (req.method === 'OPTIONS') {
+		return new Response('ok', {
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Headers':
+					'authorization, x-client-info, apikey, content-type,x-my-custom-header'
+			}
+		})
+	}
 
-  if (req.method === "POST") {
-  /* const cart = "CART";
+	if (req.method === 'POST') {
+		/* const cart = "CART";
   const user  = "USER"; */
-
-  const { cart, user, txt } = await req.json();
-
-  // console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
-
-  const sum = cart.reduce(
-    (acc: any, cartItem: any) => {
-      acc.price += cartItem.quantity * cartItem.price;
-      acc.quantity += cartItem.quantity;
-      return acc;
-    },
-    { price: 0, quantity: 0 }
-  );
-  
-    let mail: IRequestBody = {
-      personalizations: [
-        {
-          subject: "Šťastné srdce - Objednávka",
-          to: [{ email: user.email }],          
-        },
-      ],
-      from: { email: "objednavky@stastnesrdce.cz" },
-      content: [
-        {
-          type: "text/plain",
-          value: `Dobrý den, 
-				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${
-          sum.price
-        } CZK\nCelkový počet meníček: ${
-            sum.quantity
-          }\n\nSouhrn položek:\n----\n${cart.map(
-            (item: any) =>
-              `${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
-                month: "long",
-                day: "numeric",
-              })}\n${item.title}\n${item.description}\n\n${
-                item.quantity
-              } Ks\n----\n`
-          )}\nPoznámka:${txt}\n----\nKonec`,
-        },
-      ],
-    };
-
-    let response = await sendMail(mail, {
-      apiKey:
-        "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",
-    });
+  const supabaseClient = createClient(
+		// Supabase API URL - env var exported by default.
+		Deno.env.get('https://orgshebezwfizhmlmeum.supabase.co') ?? '',
+		// Supabase API ANON KEY - env var exported by default.
+		Deno.env.get(
+			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74'
+		) ?? '',
+		// Create client with Auth context of the user that called the function.
+		// This way your row-level-security (RLS) policies are applied.
+		{ global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+	)
 
 
-  /* await sendSimpleMail(
+		const { cart, user, txt } = await req.json()
+    console.log(user.email)
+    
+
+		// console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
+
+		const sum = cart.reduce(
+			(acc: any, cartItem: any) => {
+				acc.price += cartItem.quantity * cartItem.price
+				acc.quantity += cartItem.quantity
+				return acc
+			},
+			{ price: 0, quantity: 0 }
+		)
+
+		let mail: IRequestBody = {
+			personalizations: [
+				{
+					subject: 'Šťastné srdce - Objednávka',
+					to: [{ email: user.email }]
+				}
+			],
+			from: { email: 'objednavky@stastnesrdce.cz' },
+			content: [
+				{
+					type: 'text/plain',
+					value: `Dobrý den, 
+				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${sum.price} CZK\nCelkový počet meníček: ${
+						sum.quantity
+					}\n\nSouhrn položek:\n----\n${cart.map(
+						(item: any) =>
+							`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+								month: 'long',
+								day: 'numeric'
+							})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
+					)}\nPoznámka:${txt}\n----\nKonec`
+				}
+			]
+		}
+
+		let response = await sendMail(mail, {
+			apiKey: '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'
+		})
+
+		/* await sendSimpleMail(
     {
       subject: "Hello world",
       to: [{ email: "mikigroup@gmail.com" }],
@@ -80,21 +89,21 @@ serve(async (req) => {
     }
   ); */
 
-    return new Response(
-      JSON.stringify({
-        done: true,
-      }),
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          //'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        },
-      }
-    );
-  }
-  return new Response(undefined, {
-    status: 405,
-  });
-});
+		return new Response(
+			JSON.stringify({
+				done: true
+			}),
+			{
+				headers: {
+					'Access-Control-Allow-Origin': '*'
+					//'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+				}
+			}
+		)
+	}
+	return new Response(undefined, {
+		status: 405
+	})
+})
 
 // nutná instalace supabase cli + při úpravě kódu nutné spustit - supabase functions deploy sendOrder
