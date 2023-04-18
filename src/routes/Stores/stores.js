@@ -23,7 +23,6 @@ CartItemsStore.subscribe(value => {
 	}
 });
 
-
 //vytváří v localStorage key "totalPieces"
 /* const totalPiecesStore = writable();
 totalPiecesStore.subscribe(value => {
@@ -34,8 +33,13 @@ totalPiecesStore.subscribe(value => {
 }); */
 
 // nebo
-/* export const enabled = writable<User>(JSON.parse(localStorage.getItem('user')))
-enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
+
+
+// export const currentCartItems = writable();
+export const user = writable(); //false ?
+export default CartItemsStore;
+export const session = writable(null);
+
 
 //finta browser
 /* if (browser){
@@ -58,10 +62,7 @@ enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
 	};
 });
  */
-// export const currentCartItems = writable();
-export const user = writable(); //false ?
-export default CartItemsStore;
-export const session = writable(null);
+
 
 /* export function getData() {
   return async (dispatch) => {
