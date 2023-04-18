@@ -31,7 +31,7 @@ serve(async (req) => {
 		console.log(user.email);
 		
 		// console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
-		/
+		
 		const sum = cart.reduce(
 			(acc: any, cartItem: any) => {
 				acc.price += cartItem.quantity * cartItem.price
@@ -52,15 +52,16 @@ serve(async (req) => {
 			content: [
 				{
 					type: 'text/plain',
+					/*type: 'text/html',*/
 					value: `Dobrý den, 
-				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${sum.price} CZK\nCelkový počet meníček: ${
-						sum.quantity
-					}\n\nSouhrn položek:\n----\n${cart.map(
+				\nděkujeme za objednávku.\n\nPočet meníček: ${sum.quantity}\nCelková cena objednávky: ${
+						sum.price
+					} CZK\nSouhrn položek:\n\n----\n${cart.map(
 						(item: any) =>
-							`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+							`\n${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
 								month: 'long',
 								day: 'numeric'
-							})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
+							})} - ${item.title}\n${item.description}\n\nPočet: ${item.quantity}Ks\n----\n`
 					)}\nPoznámka:${txt}\n----\nKonec`
 				}
 			]
