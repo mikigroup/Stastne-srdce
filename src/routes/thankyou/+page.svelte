@@ -3,12 +3,12 @@
 </style>
 <svelte:head>
 	<title>Šťastné srdce - Děkujeme za objednávku</title>
-    <meta name="description" content="Objednávka" />
+    <meta name="description" content="Děkujeme za objednávku" />
   </svelte:head>
 
-<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-orange-50 rounded-lg ">
+<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 rounded-lg bg-orange-50 ">
  <div class="flex justify-center pt-5">
-  <p class="text-xl md:text-2xl"> Děkujeme za objednávku !</p>
+  <p class="text-xl md:text-2xl"> Děkujeme za objednávku, ať jídlo chutná ! </p>
   </div>
  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Calque_1" x="0px"
      y="0px" viewBox="0 0 1300 550" style="enable-background:new 0 0 1300 550;" xml:space="preserve">

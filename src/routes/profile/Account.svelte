@@ -87,8 +87,6 @@
 		}
 	}
 	const email = session.user.email;
-	localStorage.setItem('userEmail', email);// your script goes here
-	console.log(email);
 </script>
 
 <svelte:head>
@@ -107,15 +105,7 @@
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div
 					class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg"
-				>
-	<div>
-		<label for="username">Name</label>
-		<input id="username" type="text" bind:value={username} />
-	</div>
-	<div>
-		<label for="website">Website</label>
-		<input id="website" type="url" bind:value={website} />
-	</div>
+				>	
 					<div class="my-2">
 						<div class="flex flex-col items-center md:flex-row">
 							<div class="flex justify-start basis-1/2">

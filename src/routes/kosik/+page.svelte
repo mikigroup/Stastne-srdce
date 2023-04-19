@@ -1,18 +1,18 @@
 <script>
-	import CartItemsStore from '../Stores/stores';
-	import { get } from 'svelte/store';	
-	import { page } from '$app/stores';
-	import { user } from '../Stores/stores';
-	import client from "../../lib/sanityClient";  
-	import { supabaseClient } from "$lib/supabaseClient";
-	import Modal from './Modal.svelte'	
+	import CartItemsStore from '../Stores/stores'
+	import { get } from 'svelte/store'
+	import { page } from '$app/stores'
+	import { user } from '../Stores/stores'
+	import client from '../../lib/sanityClient'
+	import { supabaseClient } from '$lib/supabaseClient'
+	import Modal from './Modal.svelte'
 
-	$: cartItems = $CartItemsStore;
+	$: cartItems = $CartItemsStore
 
 	function removeItem(menuid) {
 		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems.filter((cartItem) => cartItem._id != menuid);
-		});
+			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
+		})
 	}
 
 	//mazání pokud object/item v cart dosáhne qty = 0
@@ -20,65 +20,64 @@
 		if (currentCartItems.quantity === 0) {
 			$CartItemsStore.splice(index, 1) &&
 				CartItemsStore.update((currentCartItems) => {
-					return currentCartItems.filter((cartItem) => cartItem._id != menuid);
-				});
+					return currentCartItems.filter((cartItem) => cartItem._id != menuid)
+				})
 		}
-	});
+	})
 
 	$: totalPrice =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0);
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
 	$: totalPieces =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
-function createDoc() {
-  var txt  = document.getElementById('txt').value;
-	const cart = JSON.parse(localStorage.getItem('cart'));
-	const titles = [];
-	for (const obj of cart) {		
-	titles.push(obj.title);
-	titles.push(obj.description);
-	titles.push(obj.quantity);
-}
-
-const doc = {
-    _type: 'order',
-		// customer: ,      
-    itemsOrder: titles,
-    note: txt
-  }   
-  client.create(doc).then((res) => {
-    console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
-  });
-};
-
-// sendOrderBySendGrid
-function refreshPage() {
-    //ensure reloading from server instead of cache
-    location.reload(true);
-}
-function delayRefreshPage(mileSeconds) {
-    window.setTimeout(refreshPage, mileSeconds);
+	function refreshPage() {
+		//ensure reloading from server instead of cache
+		location.reload(true)
 	}
-function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt');	
+	function delayRefreshPage(mileSeconds) {
+		window.setTimeout(refreshPage, mileSeconds)
+	}
+	function sendOrderBySendGrid() {
+		var txt = document.getElementById('txt').value
 		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-		body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser(), }) //txt: txt.value
-		});
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser() }) //txt: txt.value
+		})
 		CartItemsStore.update(() => {
-			return [];
-		});		 
+			return []
+		})
 		delayRefreshPage(2000);
-		window.location.href="/thankyou";
-	 }
-		
-//modal
-let showModal = false;
+		window.location.href = '/thankyou'
+	}
+
+	function createDoc() {
+		var txt = document.getElementById('txt').value
+		const cart = JSON.parse(localStorage.getItem('cart'))
+		const titles = []
+		for (const obj of cart) {
+			titles.push(obj.title)
+			titles.push(obj.description)
+			titles.push(obj.quantity)
+		}
+
+		const doc = {
+			_type: 'order',
+			// customer: ,
+			itemsOrder: titles,
+			note: txt
+		}
+		client.create(doc).then((res) => {
+			console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
+		})
+	}
+
+	let showModal = false
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
+	<meta name="description" content="Košík" />
 </svelte:head>
 <main>
 	<section>
@@ -91,17 +90,27 @@ let showModal = false;
 
 			<div class="">
 				<!-- TEST -->
-				<!-- <button class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200 " on:click={() => {
-									createDoc();
-								}} >
-								Odeslat košík a vytvořit objednávku
-		</button>
-		<div class="grid p-5 border-b-2">									
-					  <p><label for="txt2">Poznámka</label></p>
-  					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5" name="txt2" id="txt2" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>  				
-		</div> -->
+				<button
+					class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200"
+					on:click={() => {
+						createDoc()
+					}}
+				>
+					Odeslat košík a vytvořit objednávku
+				</button>
+				<div class="grid p-5 border-b-2">
+					<p><label for="txt2">Poznámka</label></p>
+					<textarea
+						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
+						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
+						focus:ring-2 focus:ring-green-700 mb-5"
+						name="txt2"
+						id="txt2"
+						rows="4"
+						cols="50"
+						placeholder="poznámka k objednávce"
+					/>
+				</div>
 				<!-- vrchní část -->
 				<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
 					<!-- obsah košíku pokud je prázdný pro mobile -->
@@ -314,7 +323,7 @@ let showModal = false;
 									data-te-ripple-init
 									data-te-ripple-color="light"
 								>
-									<span>Potvrzení košíku HA</span>
+									<span>Potvrzení košíku</span>
 								</button>
 							{:else}
 								<button
@@ -328,15 +337,15 @@ let showModal = false;
 								<div class="">
 									<button
 										on:click={() => {
-											sendOrderBySendGrid()
+											sendOrderBySendGrid();createDoc()
 										}}
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
-									>Odeslat
+										>Odeslat
 									</button>
 									<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->
 								</div>
-							</Modal>																	
+							</Modal>
 						</div>
 					</div>
 				{/if}
