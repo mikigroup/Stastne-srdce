@@ -23,6 +23,11 @@ CartItemsStore.subscribe(value => {
 	}
 });
 
+
+
+
+
+
 //vytváří v localStorage key "totalPieces"
 /* const totalPiecesStore = writable();
 totalPiecesStore.subscribe(value => {

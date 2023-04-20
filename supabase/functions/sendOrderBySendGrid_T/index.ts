@@ -16,17 +16,23 @@ serve(async (req) => {
 	if (req.method === 'POST') {
 			
 		const supabaseClient = createClient(
-			'https://orgshebezwfizhmlmeum.supabase.co',			
-			'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74' ??
+			('https://orgshebezwfizhmlmeum.supabase.co') ?? '',
+			('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74') ??
 				'',
-			{ global: { headers: { Authorization: req.headers.get('Authorization') } } } // This way your row-level-security (RLS) policies are applied.
+			{ global: { headers: { Authorization: req.headers.get('Authorization')! } } } // This way your row-level-security (RLS) policies are applied.
 		)
 
 		const {
 			data: { user }
 		} = await supabaseClient.auth.getUser()
-		const { cart, txt } = await req.json()		
-		console.log('sending order', JSON.stringify(user), JSON.stringify(cart), JSON.stringify(txt))	
+		const { cart, txt, userEmail } = await req.json()		
+		console.log(
+			'sending order',
+			// JSON.stringify(user),
+			JSON.stringify(cart),
+			JSON.stringify(txt),
+			JSON.stringify(userEmail)
+		)	
 
 		const sum = cart.reduce(
 			(acc: any, cartItem: any) => {
@@ -38,7 +44,7 @@ serve(async (req) => {
 		)
 
 		
-		let mail: IRequestBody = {
+		/* let mail: IRequestBody = {
 			personalizations: [
 				{
 					subject: 'Hello world',
@@ -49,13 +55,13 @@ serve(async (req) => {
 			content: [
 				{ type: 'text/plain', value: 'Hello world, Poznámka:${txt}' },				
 			]
-		}
+		} */
 
 
 
-		let response = await sendMail(mail, {
+	/* 	let response = await sendMail(mail, {
 			apiKey: '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'
-		})
+		}) */
 
 		/* await sendSimpleMail(
     {
