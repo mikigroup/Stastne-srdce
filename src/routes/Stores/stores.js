@@ -29,13 +29,13 @@ CartItemsStore.subscribe(value => {
 
 
 //vytváří v localStorage key "totalPieces"
-/* const totalPiecesStore = writable();
-totalPiecesStore.subscribe(value => {
+const userEmail = writable();
+userEmail.subscribe(value => {
 	if (typeof localStorage != "undefined")
 		{
-			localStorage.setItem("totalPieces" , JSON.stringify(value));
+			localStorage.setItem("userEmail" , JSON.stringify(value));
 	}
-}); */
+});
 
 // nebo
 

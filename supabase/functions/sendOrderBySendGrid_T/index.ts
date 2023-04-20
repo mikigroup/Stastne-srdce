@@ -22,16 +22,15 @@ serve(async (req) => {
 			{ global: { headers: { Authorization: req.headers.get('Authorization')! } } } // This way your row-level-security (RLS) policies are applied.
 		)
 
-		const {
-			data: { user }
-		} = await supabaseClient.auth.getUser()
-		const { cart, txt, userEmail } = await req.json()		
+		const { data: { user } = {} } = await supabaseClient.auth.getUser()
+		const email = user?.email		
+		const { cart, txt } = await req.json()		
 		console.log(
 			'sending order',
 			// JSON.stringify(user),
 			JSON.stringify(cart),
 			JSON.stringify(txt),
-			JSON.stringify(userEmail)
+			JSON.stringify(email)
 		)	
 
 		const sum = cart.reduce(
@@ -44,40 +43,36 @@ serve(async (req) => {
 		)
 
 		
-		/* let mail: IRequestBody = {
-			personalizations: [
-				{
-					subject: 'Hello world',
-					to: [{ email: user.email }]
-				}
-			],
-			from: { email: 'objednavky@stastnesrdce.cz' },
-			content: [
-				{ type: 'text/plain', value: 'Hello world, Poznámka:${txt}' },				
-			]
-		} */
+		 let mail: IRequestBody = {
+				personalizations: [
+					{
+						subject: 'Šťastné srdce - Objednávka',
+						to: email ? [{ email }] : []
+					}
+				],
+				from: { email: 'objednavky@stastnesrdce.cz' },
+				content: [
+					{
+						type: 'text/plain',
+						value: `Dobrý den, 
+				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${sum.price} CZK\nCelkový počet meníček: ${
+							sum.quantity
+						}\n\nSouhrn položek:\n----\n${cart.map(
+							(item: any) =>
+								`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+									month: 'long',
+									day: 'numeric'
+								})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
+						)}\nPoznámka:${txt}\n----\nKonec`
+					}
+				]
+			}
 
 
 
-	/* 	let response = await sendMail(mail, {
+		let response = await sendMail(mail, {
 			apiKey: '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'
-		}) */
-
-		/* await sendSimpleMail(
-    {
-      subject: "Hello world",
-      to: [{ email: "mikigroup@gmail.com" }],
-      from: { email: "mikigroup@gmail.com" },
-      content: [
-        { type: "text/plain", value: "Hello world" },
-        { type: "text/html", value: "<h1>Hello world</h1>" },
-      ],
-    },
-    {
-      apiKey:
-        "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",
-    }
-  ); */
+		})
 
 		return new Response(
 			JSON.stringify({
