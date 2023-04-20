@@ -88,29 +88,7 @@
 				Košík
 			</h1>
 
-			<div class="">
-				<!-- TEST -->
-				<button
-					class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200"
-					on:click={() => {
-						createDoc()
-					}}
-				>
-					Odeslat košík a vytvořit objednávku
-				</button>
-				<div class="grid p-5 border-b-2">
-					<p><label for="txt2">Poznámka</label></p>
-					<textarea
-						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5"
-						name="txt2"
-						id="txt2"
-						rows="4"
-						cols="50"
-						placeholder="poznámka k objednávce"
-					/>
-				</div>
+			<div class="">			
 				<!-- vrchní část -->
 				<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
 					<!-- obsah košíku pokud je prázdný pro mobile -->
@@ -337,7 +315,7 @@
 								<div class="">
 									<button
 										on:click={() => {
-											sendOrderBySendGrid();createDoc()
+											sendOrderBySendGrid();
 										}}
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
