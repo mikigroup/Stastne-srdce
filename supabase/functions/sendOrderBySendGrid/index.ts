@@ -13,22 +13,22 @@ serve(async (req) => {
   }
 
   if (req.method === "POST") {
-  /* const cart = "CART";
+    /* const cart = "CART";
   const user  = "USER"; */
 
-  const { cart, user, txt } = await req.json();
+    const { cart, user } = await req.json(); //, txt
 
-  // console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
+    // console.log("sending order", JSON.stringify(user), JSON.stringify(cart));
 
-  const sum = cart.reduce(
-    (acc: any, cartItem: any) => {
-      acc.price += cartItem.quantity * cartItem.price;
-      acc.quantity += cartItem.quantity;
-      return acc;
-    },
-    { price: 0, quantity: 0 }
-  );
-  
+    const sum = cart.reduce(
+      (acc: any, cartItem: any) => {
+        acc.price += cartItem.quantity * cartItem.price;
+        acc.quantity += cartItem.quantity;
+        return acc;
+      },
+      { price: 0, quantity: 0 }
+    );
+
     let mail: IRequestBody = {
       personalizations: [
         {
@@ -54,18 +54,17 @@ serve(async (req) => {
               })}\n${item.title}\n${item.description}\n\n${
                 item.quantity
               } Ks\n----\n`
-          )}\nPoznámka:${txt}\n----\nKonec`,
+          )}\nKonec`,
         },
       ],
     };
-
+    //Poznámka:${txt}\n----\n
     let response = await sendMail(mail, {
       apiKey:
         "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",
     });
 
-
-  /* await sendSimpleMail(
+    /* await sendSimpleMail(
     {
       subject: "Hello world",
       to: [{ email: "mikigroup@gmail.com" }],

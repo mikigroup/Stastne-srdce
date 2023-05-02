@@ -37,8 +37,8 @@
 	// sendOrderBySendGrid
 
 	
-let txt3 = document.getElementById('txt');
-console.log(txt3);
+// let txt3 = document.getElementById('txt');
+// console.log(txt3);
 
 function refreshPage() {
     //ensure reloading from server instead of cache
@@ -48,9 +48,9 @@ function delayRefreshPage(mileSeconds) {
     window.setTimeout(refreshPage, mileSeconds);
 	}
 function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt');	
+		// var txt = document.getElementById('txt');	
 		supabase.functions.invoke('sendOrderBySendGrid', {
-		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user(), txt: txt.value })
+		body: JSON.stringify({ cart: get(CartItemsStore), user: supabase.auth.user() }) // , txt: txt.value
 		});
 		CartItemsStore.update(() => {
 			return [];
@@ -110,21 +110,20 @@ function createDoc() {
 </svelte:head>
 
 <main>
-	<div class="py-8 py-16 px-4 mx-auto max-w-screen-lg mt-20 bg-stone-100 rounded-lg footer_fix mb-10">
+	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 		<h1
-			class="mb-10 mb-4 text-5xl tracking-tight font-extrabold text-center text-gray-900
-			">
+			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 ">
 			Košík
 		</h1>
 
 
 		<!-- TEST -->
-		<!-- <button class="border rounded-lg border-slate-600 p-2 hover:bg-slate-200 " on:click={() => {
+		<!-- <button class="p-2 border rounded-lg border-slate-600 hover:bg-slate-200 " on:click={() => {
 									createDoc();
 								}} >
 								Odeslat košík a vytvořit objednávku
 		</button>
-		<div class="p-5 grid border-b-2">									
+		<div class="grid p-5 border-b-2">									
 					  <p><label for="txt2">Poznámka</label></p>
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
@@ -133,20 +132,20 @@ function createDoc() {
 
 		
 		<!-- vrchní část -->
-		<div class="md:hidden bg-orange-50 py-4 px-4 mx-auto max-w-screen-xl">
+		<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
 			<!-- obsah košíku pokud je prázdný pro mobile -->
-			<div class="place-items-center text-lg">
+			<div class="text-lg place-items-center">
 				{#if cartItems.length === 0}
-					<div class="w-full flex flex-col items-center justify-center overflow-hidden">
-						<div class="my-20 font-bold text-xl md:text-2xl text-center">
+					<div class="flex flex-col items-center justify-center w-full overflow-hidden">
+						<div class="my-20 text-xl font-bold text-center md:text-2xl">
 							<p>Košík je prázdný...</p>
 						</div>
 					</div>
 					<!-- obsah košíku pro mobile -->
 				{/if}
 				{#each cartItems as cartItem, i (cartItem._id)}
-					<div class="mb-5 bg-stone-100 border-2 rounded-lg">
-						<div class="text-center bg-slate-300 rounded-lg">
+					<div class="mb-5 border-2 rounded-lg bg-stone-100">
+						<div class="text-center rounded-lg bg-slate-300">
 							<p>
 								<strong>Den</strong>
 							</p>
@@ -171,7 +170,7 @@ function createDoc() {
 								<strong>Počet</strong>
 							</p>
 						</div>
-						<div class="mb-5 lg:mb-5 font-light text-center">
+						<div class="mb-5 font-light text-center lg:mb-5">
 							<input
 								min="0"
 								max="99"
@@ -192,12 +191,12 @@ function createDoc() {
 							{cartItem.price * cartItem.quantity} ,-
 						</div>
 						<hr />
-						<div class="mt-5 font-light text-center col-span-4">
+						<div class="col-span-4 mt-5 font-light text-center">
 							<p>
 								<strong>Popis</strong>
 							</p>
 						</div>
-						<div class="mb-5 font-light p-8 col-span-4">{cartItem.description}</div>
+						<div class="col-span-4 p-8 mb-5 font-light">{cartItem.description}</div>
 						<hr />
 						<div class="font-light text-center">
 							<button
@@ -214,24 +213,22 @@ function createDoc() {
 		</div>
 		<!-- nadpisy sloupců pro desktop -->
 		<div
-			class="mt-5 py-4 px-4 mx-auto max-w-screen-xl rounded-lg border-2 hidden md:grid
-			border-b-transparen">
+			class="hidden max-w-screen-xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid border-b-transparen">
 			<div
-				class="grid grid-cols-9 border border-slate-600 rounded-lg text-xl items-center divide-x
-				bg-slate-300 pl-5 p-2">
+				class="grid items-center grid-cols-9 p-2 pl-5 text-xl border divide-x rounded-lg border-slate-600 bg-slate-300">
 				<div class="font-light text-center">
 					<p>Den</p>
 				</div>
 				<div class="font-light text-center">
 					<p>Menu č.</p>
 				</div>
-				<div class=" font-light text-center">
+				<div class="font-light text-center ">
 					<p>Počet</p>
 				</div>
-				<div class=" font-light text-center">
+				<div class="font-light text-center ">
 					<p>Cena</p>
 				</div>
-				<div class="font-light text-center col-span-4">
+				<div class="col-span-4 font-light text-center">
 					<p>Popis</p>
 				</div>
 				<div class="font-light text-center">
@@ -241,11 +238,11 @@ function createDoc() {
 		</div>
 
 		<!-- obsah košíku pro desktop -->
-		<div class="p-4 mx-auto max-w-screen-xl rounded-lg border-2 hidden md:grid bg-orange-50">
+		<div class="hidden max-w-screen-xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
 			<!-- obsah košíku pokud je prázdný pro desktop -->
 			{#if cartItems.length === 0}
-				<div class="w-full flex flex-col items-center justify-center overflow-hidden">
-					<div class="my-20 text-center font-bold text-2xl text-center">
+				<div class="flex flex-col items-center justify-center w-full overflow-hidden">
+					<div class="my-20 text-2xl font-bold text-center">
 						<p>Košík je prázdný...</p>
 					</div>
 				</div>
@@ -253,8 +250,7 @@ function createDoc() {
 			<!-- obsah pro desktop -->
 			{#each cartItems as cartItem, i (cartItem._id)}
 				<div
-					class="my-1 md:grid-cols-9 border-2 rounded-lg items-center text-lg bg-stone-100 hidden
-					md:grid pl-5">
+					class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-9 bg-stone-100 md:grid">
 					<div class="text-center">
 						<p class="border-r-2 border-slate-300">
 							{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
@@ -280,7 +276,7 @@ function createDoc() {
 					<div class="text-center">
 						<p class="">{cartItem.price},-</p>
 					</div>					
-					<div class="font-light border-x-2 break-word col-span-4 p-8">
+					<div class="col-span-4 p-8 font-light border-x-2 break-word">
 						{cartItem.description}
 					</div>
 					<div class="text-center">
@@ -299,18 +295,17 @@ function createDoc() {
 		{#if cartItems.length !== 0}
 			<div class="mt-5 border-2 rounded-lg">
 				
-				<div class="p-5 grid border-b-2">									
+		<!-- 		<div class="grid p-5 border-b-2">									
 					  <p><label for="txt">Poznámka</label></p>
   					<textarea class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none	block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
 						focus:ring-2 focus:ring-green-700 mb-5" id="txt" name="txt" rows="4" cols="50" placeholder="poznámka k objednávce"></textarea>		
-				</div>
+				</div> -->
 				
-				<div class="p-5 grid justify-items-end border-b-2">
+				<div class="grid p-5 border-b-2 justify-items-end">
 						{#if $user}			
 					<p
-						class="justify-center text-sm text-center text-gray-500 flex-items-center
-						">
+						class="justify-center text-sm text-center text-gray-500 flex-items-center ">
 						Máte již vyplněný
 						<a href="/profile" class="text-sm text-blue-500 underline hover:text-blue-700">účet?</a>
 					</p>
@@ -328,9 +323,7 @@ function createDoc() {
 					<button				
 						on:click={() => {sendOrderBySendGrid();}}
 						type="button"
-						class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
-						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
-						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+						class="w-full px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 						data-te-toggle="modal"
 						data-te-target="#exampleModal"
 						data-te-ripple-init
@@ -340,9 +333,7 @@ function createDoc() {
 					</button>					
 					{:else}
 					<button
-						class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700 focus:ring-green-500 f
-						ocus:ring-offset-green-200 text-white transition ease-in duration-200 w-full text-center
-						shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+						class="w-full px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 						<a href="/login">Přihlaš se</a>
 					</button>
 					{/if}					
@@ -360,7 +351,7 @@ function createDoc() {
 							<div
 								class="min-[576px]:shadow-[0_0.5rem_1rem_rgba(#000, 0.15)] pointer-events-auto relative flex w-full flex-col rounded-md border-none bg-white bg-clip-padding text-current shadow-lg outline-none dark:bg-neutral-600">
 								<div
-									class="flex flex-shrink-0 items-center justify-between rounded-t-md border-b-2 border-neutral-100 border-opacity-100 p-4 dark:border-opacity-50">
+									class="flex items-center justify-between flex-shrink-0 p-4 border-b-2 border-opacity-100 rounded-t-md border-neutral-100 dark:border-opacity-50">
 									<h5
 										class="text-xl font-medium leading-normal text-neutral-800 dark:text-neutral-200"
 										id="exampleModalLabel">
@@ -368,7 +359,7 @@ function createDoc() {
 									</h5>
 									<button
 										type="button"
-										class="box-content rounded-none border-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
+										class="box-content border-none rounded-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
 										data-te-modal-dismiss
 										aria-label="Close">
 										<svg
@@ -377,7 +368,7 @@ function createDoc() {
 											viewBox="0 0 24 24"
 											stroke-width="1.5"
 											stroke="currentColor"
-											class="h-6 w-6">
+											class="w-6 h-6">
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"
@@ -389,13 +380,10 @@ function createDoc() {
 									Opravdu chcete potvrdit košík a odeslat
 								</div>
 								<div
-									class="flex flex-shrink-0 flex-wrap items-center justify-end rounded-b-md border-t-2 border-neutral-100 border-opacity-100 p-4 dark:border-opacity-50">
+									class="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t-2 border-opacity-100 rounded-b-md border-neutral-100 dark:border-opacity-50">
 									<button
 										type="button"
-										class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-										focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
-										duration-200 text-center shadow-md focus:outline-none focus:ring-2
-										focus:ring-offset-2 rounded-lg mr-2"
+										class="px-4 py-2 mr-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 										data-te-modal-dismiss
 										data-te-ripple-init
 										data-te-ripple-color="light">
@@ -404,10 +392,7 @@ function createDoc() {
 									<button
 										on:click={() => {sendOrderBySendGrid();}}
 										type="button"
-										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
-										duration-200 text-center shadow-md focus:outline-none focus:ring-2
-										focus:ring-offset-2 rounded-lg"
+										class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md active:text-lg btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 										data-te-ripple-init
 										data-te-ripple-color="light">	<a activeClass={$page.url.pathname === '/thankyou'} href="/thankyou">Odeslat</a>
 									</button>
@@ -418,40 +403,31 @@ function createDoc() {
 
 					<!-- Modal -->
 					<div
-						class="modal fade fixed top-0 left-0 hidden w-full md:w-1/2 h-full outline-none overflow-x-hidden
-						overflow-y-auto"
+						class="fixed top-0 left-0 hidden w-full h-full overflow-x-hidden overflow-y-auto outline-none modal fade md:w-1/2"
 						id="Modal"
 						tabindex="-1"
 						aria-labelledby="ModalLabel"
 						aria-hidden="true">
-						<div class="modal-dialog relative w-auto pointer-events-none">
+						<div class="relative w-auto pointer-events-none modal-dialog">
 							<div
-								class="modal-content border-none shadow-lg flex flex-col w-full
-								pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
+								class="flex flex-col w-full text-current bg-white border-none rounded-md shadow-lg outline-none pointer-events-auto modal-content bg-clip-padding">
 								<div
-									class="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b
-									border-gray-200 rounded-t-md">
+									class="flex items-center justify-between flex-shrink-0 p-4 border-b border-gray-200 modal-header rounded-t-md">
 									<h5 class="text-xl font-medium leading-normal text-gray-800" id="">Upozornění</h5>
 									<button
 										type="button"
-										class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none
-										opacity-50 focus:shadow-none focus:outline-none focus:opacity-100
-										hover:text-black hover:opacity-75 hover:no-underline"
+										class="box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 btn-close focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline"
 										data-bs-dismiss="modal"
 										aria-label="Close" />
 								</div>
-								<div class="modal-body relative p-4 text-center">
+								<div class="relative p-4 text-center modal-body">
 									Opravdu chcete potvrdit košík a odeslat?
 								</div>
 								<div
-									class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4
-									border-t border-gray-200 rounded-b-md">
+									class="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">
 									<button
 										type="button"
-										class="btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-										focus:ring-green-500 f ocus:ring-offset-green-200 text-white transition ease-in
-										duration-200 text-center shadow-md focus:outline-none focus:ring-2
-										focus:ring-offset-2 rounded-lg mr-2"
+										class="px-4 py-2 mr-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 										data-bs-dismiss="modal">
 										Zavřít
 									</button>
@@ -459,10 +435,7 @@ function createDoc() {
 										on:click={() => {sendOrderBySendGrid();}}
 										type="button"
 										data-bs-dismiss="modal"
-										class="active:text-lg btn btn-success py-2 px-4 bg-green-600 hover:bg-green-700
-										focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in
-										duration-200 text-center shadow-md focus:outline-none focus:ring-2
-										focus:ring-offset-2 rounded-lg">
+										class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md active:text-lg btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 										
 									</button>
 								</div>

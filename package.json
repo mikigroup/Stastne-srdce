@@ -10,8 +10,7 @@
 		"lint": "prettier --check --plugin-search-dir=. .",
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
-	"devDependencies": {
-		"@beyonk/gdpr-cookie-consent-banner": "^9.0.4",
+	"devDependencies": {		
 		"@portabletext/svelte": "^1.0.1",
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-replace": "^4.0.0",
