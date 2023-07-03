@@ -39,20 +39,23 @@
 	function delayRefreshPage(mileSeconds) {
 		window.setTimeout(refreshPage, mileSeconds)
 	}
+
 	function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt').value		
+		var txt = document.getElementById('txt').value
 		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser(), txt: txt }) //
+			body: JSON.stringify({
+				cart: get(CartItemsStore),
+				user: supabaseClient.auth.getUser(),
+				txt: txt
+			}) //
 		})
 		CartItemsStore.update(() => {
 			return []
 		})
-		delayRefreshPage(2000);
+		delayRefreshPage(2000)
 		window.location.href = '/thankyou'
 	}
-	
 
-	
 	function createDoc() {
 		var txt = document.getElementById('txt').value
 		const cart = JSON.parse(localStorage.getItem('cart'))
@@ -74,6 +77,83 @@
 		})
 	}
 
+	function sendOrderAndCreateDoc() {
+		var txt = document.getElementById('txt').value
+
+		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+			body: JSON.stringify({
+				cart: get(CartItemsStore),
+				user: supabaseClient.auth.getUser(),
+				txt: txt
+			})
+		})
+
+		const cart = JSON.parse(localStorage.getItem('cart'))
+		const titles = []
+		for (const obj of cart) {
+			titles.push(obj.title)
+			titles.push(obj.description)
+			titles.push(obj.quantity)
+		}
+
+		const doc = {
+			_type: 'order',
+			itemsOrder: titles,
+			note: txt
+		}
+		client.create(doc).then((res) => {
+			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
+		})
+		CartItemsStore.update(() => {
+			return []
+		})
+		// delayRefreshPage(2000);
+		// window.location.href = '/thankyou';
+	}
+
+	async function sendOrderAndCreateDoc2() {
+  try {
+    var txt = document.getElementById('txt').value;
+
+    await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+      body: JSON.stringify({
+        cart: get(CartItemsStore),
+        user: supabaseClient.auth.getUser(),
+        txt: txt
+      })
+    });
+
+    const cart = JSON.parse(localStorage.getItem('cart'));
+    const titles = [];
+    for (const obj of cart) {
+      titles.push(obj.title);
+      titles.push(obj.description);
+      titles.push(obj.quantity);
+    }
+
+    const doc = {
+      _type: 'order',
+      itemsOrder: titles,
+      note: txt
+    };
+
+    const res = await client.create(doc);
+
+    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
+
+    CartItemsStore.update(() => {
+      return [];
+    });
+
+    // Redirect to the 'thankyou' page
+    window.location.href = '/thankyou';
+  } catch (error) {
+    // Handle any errors that occur during execution
+    console.error(error);
+    // Display an error message to the user or perform other error handling actions
+  }
+}
+
 	let showModal = false
 </script>
 
@@ -90,7 +170,7 @@
 				Košík
 			</h1>
 
-			<div class="">			
+			<div class="">
 				<!-- vrchní část -->
 				<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
 					<!-- obsah košíku pokud je prázdný pro mobile -->
@@ -317,7 +397,7 @@
 								<div class="">
 									<button
 										on:click={() => {
-											sendOrderBySendGrid();
+											sendOrderAndCreateDoc2()
 										}}
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
