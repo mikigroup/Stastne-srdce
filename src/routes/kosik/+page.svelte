@@ -40,77 +40,6 @@
 		window.setTimeout(refreshPage, mileSeconds)
 	}
 
-	function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt').value
-		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-			body: JSON.stringify({
-				cart: get(CartItemsStore),
-				user: supabaseClient.auth.getUser(),
-				txt: txt
-			}) //
-		})
-		CartItemsStore.update(() => {
-			return []
-		})
-		delayRefreshPage(2000)
-		window.location.href = '/thankyou'
-	}
-
-	function createDoc() {
-		var txt = document.getElementById('txt').value
-		const cart = JSON.parse(localStorage.getItem('cart'))
-		const titles = []
-		for (const obj of cart) {
-			titles.push(obj.title)
-			titles.push(obj.description)
-			titles.push(obj.quantity)
-		}
-
-		const doc = {
-			_type: 'order',
-			// customer: ,
-			itemsOrder: titles,
-			note: txt
-		}
-		client.create(doc).then((res) => {
-			console.log(`Objednávka byla vytvořena , document ID je ${res._id}`)
-		})
-	}
-
-	function sendOrderAndCreateDoc() {
-		var txt = document.getElementById('txt').value
-
-		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-			body: JSON.stringify({
-				cart: get(CartItemsStore),
-				user: supabaseClient.auth.getUser(),
-				txt: txt
-			})
-		})
-
-		const cart = JSON.parse(localStorage.getItem('cart'))
-		const titles = []
-		for (const obj of cart) {
-			titles.push(obj.title)
-			titles.push(obj.description)
-			titles.push(obj.quantity)
-		}
-
-		const doc = {
-			_type: 'order',
-			itemsOrder: titles,
-			note: txt
-		}
-		client.create(doc).then((res) => {
-			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
-		})
-		CartItemsStore.update(() => {
-			return []
-		})
-		// delayRefreshPage(2000);
-		// window.location.href = '/thankyou';
-	}
-
 	async function sendOrderAndCreateDoc2() {
   try {
     var txt = document.getElementById('txt').value;
@@ -131,10 +60,20 @@
       titles.push(obj.quantity);
     }
 
+		const now = new Date();
+    const timestamp = now.toISOString();
+
+	
+
+	  const { user } = supabaseClient.auth.session();
+    const fullName = user.user_metadata.full_name;
+    console.log('User full name:', fullName); // Log the full name
+		
     const doc = {
       _type: 'order',
       itemsOrder: titles,
-      note: txt
+      note: txt,
+			timestamp: timestamp
     };
 
     const res = await client.create(doc);
@@ -144,16 +83,14 @@
     CartItemsStore.update(() => {
       return [];
     });
-
-    // Redirect to the 'thankyou' page
+    
     window.location.href = '/thankyou';
-  } catch (error) {
-    // Handle any errors that occur during execution
+  } catch (error) {    
     console.error(error);
-    // Display an error message to the user or perform other error handling actions
   }
 }
-//no
+const { data: { user } } = await supabaseClient.auth.getUser()
+console.log('User full name:', fullName); // Log the full name
 
 	let showModal = false
 </script>
