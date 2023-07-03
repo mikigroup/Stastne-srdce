@@ -40,9 +40,9 @@
 		window.setTimeout(refreshPage, mileSeconds)
 	}
 	function sendOrderBySendGrid() {
-		var txt = document.getElementById('txt').value
+		var txt = document.getElementById('txt').value		
 		supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-			body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser() }) //txt: txt.value
+			body: JSON.stringify({ cart: get(CartItemsStore), user: supabaseClient.auth.getUser(), txt: txt }) //
 		})
 		CartItemsStore.update(() => {
 			return []
@@ -50,7 +50,9 @@
 		delayRefreshPage(2000);
 		window.location.href = '/thankyou'
 	}
+	
 
+	
 	function createDoc() {
 		var txt = document.getElementById('txt').value
 		const cart = JSON.parse(localStorage.getItem('cart'))
