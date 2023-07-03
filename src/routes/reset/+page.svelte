@@ -1,5 +1,5 @@
 <script>
-  import { user } from "./Stores/stores";  
+  import { user } from "../Stores/stores";  
   import { supabaseClient } from "$lib/supabaseClient";
   
 
@@ -114,16 +114,16 @@ useEffect(() => {
   <form on:submit|preventDefault={reset}>
     <div class="pt-20 form-widget">
       <div
-        class="mt-20 mx-auto flex flex-col w-full max-w-md px-4 py-8 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
+        class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
       >
         <div
-          class="self-center mb-4 text-3xl sm:text-2xl font-light text-gray-800 sm:text-2xl"
+          class="self-center mb-4 text-3xl font-light text-gray-800 sm:text-2xl"
         >
           Nové heslo
         </div>
         <div class="flex w-full text-xl">
           <span
-            class="rounded-l-md inline-flex  items-center px-3 border-t bg-white border-l border-b  border-gray-300 text-gray-500 shadow-sm text-sm"
+            class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md"
           >
             <svg
               width="15"
@@ -138,7 +138,7 @@ useEffect(() => {
             </svg>
           </span>
           <input
-            class="form-control rounded-r-lg flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
             name="password"
             type="password"
             label="Heslo"
@@ -154,28 +154,28 @@ useEffect(() => {
             {loading}
             id="btn-success"
             type="submit"
-            class="btn btn-success py-2 px-4  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg"
+            class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
           >
             Nastavit heslo
           </button>
         </div>
          {#if messageFalse}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full p-2 my-4 border rounded-lg">
                 <p>{messageFalse}</p>
                 </div>
                 {/if}
                 {#if messageSuc}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full p-2 my-4 border rounded-lg">
                 <p>{messageSuc}</p>
                 </div>
               {/if}
                {#if message}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full p-2 my-4 border rounded-lg">
                 <p>{message}</p>
                 </div>
               {/if}  
                {#if error}
-                <div class="flex w-full my-4 border rounded-lg p-2">
+                <div class="flex w-full p-2 my-4 border rounded-lg">
                 <p>{error}</p>
                 </div>
               {/if} 
