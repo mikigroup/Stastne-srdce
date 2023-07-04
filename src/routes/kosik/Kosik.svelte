@@ -44,21 +44,12 @@
 		window.setTimeout(refreshPage, mileSeconds)
 	}
 
-	//const { data, error } =  supabaseClient.auth.getSession()
-		
 	let loading = false
 	let first_name = null;	
 	let last_name = null;	
 
-/* onMount(() => {
-		async () => {
-    const { data: { session } } = await supabaseClient.auth.getSession()
-    return session
-  }
-	})
-	
- */
-
+	const email = session.user.email;
+	console.log(email); // Log the full name
 onMount(() => {
 		getProfile()
 	})
@@ -69,7 +60,7 @@ onMount(() => {
         const { data, error, status } = await supabaseClient				
           .from('profiles')
           .select(
-            `username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
+            `first_name, last_name`
           )
           .eq('id', user.id)
           .single()
@@ -88,12 +79,12 @@ onMount(() => {
 			loading = false
 		}
 	}
-	
-	const email = session.user.email;
-	console.log(email); // Log the full name
 
+  
+	
 	async function sendOrderAndCreateDoc2() {
   try {
+    loading = true
     var txt = document.getElementById('txt').value;
 
     await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
@@ -114,12 +105,13 @@ onMount(() => {
 
 		const now = new Date();
     const timestamp = now.toISOString();
-
+    const fullname = `${first_name} ${last_name}`;
     const doc = {
       _type: 'order',
       itemsOrder: titles,
       note: txt,
-			timestamp: timestamp
+			timestamp: timestamp,
+      customer: fullname,
     };
 
     const res = await client.create(doc);
@@ -134,6 +126,9 @@ onMount(() => {
   } catch (error) {    
     console.error(error);
   }
+  finally {
+			loading = false
+		}
 }
 
 
@@ -384,7 +379,12 @@ onMount(() => {
 										}}
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
-										>Odeslat
+										><input
+									type="submit"
+									class=""
+									value={loading ? 'Odesílá se...' : 'Odeslat'}
+									disabled={loading}
+								/>
 									</button>
 									<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->
 								</div>
@@ -395,9 +395,6 @@ onMount(() => {
 				<!-- spodní část -> celková cena a tlačítko potvrdit -->
 				<div />
 			</div>
-			{#if $user}
-				<div class="" />
-			{/if}
 		</div>
 	</section>
 </main>
