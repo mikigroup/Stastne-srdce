@@ -48,8 +48,8 @@
 	let first_name = null;	
 	let last_name = null;	
 
-	const email = session.user.email;
-	console.log(email); // Log the full name
+	//const email = session.user.email;
+	//console.log(email); 
 onMount(() => {
 		getProfile()
 	})

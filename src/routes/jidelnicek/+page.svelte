@@ -222,7 +222,23 @@
 														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
 														<span style="white-space: pre-line"><p class="pt-2 text-lg">{menu.description}</p></span>														
 													</div>
-													<hr class="px-5" />													
+													<hr class="px-5" />
+													<div class="flex justify-end pt-2 basis-4">
+														<a href="/login">
+														<button class="text-sm">
+															<div
+																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
+																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
+																active:bg-green-800 active:shadow-lg active:text-white transition
+																duration-150 ease-in-out">																
+																<div class="flex justify-end m-3 text-base">
+																	Přihlaš se
+																</div>
+															</div>
+														</button>	
+														</a>																										
+													</div>													
 												</div>
 											{/each}
 										<!-- 	{:else if data.menus && data.menus.length}										
