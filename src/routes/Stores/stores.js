@@ -24,10 +24,6 @@ CartItemsStore.subscribe(value => {
 });
 
 
-
-
-
-
 //vytváří v localStorage key "totalPieces"
 const userEmail = writable();
 userEmail.subscribe(value => {

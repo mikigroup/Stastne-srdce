@@ -19,6 +19,7 @@
 		}
 	})
 
+
 	let src = '/android-chrome-192x192.png';
 
 	const formatter = new Intl.DateTimeFormat('en', {
@@ -46,6 +47,9 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     
   }
 })
+
+
+
 
 	function toggleMenu() {		
 		var menuBox = document.getElementById('menu-box');
