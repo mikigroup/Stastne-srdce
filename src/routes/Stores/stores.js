@@ -1,6 +1,7 @@
 import { subscribe } from 'svelte/internal';
 import { writable  , readable } from 'svelte/store';
-import { browser } from '$app/env';
+import { browser } from '$app/environment';
+
 
 /* const storeCartItems = localStorage?.getItem("cart");
 const initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems) */
@@ -24,17 +25,22 @@ CartItemsStore.subscribe(value => {
 
 
 //vytváří v localStorage key "totalPieces"
-/* const totalPiecesStore = writable();
-totalPiecesStore.subscribe(value => {
+const userEmail = writable();
+userEmail.subscribe(value => {
 	if (typeof localStorage != "undefined")
 		{
-			localStorage.setItem("totalPieces" , JSON.stringify(value));
+			localStorage.setItem("userEmail" , JSON.stringify(value));
 	}
-}); */
+});
 
 // nebo
-/* export const enabled = writable<User>(JSON.parse(localStorage.getItem('user')))
-enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
+
+
+// export const currentCartItems = writable();
+export const user = writable(); //false ?
+export default CartItemsStore;
+export const session = writable(null);
+
 
 //finta browser
 /* if (browser){
@@ -47,7 +53,7 @@ enabled.subscribe((value) => localStorage.user = JSON.stringify(value)) */
   user.subscribe((value) => localStorage.user = JSON.stringify(value))
 } */
 
-export const time = readable(new Date(), function start(set) {
+/* export const time = readable(new Date(), function start(set) {
 	const interval = setInterval(() => {
 		set(new Date());
 	}, 1000);
@@ -56,13 +62,33 @@ export const time = readable(new Date(), function start(set) {
 		clearInterval(interval);
 	};
 });
+ */
 
-// export const currentCartItems = writable();
-export const user = writable();
-export default CartItemsStore;
+
+/* export function getData() {
+  return async (dispatch) => {
+    try {
+     const {
+				data: { session },
+			} = await supabase.auth.getSession()
+			const { user } = session
+    	} catch(err) {
+      console.log('error: ', err)
+    }
+  }
+} */
+
+
+/* supabase.auth.onAuthStateChange((event, session) => {
+	if (event == 'SIGNED_IN' && session) {
+		userStore.set(session.user);
+	} else if (event == 'SIGNED_OUT') {
+		userStore.set(null);
+	}
+}); */
 
 //modal kosik
-export function booleanStore(initial) {
+/* export function booleanStore(initial) {
   const isOpen = writable(initial)
   const { set, update } = isOpen
   return {
@@ -71,6 +97,6 @@ export function booleanStore(initial) {
     close: () => set(false),
     toggle: () => update((n) => !n),
   }
-}
+} */
 
 

@@ -1,0 +1,25 @@
+let mail: IRequestBody = {
+			personalizations: [
+				{
+					subject: 'Šťastné srdce - Objednávka',
+					to: { email: 'foo@bar.com' }
+				}
+			],
+			from: { email: 'objednavky@stastnesrdce.cz' },
+			content: [
+				{
+					type: 'text/plain',
+					/*type: 'text/html',*/
+					value: `Dobrý den, 
+				\nděkujeme za objednávku.\n\nPočet meníček: ${sum.quantity}\nCelková cena objednávky: ${
+						sum.price
+					} CZK\n\nSouhrn položek:\n\n----\n${cart.map(
+						(item: any) =>
+							`\n${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+								month: 'long',
+								day: 'numeric'
+							})} - ${item.title}\n${item.description}\n\nPočet: ${item.quantity}Ks\n----\n`
+					)}\nPoznámka:${txt}\n----\nKonec`
+				}
+			]
+		}

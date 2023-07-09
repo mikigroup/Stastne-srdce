@@ -1,25 +1,17 @@
 import adapter from '@sveltejs/adapter-auto';
-import preprocess from "svelte-preprocess"; /** Tailwind */
-
+import preprocess from 'svelte-preprocess';
+import { vitePreprocess } from '@sveltejs/kit/vite';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [
-		preprocess({
-		  postcss: true,
-		}),
-	  ],
-	kit: {
-		trailingSlash: 'always',
-   adapter: adapter(),
-   prerender: {
-	entries: ['*'],
+	// Consult https://github.com/sveltejs/svelte-preprocess
+	// for more information about preprocessors
+	preprocess: preprocess(),
 
-		// Override http methods in the Todo forms
-		/* methodOverride: {
-			allowed: ['PATCH', 'DELETE'] */
-		}
-	}
+	kit: {
+		adapter: adapter()
+	},
+	preprocess: vitePreprocess()
 };
 
 export default config;
