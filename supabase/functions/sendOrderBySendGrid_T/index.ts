@@ -47,8 +47,7 @@ serve(async (req) => {
 				personalizations: [
 					{
 						subject: 'Šťastné srdce - Objednávka',
-						to: email ? [{ email }] : [],
-						cc: [{ email: 'stastnesrdceKK@seznam.cz' }]
+						to: email ? [{ email }] : []						
 					}
 				],
 				from: { email: 'objednavky@stastnesrdce.cz' },
