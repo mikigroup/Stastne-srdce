@@ -87,7 +87,7 @@ onMount(() => {
     loading = true
     var txt = document.getElementById('txt').value;
 
-    await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+    await supabaseClient.functions.invoke('sendOrderBySendGrid', {
       body: JSON.stringify({
         cart: get(CartItemsStore),
         user: supabaseClient.auth.getUser(),
