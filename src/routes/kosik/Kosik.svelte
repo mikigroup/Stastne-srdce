@@ -98,6 +98,10 @@ onMount(() => {
 		
 
     const cart = JSON.parse(localStorage.getItem('cart'));
+		
+		let totalPrice = 0;
+		let totalPieces = 0;
+		
     const order = [];
     for (const obj of cart) {
       order.push(obj.title);
@@ -106,6 +110,8 @@ onMount(() => {
   		order.push(formattedDate);
       order.push(obj.description);
       order.push(obj.quantity);
+			totalPrice += obj.price * obj.quantity;
+  		totalPieces += obj.quantity;
     }
 
 		const now = new Date();
@@ -116,7 +122,9 @@ onMount(() => {
       itemsOrder: order,
       note: txt,
 			timestamp: timestamp,
-      customer: fullname,			
+      customer: fullname,
+			totalPrice: totalPrice,
+  		totalPieces: totalPieces			
     };
 
     const res = await client.create(doc);
