@@ -95,12 +95,17 @@ onMount(() => {
       })
     });
 
+		
+
     const cart = JSON.parse(localStorage.getItem('cart'));
-    const titles = [];
+    const order = [];
     for (const obj of cart) {
-      titles.push(obj.title);
-      titles.push(obj.description);
-      titles.push(obj.quantity);
+      order.push(obj.title);
+			const releaseDate = new Date(obj.releaseDate);
+  		const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(releaseDate.getMonth() + 1).toString().padStart(2, '0')}-${releaseDate.getFullYear()}`;
+  		order.push(formattedDate);
+      order.push(obj.description);
+      order.push(obj.quantity);
     }
 
 		const now = new Date();
@@ -108,15 +113,16 @@ onMount(() => {
     const fullname = `${first_name} ${last_name}`;
     const doc = {
       _type: 'order',
-      itemsOrder: titles,
+      itemsOrder: order,
       note: txt,
 			timestamp: timestamp,
-      customer: fullname,
+      customer: fullname,			
     };
 
     const res = await client.create(doc);
 
     console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
+		console.log('Cart Items:', cart)
 
     CartItemsStore.update(() => {
       return [];
