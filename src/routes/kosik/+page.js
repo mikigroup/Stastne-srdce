@@ -1,26 +1,38 @@
-import client from "../../lib/sanityClient";
+import client from '../../lib/sanityClient'
 
-/* export async function GET() {    
-    const dataOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc)[0] { orderNumber }`);
-    const dataOrder2 = await client.fetch(`*[_type == 'order']{"order": count(_type)}`);
-    const dataOrder3 = await client.fetch(`*[_type == "order"] { orderNumber }  `);     
-  if (dataOrder) {
-    return {
-      status: 200,
-      body: {        
-        dataOrder: dataOrder,      
-        dataOrder2: dataOrder2,
-        dataOrder3: dataOrder3,
-      }
-    };
-  }
-  return {
-    status: 500,
-    body: new Error("Internal Server Error")
-  };
-} */
-// Returns number of elements in array 'actors' on each movie
-// *[_type == 'movie']{"actorCount": count(actors)} 
+export async function load() {
+	try {
+		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
 
-// Returns number of R-rated movies
-// count(*[_type == 'movie' && rating == 'R']) 
+		if (data) {
+			// Check if the data contains the orderNumber field
+			if (!data.orderNumber) {
+				throw new Error('orderNumber field is missing.')
+			}
+
+			// Increment the orderNumber by 1
+			const newOrderNumber = data.orderNumber + 1
+
+			// Update the order with the new orderNumber
+			const updatedOrder = await client
+				.patch(data._id)
+				.set({ orderNumber: newOrderNumber })
+				.commit()
+
+			console.log('New orderNumber:', newOrderNumber) // Log the new orderNumber
+
+			return {
+				orders: updatedOrder
+			}
+		}
+
+		// If no order data found, return an error
+		throw new Error('No order data found.')
+	} catch (error) {
+		console.error('Error:', error.message)
+		return {
+			status: 500,
+			body: new Error('Internal Server Error')
+		}
+	}
+}

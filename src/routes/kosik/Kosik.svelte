@@ -36,8 +36,7 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
-	function refreshPage() {
-		//ensure reloading from server instead of cache
+	function refreshPage() {		
 		location.reload(true)
 	}
 	function delayRefreshPage(mileSeconds) {
@@ -48,8 +47,8 @@
 	let first_name = null;	
 	let last_name = null;	
 
-	//const email = session.user.email;
-	//console.log(email); 
+	const email = session.user.email;
+	console.log(email); 
 onMount(() => {
 		getProfile()
 	})
@@ -117,6 +116,8 @@ onMount(() => {
 		const now = new Date();
     const timestamp = now.toISOString();
     const fullname = `${first_name} ${last_name}`;
+		const email = session.user.email;
+		const orderNumber = '';
     const doc = {
       _type: 'order',
       itemsOrder: order,
@@ -124,7 +125,9 @@ onMount(() => {
 			timestamp: timestamp,
       customer: fullname,
 			totalPrice: totalPrice,
-  		totalPieces: totalPieces			
+  		totalPieces: totalPieces,
+			email: email,
+			orderNumber: orderNumber,						
     };
 
     const res = await client.create(doc);

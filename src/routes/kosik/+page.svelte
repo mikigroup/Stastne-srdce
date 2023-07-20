@@ -1,6 +1,27 @@
 <script lang="ts">
 	import Kosik from './Kosik.svelte'
 	import { page } from '$app/stores'
+	import client from "../../lib/sanityClient";
+
+/* 	export let data;
+	export let orders;
+	 */
+	/* const fetchLatestOrderId = async () => {
+  try {
+    // Fetch the schema for the 'order' type
+    const orders = await client.fetch('*[_type == "order"]{_id}[0]');
+    if (orders && orders._id) {
+      // Extract the _id field
+      const lastOrderId = orders._id;
+      // You can use the lastOrderId as needed
+      console.log('Last order ID:', lastOrderId);
+    }
+  } catch (error) {
+    console.error('Error fetching latest order ID:', error);
+  }
+};
+	console.log(data);
+		console.log(orders); */
 </script>
 
 <svelte:head>
