@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Kosik from './Kosik.svelte'
 	import { page } from '$app/stores'
-	import client from "../../lib/sanityClient";
+	import client from "../../lib/sanityClient";	
+	 	
+	// export let data;
+	// console.log(data.orders.orderNumber);
 
-/* 	export let data;
-	export let orders;
-	 */
+
 	/* const fetchLatestOrderId = async () => {
   try {
     // Fetch the schema for the 'order' type

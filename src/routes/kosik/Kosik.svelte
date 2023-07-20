@@ -8,8 +8,22 @@
 	import Modal from './Modal.svelte'
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
-	
+	import { load } from './+page.js'
+	import { onDestroy } from 'svelte'
+
 	export let session: AuthSession
+
+
+
+	
+
+	onMount(async () => {
+		const data = await load()
+		if (data && data.orders) {
+			const orderNumber = data.orders.orderNumber
+			console.log(orderNumber)
+		}
+	})
 
 	$: cartItems = $CartItemsStore
 
@@ -36,7 +50,7 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
-	function refreshPage() {		
+	function refreshPage() {
 		location.reload(true)
 	}
 	function delayRefreshPage(mileSeconds) {
@@ -44,29 +58,27 @@
 	}
 
 	let loading = false
-	let first_name = null;	
-	let last_name = null;	
+	let first_name = null
+	let last_name = null
 
-	const email = session.user.email;
-	console.log(email); 
-onMount(() => {
+	const email = session.user.email
+	console.log(email)
+	onMount(() => {
 		getProfile()
 	})
-    const getProfile = async () => {
-      try {
-        loading = true				
-				const { user } = session
-        const { data, error, status } = await supabaseClient				
-          .from('profiles')
-          .select(
-            `first_name, last_name`
-          )
-          .eq('id', user.id)
-          .single()
+	const getProfile = async () => {
+		try {
+			loading = true
+			const { user } = session
+			const { data, error, status } = await supabaseClient
+				.from('profiles')
+				.select(`first_name, last_name`)
+				.eq('id', user.id)
+				.single()
 
-        if (data) {
-          first_name = data.first_name
-          last_name = data.last_name
+			if (data) {
+				first_name = data.first_name
+				last_name = data.last_name
 			}
 
 			if (error && status !== 406) throw error
@@ -79,77 +91,79 @@ onMount(() => {
 		}
 	}
 
-  
-	
 	async function sendOrderAndCreateDoc2() {
-  try {
-    loading = true
-    var txt = document.getElementById('txt').value;
+		try {
+			loading = true
+			var txt = document.getElementById('txt').value
+			//sendOrderBySendGrid_T
+			await supabaseClient.functions.invoke('', {
+				body: JSON.stringify({
+					cart: get(CartItemsStore),
+					user: supabaseClient.auth.getUser(),
+					txt: txt
+				})
+			})
 
-    await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-      body: JSON.stringify({
-        cart: get(CartItemsStore),
-        user: supabaseClient.auth.getUser(),
-        txt: txt
-      })
-    });
+			const cart = JSON.parse(localStorage.getItem('cart'))
+			let totalPrice = 0
+			let totalPieces = 0
+			const order = []
+			for (const obj of cart) {
+				order.push(obj.title)
+				const releaseDate = new Date(obj.releaseDate)
+				const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+					releaseDate.getMonth() + 1
+				)
+					.toString()
+					.padStart(2, '0')}-${releaseDate.getFullYear()}`
+				order.push(formattedDate)
+				order.push(obj.description)
+				order.push(obj.quantity)
+				totalPrice += obj.price * obj.quantity
+				totalPieces += obj.quantity
+			}
 
-		
+			const now = new Date()
+			const timestamp = now.toISOString()
+			const fullname = `${first_name} ${last_name}`
+			const email = session.user.email
 
-    const cart = JSON.parse(localStorage.getItem('cart'));
-		
-		let totalPrice = 0;
-		let totalPieces = 0;
-		
-    const order = [];
-    for (const obj of cart) {
-      order.push(obj.title);
-			const releaseDate = new Date(obj.releaseDate);
-  		const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(releaseDate.getMonth() + 1).toString().padStart(2, '0')}-${releaseDate.getFullYear()}`;
-  		order.push(formattedDate);
-      order.push(obj.description);
-      order.push(obj.quantity);
-			totalPrice += obj.price * obj.quantity;
-  		totalPieces += obj.quantity;
-    }
+			// Call the load function to get the orderNumber
+			const data = await load()
+			if (data && data.orders) {
+				const orderNumber = data.orders.orderNumber + 1
+				console.log(orderNumber)
+				// Use the orderNumber in your document creation
+				const doc = {
+					_type: 'order',
+					itemsOrder: order,
+					note: txt,
+					timestamp: timestamp,
+					customer: fullname,
+					totalPrice: totalPrice,
+					totalPieces: totalPieces,
+					email: email,
+					orderNumber: orderNumber
+				}
+				const res = await client.create(doc)
+				console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
 
-		const now = new Date();
-    const timestamp = now.toISOString();
-    const fullname = `${first_name} ${last_name}`;
-		const email = session.user.email;
-		const orderNumber = '';
-    const doc = {
-      _type: 'order',
-      itemsOrder: order,
-      note: txt,
-			timestamp: timestamp,
-      customer: fullname,
-			totalPrice: totalPrice,
-  		totalPieces: totalPieces,
-			email: email,
-			orderNumber: orderNumber,						
-    };
-
-    const res = await client.create(doc);
-
-    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
-		console.log('Cart Items:', cart)
-
-    CartItemsStore.update(() => {
-      return [];
-    });
-    
-    window.location.href = '/thankyou';
-  } catch (error) {    
-    console.error(error);
-  }
-  finally {
+				const updatedData = await load();      	
+				console.log(`Objednávka byla vytvořena, document ID je ${res.orderNumber}`)				
+				console.log('Updated Data:', updatedData);
+			}
+			
+			CartItemsStore.update(() => {
+				return []
+			})
+			window.location.href = '/thankyou'			
+			console.error(Error)
+		} finally {
 			loading = false
 		}
-}
+	}
 
-
-	let showModal = false  
+	let showModal = false
 </script>
 
 <svelte:head>
@@ -397,11 +411,11 @@ onMount(() => {
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
 										><input
-									type="submit"
-									class=""
-									value={loading ? 'Odesílá se...' : 'Odeslat'}
-									disabled={loading}
-								/>
+											type="submit"
+											class=""
+											value={loading ? 'Odesílá se...' : 'Odeslat'}
+											disabled={loading}
+										/>
 									</button>
 									<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->
 								</div>

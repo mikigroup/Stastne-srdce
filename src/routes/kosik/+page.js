@@ -1,8 +1,10 @@
 import client from '../../lib/sanityClient'
 
 export async function load() {
-	try {
-		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+	try {		
+//		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0] { orderNumber }');
+
 
 		if (data) {
 			// Check if the data contains the orderNumber field
@@ -11,18 +13,18 @@ export async function load() {
 			}
 
 			// Increment the orderNumber by 1
-			const newOrderNumber = data.orderNumber + 1
+			// const newOrderNumber = data.orderNumber + 1
 
 			// Update the order with the new orderNumber
-			const updatedOrder = await client
+			/* const updatedOrder = await client
 				.patch(data._id)
 				.set({ orderNumber: newOrderNumber })
 				.commit()
 
-			console.log('New orderNumber:', newOrderNumber) // Log the new orderNumber
-
+			console.log('New orderNumber:', newOrderNumber) */ // Log the new orderNumber
+			console.log(data.orderNumber);
 			return {
-				orders: updatedOrder
+				orders: data
 			}
 		}
 
