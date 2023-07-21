@@ -2,27 +2,8 @@ import client from '../../lib/sanityClient'
 
 export async function load() {
 	try {		
-//		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
-		const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0] { orderNumber }');
-
-
-		if (data) {
-			// Check if the data contains the orderNumber field
-			if (!data.orderNumber) {
-				throw new Error('orderNumber field is missing.')
-			}
-
-			// Increment the orderNumber by 1
-			// const newOrderNumber = data.orderNumber + 1
-
-			// Update the order with the new orderNumber
-			/* const updatedOrder = await client
-				.patch(data._id)
-				.set({ orderNumber: newOrderNumber })
-				.commit()
-
-			console.log('New orderNumber:', newOrderNumber) */ // Log the new orderNumber
-			console.log(data.orderNumber);
+	const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+		if (data) {			
 			return {
 				orders: data
 			}
