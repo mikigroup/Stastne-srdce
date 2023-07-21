@@ -8,8 +8,6 @@ export async function load() {
 				orders: data
 			}
 		}
-
-		// If no order data found, return an error
 		throw new Error('No order data found.')
 	} catch (error) {
 		console.error('Error:', error.message)

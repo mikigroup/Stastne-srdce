@@ -4,7 +4,8 @@
 	import type { AuthSession } from '@supabase/supabase-js'
 
 	export let session: AuthSession
-
+	
+	
 	let loading = false
 	let username: string | null = null
 	let website: string | null = null
@@ -323,39 +324,21 @@
 				</div>
 			</div>
 		</form>
-	</div>
+		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<h1
+			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900"
+		>
+			Objednávky
+		</h1>
+		<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+		<div>Objednávka 1</div>
+<!-- 		{#each data.menus as menu}
+														<p class="">{menu._id}</p>													
+											{/each}
+		</div> -->
+		</div>		
+	</div>	
 </section>
-<!-- <form class="form-widget" on:submit|preventDefault={updateProfile}>
-  <div>
-    <label for="email">Email</label>
 
-    <input id="email" type="text" value={session.user.email} disabled />
-  </div>
 
-  <div>
-    <label for="username">Name</label>
 
-    <input id="username" type="text" bind:value={username} />
-  </div>
-
-  <div>
-    <label for="website">Website</label>
-
-    <input id="website" type="website" bind:value={website} />
-  </div>
-
-  <div>
-    <input
-      type="submit"
-      class="block button primary"
-      value={loading ? "Loading..." : "Update"}
-      disabled={loading}
-    />
-  </div>
-
-  <div>
-    <button class="block button" on:click={signOut} disabled={loading}
-      >Sign Out</button
-    >
-  </div>
-</form> -->

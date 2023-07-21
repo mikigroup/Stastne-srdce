@@ -40,7 +40,7 @@ export async function load() {
 
 export async function load() {
   const data = await client.fetch(`*[_type == "menu" && releaseDate > "${currentDate.toISOString()}" && releaseDate < "${toDate.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`)
-
+  
   if (data) {
     return {
       menus: data

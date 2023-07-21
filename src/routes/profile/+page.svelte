@@ -1,6 +1,8 @@
-<script lang="ts">
-	import Account from './Account.svelte'
-	import { page } from "$app/stores";
+<script>
+import Account from './Account.svelte'
+import { page } from '$app/stores'
+
+export let data;
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Účet</title>
@@ -10,8 +12,12 @@
 {#if !$page.data.session}
 	<p class="pt-10 mt-10">Přihlaš se</p>
 {:else}
-	<Account session={$page.data.session} />
+	<Account session={$page.data.session} />		
+	{#each data.menus as menu}							
+		<p class="">{menu._id}</p>													
+		{/each}
 {/if}
+
 
 
 

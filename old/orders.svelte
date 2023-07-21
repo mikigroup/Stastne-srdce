@@ -1,5 +1,4 @@
 <script>
-import { ListPlaceholder } from 'flowbite-svelte'
 </script>
 <svelte:head>
 	<title>Šťastné srdce - Orders</title>
