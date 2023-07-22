@@ -1,98 +1,81 @@
 <script lang="ts">
-	import CartItemsStore from '../Stores/stores'
-	import { get } from 'svelte/store'
-	import { page } from '$app/stores'
-	import { user } from '../Stores/stores'
-	import client from '../../lib/sanityClient'
-	import { supabaseClient } from '$lib/supabaseClient'
-	import Modal from './Modal.svelte'
-	import { onMount } from 'svelte'
-	import type { AuthSession } from '@supabase/supabase-js'
-	import { load } from './+page.js'
+  import CartItemsStore from '../Stores/stores'
+  import { get } from 'svelte/store'
+  import { page } from '$app/stores'
+  import { user } from '../Stores/stores'
+  import client from '../../lib/sanityClient'
+  import { supabaseClient } from '$lib/supabaseClient'
+  import Modal from './Modal.svelte'
+  import { onMount } from 'svelte'
+  import type { AuthSession } from '@supabase/supabase-js'
 
-	export let session: AuthSession
+  export let session: AuthSession
 
+  $: cartItems = $CartItemsStore
 
-	/* onMount(async () => {
-		const data = await load()
-		if (data && data.orders) {
-			const orderNumber = data.orders.orderNumber
-			console.log(orderNumber)
-		}
-	}) */
+  function removeItem(menuid) {
+    CartItemsStore.update((currentCartItems) => {
+      return currentCartItems.filter((cartItem) => cartItem._id != menuid)
+    })
+  }
 
-	$: cartItems = $CartItemsStore
+  $: totalPrice =
+    $CartItemsStore.length &&
+    $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
+  $: totalPieces =
+    $CartItemsStore.length &&
+    $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
-	function removeItem(menuid) {
-		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
-		})
-	}
+  function refreshPage() {
+    location.reload(true)
+  }
 
-	//mazání pokud object/item v cart dosáhne qty = 0
-	$: $CartItemsStore.map((currentCartItems, index, menuid) => {
-		if (currentCartItems.quantity === 0) {
-			$CartItemsStore.splice(index, 1) &&
-				CartItemsStore.update((currentCartItems) => {
-					return currentCartItems.filter((cartItem) => cartItem._id != menuid)
-				})
-		}
-	})
+  function delayRefreshPage(mileSeconds) {
+    window.setTimeout(refreshPage, mileSeconds)
+  }
 
-	$: totalPrice =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
-	$: totalPieces =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+  let loading = false
+  let first_name = null
+  let last_name = null
 
-	function refreshPage() {
-		location.reload(true)
-	}
-	function delayRefreshPage(mileSeconds) {
-		window.setTimeout(refreshPage, mileSeconds)
-	}
+  const email = session.user.email
+  console.log(email)
 
-	let loading = false
-	let first_name = null
-	let last_name = null
+  onMount(() => {
+    getProfile()
+  })
 
-	const email = session.user.email
-	console.log(email)
-	onMount(() => {
-		getProfile()
-	})
-	const getProfile = async () => {
-		try {
-			loading = true
-			const { user } = session
-			const { data, error, status } = await supabaseClient
-				.from('profiles')
-				.select(`first_name, last_name`)
-				.eq('id', user.id)
-				.single()
+  const getProfile = async () => {
+    try {
+      loading = true
+      const { user } = session
+      const { data, error, status } = await supabaseClient
+        .from('profiles')
+        .select(`first_name, last_name`)
+        .eq('id', user.id)
+        .single()
 
-			if (data) {
-				first_name = data.first_name
-				last_name = data.last_name
-			}
+      if (data) {
+        first_name = data.first_name
+        last_name = data.last_name
+      }
 
-			if (error && status !== 406) throw error
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message)
-			}
-		} finally {
-			loading = false
-		}
-	}
+      if (error && status !== 406) throw error
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message)
+      }
+    } finally {
+      loading = false
+    }
+  }
 
-	async function sendOrderAndCreateDoc2() {
+  async function sendOrderAndCreateDoc2() {
     try {
       loading = true;
       var txt = document.getElementById('txt').value;
-      //sendOrderBySendGrid_T
-      await supabaseClient.functions.invoke('sendOrderBySendGrid', {
+      // Replace "yourFunctionName" with the correct Supabase function name
+      await supabaseClient.functions.invoke('yourFunctionName', {
         body: JSON.stringify({
           cart: get(CartItemsStore),
           user: supabaseClient.auth.getUser(),
@@ -123,11 +106,10 @@
       const timestamp = now.toISOString();
       const fullname = `${first_name} ${last_name}`;
       const email = session.user.email;
-      // Call the load function to get the orderNumber
-      /* const data = await load()
-      if (data && data.orders) {
-        const orderNumber = data.orders.orderNumber + 1
-        console.log(orderNumber) */
+
+      const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+      const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
+
       const doc = {
         _type: 'order',
         itemsOrder: order,
@@ -137,17 +119,19 @@
         totalPrice: totalPrice,
         totalPieces: totalPieces,
         email: email,
-        // orderNumber: orderNumber
+        orderNumber: orderNumber
       };
+
       const res = await client.create(doc);
       console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
-      // } Missing '}' for if statement
 
       CartItemsStore.update(() => {
         return [];
       });
+      
       window.location.href = '/thankyou';
-      console.error(Error);
+    } catch (error) {
+      console.error(error);
     } finally {
       loading = false;
     }
@@ -155,6 +139,7 @@
 
   let showModal = false;
 </script>
+
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>

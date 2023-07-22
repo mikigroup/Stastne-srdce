@@ -2,7 +2,7 @@ import client from '../../lib/sanityClient'
 
 export async function load() {
 	try {		
-	const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+	const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0] ')
 	console.log(data);
 		if (data) {			
 			return {
