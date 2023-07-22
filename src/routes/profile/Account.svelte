@@ -4,66 +4,74 @@
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
 
-	export let session: AuthSession	
-	
+	export let session: AuthSession
+
 	let loading = false
 	let username: string | null = null
 	let website: string | null = null
 	let avatarUrl: string | null = null
-	let first_name = null;	
-	let last_name = null;
-	let telephone = null;
-	let company_name = null;
-	let street = null;
-	let street_number = null;
-	let city = null;
-	let ico = null;
-	let dic = null;
-	let company = null;
+	let first_name = null
+	let last_name = null
+	let telephone = null
+	let company_name = null
+	let street = null
+	let street_number = null
+	let city = null
+	let ico = null
+	let dic = null
+	let company = null
 
-let orders = null;
+	let orders: any[] = [];
+	let itemsOrder: any[] = [];
+
+  async function loadOrders(email) {
+    return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder }`);
+  };
+
+
 onMount(async () => {
-  const data = await client.fetch(`*[_type == "order"] { orderNumber }`);
-  console.log(data);
-	
-  if (data) {
-    orders = data;
-  } else {
-    throw new Error('Failed to fetch data');
+  const xemail = session.user.email;
+  try {
+    orders = await loadOrders(xemail);
+    console.log(`Fetched orders: ${JSON.stringify(orders)}`); // Log the fetched orders
+  } catch (error) {
+    console.error(`Error fetching orders: ${error}`); // Log any errors during fetch
   }
 });
-	onMount(() => {
-		getProfile()		
-	})	
-    const getProfile = async () => {
-      try {
-        loading = true
-        const { user } = session 
-        const { data, error, status } = await supabaseClient
-          .from('profiles')
-          .select(
-            `username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
-          )
-          .eq('id', user.id)
-          .single()
 
-        if (data) {
-          username = data.username
-          website = data.website
-          avatarUrl = data.avatar_url
-          first_name = data.first_name
-          last_name = data.last_name
-          telephone = data.telephone
-          company_name = data.company_name
-          street = data.street
-          street_number = data.street_number
-          ico = data.ico
-          dic = data.dic
-          company = data.company
-          city = data.city
+
+	onMount(() => {
+		getProfile()
+	})
+	const getProfile = async () => {
+		try {
+			loading = true
+			const { user } = session
+			const { data, error, status } = await supabaseClient
+				.from('profiles')
+				.select(
+					`username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
+				)
+				.eq('id', user.id)
+				.single()
+
+			if (data) {
+				username = data.username
+				website = data.website
+				avatarUrl = data.avatar_url
+				first_name = data.first_name
+				last_name = data.last_name
+				telephone = data.telephone
+				company_name = data.company_name
+				street = data.street
+				street_number = data.street_number
+				ico = data.ico
+				dic = data.dic
+				company = data.company
+				city = data.city
 			}
 
-			if (error && status !== 406) throw error			
+			if (error && status !== 406) throw error
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message)
@@ -82,7 +90,16 @@ onMount(async () => {
 				id: user.id,
 				avatar_url: avatarUrl,
 				updated_at: new Date(),
-				first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company,
+				first_name,
+				last_name,
+				telephone,
+				company_name,
+				street,
+				street_number,
+				city,
+				ico,
+				dic,
+				company,
 				username,
 				website
 			}
@@ -98,9 +115,8 @@ onMount(async () => {
 			loading = false
 		}
 	}
-	const email = session.user.email;
-	console.log(email);
-
+	//const email = session.user.email;
+	//console.log(email);
 </script>
 
 <svelte:head>
@@ -109,9 +125,7 @@ onMount(async () => {
 </svelte:head>
 <section>
 	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1
-			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900"
-		>
+		<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Profil účtu
 		</h1>
 
@@ -119,15 +133,21 @@ onMount(async () => {
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div
 					class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg"
-				>	
+				>
 					<div class="my-2">
 						<div class="flex flex-col items-center md:flex-row">
 							<div class="flex justify-start basis-1/2">
 								<label class="pr-2" for="email">Email / uživatel</label>
 							</div>
 							<div class="w-full basis-1/2">
-								<input value={session.user.email} disabled type="email" id="email" class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg shadow-sm appearance-none form-control bg-slate-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"                  
-                  placeholder="Email" />																
+								<input
+									value={session.user.email}
+									disabled
+									type="email"
+									id="email"
+									class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg shadow-sm appearance-none form-control bg-slate-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+									placeholder="Email"
+								/>
 							</div>
 						</div>
 						<hr class="w-32" />
@@ -160,7 +180,6 @@ onMount(async () => {
 										type="last_name"
 										id="last_name"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-										
 										placeholder="Příjmení"
 									/>
 								</div>
@@ -178,7 +197,6 @@ onMount(async () => {
 										type="telephone"
 										id="telephone"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-										
 										placeholder="Telefon"
 									/>
 								</div>
@@ -214,7 +232,6 @@ onMount(async () => {
 											type="street"
 											id="street"
 											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											
 											placeholder="Ulice"
 										/>
 									</div>
@@ -232,7 +249,6 @@ onMount(async () => {
 											type="street_number"
 											id="street_number"
 											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											
 											placeholder="Číslo popisné"
 										/>
 									</div>
@@ -254,7 +270,6 @@ onMount(async () => {
                    rounded-lg text-center appearance-none border border-gray-300 w-full py-2 px-4
                     bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
                      focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-											
 											placeholder="Město"
 										/>
 									</div>
@@ -319,7 +334,7 @@ onMount(async () => {
 									</div>
 								</div>
 								<hr class="w-32" />
-							</div>							
+							</div>
 						</div>
 						<div class="mt-10">
 							<button
@@ -338,20 +353,29 @@ onMount(async () => {
 			</div>
 		</form>
 		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1
-			class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900"
-		>
-			Objednávky
-		</h1>
-		<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
-		<div>Objednávka 1</div>
-<!-- 		{#each data.menus as menu}
-														<p class="">{menu._id}</p>													
-											{/each}
-		</div> -->	
-		</div>		
-	</div>	
+			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+				Objednávky
+			</h1>
+			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+				<span>Objednávka 1</span>
+{#if orders.length > 0}
+  <ul>
+    {#each orders as order (order.orderNumber)}
+      <li>
+        Order Number: {order.orderNumber}
+        <ul>
+          {#each order.itemsOrder as item (item)}
+            <li>{item}</li>
+          {/each}
+        </ul>
+      </li>
+    {/each}
+  </ul>
+{:else}
+  <p>Loading orders...</p>
+{/if}
+
+			</div>
+		</div>
+	</div>
 </section>
-
-
-
