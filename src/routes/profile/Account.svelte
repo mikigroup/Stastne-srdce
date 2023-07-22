@@ -2,9 +2,9 @@
 	import { supabaseClient } from '$lib/supabaseClient'
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
+	import client from '../../lib/sanityClient'
 
-	export let session: AuthSession
-	
+	export let session: AuthSession	
 	
 	let loading = false
 	let username: string | null = null
@@ -21,13 +21,24 @@
 	let dic = null;
 	let company = null;
 
+let orders = null;
+onMount(async () => {
+  const data = await client.fetch(`*[_type == "order"] { orderNumber }`);
+  console.log(data);
+	
+  if (data) {
+    orders = data;
+  } else {
+    throw new Error('Failed to fetch data');
+  }
+});
 	onMount(() => {
-		getProfile()
-	})
+		getProfile()		
+	})	
     const getProfile = async () => {
       try {
         loading = true
-        const { user } = session
+        const { user } = session 
         const { data, error, status } = await supabaseClient
           .from('profiles')
           .select(
@@ -52,7 +63,7 @@
           city = data.city
 			}
 
-			if (error && status !== 406) throw error
+			if (error && status !== 406) throw error			
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message)
@@ -89,7 +100,7 @@
 	}
 	const email = session.user.email;
 	console.log(email);
-	
+
 </script>
 
 <svelte:head>
@@ -337,7 +348,7 @@
 <!-- 		{#each data.menus as menu}
 														<p class="">{menu._id}</p>													
 											{/each}
-		</div> -->
+		</div> -->	
 		</div>		
 	</div>	
 </section>
