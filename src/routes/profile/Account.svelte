@@ -21,24 +21,26 @@
 	let dic = null
 	let company = null
 
-	let orders: any[] = [];
-	let itemsOrder: any[] = [];
-
-  async function loadOrders(email) {
-    return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder }`);
-  };
 
 
-onMount(async () => {
-  const xemail = session.user.email;
-  try {
-    orders = await loadOrders(xemail);
-    console.log(`Fetched orders: ${JSON.stringify(orders)}`); // Log the fetched orders
-  } catch (error) {
-    console.error(`Error fetching orders: ${error}`); // Log any errors during fetch
-  }
-});
+	let uniqueOrders = [];
 
+	let orders: any[] = []
+	let itemsOrder: any[] = []
+
+	async function loadOrders(email) {
+		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp }`)
+	}
+
+	onMount(async () => {
+		const xemail = session.user.email
+		try {
+			orders = await loadOrders(xemail)
+			//console.log(`Fetched orders: ${JSON.stringify(orders)}`)
+		} catch (error) {
+			console.error(`Error fetching orders: ${error}`)
+		}
+	})
 
 	onMount(() => {
 		getProfile()
@@ -357,23 +359,31 @@ onMount(async () => {
 				Objednávky
 			</h1>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
-				<span>Objednávka 1</span>
-{#if orders.length > 0}
-  <ul>
-    {#each orders as order (order.orderNumber)}
-      <li>
-        Order Number: {order.orderNumber}
-        <ul>
-          {#each order.itemsOrder as item (item)}
-            <li>{item}</li>
-          {/each}
-        </ul>
-      </li>
-    {/each}
-  </ul>
-{:else}
-  <p>Loading orders...</p>
-{/if}
+			{#if orders.length > 0}
+					<ul>
+						{#each orders as order (order.orderNumber)}
+							<li class="text-lg underline-offset-8">
+								<br>
+								Objednávka: <span class="underlineunderline-offset-8">{order.orderNumber}</span>
+								Datum: 					<span class="underline underline-offset-8">{new Date(order.orderNumber).toLocaleDateString('cs-CZ', {
+																weekday: 'long',
+																month: 'long',
+																day: 'numeric'
+															})}</span>									
+								<ul>
+									
+									<br>
+									{#each order.itemsOrder as item (item)}
+										<li>{item}</li>
+									{/each}
+								</ul>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p>Loading orders...</p>
+				{/if}				
+
 
 			</div>
 		</div>

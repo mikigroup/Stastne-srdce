@@ -12,10 +12,7 @@ export let data;
 {#if !$page.data.session}
 	<p class="pt-10 mt-10">Přihlaš se</p>
 {:else}
-	<Account session={$page.data.session} />		
-	{#each data.menus as menu}							
-		<p class="">{menu.orderNumber}</p>													
-		{/each}
+	<Account session={$page.data.session} />			
 {/if}
 
 
