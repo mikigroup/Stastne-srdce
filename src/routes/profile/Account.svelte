@@ -88,6 +88,8 @@
 		}
 	}
 	const email = session.user.email;
+	console.log(email);
+	
 </script>
 
 <svelte:head>

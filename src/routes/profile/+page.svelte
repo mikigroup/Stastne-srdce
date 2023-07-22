@@ -14,7 +14,7 @@ export let data;
 {:else}
 	<Account session={$page.data.session} />		
 	{#each data.menus as menu}							
-		<p class="">{menu._id}</p>													
+		<p class="">{menu.orderNumber}</p>													
 		{/each}
 {/if}
 

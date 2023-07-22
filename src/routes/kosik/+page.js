@@ -1,4 +1,4 @@
-import client from '../../lib/sanityClient'
+/* import client from '../../lib/sanityClient'
 
 export async function load() {
 	try {		
@@ -19,3 +19,4 @@ export async function load() {
 		}
 	}
 }
+ */
