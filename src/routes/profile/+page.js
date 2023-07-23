@@ -1,4 +1,4 @@
-import client from '../../lib/sanityClient'
+/* import client from '../../lib/sanityClient'
 
 export async function load() {
 	const data = await client.fetch(`*[_type == "order"] | order(releaseDate) { orderNumber }`)
@@ -15,3 +15,4 @@ export async function load() {
 }
 
 
+ */

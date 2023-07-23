@@ -3,6 +3,8 @@
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
+	import { fade } from 'svelte/transition';
+	let visible = true;
 
 	export let session: AuthSession
 
@@ -29,7 +31,7 @@
 	let itemsOrder: any[] = []
 
 	async function loadOrders(email) {
-		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp }`)
+		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`)
 	}
 
 	onMount(async () => {
@@ -359,30 +361,49 @@
 				Objednávky
 			</h1>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
-			{#if orders.length > 0}
-					<ul>
-						{#each orders as order (order.orderNumber)}
-							<li class="text-lg underline-offset-8">
-								<br>
-								Objednávka: <span class="underlineunderline-offset-8">{order.orderNumber}</span>
-								Datum: 					<span class="underline underline-offset-8">{new Date(order.orderNumber).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}</span>									
-								<ul>
-									
-									<br>
-									{#each order.itemsOrder as item (item)}
-										<li>{item}</li>
-									{/each}
-								</ul>
-							</li>
-						{/each}
-					</ul>
-				{:else}
-					<p>Loading orders...</p>
-				{/if}				
+ <label>
+	<input type="checkbox" bind:checked={visible} />
+	visible
+</label>
+	{#if orders.length > 0}
+	<div class="px-5 border-2 rounded-md bg-slate-50">
+		
+ <ul>
+{#each orders as order (order._id)}
+    <li class="text-lg">
+        <br>
+        <div class="p-5 border-2 rounded-md">
+            Objednávka: <span class="font-semibold">{order.orderNumber}</span>
+            <br>
+						
+            Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
+                weekday: 'short',
+                month: 'long',
+                day: 'numeric'
+            })}
+						
+						
+        </div>
+				{#if visible}
+				<div class="p-5 border-2 rounded-md">
+        <ul>
+            <br>
+           <p transition:fade> {#each order.itemsOrder as item, i (i)}
+                <li>{item}</li>
+            {/each}
+						</p>
+        </ul>
+				</div>
+				{/if}
+    </li>
+		<br>
+		<hr>
+{/each}
+</ul>
+</div>
+{:else}
+  <p>Nahrávám objednávky...</p>
+{/if}
 
 
 			</div>
