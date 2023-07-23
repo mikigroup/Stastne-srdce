@@ -354,7 +354,7 @@
 				</div>
 			</div>
 		</form>
-		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<!-- <div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Objednávky
 			</h1>
@@ -386,6 +386,6 @@
 
 
 			</div>
-		</div>
+		</div> -->
 	</div>
 </section>

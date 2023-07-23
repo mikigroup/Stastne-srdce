@@ -74,8 +74,8 @@
     try {
       loading = true;
       var txt = document.getElementById('txt').value;
-      // Replace "yourFunctionName" with the correct Supabase function name
-      await supabaseClient.functions.invoke('yourFunctionName', {
+      
+      await supabaseClient.functions.invoke('sendOrderBySendGrid', {
         body: JSON.stringify({
           cart: get(CartItemsStore),
           user: supabaseClient.auth.getUser(),
