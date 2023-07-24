@@ -4,8 +4,7 @@
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
 	import { fade } from 'svelte/transition';
-	// let visible = true;
-
+	// let visible = true;	 
 	export let session: AuthSession
 
 	let loading = false
