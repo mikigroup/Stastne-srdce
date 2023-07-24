@@ -37,8 +37,8 @@
 orders.forEach((order, index) => visible[index] = false);
 
 	async function loadOrders(email) {
-		// return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`)
-		return client.fetch(`*[_type == "order" && email == "buchtovalucie9@gmail.com"] { orderNumber, itemsOrder, timestamp, _id }`)
+		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`)
+		// return client.fetch(`*[_type == "order" && email == "buchtovalucie9@gmail.com"] { orderNumber, itemsOrder, timestamp, _id }`)
 	}
 
 	onMount(async () => {
@@ -348,17 +348,15 @@ orders.forEach((order, index) => visible[index] = false);
 							</div>
 						</div>
 						<div class="mt-10">
-							<button
-								class="px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
-							
-								<input
-									type="submit"
-									class="block button primary"
-									value={loading ? 'Nahrává se...' : 'Update profilu'}
-									disabled={loading}
-								/>
-							</button>
-						</div>
+	<button
+		type="submit"
+		class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+		disabled={loading}
+	>
+		{loading ? 'Nahrává se...' : 'Update profilu'}
+	</button>
+</div>
+
 					</div>
 				</div>
 			</div>
@@ -368,11 +366,42 @@ orders.forEach((order, index) => visible[index] = false);
 				Objednávky
 			</h1>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto"> 
-	{#if orders.length > 0}
+	
 <div class="px-5 border-2 rounded-md bg-slate-50">
+	{#if orders && orders.length > 0}
 	<ul>
-		
 		{#each orders as order, index (order._id)}
+			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
+				<br>
+				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
+					Objednávka: <span class="font-semibold">{order.orderNumber}</span>
+					<br>
+					Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
+						weekday: 'short',
+						month: 'long',
+						day: 'numeric'
+					})}
+				</div>
+				{#if visible[index]}
+				<div class="p-5 border-2 rounded-md" in:fade={{duration: 500}}>
+					<ul>
+						<br>
+						{#each order.itemsOrder as item, i (i)}
+							<li>{item}</li>
+						{/each}
+					</ul>
+				</div>
+				{/if}
+				<br>
+				<hr>
+			</li>
+		{/each}
+	</ul>
+{:else}
+	<p>Žádné objednávky</p>
+{/if} 
+		
+<!-- 		{#each orders as order, index (order._id)}
 			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
 				<br>
 				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
@@ -402,7 +431,7 @@ orders.forEach((order, index) => visible[index] = false);
 </div>
 {:else}
 	<p>Nahrávám objednávky...</p>
-{/if}
+{/if} -->
 
 
 			</div>

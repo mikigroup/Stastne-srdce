@@ -69,9 +69,11 @@
 					title="Šťastné srdce" />
 			</div>
 			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
+				<!-- <div class="grid text-center"> -->
+					<div class="">
 				<div>
 					<label for="email" class="block mb-2 text-sm font-medium text-gray-900">
-						<p class="text-lg">Váš mail</p>
+						<p class="pt-5 text-lg text-center md:text-left">Váš mail</p>
 					</label>
 					<input
 						type="email"
@@ -86,21 +88,18 @@
 				</div>
 				<div>
 					<label for="name" class="block mb-2 text-sm font-medium text-gray-900">
-						<p class="text-lg">Jméno</p>
+						<p class="pt-5 text-lg text-center md:text-left">Jméno</p>
 					</label>
 					<input
 						name="name"
 						id="name"
-						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						 appearance-none
-						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700"
+						class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 						placeholder="Franta Vomáčka"
 						required />
 				</div>
 				<div>
 					<label for="phone" class="block mb-2 text-sm font-medium text-gray-900">
-						<p class="text-lg">Telefon</p>
+						<p class="pt-5 text-lg text-center md:text-left">Telefon</p>
 					</label>
 					<input
 						type="tel"
@@ -116,7 +115,7 @@
 				</div>
 				<div class="sm:col-span-2">
 					<label for="message" class="block mb-2 text-sm font-medium text-gray-900">
-						<p class="text-lg">Zpráva</p>
+						<p class="pt-5 text-lg text-center md:text-left ">Zpráva</p>
 					</label>
 					<textarea
 						name="message"
@@ -130,11 +129,12 @@
 				</div>
 				<button
 					type="submit"
-					value="submit"
-					class="w-full px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
+					value="submit"					
+					class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 					Odeslat
 				</button>
 				<div class="flex">{message.display}</div>
+				</div>
 			</form>
 		</div>
 	</section>
