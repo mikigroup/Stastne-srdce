@@ -5,3 +5,8 @@ v1.02
 - doplnění loga
 - úprava textů
 - možnost dopsání poznámky k objednávce
+
+v1.03
+- tvorba objednávek
+
+

@@ -3,6 +3,8 @@
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
+	import { fade } from 'svelte/transition';
+	// let visible = true;
 
 	export let session: AuthSession
 
@@ -28,8 +30,15 @@
 	let orders: any[] = []
 	let itemsOrder: any[] = []
 
+	let visible = [];
+// Fetch your orders and assign it to 'orders' variable
+
+// Initial visibility setting
+orders.forEach((order, index) => visible[index] = false);
+
 	async function loadOrders(email) {
-		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp }`)
+		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`)
+		// return client.fetch(`*[_type == "order" && email == "buchtovalucie9@gmail.com"] { orderNumber, itemsOrder, timestamp, _id }`)
 	}
 
 	onMount(async () => {
@@ -163,7 +172,7 @@
 										bind:value={first_name}
 										type="first_name"
 										id="first_name"
-										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 										required
 										placeholder="Jméno"
 									/>
@@ -181,7 +190,7 @@
 										bind:value={last_name}
 										type="last_name"
 										id="last_name"
-										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 										placeholder="Příjmení"
 									/>
 								</div>
@@ -198,7 +207,7 @@
 										bind:value={telephone}
 										type="telephone"
 										id="telephone"
-										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 										placeholder="Telefon"
 									/>
 								</div>
@@ -233,7 +242,7 @@
 											bind:value={street}
 											type="street"
 											id="street"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="Ulice"
 										/>
 									</div>
@@ -250,7 +259,7 @@
 											bind:value={street_number}
 											type="street_number"
 											id="street_number"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="Číslo popisné"
 										/>
 									</div>
@@ -296,7 +305,7 @@
 											bind:value={company}
 											type="company"
 											id="company"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="Firma"
 										/>
 									</div>
@@ -313,7 +322,7 @@
 											bind:value={ico}
 											type="ico"
 											id="ico"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="IČO"
 										/>
 									</div>
@@ -330,7 +339,7 @@
 											bind:value={dic}
 											type="dic"
 											id="dic"
-											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+											class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="DIČ"
 										/>
 									</div>
@@ -340,8 +349,8 @@
 						</div>
 						<div class="mt-10">
 							<button
-								class="px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-							>
+								class="px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
+							
 								<input
 									type="submit"
 									class="block button primary"
@@ -354,38 +363,49 @@
 				</div>
 			</div>
 		</form>
-		<!-- <div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Objednávky
 			</h1>
-			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
-			{#if orders.length > 0}
+			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto"> 
+	{#if orders.length > 0}
+<div class="px-5 border-2 rounded-md bg-slate-50">
+	<ul>
+		
+		{#each orders as order, index (order._id)}
+			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
+				<br>
+				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
+					Objednávka: <span class="font-semibold">{order.orderNumber}</span>
+					<br>
+					Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
+						weekday: 'short',
+						month: 'long',
+						day: 'numeric'
+					})}
+				</div>
+				{#if visible[index]}
+				<div class="p-5 border-2 rounded-md" in:fade={{duration: 500}}>
 					<ul>
-						{#each orders as order (order.orderNumber)}
-							<li class="text-lg underline-offset-8">
-								<br>
-								Objednávka: <span class="underlineunderline-offset-8">{order.orderNumber}</span>
-								Datum: 					<span class="underline underline-offset-8">{new Date(order.orderNumber).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}</span>									
-								<ul>
-									
-									<br>
-									{#each order.itemsOrder as item (item)}
-										<li>{item}</li>
-									{/each}
-								</ul>
-							</li>
+						<br>
+						{#each order.itemsOrder as item, i (i)}
+							<li>{item}</li>
 						{/each}
 					</ul>
-				{:else}
-					<p>Loading orders...</p>
-				{/if}				
+				</div>
+				{/if}
+				<br>
+				<hr>
+			</li>
+		{/each}
+	</ul>
+</div>
+{:else}
+	<p>Nahrávám objednávky...</p>
+{/if}
 
 
 			</div>
-		</div> -->
+		</div>
 	</div>
 </section>
