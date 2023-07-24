@@ -5,7 +5,17 @@
 	import { supabaseClient } from '$lib/supabaseClient'
 	import { readable } from 'svelte/store'
 	import { invalidate } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { onMount } from 'svelte';	
+
+	 let loadTime;
+
+  onMount(() => {
+    let performance = window.performance || window.webkitPerformance || window.mozPerformance || window.msPerformance;
+    if(performance) {
+      let time = performance.timing;
+      loadTime = (time.loadEventEnd - time.navigationStart) / 1000;
+    } 
+  });
 
 	onMount(() => {
 		const {
@@ -263,6 +273,7 @@
 <slot class="mt-10" />
 
 <footer class="">
+<<<<<<< Updated upstream
 	<div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">
 		<div class="grid col-span-2 text-sm">
 			<p>
@@ -282,6 +293,16 @@
 			</p>
 		</div>
 	</div>
+=======
+  <div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">    
+    <div class="grid col-span-2 text-sm">
+			<p><a class="items-center mt-3 text-sm sm:mt-0" target="_blank" href="https://www.mikigroup.cz/">Vytvořeno <i class="fa fa-regular fa-hand-spock"></i> Mikigroup™</a></p>                 
+    </div>    
+    <div class="grid justify-end col-span-3 text-sm">
+			<p>Šťastné srdce 2022-2023 ver_1.03. Stránka načtena za {loadTime} seconds</p>
+			   <p></p>
+  </div>
+>>>>>>> Stashed changes
 </footer>
 
 <style lang="postcss">

@@ -1,5 +1,6 @@
 <script>
 	import { supabaseClient } from "$lib/supabaseClient";
+	 import { LottiePlayer } from '@lottiefiles/svelte-lottie-player';
 
 	let message = { success: null, display: '' };
 
@@ -68,6 +69,30 @@
 					referrerpolicy="no-referrer-when-downgrade"
 					title="Šťastné srdce" />
 			</div>
+			
+<LottiePlayer
+  src=''
+  autoplay={true}
+  loop={true}  
+  renderer='svg'
+  background='transparent'
+  height={500}
+  width={500}
+  controlsLayout={[
+		"previousFrame",
+		"playpause",
+		"stop",
+		"nextFrame",
+		"progress",
+		"frame",
+		"loop",
+		"spacer",
+		"background",
+		"snapshot",
+		"zoom",
+		"info"
+	]} />
+
 			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
 				<!-- <div class="grid text-center"> -->
 					<div class="">
