@@ -13,6 +13,10 @@ button:focus,
 button:active,
 button:hover,
 label:focus,
+
+/* .btn_order :hover {
+	background-color: #5D9765;	
+} */
 .btn:active,
 .btn.active {
     outline:0px !important;

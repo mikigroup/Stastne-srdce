@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';	  
   	
 	export let data;
+		let lastRenderedDate = null;
 	export async function loadmenu(from, to) {
 		return client.fetch(`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
@@ -165,21 +166,26 @@
 							<div id="" class="">													
 								<div class="">									
 									<!-- karta menu -->					
-									<div class="mb-5">												
-										{#if $page.data.session && data.menus && data.menus.length}
-											{#each data.menus as menu}  <!-- //searchMenu -->
-												<div class="p-2 my-3 border rounded-lg bg-stone-100">
-													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
-														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															  {new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}
-														</p>
-													</div>
+								<div class="mb-5">                                                    
+    {#if $page.data.session && data.menus && data.menus.length}
+        {#each data.menus as menu}  <!-- //searchMenu -->
+            <div class="p-2 my-3 border rounded-lg bg-stone-100">
+                {#if new Date(menu.releaseDate).toDateString() !== lastRenderedDate}
+                    <script>
+                        lastRenderedDate = new Date(menu.releaseDate).toDateString();
+                    </script>
+                    <div
+                        class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
+                        <p
+                            class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+                            {new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
+                                weekday: 'long',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+                    </div>
+                {/if}
 													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
 														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
 														<span style="white-space: pre-line"><p class="pt-2 text-lg">{menu.description}</p></span>
