@@ -2,7 +2,34 @@
   import { user } from "../Stores/stores";  
   import { supabaseClient } from "$lib/supabaseClient";
   
+let newPassword = '';
+  let message = '';
+  let loading = false;
+  let messageSuc = '';
+  let messageFalse = '';
+  let error = '';
 
+  async function reset() {
+    if (!newPassword) {
+      message = 'Zadejte heslo';
+      return;
+    }
+
+    loading = true;
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+      if (error) {
+        throw error;
+      }
+
+      messageSuc = 'Heslo změněno.';
+    } catch (error) {
+      messageFalse = error.error_description || error.message;
+    } finally {
+      loading = false;
+    }
+  }
 
   /**
  * Step 2: Once the user is redirected back to your application,
@@ -24,7 +51,7 @@ useEffect(() => {
 */
 
 
-  supabase.auth.onAuthStateChange((state, session) => {
+ supabaseClient.auth.onAuthStateChange((state, session) => {
     user.set(state === "PASSWORD_RECOVERY" && session.user);
   });
 
@@ -61,22 +88,19 @@ useEffect(() => {
     }
   };  */
 
-  let error, newPassword = '', messageSuc, messageFalse,  message = '', loading = false;
-
+ /*  let error, newPassword = '', messageSuc, messageFalse,  message = '', loading = false;
     async function reset() {      
-    // messageSuc = 'Heslo změněno.'
-    
     const { user, data, error } = await supabase.auth.update({ password: newPassword });
      
-   /*  if (error) throw error
+    if (error) throw error
       message = 'Nepodařilo se změnit heslo.'
-/*     else
+  else
       message = 'Heslo změněno'
-      loading = false */
-   /*    if (data) throw data
+      loading = false
+       if (data) throw data
         message = 'Nepodařilo se změnit heslo.'        
     return       
-    }	 */
+    }	 
 
     if (error) 
       message = 'Nepodařilo se změnit heslo'
@@ -86,7 +110,7 @@ useEffect(() => {
     return
     }	
 
-
+ */
 /* 
    let error = '', message = '', loading = false, accessToken= '', password = '';
 
