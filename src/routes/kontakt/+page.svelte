@@ -1,6 +1,5 @@
 <script>
 	import { supabaseClient } from "$lib/supabaseClient";
-	 import { LottiePlayer } from '@lottiefiles/svelte-lottie-player';
 
 	let message = { success: null, display: '' };
 
@@ -70,28 +69,7 @@
 					title="Šťastné srdce" />
 			</div>
 			
-<LottiePlayer
-  src=''
-  autoplay={true}
-  loop={true}  
-  renderer='svg'
-  background='transparent'
-  height={500}
-  width={500}
-  controlsLayout={[
-		"previousFrame",
-		"playpause",
-		"stop",
-		"nextFrame",
-		"progress",
-		"frame",
-		"loop",
-		"spacer",
-		"background",
-		"snapshot",
-		"zoom",
-		"info"
-	]} />
+
 
 			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
 				<!-- <div class="grid text-center"> -->
@@ -104,10 +82,7 @@
 						type="email"
 						name="email"
 						id="email"
-						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						appearance-none
-						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700"
+						class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 						placeholder="franta@vomacka.com"
 						required />
 				</div>
@@ -130,10 +105,7 @@
 						type="tel"
 						name="phone"
 						id="phone"
-						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						 appearance-none
-						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700"
+						class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 						placeholder="+420 777 111 222"
 						pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
 						required />
@@ -146,10 +118,7 @@
 						name="message"
 						id="message"
 						rows="6"
-						class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						 appearance-none
-						block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700"
+						class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none"
 						placeholder="Zanechte zprávu ..." />
 				</div>
 				<button

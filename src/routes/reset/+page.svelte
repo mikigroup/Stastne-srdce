@@ -1,6 +1,7 @@
 <script>
   import { user } from "../Stores/stores";  
   import { supabaseClient } from "$lib/supabaseClient";
+  import { goto } from '$app/navigation';
   
 let newPassword = '';
   let message = '';
@@ -24,6 +25,7 @@ let newPassword = '';
       }
 
       messageSuc = 'Heslo změněno.';
+      goto('/jidelnicek');
     } catch (error) {
       messageFalse = error.error_description || error.message;
     } finally {
@@ -162,7 +164,7 @@ useEffect(() => {
             </svg>
           </span>
           <input
-            class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
             name="password"
             type="password"
             label="Heslo"

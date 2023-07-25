@@ -55,9 +55,9 @@ label:focus,
     box-shadow: none !important;
 }
 
-textarea:hover, textarea:focus {
+/* textarea:hover, textarea:focus {
 	border-color: green;
-}
+} */
 
 .form-control:focus{
     border-color: #cccccc;
