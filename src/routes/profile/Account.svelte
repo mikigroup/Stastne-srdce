@@ -4,8 +4,7 @@
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
 	import { fade } from 'svelte/transition';
-	// let visible = true;
-
+	// let visible = true;	 
 	export let session: AuthSession
 
 	let loading = false
@@ -134,12 +133,12 @@ orders.forEach((order, index) => visible[index] = false);
 	<title>Šťastné srdce - Účet</title>
 	<meta name="description" content="Účet" />
 </svelte:head>
+
 <section>
 	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 		<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Profil účtu
 		</h1>
-
 		<form class="form-widget" on:submit|preventDefault={updateProfile}>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div
