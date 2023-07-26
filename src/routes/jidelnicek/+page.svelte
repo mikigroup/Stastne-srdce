@@ -4,59 +4,38 @@
 	import client from '../../lib/sanityClient';	
 	import { page } from '$app/stores';	  
   	
+  let selectedTab = '';
+
+  const currentDate = new Date();
+  const dateRanges = [[0, 10], [10, 20], [20, 30], [30, 42]];
+
+  const dates = dateRanges.map(([start, end]) => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() + start);
+    
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + end);
+    
+    return {startDate, endDate};
+  });
+
+  const loadZalozka = (index) => {
+    loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
+      // Assuming that data is defined somewhere in your script
+      data.menus = response;
+    });
+    selectedTab = `${index + 1}. týden`;
+  };
+	
+	let lastRenderedDate = null;
 	export let data;
-		let lastRenderedDate = null;
+	
 	export async function loadmenu(from, to) {
 		return client.fetch(`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		);
 	};
 
-	let currentDate = new Date();
 	
-	let datumPrvniZalozkaEnd = new Date();
-	datumPrvniZalozkaEnd.setDate(datumPrvniZalozkaEnd.getDate() + 10);
-
-	let datumDruhaZalozkaStart = new Date();
-	datumDruhaZalozkaStart.setDate(datumDruhaZalozkaStart.getDate() + 10);
-
-	let datumDruhaZalozkaEnd = new Date();
-	datumDruhaZalozkaEnd.setDate(datumDruhaZalozkaEnd.getDate() + 20);
-
-	let datumTretiZalozkaStart = new Date();
-	datumTretiZalozkaStart.setDate(datumTretiZalozkaStart.getDate() + 20);
-
-	let datumTretiZalozkaEnd = new Date();
-	datumTretiZalozkaEnd.setDate(datumTretiZalozkaEnd.getDate() + 30);
-
-	let datumCtvrtaZalozkaStart = new Date();
-	datumCtvrtaZalozkaStart.setDate(datumCtvrtaZalozkaStart.getDate() + 30);
-
-	let datumCtvrtaZalozkaEnd = new Date();
-	datumCtvrtaZalozkaEnd.setDate(datumCtvrtaZalozkaEnd.getDate() + 42);
-
-	function zalozkaPrvniTyden() {
-		loadmenu(currentDate, datumPrvniZalozkaEnd).then((response) => {
-			data.menus = response;
-		});
-	}
-
-	function zalozkaDruhyTyden() {
-		loadmenu(datumDruhaZalozkaStart, datumDruhaZalozkaEnd).then((response) => {
-			data.menus = response;
-		});
-	}
-
-	function zalozkaTretiTyden() {
-		loadmenu(datumTretiZalozkaStart, datumTretiZalozkaEnd).then((response) => {
-			data.menus = response;			
-		});
-	}
-
-	function zalozkaCtvrtyTyden() {
-		loadmenu(datumCtvrtaZalozkaStart, datumCtvrtaZalozkaEnd).then((response) => {
-			data.menus = response;			
-		});
-	}
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -358,8 +337,62 @@
 						</li>
 					</ul>
 				</div>
-
+				
+<h3 class="mb-3 text-lg font-bold">Tabs</h3>
+<div class="flex border-t-2 border-gray-300"> 
+  <button 
+    class={`nav-tabs px-4 py-2 font-semibold transition-colors duration-200 ease-in-out ${selectedTab === '1. týden' ? 'border-y-2' : ''}`} 
+    on:click={() => selectTab('1. týden')}
+  >
+    1. týden
+  </button>
+	 <button 
+    class={`px-4 py-2 font-semibold transition-colors duration-200 ease-in-out ${selectedTab === '2. týden' ? 'bg-gray-300' : ''}`} 
+    on:click={() => selectTab('2. týden')}
+  >
+    2. týden
+  </button>
+	 <button 
+    class={`px-4 py-2 font-semibold transition-colors duration-200 ease-in-out ${selectedTab === '3. týden' ? 'bg-gray-300' : ''}`} 
+    on:click={() => selectTab('3. týden')}
+  >
+    3. týden
+  </button>
+	<button 
+    class={`px-4 py-2 font-semibold transition-colors duration-200 ease-in-out ${selectedTab === '4. týden' ? 'bg-gray-300' : ''}`} 
+    on:click={() => selectTab('4. týden')}
+  >
+    4. týden
+  </button>
+</div>
 			<hr>
+
+			<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
+  <button 
+    class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent md:text-lg ${selectedTab === '1. týden' ? 'bg-gray-300' : 'hover:bg-gray-100'}`} 
+    on:click={() => loadZalozka(0)}
+  >
+    1. týden
+  </button>
+  <button 
+    class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent md:text-lg ${selectedTab === '2. týden' ? 'bg-gray-300' : 'hover:bg-gray-100'}`} 
+    on:click={() => loadZalozka(1)}
+  >
+    2. týden
+  </button>
+  <button 
+    class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent md:text-lg ${selectedTab === '3. týden' ? 'bg-gray-300' : 'hover:bg-gray-100'}`} 
+    on:click={() => loadZalozka(2)}
+  >
+    3. týden
+  </button>
+  <button 
+    class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 border-transparent md:text-lg ${selectedTab === '4. týden' ? 'bg-gray-300' : 'hover:bg-gray-100'}`} 
+    on:click={() => loadZalozka(3)}
+  >
+    4. týden
+  </button>
+</div>
 
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
