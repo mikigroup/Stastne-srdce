@@ -152,7 +152,7 @@
 		<div
 			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 		>
-			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Košík
 			</h1>
 
@@ -244,7 +244,7 @@
 					class="hidden max-w-screen-xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid border-b-transparen"
 				>
 					<div
-						class="grid items-center grid-cols-9 p-2 pl-5 text-xl border divide-x rounded-lg border-slate-600 bg-slate-300"
+						class="grid items-center grid-cols-9 p-2 pl-5 text-lg border divide-x rounded-lg border-slate-600 bg-slate-300"
 					>
 						<div class="font-light text-center">
 							<p>Den</p>
@@ -294,17 +294,18 @@
 								<p class="border-r-2 border-slate-300">{cartItem.title}</p>
 							</div>
 							<div class="text-center">
-								<input
-									min="0"
-									max="99"
-									class="w-20"
-									type="number"
-									bind:value={cartItem.quantity}
-									on:change={(e) => {
-										CartItemsStore.update((items) => items)
-									}}
-								/>
-							</div>
+    <input
+        min="0"
+        max="99"
+        type="number"
+        bind:value={cartItem.quantity}
+        on:change={(e) => {
+            CartItemsStore.update((items) => items)
+        }}
+        class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
+    />
+</div>
+
 							<div class="text-center">
 								<p class="">{cartItem.price},-</p>
 							</div>
@@ -312,8 +313,9 @@
 								{cartItem.description}
 							</div>
 							<div class="text-center">
+								<!-- animate__animated animate__flip -->
 								<button
-									class=""
+									class="hover:animate-spin" 									
 									on:click={() => {
 										removeItem(cartItem._id)
 									}}
@@ -331,8 +333,7 @@
 							<p><label for="txt">Poznámka</label></p>
 							<textarea
 								class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
-						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 focus:outline-none border
-						focus:ring-2 focus:ring-green-700 mb-5"
+						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 appearance-none focus:outline-none focus:border-green-600 mb-5"
 								id="txt"
 								name="txt"
 								rows="4"
@@ -369,7 +370,7 @@
 									data-te-ripple-init
 									data-te-ripple-color="light"
 								>
-									<span>Potvrzení košíku</span>
+									<span class="">Potvrzení košíku</span>
 								</button>
 							{:else}
 								<button

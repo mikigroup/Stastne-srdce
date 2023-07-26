@@ -38,7 +38,7 @@
 	<section class="">
 		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 			<h1
-				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 ">
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand ">
 				Kontakt
 			</h1>
 			<div class="grid grid-cols-1 p-5 bg-white border-2 rounded-lg md:grid-cols-1">

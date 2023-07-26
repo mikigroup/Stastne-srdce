@@ -5,7 +5,9 @@
 	import { supabaseClient } from '$lib/supabaseClient'
 	import { readable } from 'svelte/store'
 	import { invalidate } from '$app/navigation'
-	import { onMount } from 'svelte';	
+	import { onMount } from 'svelte';
+	import 'animate.css';
+	
 
 	 let loadTime;
 
@@ -93,7 +95,7 @@
 			<!-- gap-2  -->
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 w-80">
-					<h1 class="text-xl font-semibold"><a href="/"> Šťastné srdce</a></h1>
+					<h1 class="text-xl font-semibold animate__flipInX animate__animated animate__delay-2s"><a href="/"> Šťastné srdce</a></h1>
 					<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20" />
 				</div>
 				<!-- čas -->
