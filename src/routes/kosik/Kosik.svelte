@@ -70,16 +70,21 @@
     }
   }
 
-  async function sendOrderAndCreateDoc2() {
+ async function sendOrderAndCreateDoc2() {
     try {
       loading = true;
       var txt = document.getElementById('txt').value;
+
+      const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+      const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
+
       // Replace "yourFunctionName" with the correct Supabase function name
-      await supabaseClient.functions.invoke('sendOrderBySendGrid', {
+      await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
         body: JSON.stringify({
           cart: get(CartItemsStore),
           user: supabaseClient.auth.getUser(),
-          txt: txt
+          txt: txt,
+          orderNumber: orderNumber
         })
       });
 
@@ -106,9 +111,6 @@
       const timestamp = now.toISOString();
       const fullname = `${first_name} ${last_name}`;
       const email = session.user.email;
-
-      const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
-      const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
 
       const doc = {
         _type: 'order',

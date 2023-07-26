@@ -24,13 +24,14 @@ serve(async (req) => {
 
 		const { data: { user } = {} } = await supabaseClient.auth.getUser()
 		const email = user?.email		
-		const { cart, txt } = await req.json()		
+		const { cart, txt, orderNumber } = await req.json()		
 		console.log(
 			'sending order',
 			// JSON.stringify(user),
 			JSON.stringify(cart),
 			JSON.stringify(txt),
-			JSON.stringify(email)
+			JSON.stringify(email),
+			JSON.stringify(orderNumber) 
 		)	
 
 		const sum = cart.reduce(
@@ -43,30 +44,31 @@ serve(async (req) => {
 		)
 
 		
-		 let mail: IRequestBody = {
-				personalizations: [
-					{
-						subject: 'Šťastné srdce - Objednávka',
-						to: email ? [{ email }] : []						
-					}
-				],
-				from: { email: 'objednavky@stastnesrdce.cz' },
-				content: [
-					{
-						type: 'text/plain',
-						value: `Dobrý den, 
-				\nděkujeme za objednávku.\n\nCelková suma objednávky: ${sum.price} CZK\nCelkový počet meníček: ${
-							sum.quantity
-						}\n\nSouhrn položek:\n----\n${cart.map(
-							(item: any) =>
-								`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
-									month: 'long',
-									day: 'numeric'
-								})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
-						)}\nPoznámka:${txt}\n----\nKonec`
-					}
-				]
-			}
+		let mail: IRequestBody = {
+			personalizations: [
+				{
+					subject: 'Šťastné srdce - Objednávka ' + orderNumber,
+					to: email ? [{ email }] : [],
+					cc: [{ email: 'stastnesrdceKK@seznam.cz' }]
+				}
+			],
+			from: { email: 'objednavky@stastnesrdce.cz' },
+			content: [
+				{
+					type: 'text/plain',
+					value: `Dobrý den, 
+              \nděkujeme za objednávku ${orderNumber}.\n\nCelková suma objednávky: ${
+						sum.price
+					} CZK\nCelkový počet meníček: ${sum.quantity}\n\nSouhrn položek:\n----\n${cart.map(
+						(item: any) =>
+							`${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+								month: 'long',
+								day: 'numeric'
+							})}\n${item.title}\n${item.description}\n\n${item.quantity} Ks\n----\n`
+					)}\nPoznámka:${txt}\n----\nKonec`
+				}
+			]
+		}
 
 
 
