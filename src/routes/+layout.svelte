@@ -283,6 +283,7 @@
 </footer>
 
 <style lang="postcss">
+	
 	.tooltip {
 		position: relative;
 		display: inline-block;
