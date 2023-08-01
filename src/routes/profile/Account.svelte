@@ -3,8 +3,7 @@
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'
-	import { fade } from 'svelte/transition';
-	// let visible = true;	 
+	import { fade } from 'svelte/transition'
 	export let session: AuthSession
 
 	let loading = false
@@ -22,22 +21,29 @@
 	let dic = null
 	let company = null
 
-
-
-	let uniqueOrders = [];
+	let uniqueOrders = []
 
 	let orders: any[] = []
 	let itemsOrder: any[] = []
+	let visible_jiri = []	
+	let visible = false;
 
-	let visible = [];
-// Fetch your orders and assign it to 'orders' variable
-
-// Initial visibility setting
-orders.forEach((order, index) => visible[index] = false);
-
+	const toggleVisible = () => {
+		visible = !visible;
+	}
+	
+	orders.forEach((order, index) => (visible[index] = false))
 	async function loadOrders(email) {
-		return client.fetch(`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`)
-		// return client.fetch(`*[_type == "order" && email == "buchtovalucie9@gmail.com"] { orderNumber, itemsOrder, timestamp, _id }`)
+		try {
+			let orders = await client.fetch(
+				`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`
+			)		
+			// Ensure the function still returns the fetched data
+			return orders
+		} catch (error) {
+			console.error('Failed to fetch orders:', error)
+			throw error // re-throw the error so it can be caught and handled by the calling function
+		}
 	}
 
 	onMount(async () => {
@@ -139,6 +145,8 @@ orders.forEach((order, index) => visible[index] = false);
 		<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Profil účtu
 		</h1>
+{#if visible}	
+{/if}
 		<form class="form-widget" on:submit|preventDefault={updateProfile}>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div
@@ -212,25 +220,15 @@ orders.forEach((order, index) => visible[index] = false);
 								</div>
 							</div>
 							<hr class="w-32" />
-						</div>
-						<div class="flex flex-col my-2">
-							<!-- <div class="flex flex-col items-center md:flex-row">
-                <div class="flex justify-start basis-1/2">
-                  <label class="pr-2" for="company_name">Název firmy</label>
-                </div>
-                <div class="w-full basis-1/2">
-                  <input
-                    bind:value={$session.company_name}
-                    type="company_name"
-                    id="company_name"
-                    class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    required
-                    placeholder="Název firmy"
-                  />
-                </div>
-              </div> 
-              <hr class="w-32" />
-            </div>-->
+						</div>						
+				<div class="mt-5" on:click={toggleVisible}>
+	{#if visible} Méně{/if}
+	{#if !visible} Více {/if}
+</div>				
+<div>
+	</div>
+{#if visible}
+						<div class="flex flex-col my-2">							
 							<div class="my-2">
 								<div class="flex flex-col items-center md:flex-row">
 									<div class="flex justify-start basis-1/2">
@@ -277,22 +275,12 @@ orders.forEach((order, index) => visible[index] = false);
 											id="city"
 											class="form-control
                   </div>
-                   rounded-lg text-center appearance-none border border-gray-300 w-full py-2 px-4
-                    bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base
-                     focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                   w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 											placeholder="Město"
 										/>
 									</div>
 								</div>
 								<hr class="w-32" />
-								<!-- {#if message.success != null}
-				<div
-					class="alert {message.success ? 'alert-success' : 'alert-danger'}"
-					role="alert"
-				>
-					{message.display}
-				</div>
-			{/if}  -->
 							</div>
 							<div class="my-2">
 								<div class="flex flex-col items-center md:flex-row">
@@ -346,16 +334,16 @@ orders.forEach((order, index) => visible[index] = false);
 								<hr class="w-32" />
 							</div>
 						</div>
+						{/if}
 						<div class="mt-10">
-	<button
-		type="submit"
-		class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-		disabled={loading}
-	>
-		{loading ? 'Nahrává se...' : 'Update profilu'}
-	</button>
-</div>
-
+							<button
+								type="submit"
+								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+								disabled={loading}
+							>
+								{loading ? 'Ukládá se...' : 'Uložit'}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -364,43 +352,50 @@ orders.forEach((order, index) => visible[index] = false);
 			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Objednávky
 			</h1>
-			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto"> 
-	
-<div class="px-5 border-2 rounded-md bg-slate-50">
-	{#if orders && orders.length > 0}
-	<ul>
-		{#each orders as order, index (order._id)}
-			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
-				<br>
-				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
-					Objednávka: <span class="font-semibold">{order.orderNumber}</span>
-					<br>
-					Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
-						weekday: 'short',
-						month: 'long',
-						day: 'numeric'
-					})}
-				</div>
-				{#if visible[index]}
-				<div class="p-5 border-2 rounded-md" in:fade={{duration: 500}}>
-					<ul>
-						<br>
-						{#each order.itemsOrder as item, i (i)}
-							<li>{item}</li>
-						{/each}
-					</ul>
-				</div>
-				{/if}
-				<br>
-				<hr>
-			</li>
-		{/each}
-	</ul>
-{:else}
-	<p>Žádné objednávky</p>
-{/if} 
-		
-<!-- 		{#each orders as order, index (order._id)}
+			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+				<div class="px-5 border-2 rounded-md bg-slate-50">
+					{#if orders && orders.length > 0}
+						<ul>
+							{#each orders as order, index (order._id)}
+								<li class="text-lg transition duration-300 ease-in-out">
+									<br />
+									<div
+										class="p-5 text-center bg-white border-2 rounded-md"
+										on:click={() => (visible_jiri[index] = !visible_jiri[index])}
+									>
+										Objednávka: <span class="font-semibol d">{order.orderNumber}</span>
+										<br />
+										Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
+											weekday: 'short',
+											month: 'long',
+											day: 'numeric'
+										})}
+									</div>
+									{#if visible_jiri[index]}
+										<div class="p-5 border-2 rounded-md" in:fade={{ duration: 500 }}>
+											<ul>
+												<br />
+												{#each order.itemsOrder as item, i (i)}
+													<li>{item}</li>
+													{#if i % 4 === 3 && i !== order.itemsOrder.length - 1}
+													<br>	
+													<hr />
+														<br>
+													{/if}
+												{/each}
+											</ul>
+										</div>
+									{/if}
+									<br />
+									<hr />
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p>Žádné objednávky</p>
+					{/if}
+
+					<!-- 		{#each orders as order, index (order._id)}
 			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
 				<br>
 				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
@@ -431,8 +426,7 @@ orders.forEach((order, index) => visible[index] = false);
 {:else}
 	<p>Nahrávám objednávky...</p>
 {/if} -->
-
-
+				</div>
 			</div>
 		</div>
 	</div>

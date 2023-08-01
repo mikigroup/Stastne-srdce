@@ -9,4 +9,7 @@ v1.02
 v1.03
 - tvorba objednávek
 
+- redesign obj. a účtu
+- přidány efekty
+
 
