@@ -15,11 +15,10 @@ button:hover,
 label:focus,
 
 
-.scale-up-center {
-	-webkit-animation: scale-up-center 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-	        animation: scale-up-center 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+.slide-bck-center {
+	-webkit-animation: slide-bck-center 0.45s cubic-bezier(0.470, 0.000, 0.745, 0.715) both;
+	        animation: slide-bck-center 0.45s cubic-bezier(0.470, 0.000, 0.745, 0.715) both;
 }
-
 /* .btn_order :hover {
 	background-color: #5D9765;	
 } */
