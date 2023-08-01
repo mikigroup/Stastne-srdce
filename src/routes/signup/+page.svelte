@@ -1,7 +1,7 @@
 <script>
   import { supabaseClient } from "$lib/supabaseClient";  
 	
-	let email = "@" // doplnění value email
+	let email = "@" // doplnění znaku emailu
 	let password, confirmpassword;
 	let loading = false;
 	let message = { success: '', display: '' };

@@ -3,7 +3,7 @@
   import { page } from "$app/stores";
 
   let loading = false;
-	let email = [];
+	let email = "@";
   let password = [];
 	let message = { success: null, display: '' };
  
@@ -74,10 +74,10 @@
       <div class="pt-20 form-widget">
         <div
           class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
-        >
+        >        
           {#if $page.data.session}
             <div class="flex w-full text-xl">
-              <p>Jste přihlášeni.</p>
+              <p class="">Vítej stravníku</p>
             </div>
           {:else}
             <div class="self-center mb-2 text-3xl font-light sm:text-2xl">
@@ -126,6 +126,7 @@
                     class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
                     required
                     placeholder="Email"
+                    pattern="[^@]+@[^\.]+\..+"
                   />
                 </div>
               </div>
@@ -176,16 +177,15 @@
                   disabled={loading}
                   id="btn-success"
                   type="submit"
-                  class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  class="w-full px-4 py-2 font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md slide-bck-center btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
                   Přihlásit se
                 </button>
-              </div>
-              
+              </div>                          
               <div />
             </div>
           {/if}
-        </div>
+        </div>        
 				{#if ! $page.data.session}
         <div class="form-widget">
           <div
@@ -212,6 +212,6 @@
  				{/if}
 
       </div>
-    </form>
+    </form>    
   </div>
 </section>
