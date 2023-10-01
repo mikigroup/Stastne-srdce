@@ -86,7 +86,7 @@
 			</h1>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<p class="mt-3 text-center">
-					<strong>Cena obědů je 95,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
+					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
 					<br />
 					<strong>
