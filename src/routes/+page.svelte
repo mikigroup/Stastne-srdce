@@ -59,6 +59,7 @@
 								</div>
 							</li>
 							<li class="mt-6 lg:mt-0">
+								<div class="flex">
 									<span
 										class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full"
 									>
