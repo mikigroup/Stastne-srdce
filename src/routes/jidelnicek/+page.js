@@ -3,15 +3,14 @@ import client from "$lib/sanityClient";
 
 export async function load() {
 	const currentDate = new Date()
-	const targetTime = '17:00:00' // Set your target time
+	const targetTime = '17:00:00'
 	const targetDate = new Date(
 		currentDate.getFullYear(),
 		currentDate.getMonth(),
 		currentDate.getDate(),
 		...targetTime.split(':').map(Number)
 	)
-
-	// If current time is after the target time, move to the next day
+	
 	if (currentDate >= targetDate) {
 		currentDate.setDate(currentDate.getDate() + 1)
 	}

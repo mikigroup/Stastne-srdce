@@ -7,9 +7,10 @@ v1.02
 - možnost dopsání poznámky k objednávce
 
 v1.03
-- tvorba objednávek
-
-- redesign obj. a účtu
+- sekce objednávky v menu přihlášeného uživatele - redesign obj. a účtu
+- omezení obj. menu na 17:00 
 - přidány efekty
+
+v1.04
 
 
