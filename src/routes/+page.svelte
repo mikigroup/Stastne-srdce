@@ -59,7 +59,6 @@
 								</div>
 							</li>
 							<li class="mt-6 lg:mt-0">
-								<div class="flex">
 									<span
 										class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full"
 									>
@@ -73,7 +72,7 @@
 										</svg>
 									</span>
 									<span class="ml-4 text-base font-medium leading-6 text-gray-600">
-										Cena 95,-
+										Cena 110,-
 									</span>
 								</div>
 							</li>

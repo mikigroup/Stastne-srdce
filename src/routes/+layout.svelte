@@ -6,7 +6,7 @@
 	import { readable } from 'svelte/store'
 	import { invalidate } from '$app/navigation'
 	import { onMount } from 'svelte';
-	import 'animate.css';
+	// import 'animate.css';
 	
 
 	 let loadTime;
