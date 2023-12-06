@@ -8,12 +8,14 @@
 	import { onMount } from 'svelte';
 	// import 'animate.css';
 	
-
-	 let loadTime;
+	// @ts-ignore
+	let loadTime;
 
   onMount(() => {
+    // @ts-ignore
     let performance = window.performance || window.webkitPerformance || window.mozPerformance || window.msPerformance;
     if(performance) {
+      // @ts-ignore
       let time = performance.timing;
       loadTime = (time.loadEventEnd - time.navigationStart) / 1000;
     } 
@@ -49,6 +51,7 @@
 		}
 	})
 
+	// @ts-ignore
 	supabaseClient.auth.onAuthStateChange((event, session) => {
 		if (event === 'SIGNED_IN') {
 			console.log('User signed in')
@@ -59,11 +62,12 @@
 
 	function toggleMenu() {
 		var menuBox = document.getElementById('menu-box')
-		if (menuBox.style.display == 'block') {
-			// if is menuBox displayed, hide it
+		// @ts-ignore
+		if (menuBox.style.display == 'block') {			
+			// @ts-ignore
 			menuBox.style.display = 'none'
-		} else {
-			// if is menuBox hidden, display it
+		} else {			
+			// @ts-ignore
 			menuBox.style.display = 'block'
 		}
 	}
@@ -85,14 +89,14 @@
 
 	$: totalPieces =
 		$CartItemsStore.length &&
+		// @ts-ignore
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 </script>
 
 <!-- <Header /> -->
 <header class="bg-white">
 	<nav>
-		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl">
-			<!-- gap-2  -->
+		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl">			
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 w-80">
 					<h1 class="text-xl font-semibold animate__flipInX animate__animated animate__delay-2s"><a href="/"> Šťastné srdce</a></h1>
@@ -197,6 +201,7 @@
 					</button>
 				</div>
 				<div class="md:hidden">
+					<!-- svelte-ignore empty-block -->
 					{#if !totalPieces}{:else}
 						<strong>{totalPieces}</strong>
 					{/if}

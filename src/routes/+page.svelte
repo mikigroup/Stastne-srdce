@@ -7,12 +7,15 @@
 </svelte:head>
 <main>
 	<section>
-		<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">
-			<div class="">
-				<div class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
+		<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">			
+			<div class="">				
+				<div class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">					
 					<div
 						class="px-10 py-10 mt-20 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl"
 					>
+					<div class="flex justify-center">
+					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
+					</div>
 						<h2
 							class="mt-2 text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9"
 						>
