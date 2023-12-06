@@ -71,7 +71,8 @@
 
 <style lang="postcss">
 	.textmenu {
-		font-size: 0.9em;
+		font-size: 1em;
+		
 	}
 	header {
 		position: fixed;
