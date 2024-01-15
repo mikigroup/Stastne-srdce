@@ -13,9 +13,9 @@
 					<div
 						class="px-10 py-10 mt-20 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl"
 					>
-					<div class="grid justify-center pb-5">
+					<!-- <div class="grid justify-center pb-5">
 					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
-					</div>
+					</div> -->
 						<h2
 							class="mt-2 text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9"
 						>

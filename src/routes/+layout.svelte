@@ -108,15 +108,15 @@
 					>
 						<a href="/"> Šťastné srdce</a>
 					</h1>
-					<!-- <img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20" /> -->
-					<dotlottie-player
+					<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20" />
+					<!-- <dotlottie-player
 						src="https://lottie.host/d0e02b0b-f48d-4d7b-bcae-819653cf5a9e/ucUfS8830X.json"
 						background="transparent"
 						speed="1"
 						style="width: 50px; height: 50px;"
 						loop
 						autoplay
-					/>
+					/> -->
 				</div>
 				<!-- čas -->
 				<div class="grid justify-end w-44"><time>{formatter.format($time)}</time></div>
