@@ -109,7 +109,7 @@
 						<a href="/"> Šťastné srdce</a>
 					</h1>
 					<img {src} alt="staste srdce" class="pt-1 animate-pulse" width="20" height="20" />
-					
+
 					<!-- <dotlottie-player
 						src="https://lottie.host/d0e02b0b-f48d-4d7b-bcae-819653cf5a9e/ucUfS8830X.json"
 						background="transparent"
@@ -161,16 +161,15 @@
 					</a> -->
 
 					<!-- pravá část menu -->
-					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
-						<div class="pr-2 tooltip-wrapper">
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">				
+						<div class="pr-2">
 							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
 								<button
 									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
 								>
 									Účet
-								</button>
-								<!-- <span class="tooltip-text">Your Account</span> -->
-							</a>
+								</button>								
+							
 						</div>
 						<div class="">
 							<button
@@ -191,7 +190,7 @@
 								>
 									Přihlásit
 								</button>
-							</a>
+							
 						</div>
 						<div class="">
 							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
@@ -200,7 +199,7 @@
 								>
 									Přidej se
 								</button>
-							</a>
+							
 						</div>
 					</div>
 				{/if}
@@ -260,7 +259,7 @@
 								>
 									Účet
 								</button>
-							</a>
+							
 						</div>
 						<div class="">
 							<button
@@ -279,7 +278,7 @@
 								>
 									Přihlásit
 								</button>
-							</a>
+							
 						</div>
 						<div class="">
 							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
@@ -288,7 +287,7 @@
 								>
 									Přidej se
 								</button>
-							</a>
+							
 						</div>
 					{/if}
 				</div>
@@ -350,7 +349,7 @@
 	}
 
 	.textmenu {
-		font-size: 1em;		
+		font-size: 1em;
 	}
 	header {
 		position: fixed;
