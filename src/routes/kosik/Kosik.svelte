@@ -1,147 +1,146 @@
 <script lang="ts">
-  import CartItemsStore from '../Stores/stores'
-  import { get } from 'svelte/store'
-  import { page } from '$app/stores'
-  import { user } from '../Stores/stores'
-  import client from '../../lib/sanityClient'
-  import { supabaseClient } from '$lib/supabaseClient'
-  import Modal from './Modal.svelte'
-  import { onMount } from 'svelte'
-  import type { AuthSession } from '@supabase/supabase-js'
+	import CartItemsStore from '../Stores/stores'
+	import { get } from 'svelte/store'
+	import { page } from '$app/stores'
+	import { user } from '../Stores/stores'
+	import client from '../../lib/sanityClient'
+	import { supabaseClient } from '$lib/supabaseClient'
+	import Modal from './Modal.svelte'
+	import { onMount } from 'svelte'
+	import type { AuthSession } from '@supabase/supabase-js'
 
-  export let session: AuthSession
+	export let session: AuthSession
 
-  $: cartItems = $CartItemsStore
+	$: cartItems = $CartItemsStore
 
-  function removeItem(menuid) {
-    CartItemsStore.update((currentCartItems) => {
-      return currentCartItems.filter((cartItem) => cartItem._id != menuid)
-    })
-  }
+	function removeItem(menuid) {
+		CartItemsStore.update((currentCartItems) => {
+			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
+		})
+	}
 
-  $: totalPrice =
-    $CartItemsStore.length &&
-    $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
-  $: totalPieces =
-    $CartItemsStore.length &&
-    $CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+	$: totalPrice =
+		$CartItemsStore.length &&
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
+	$: totalPieces =
+		$CartItemsStore.length &&
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
-  function refreshPage() {
-    location.reload(true)
-  }
+	function refreshPage() {
+		location.reload(true)
+	}
 
-  function delayRefreshPage(mileSeconds) {
-    window.setTimeout(refreshPage, mileSeconds)
-  }
+	function delayRefreshPage(mileSeconds) {
+		window.setTimeout(refreshPage, mileSeconds)
+	}
 
-  let loading = false
-  let first_name = null
-  let last_name = null
+	let loading = false
+	let first_name = null
+	let last_name = null
 
-  const email = session.user.email
-  console.log(email)
+	const email = session.user.email
+	console.log(email)
 
-  onMount(() => {
-    getProfile()
-  })
+	onMount(() => {
+		getProfile()
+	})
 
-  const getProfile = async () => {
-    try {
-      loading = true
-      const { user } = session
-      const { data, error, status } = await supabaseClient
-        .from('profiles')
-        .select(`first_name, last_name`)
-        .eq('id', user.id)
-        .single()
+	const getProfile = async () => {
+		try {
+			loading = true
+			const { user } = session
+			const { data, error, status } = await supabaseClient
+				.from('profiles')
+				.select(`first_name, last_name`)
+				.eq('id', user.id)
+				.single()
 
-      if (data) {
-        first_name = data.first_name
-        last_name = data.last_name
-      }
+			if (data) {
+				first_name = data.first_name
+				last_name = data.last_name
+			}
 
-      if (error && status !== 406) throw error
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message)
-      }
-    } finally {
-      loading = false
-    }
-  }
+			if (error && status !== 406) throw error
+		} catch (error) {
+			if (error instanceof Error) {
+				alert(error.message)
+			}
+		} finally {
+			loading = false
+		}
+	}
 
- async function sendOrderAndCreateDoc2() {
-    try {
-      loading = true;
-      var txt = document.getElementById('txt').value;
+	async function sendOrderAndCreateDoc2() {
+		try {
+			loading = true
+			var txt = document.getElementById('txt').value
 
-      const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
-      const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
+			const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+			const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1
 
-      // Replace "yourFunctionName" with the correct Supabase function name
-      await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
-        body: JSON.stringify({
-          cart: get(CartItemsStore),
-          user: supabaseClient.auth.getUser(),
-          txt: txt,
-          orderNumber: orderNumber
-        })
-      });
+			// Replace "yourFunctionName" with the correct Supabase function name
+			await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+				body: JSON.stringify({
+					cart: get(CartItemsStore),
+					user: supabaseClient.auth.getUser(),
+					txt: txt,
+					orderNumber: orderNumber
+				})
+			})
 
-      const cart = JSON.parse(localStorage.getItem('cart'));
-      let totalPrice = 0;
-      let totalPieces = 0;
-      const order = [];
-      for (const obj of cart) {
-        order.push(obj.title);
-        const releaseDate = new Date(obj.releaseDate);
-        const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
-          releaseDate.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, '0')}-${releaseDate.getFullYear()}`;
-        order.push(formattedDate);
-        order.push(obj.description);
-        order.push(obj.quantity);
-        totalPrice += obj.price * obj.quantity;
-        totalPieces += obj.quantity;
-      }
+			const cart = JSON.parse(localStorage.getItem('cart'))
+			let totalPrice = 0
+			let totalPieces = 0
+			const order = []
+			for (const obj of cart) {
+				order.push(obj.title)
+				const releaseDate = new Date(obj.releaseDate)
+				const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+					releaseDate.getMonth() + 1
+				)
+					.toString()
+					.padStart(2, '0')}-${releaseDate.getFullYear()}`
+				order.push(formattedDate)
+				order.push(obj.description)
+				order.push(obj.quantity)
+				totalPrice += obj.price * obj.quantity
+				totalPieces += obj.quantity
+			}
 
-      const now = new Date();
-      const timestamp = now.toISOString();
-      const fullname = `${first_name} ${last_name}`;
-      const email = session.user.email;
+			const now = new Date()
+			const timestamp = now.toISOString()
+			const fullname = `${first_name} ${last_name}`
+			const email = session.user.email
 
-      const doc = {
-        _type: 'order',
-        itemsOrder: order,
-        note: txt,
-        timestamp: timestamp,
-        customer: fullname,
-        totalPrice: totalPrice,
-        totalPieces: totalPieces,
-        email: email,
-        orderNumber: orderNumber
-      };
+			const doc = {
+				_type: 'order',
+				itemsOrder: order,
+				note: txt,
+				timestamp: timestamp,
+				customer: fullname,
+				totalPrice: totalPrice,
+				totalPieces: totalPieces,
+				email: email,
+				orderNumber: orderNumber
+			}
 
-      const res = await client.create(doc);
-      console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
+			const res = await client.create(doc)
+			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
 
-      CartItemsStore.update(() => {
-        return [];
-      });
-      
-      window.location.href = '/thankyou';
-    } catch (error) {
-      console.error(error);
-    } finally {
-      loading = false;
-    }
-  }
+			CartItemsStore.update(() => {
+				return []
+			})
 
-  let showModal = false;
+			window.location.href = '/thankyou'
+		} catch (error) {
+			console.error(error)
+		} finally {
+			loading = false
+		}
+	}
+
+	let showModal = false
 </script>
-
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
@@ -152,7 +151,9 @@
 		<div
 			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 		>
-			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+			<h1
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
+			>
 				Košík
 			</h1>
 
@@ -294,17 +295,17 @@
 								<p class="border-r-2 border-slate-300">{cartItem.title}</p>
 							</div>
 							<div class="text-center">
-    <input
-        min="0"
-        max="99"
-        type="number"
-        bind:value={cartItem.quantity}
-        on:change={(e) => {
-            CartItemsStore.update((items) => items)
-        }}
-        class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
-    />
-</div>
+								<input
+									min="0"
+									max="99"
+									type="number"
+									bind:value={cartItem.quantity}
+									on:change={(e) => {
+										CartItemsStore.update((items) => items)
+									}}
+									class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
+								/>
+							</div>
 
 							<div class="text-center">
 								<p class="">{cartItem.price},-</p>
@@ -315,7 +316,7 @@
 							<div class="text-center">
 								<!-- animate__animated animate__flip -->
 								<button
-									class="hover:animate-spin" 									
+									class="hover:animate-spin"
 									on:click={() => {
 										removeItem(cartItem._id)
 									}}
@@ -341,12 +342,11 @@
 								placeholder="poznámka k objednávce"
 							/>
 						</div>
-
 						<div class="grid p-5 border-b-2 justify-items-end">
 							{#if $page.data.session}
 								<p class="justify-center text-sm text-center text-gray-500 flex-items-center">
 									Máte již vyplněný
-									<a href="/profile" class="text-sm text-blue-500 underline hover:text-blue-700"
+									<a href="/kosik" class="text-sm text-blue-500 underline hover:text-blue-700"
 										>účet?</a
 									>
 								</p>
@@ -373,11 +373,10 @@
 									<span class="">Potvrzení košíku</span>
 								</button>
 							{:else}
-								<button
+								<a
 									class="w-full px-4 py-2 text-center text-white transition ease-in bg-green-600 border rounded-lg shadow-md hover:border-black hover:text-black"
+									href="/login">Přihlaš se</a
 								>
-									<a href="/login">Přihlaš se</a>
-								</button>
 							{/if}
 
 							<Modal bind:showModal>

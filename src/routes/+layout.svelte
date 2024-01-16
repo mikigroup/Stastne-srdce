@@ -82,12 +82,13 @@
 			loading = true
 			let { error } = await supabaseClient.auth.signOut()
 			if (error) throw error
+			window.location.href = '/';
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message)
 			}
 		} finally {
-			loading = false
+			loading = false			
 		}
 	}
 
@@ -128,20 +129,20 @@
 				class="grid items-center hidden grid-cols-4 text-center border-2 rounded-full textmenu md:grid bg-slate-50"
 			>
 				<div class="border-r-2 text-slate-600" id="">
-					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
+					<a class="navItem" href="/">Úvod</a>
 				</div>
 				<div class="border-r-2 text-slate-600">
-					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
+					<a class="navItem" href="/jidelnicek">
 						Jídelníček
 					</a>
 				</div>
 				<div class="border-r-2 text-slate-600">
-					<a class="navItem" activeClass={$page.url.pathname === '/kontakt'} href="/kontakt">
+					<a class="navItem" href="/kontakt">
 						Kontakt
 					</a>
 				</div>
 				<div class="text-slate-600">
-					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">
+					<a class="navItem" href="/kosik">
 						Košík
 						{#if $page.data.session}
 							<strong>{totalPieces}</strong>
@@ -161,15 +162,13 @@
 					</a> -->
 
 					<!-- pravá část menu -->
-					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">				
-						<div class="pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
-								<button
-									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Účet
-								</button>								
-							
+					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
+						<div class="flex pr-2">
+							<!-- svelte-ignore a11y-missing-attribute -->
+							<a
+								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800" href="/profile"
+								>Účet</a
+							>
 						</div>
 						<div class="">
 							<button
@@ -183,23 +182,19 @@
 					</div>
 				{:else}
 					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
-						<div class="pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
-								<button
-									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Přihlásit
-								</button>
-							
+						<div class="flex pr-2">
+							<a
+								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								href="/login">Přihlásit</a
+							>
 						</div>
-						<div class="">
-							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
-								<button
-									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Přidej se
-								</button>
-							
+						<div class="flex">
+							<a
+								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								href="/signup"
+							>
+								Přidej se
+							</a>
 						</div>
 					</div>
 				{/if}
@@ -235,31 +230,26 @@
 			<ul id="menu-box" style="" class="hidden mb-4">
 				<hr />
 				<div class="mt-4">
-					<a class="navItem" activeClass={$page.url.pathname === '/'} href="/">Úvod</a>
+					<a class="navItem" href="/">Úvod</a>
 				</div>
 				<div>
-					<a class="navItem" activeClass={$page.url.pathname === '/jidelnicek'} href="/jidelnicek">
-						Jídelníček
-					</a>
+					<a class="navItem" href="/jidelnicek"> Jídelníček </a>
 				</div>
 				<div>
-					<a class="navItem" activeClass={$page.url.pathname === '/kotankt'} href="/kontakt">
-						Kontakt
-					</a>
+					<a class="navItem" href="/kontakt"> Kontakt </a>
 				</div>
 				<div>
-					<a class="navItem" activeClass={$page.url.pathname === '/kosik'} href="/kosik">Košík</a>
+					<a class="navItem" href="/kosik">Košík</a>
 				</div>
 				<div class="grid grid-cols-2 mt-6">
 					{#if $page.data.session}
 						<div class="col-end-2 pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/profile'} href="/profile">
-								<button
-									class="p-1 px-6 text-sm text-green-800 border border-green-700 tooltip-text btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Účet
-								</button>
-							
+							<a
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 tooltip-text btn rounded-3xl hover:text-white hover:bg-green-800"
+								href="/profile"
+							>
+								Účet
+							</a>
 						</div>
 						<div class="">
 							<button
@@ -272,22 +262,18 @@
 						</div>
 					{:else}
 						<div class="col-end-2 pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
-								<button
-									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Přihlásit
-								</button>
-							
+							<a
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								href="/login">Přihlásit</a
+							>
 						</div>
 						<div class="">
-							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
-								<button
-									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								>
-									Přidej se
-								</button>
-							
+							<a
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								href="/signup"
+							>
+								Přidej se
+							</a>
 						</div>
 					{/if}
 				</div>

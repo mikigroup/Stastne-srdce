@@ -1,4 +1,4 @@
-import { sveltekit } from '@sveltejs/kit/vite';
+/* import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 
 const config: UserConfig = {
@@ -6,3 +6,12 @@ const config: UserConfig = {
 };
 
 export default config;
+ */
+
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
+
+export default defineConfig({
+  plugins: [sveltekit()]
+});

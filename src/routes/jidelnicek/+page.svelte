@@ -1,6 +1,5 @@
 <script>
-	import CartItemsStore from '../Stores/stores'
-	import * as animateScroll from 'svelte-scrollto'
+	import CartItemsStore from '../Stores/stores'	
 	import client from '../../lib/sanityClient'
 	import { page } from '$app/stores'
 
@@ -237,8 +236,7 @@
 																>
 																	<div class="flex justify-end m-3 text-base">Přihlaš se</div>
 																</div>
-															</button>
-														</a>
+															</button>														
 													</div>
 												</div>
 											{/each}
@@ -355,13 +353,7 @@
 
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-								on:click={() =>
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})}
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"							
 							>
 								<p>Skoč nahoru</p>
 							</button>
@@ -374,8 +366,7 @@
 					<a
 						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 						activeClass={$page.url.pathname === '/kosik'}
-						href="/kosik"><button class=""> Košík </button></a
-					>
+						href="/kosik"><button class=""> Košík </button>					
 				</div>
 			{/if}
 		</div>

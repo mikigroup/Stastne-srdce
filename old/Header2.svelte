@@ -181,12 +181,12 @@
 				{:else}
 					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
 						<div class="pr-2">
-							<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login">
+							
 								<button
 									class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
-									Přihlásit
+									<a class="" id="" activeClass={$page.url.pathname === '/login'} href="/login"></a>Přihlásit
 								</button>
-							</a>
+							
 						</div>
 						<div class="">
 							<a activeClass={$page.url.pathname === '/signup'} href="/signup">
