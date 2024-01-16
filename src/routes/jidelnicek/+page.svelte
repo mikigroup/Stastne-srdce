@@ -1,17 +1,18 @@
 <script>
 	import CartItemsStore from '../Stores/stores'
 	import client from '../../lib/sanityClient'
-	import { page } from '$app/stores'	
+	import { page } from '$app/stores'
 
-	export let data; 
-	console.log(data.menus);
+	export let data
+	console.log(data.menus)
 	let selectedTab = ''
 
 	const selectTab = (tabName) => {
 		selectedTab = tabName
 	}
 
-	const currentDate = new Date()
+  const currentDate = new Date();
+	// const currentDate = new Date()
 	const dateRanges = [
 		[0, 10],
 		[10, 20],
@@ -20,40 +21,48 @@
 	]
 
 	const dates = dateRanges.map(([start, end]) => {
-		const startDate = new Date()
-		startDate.setDate(startDate.getDate() + start)
+		const startDate = new Date(currentDate)
+		startDate.setDate(currentDate.getDate() + start)
 
-		const endDate = new Date()
-		endDate.setDate(endDate.getDate() + end)
+		const endDate = new Date(currentDate)
+		endDate.setDate(currentDate.getDate() + end)
 
 		return { startDate, endDate }
 	})
 
-const loadZalozka = (index) => {
-    const today = new Date();
-    const from = new Date();
-    const to = new Date();
+	const loadZalozka = (index) => {
+		const today = new Date()
+		const from = new Date()
+		const to = new Date()
 
-    const dateRange = dates[index];
+		const dateRange = dates[index]
 
-    from.setDate(today.getDate() + dateRange[0]);
-    to.setDate(today.getDate() + dateRange[1]);
+		from.setDate(today.getDate() + dateRange[0])
+		to.setDate(today.getDate() + dateRange[1])
 
-    loadmenu(from, to).then((response) => {
-      data.menus = response;
-    });
+		const fromDateISOString = from.toISOString()
+		const toDateISOString = to.toISOString()
 
-    selectedTab = `${index + 1}. týden`;
-  };
+		console.log('From Date:', fromDateISOString)
+		console.log('To Date:', toDateISOString)
 
+		loadmenu(fromDateISOString, toDateISOString)
+			.then((response) => {
+				console.log('Menu data:', response) // Log the menu data received
+				data.menus = response
+			})
+			.catch((error) => {
+				console.error('Error loading menu:', error) // Log any errors during menu loading
+			})
 
-
-
-	export async function loadmenu(from, to) {
-		return client.fetch(
-			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
-		)
+		selectedTab = `${index + 1}. týden`
 	}
+	
+  export async function loadmenu(from, to) {
+    return client.fetch(
+      `*[_type == "menu" && releaseDate > "${from}" && releaseDate < "${to}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate }`
+    );
+  }
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -243,16 +252,16 @@ const loadZalozka = (index) => {
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
-														<a href="/login">															
-																<div
-																	class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+														<a href="/login">
+															<div
+																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
 																duration-150 ease-in-out"
-																>
-																	<div class="flex justify-end m-3 text-base">Přihlaš se</div>
-																</div>															
+															>
+																<div class="flex justify-end m-3 text-base">Přihlaš se</div>
+															</div>
 														</a>
 													</div>
 												</div>
@@ -368,7 +377,7 @@ const loadZalozka = (index) => {
 			{#if totalPieces > 0 && $page.data.session}
 				<div class="flex text-md">
 					<a
-						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"						
+						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 						href="/kosik"
 						>Košík
 					</a>
