@@ -1,8 +1,10 @@
 <script>
-	import CartItemsStore from '../Stores/stores'	
+	import CartItemsStore from '../Stores/stores'
 	import client from '../../lib/sanityClient'
-	import { page } from '$app/stores'
+	import { page } from '$app/stores'	
 
+	export let data; 
+	console.log(data.menus);
 	let selectedTab = ''
 
 	const selectTab = (tabName) => {
@@ -27,16 +29,25 @@
 		return { startDate, endDate }
 	})
 
-	const loadZalozka = (index) => {
-		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
-			// Assuming that data is defined somewhere in your script
-			data.menus = response
-		})
-		selectedTab = `${index + 1}. týden`
-	}
+const loadZalozka = (index) => {
+    const today = new Date();
+    const from = new Date();
+    const to = new Date();
 
-	let lastRenderedDate = null
-	export let data
+    const dateRange = dates[index];
+
+    from.setDate(today.getDate() + dateRange[0]);
+    to.setDate(today.getDate() + dateRange[1]);
+
+    loadmenu(from, to).then((response) => {
+      data.menus = response;
+    });
+
+    selectedTab = `${index + 1}. týden`;
+  };
+
+
+
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
@@ -63,6 +74,11 @@
 			}
 		})
 	}
+
+	function skocNaPrvek() {
+		let skocPrvek = document.getElementById('cilovyPrvek')
+		skocPrvek.scrollIntoView({ behavior: 'smooth' })
+	}
 	/* let search = '';
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
@@ -80,7 +96,9 @@
 <main>
 	<section class="">
 		<div class="max-w-screen-lg py-8 py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
-			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+			<h1
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
+			>
 				Jídelníček
 			</h1>
 			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
@@ -109,7 +127,7 @@
 					<br />
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
-				<br />
+				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
 				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
@@ -147,7 +165,7 @@
 				<div class="pb-10 tab-content" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
-							<div id="" class="">
+							<div class="">
 								<div class="">
 									<!-- karta menu -->
 									<div class="mb-5">
@@ -225,8 +243,7 @@
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
-														<a href="/login">
-															<button class="text-sm">
+														<a href="/login">															
 																<div
 																	class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
@@ -235,8 +252,8 @@
 																duration-150 ease-in-out"
 																>
 																	<div class="flex justify-end m-3 text-base">Přihlaš se</div>
-																</div>
-															</button>														
+																</div>															
+														</a>
 													</div>
 												</div>
 											{/each}
@@ -287,13 +304,9 @@
 										? 'border-green-600'
 										: 'border-transparent hover:border-green-600'
 								}`}
-								on:click={() => {
+								on:click={async () => {
 									loadZalozka(0)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									skocNaPrvek()
 								}}
 							>
 								1. týden
@@ -306,11 +319,7 @@
 								}`}
 								on:click={() => {
 									loadZalozka(1)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									skocNaPrvek()
 								}}
 							>
 								2. týden
@@ -323,11 +332,7 @@
 								}`}
 								on:click={() => {
 									loadZalozka(2)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									skocNaPrvek()
 								}}
 							>
 								3. týden
@@ -340,11 +345,7 @@
 								}`}
 								on:click={() => {
 									loadZalozka(3)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									skocNaPrvek()
 								}}
 							>
 								4. týden
@@ -353,7 +354,10 @@
 
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"							
+								on:click={() => {
+									skocNaPrvek()
+								}}
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
 							>
 								<p>Skoč nahoru</p>
 							</button>
@@ -364,9 +368,10 @@
 			{#if totalPieces > 0 && $page.data.session}
 				<div class="flex text-md">
 					<a
-						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-						activeClass={$page.url.pathname === '/kosik'}
-						href="/kosik"><button class=""> Košík </button>					
+						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"						
+						href="/kosik"
+						>Košík
+					</a>
 				</div>
 			{/if}
 		</div>
