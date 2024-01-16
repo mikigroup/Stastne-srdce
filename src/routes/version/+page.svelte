@@ -12,5 +12,5 @@ v1.03
 - přidány efekty
 
 v1.04
-
+- 
 
