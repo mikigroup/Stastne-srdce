@@ -2,17 +2,17 @@
 	import CartItemsStore from '../Stores/stores'
 	import client from '../../lib/sanityClient'
 	import { page } from '$app/stores'
-
-	export let data
-	console.log(data.menus)
+	
 	let selectedTab = ''
-
+	function skocNaPrvek() {
+		let skocPrvek = document.getElementById('cilovyPrvek')
+		skocPrvek.scrollIntoView({ behavior: 'smooth' })
+	}
 	const selectTab = (tabName) => {
 		selectedTab = tabName
 	}
 
-  const currentDate = new Date();
-	// const currentDate = new Date()
+	const currentDate = new Date()
 	const dateRanges = [
 		[0, 10],
 		[10, 20],
@@ -21,48 +21,31 @@
 	]
 
 	const dates = dateRanges.map(([start, end]) => {
-		const startDate = new Date(currentDate)
-		startDate.setDate(currentDate.getDate() + start)
+		const startDate = new Date()
+		startDate.setDate(startDate.getDate() + start)
 
-		const endDate = new Date(currentDate)
-		endDate.setDate(currentDate.getDate() + end)
+		const endDate = new Date()
+		endDate.setDate(endDate.getDate() + end)
 
 		return { startDate, endDate }
 	})
 
 	const loadZalozka = (index) => {
-		const today = new Date()
-		const from = new Date()
-		const to = new Date()
-
-		const dateRange = dates[index]
-
-		from.setDate(today.getDate() + dateRange[0])
-		to.setDate(today.getDate() + dateRange[1])
-
-		const fromDateISOString = from.toISOString()
-		const toDateISOString = to.toISOString()
-
-		console.log('From Date:', fromDateISOString)
-		console.log('To Date:', toDateISOString)
-
-		loadmenu(fromDateISOString, toDateISOString)
-			.then((response) => {
-				console.log('Menu data:', response) // Log the menu data received
-				data.menus = response
-			})
-			.catch((error) => {
-				console.error('Error loading menu:', error) // Log any errors during menu loading
-			})
-
-		selectedTab = `${index + 1}. týden`
+		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
+			// Assuming that data is defined somewhere in your script
+			data.menus = response
+		})
+		selectedTab = `${index + 1}. tÃ½den`
 	}
-	
-  export async function loadmenu(from, to) {
-    return client.fetch(
-      `*[_type == "menu" && releaseDate > "${from}" && releaseDate < "${to}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate }`
-    );
-  }
+
+	let lastRenderedDate = null
+	export let data
+
+	export async function loadmenu(from, to) {
+		return client.fetch(
+			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
+		)
+	}
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -82,11 +65,6 @@
 				return currentCartItems
 			}
 		})
-	}
-
-	function skocNaPrvek() {
-		let skocPrvek = document.getElementById('cilovyPrvek')
-		skocPrvek.scrollIntoView({ behavior: 'smooth' })
 	}
 	/* let search = '';
 	$: searchMenu = menus.filter((menu) => {
