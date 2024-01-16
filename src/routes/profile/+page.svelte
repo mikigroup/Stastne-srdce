@@ -1,6 +1,6 @@
 <script>
-import Account from './Account.svelte'
-import { page } from '$app/stores'
+import Account from './Account.svelte';
+import { page } from '$app/stores';
 
 export let data;
 </script>
