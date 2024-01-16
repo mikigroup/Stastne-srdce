@@ -372,7 +372,7 @@
 										})}
 									</div>
 									{#if visible_jiri[index]}
-										<div class="p-5 border-2 rounded-md" in:fade={{ duration: 500 }}>
+										<div class="p-5 border-2 rounded-md" in:fade|global={{ duration: 500 }}>
 											<ul>
 												<br />
 												{#each order.itemsOrder as item, i (i)}
@@ -408,7 +408,7 @@
 					})}
 				</div>
 				{#if visible[index]}
-				<div class="p-5 border-2 rounded-md" in:fade={{duration: 500}}>
+				<div class="p-5 border-2 rounded-md" in:fade|global={{duration: 500}}>
 					<ul>
 						<br>
 						{#each order.itemsOrder as item, i (i)}
