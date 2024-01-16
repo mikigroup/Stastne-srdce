@@ -26,7 +26,7 @@ export async function load() {
 		}
 	} catch (e) {
 		console.error('Error fetching data:', e)
-		throw error(500, 'Internal Server Error')
+		error(500, 'Internal Server Error');
 	}
 }
 
