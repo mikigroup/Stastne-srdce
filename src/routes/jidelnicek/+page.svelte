@@ -1,51 +1,52 @@
 <script>
-	import CartItemsStore from '../Stores/stores'
-	import client from '../../lib/sanityClient'
-	import { page } from '$app/stores'
-	
-	let selectedTab = ''
-	function skocNaPrvek() {
-		let skocPrvek = document.getElementById('cilovyPrvek')
-		skocPrvek.scrollIntoView({ behavior: 'smooth' })
-	}
+	import CartItemsStore from '../Stores/stores';
+	import client from '../../lib/sanityClient';
+	import { page } from '$app/stores';
+
+	let selectedTab = '';
+
 	const selectTab = (tabName) => {
-		selectedTab = tabName
+		selectedTab = tabName;
 	}
 
-	const currentDate = new Date()
+	const currentDate = new Date();
 	const dateRanges = [
 		[0, 10],
 		[10, 20],
 		[20, 30],
 		[30, 42]
-	]
+	];
 
 	const dates = dateRanges.map(([start, end]) => {
-		const startDate = new Date()
-		startDate.setDate(startDate.getDate() + start)
+		const startDate = new Date();
+		startDate.setDate(startDate.getDate() + start);
 
-		const endDate = new Date()
+		const endDate = new Date();
 		endDate.setDate(endDate.getDate() + end)
 
-		return { startDate, endDate }
-	})
+		return { startDate, endDate };
+	});
+	function skocNaPrvek() {
+				let skocPrvek = document.getElementById('cilovyPrvek');
+				skocPrvek.scrollIntoView({ behavior: 'smooth' });
+			};
 
 	const loadZalozka = (index) => {
 		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
-			// Assuming that data is defined somewhere in your script
-			data.menus = response
+			data.menus = response;
+			skocNaPrvek();
 		})
-		selectedTab = `${index + 1}. tÃ½den`
+		selectedTab = `${index + 1}. týden`;
 	}
 
-	let lastRenderedDate = null
-	export let data
+	let lastRenderedDate = null;
+	export let data;
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
 			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		)
-	}
+	};
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -370,5 +371,8 @@
 	.nav-link.active {
 		border-color: green !important;
 		color: black;
+	}
+	main {
+		scroll-behavior: smooth;
 	}
 </style>
