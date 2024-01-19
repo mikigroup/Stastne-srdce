@@ -307,7 +307,6 @@
 								}`}
 								on:click={() => {
 									loadZalozka(1)
-									skocNaPrvek()
 								}}
 							>
 								2. týden
@@ -319,8 +318,7 @@
 										: 'border-transparent hover:border-green-600'
 								}`}
 								on:click={() => {
-									loadZalozka(2)
-									skocNaPrvek()
+									loadZalozka(2)									
 								}}
 							>
 								3. týden
@@ -332,8 +330,7 @@
 										: 'border-transparent hover:border-green-600'
 								}`}
 								on:click={() => {
-									loadZalozka(3)
-									skocNaPrvek()
+									loadZalozka(3)									
 								}}
 							>
 								4. týden
