@@ -299,7 +299,7 @@
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">
-			<p>Šťastné srdce 2022-2023 ver_1.03. Stránka načtena za {loadTime} seconds</p>
+			<p>Šťastné srdce 2022-2024 ver_1.03. Stránka načtena za {loadTime} seconds</p>
 		</div>
 	</div>
 </footer>
