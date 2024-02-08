@@ -31,11 +31,12 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@hotjar/browser": "^1.0.9",
 		"@lottiefiles/svelte-lottie-player": "^0.3.0",
 		"@sanity/client": "^5.4.2",
 		"@supabase/auth-helpers-sveltekit": "^0.8.7",
 		"@supabase/supabase-js": "^2.26.0",
 		"animate.css": "^4.1.1",
-		"node": "^20.10.0"		
+		"node": "^20.10.0"
 	}
 }

@@ -6,6 +6,7 @@
 	import { readable } from 'svelte/store'
 	import { invalidate } from '$app/navigation'
 	import { onMount } from 'svelte'
+	import Hotjar from '@hotjar/browser';
 	// import 'animate.css';
 
 	// @ts-ignore
@@ -24,6 +25,12 @@
 			loadTime = (time.loadEventEnd - time.navigationStart) / 1000
 		}
 	})
+
+  onMount(() => {
+    const siteId = 3859148;
+    const hotjarVersion = 6;
+    Hotjar.init(siteId, hotjarVersion);
+  });
 
 	onMount(() => {
 		const {
