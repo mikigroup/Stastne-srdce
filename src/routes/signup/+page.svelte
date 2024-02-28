@@ -1,5 +1,9 @@
 <script>
-  import { supabaseClient } from "$lib/supabaseClient";  
+  // import { supabaseClient } from "$lib/supabaseClient";  
+	export let data;
+
+	let { session, supabase } = data
+	$: ({ session, supabase } = data)
 	
 	let email = "@" // doplnění value email
 	let password, confirmpassword;
@@ -17,7 +21,7 @@
 
 		try {
 			loading = true;
-			const { error } = await supabaseClient.auth.signUp({ email, password });
+			const { error } = await supabase.auth.signUp({ email, password });
 			console.log(error);
 			if (error) throw error;
 			message = {
@@ -36,7 +40,7 @@
 
 	
  async function signInWithGoogle() {
-  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       queryParams: {

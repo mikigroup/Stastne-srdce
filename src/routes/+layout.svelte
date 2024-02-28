@@ -2,12 +2,16 @@
 	import './app.css'
 	import CartItemsStore from '../routes/Stores/stores'
 	import { page } from '$app/stores'
-	import { supabaseClient } from '$lib/supabaseClient'
+	// import { supabaseClient } from '$lib/supabaseClient'
 	import { readable } from 'svelte/store'
 	import { invalidate } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import Hotjar from '@hotjar/browser';
 	// import 'animate.css';
+	
+	export let data
+	let { supabase, session } = data
+	$: ({ supabase, session } = data)
 
 	// @ts-ignore
 	let loadTime
@@ -32,7 +36,7 @@
     Hotjar.init(siteId, hotjarVersion);
   });
 
-	onMount(() => {
+	/* onMount(() => {
 		const {
 			data: { subscription }
 		} = supabaseClient.auth.onAuthStateChange(() => {
@@ -42,7 +46,7 @@
 		return () => {
 			subscription.unsubscribe()
 		}
-	})
+	}) */
 
 	let src = '/android-chrome-192x192.png'
 
@@ -63,12 +67,14 @@
 	})
 
 	// @ts-ignore
-	supabaseClient.auth.onAuthStateChange((event, session) => {
-		if (event === 'SIGNED_IN') {
-			console.log('User signed in')
-		} else if (event === 'SIGNED_OUT') {
-			console.log('User signed out')
-		}
+	onMount(() => {
+		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth')
+			}
+		})
+
+		return () => data.subscription.unsubscribe()
 	})
 
 	function toggleMenu() {
@@ -87,7 +93,7 @@
 	async function signOut() {
 		try {
 			loading = true
-			let { error } = await supabaseClient.auth.signOut()
+			let { error } = await supabase.auth.signOut()
 			if (error) throw error
 			window.location.href = '/';
 		} catch (error) {

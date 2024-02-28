@@ -1,7 +1,10 @@
-<script>
-  import { supabaseClient } from '$lib/supabaseClient'
+<script>  
   import { page } from "$app/stores";
+	
+  export let data;
 
+	let { session, supabase } = data
+	$: ({ session, supabase } = data)
   let loading = false;
 	let email = [];
   let password = [];
@@ -10,7 +13,7 @@
   const handleLogin = async () => {
 		try {
 			loading = true;
-			const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+			const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 			if (error) throw error;
 			message = { success: true, display: 'Úspěšně zalogován' };
 			window.location = '/jidelnicek';
@@ -42,7 +45,7 @@
 	} */
 
  async function signInWithGoogle() {
-  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       queryParams: {
