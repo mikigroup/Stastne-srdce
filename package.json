@@ -31,8 +31,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@hotjar/browser": "^1.0.9",
-		"@lottiefiles/svelte-lottie-player": "^0.3.0",
+		"@hotjar/browser": "^1.0.9",		
 		"@sanity/client": "^5.4.2",
 		"@supabase/auth-helpers-sveltekit": "^0.8.7",
 		"@supabase/supabase-js": "^2.26.0",
