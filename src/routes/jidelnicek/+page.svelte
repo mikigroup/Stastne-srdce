@@ -36,6 +36,7 @@
 			data.menus = response;
 			skocNaPrvek();
 		})
+
 		selectedTab = `${index + 1}. týden`;
 	}
 
