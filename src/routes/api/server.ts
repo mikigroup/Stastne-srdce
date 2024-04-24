@@ -7,6 +7,5 @@ export const GET: RequestHandler = async ({ locals: { supabase, getSession } }) 
 		error(401, { message: 'Unauthorized' });
 	}
 	const { data } = await supabase.from('test').select('*');
-
 	return json({ data });
 };

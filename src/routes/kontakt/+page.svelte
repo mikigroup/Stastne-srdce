@@ -1,6 +1,4 @@
 <script>
-	import { supabaseClient } from "$lib/supabaseClient";
-
 	let message = { success: null, display: '' };
 
 	function onSubmit(e) {

@@ -1,12 +1,9 @@
 <script>    
-    import { supabaseClient } from "$lib/supabaseClient";
-
     export let initSupabase;
 
     let error = '', message = '', loading = false, email = '';
 
-    async function forgotPass() {
-    // error = ''
+    async function forgotPass() {    
     message = ''
     loading = true
 

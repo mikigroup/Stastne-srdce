@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { supabaseClient } from '$lib/supabaseClient'
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
 	import client from '../../lib/sanityClient'

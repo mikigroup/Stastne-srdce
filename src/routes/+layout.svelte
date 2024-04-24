@@ -1,19 +1,17 @@
-<script>
+<script lang="ts">
 	import './app.css'
 	import CartItemsStore from '../routes/Stores/stores'
 	import { page } from '$app/stores'
 	// import { supabaseClient } from '$lib/supabaseClient'
 	import { readable } from 'svelte/store'
-	import { invalidate } from '$app/navigation'
-	import { onMount } from 'svelte'
-	import Hotjar from '@hotjar/browser';
+	import { goto, invalidate } from '$app/navigation';
+	import { onMount } from 'svelte'	
 	// import 'animate.css';
 	
 	export let data
 	let { supabase, session } = data
 	$: ({ supabase, session } = data)
 
-	// @ts-ignore
 	let loadTime
 
 	onMount(() => {
@@ -28,14 +26,18 @@
 			let time = performance.timing
 			loadTime = (time.loadEventEnd - time.navigationStart) / 1000
 		}
+	});
+	onMount(() => {
+		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth')
+			}
+		})
+
+		return () => data.subscription.unsubscribe()
 	})
 
-  onMount(() => {
-    const siteId = 3859148;
-    const hotjarVersion = 6;
-    Hotjar.init(siteId, hotjarVersion);
-  });
-
+	
 	/* onMount(() => {
 		const {
 			data: { subscription }
@@ -66,16 +68,24 @@
 		}
 	})
 
-	// @ts-ignore
 	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth')
+		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+			if (!newSession) {
+				/**
+				 * Queue this as a task so the navigation won't prevent the
+				 * triggering function from completing
+				 */
+				setTimeout(() => {
+					goto('/', { invalidateAll: true });
+				});
 			}
-		})
+			if (newSession?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
 
-		return () => data.subscription.unsubscribe()
-	})
+		return () => data.subscription.unsubscribe();
+	});
 
 	function toggleMenu() {
 		var menuBox = document.getElementById('menu-box')
@@ -106,8 +116,7 @@
 	}
 
 	$: totalPieces =
-		$CartItemsStore.length &&
-		// @ts-ignore
+		$CartItemsStore.length &&		
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 </script>
 
@@ -289,7 +298,6 @@
 
 <div class="pt-5 mt-10" />
 <slot class="mt-10" />
-
 <footer class="">
 	<div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">
 		<div class="grid col-span-2 text-sm">
