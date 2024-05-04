@@ -4,6 +4,9 @@
 	import client from '../../lib/sanityClient'
 	import { fade } from 'svelte/transition'
 	export let session: AuthSession
+	export let data;
+	$: ({ profiles } = data);
+	
 
 	let loading = false
 	let username: string | null = null
@@ -55,48 +58,9 @@
 		}
 	})
 
-	onMount(() => {
-		getProfile()
-	})
-	const getProfile = async () => {
-		try {
-			loading = true
-			const { user } = session
-			const { data, error, status } = await supabaseClient
-				.from('profiles')
-				.select(
-					`username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
-				)
-				.eq('id', user.id)
-				.single()
+	
 
-			if (data) {
-				username = data.username
-				website = data.website
-				avatarUrl = data.avatar_url
-				first_name = data.first_name
-				last_name = data.last_name
-				telephone = data.telephone
-				company_name = data.company_name
-				street = data.street
-				street_number = data.street_number
-				ico = data.ico
-				dic = data.dic
-				company = data.company
-				city = data.city
-			}
-
-			if (error && status !== 406) throw error
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message)
-			}
-		} finally {
-			loading = false
-		}
-	}
-
-	async function updateProfile() {
+	async function updateProfile(supabase) {
 		try {
 			loading = true
 			const { user } = session
@@ -119,7 +83,7 @@
 				website
 			}
 
-			let { error } = await supabaseClient.from('profiles').upsert(updates)
+			let { error } = await supabase.from('profiles').upsert(updates)
 
 			if (error) throw error
 		} catch (error) {
