@@ -38,7 +38,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 
   return resolve(event, {
     filterSerializedResponseHeaders(name) {
-      return name === "content-range"
+      return name === 'content-range' || name === 'x-supabase-api-version'
     },
   })
 };

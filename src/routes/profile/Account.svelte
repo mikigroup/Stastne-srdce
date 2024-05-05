@@ -1,12 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import type { AuthSession } from '@supabase/supabase-js'
-	import client from '../../lib/sanityClient'
-	import { fade } from 'svelte/transition'
-	export let session: AuthSession
+  import { onMount } from 'svelte';
+	import type { AuthSession } from '@supabase/supabase-js';
+	import client from '../../lib/sanityClient';
+	import { fade } from 'svelte/transition';
+	export let session: AuthSession;
+
 	export let data;
-	$: ({ profiles } = data);
-	
+	// $: ({ profiles } = data);
+	// console.log(profiles);
+	// console.log(data);
+  // console.log();
 
 	let loading = false
 	let username: string | null = null
@@ -103,7 +106,7 @@
 	<meta name="description" content="Účet" />
 </svelte:head>
 
-<section>
+<!-- <section>
 	<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 		<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Profil účtu
@@ -389,8 +392,8 @@
 {:else}
 	<p>Nahrávám objednávky...</p>
 {/if} -->
-				</div>
+			<!-- 	</div>
 			</div>
 		</div>
 	</div>
-</section>
+</section> -->
