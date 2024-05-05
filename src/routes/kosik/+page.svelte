@@ -1,23 +1,23 @@
 <!-- <script lang="ts">
-/* 	import Kosik from './Kosik.svelte'
-	import { page } from '$app/stores'
-	import client from '../../lib/sanityClient'
+/* 	import Kosik from "./Kosik.svelte"
+	import { page } from "$app/stores"
+	import client from "../../lib/sanityClient"
  */
 	// export let data;
 	// console.log(data.orders.orderNumber);
 
 	/* const fetchLatestOrderId = async () => {
   try {
-    // Fetch the schema for the 'order' type
-    const orders = await client.fetch('*[_type == "order"]{_id}[0]');
+    // Fetch the schema for the "order" type
+    const orders = await client.fetch("*[_type == "order"]{_id}[0]");
     if (orders && orders._id) {
       // Extract the _id field
       const lastOrderId = orders._id;
       // You can use the lastOrderId as needed
-      console.log('Last order ID:', lastOrderId);
+      console.log("Last order ID:", lastOrderId);
     }
   } catch (error) {
-    console.error('Error fetching latest order ID:', error);
+    console.error("Error fetching latest order ID:", error);
   }
 };
 	console.log(data);
@@ -50,15 +50,14 @@
 
 
 <script lang="ts">
-	import CartItemsStore from '../Stores/stores'
-	import { get } from 'svelte/store'
-	import { page } from '$app/stores'
-	import { user } from '../Stores/stores'
-	import client from '../../lib/sanityClient'	
-	import Modal from './Modal.svelte'
-	import { onMount } from 'svelte'
+	import CartItemsStore from "../Stores/stores";
+	import { get } from "svelte/store";
+	import { page } from "$app/stores";
+	import { user } from "../Stores/stores";
+	import client from "../../lib/sanityClient"	;
+	import Modal from "./Modal.svelte";
+	import { onMount } from "svelte";
 
-	
 	export let data;
 	
 	let { session, supabase, profile } = data;
@@ -70,29 +69,24 @@
 		CartItemsStore.update((currentCartItems) => {
 			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
 		})
-	}
+	};
 
-	$: totalPrice =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
-	$: totalPieces =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+$: totalPrice = $CartItemsStore.reduce((sum, item) => sum + item.price * item.quantity, 0);
+$: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0);
 
 	function refreshPage() {
 		location.reload(true)
-	}
+	};
 
 	function delayRefreshPage(mileSeconds) {
 		window.setTimeout(refreshPage, mileSeconds)
-	}
+	};
 
-	let loading = false
-	let first_name = null
-	let last_name = null
+	let loading = false;
+	let first_name = null;
+	let last_name = null;
 
-	const email = session.user.email
-	console.log(email)
+	const email = session.user.email;	
 
 	onMount(() => {
 		getProfile()
@@ -104,9 +98,9 @@
 			// const { user } = session
 			console.log("TEST:", session.user.id)
 			const { data, error, status } = await supabase
-				.from('profiles')
+				.from("profiles")
 				.select(`first_name, last_name`)
-				.eq('id', session.user.id)
+				.eq("id", session.user.id)
 				.single()
 
 			if (data) {
@@ -122,44 +116,43 @@
 		} finally {
 			loading = false
 		}
-	}
+	};
 
 	async function sendOrderAndCreateDoc2() {
 		try {
 			loading = true
-			var txt = document.getElementById('txt').value
+			var txt = document.getElementById("txt").value
 
-			const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+			const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);			
 			const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1
-
-			// Replace "yourFunctionName" with the correct Supabase function name
-			await supabase.functions.invoke('sendOrderBySendGrid_T', {
+			
+			await supabase.functions.invoke("sendOrderBySendGrid_T", {
 				body: JSON.stringify({
 					cart: get(CartItemsStore),
 					user: supabase.auth.getUser(),
 					txt: txt,
 					orderNumber: orderNumber
 				})
-			})
+			});
 
-			const cart = JSON.parse(localStorage.getItem('cart'))
+			const cart = JSON.parse(localStorage.getItem("cart") || '[]');
 			let totalPrice = 0
 			let totalPieces = 0
 			const order = []
 			for (const obj of cart) {
 				order.push(obj.title)
 				const releaseDate = new Date(obj.releaseDate)
-				const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+				const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(
 					releaseDate.getMonth() + 1
 				)
 					.toString()
-					.padStart(2, '0')}-${releaseDate.getFullYear()}`
+					.padStart(2, "0")}-${releaseDate.getFullYear()}`
 				order.push(formattedDate)
 				order.push(obj.description)
 				order.push(obj.quantity)
 				totalPrice += obj.price * obj.quantity
 				totalPieces += obj.quantity
-			}
+			};
 
 			const now = new Date()
 			const timestamp = now.toISOString()
@@ -167,7 +160,7 @@
 			const email = session.user.email
 
 			const doc = {
-				_type: 'order',
+				_type: "order",
 				itemsOrder: order,
 				note: txt,
 				timestamp: timestamp,
@@ -176,22 +169,22 @@
 				totalPieces: totalPieces,
 				email: email,
 				orderNumber: orderNumber
-			}
+			};
 
 			const res = await client.create(doc)
 			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
 
 			CartItemsStore.update(() => {
 				return []
-			})
+			});
 
-			window.location.href = '/thankyou'
+			window.location.href = "/thankyou"
 		} catch (error) {
 			console.error(error)
 		} finally {
 			loading = false
 		}
-	}
+	};
 
 	let showModal = false
 </script>
@@ -200,8 +193,9 @@
 	<title>Šťastné srdce - Košík</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
-<main>
+<main>	
 	<section>
+		{#if $page.data.session}
 		<div
 			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 		>
@@ -233,9 +227,9 @@
 								</div>
 								<div class="m-2 text-center">
 									<p class="">
-										{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-											month: 'long',
-											day: 'numeric'
+										{new Date(cartItem.releaseDate).toLocaleDateString("cs-CZ", {
+											month: "long",
+											day: "numeric"
 										})}
 									</p>
 								</div>
@@ -339,9 +333,9 @@
 						>
 							<div class="text-center">
 								<p class="border-r-2 border-slate-300">
-									{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-										month: 'long',
-										day: 'numeric'
+									{new Date(cartItem.releaseDate).toLocaleDateString("cs-CZ", {
+										month: "long",
+										day: "numeric"
 									})}
 								</p>
 							</div>
@@ -444,7 +438,7 @@
 										><input
 											type="submit"
 											class=""
-											value={loading ? 'Odesílá se...' : 'Odeslat'}
+											value={loading ? "Odesílá se..." : "Odeslat"}
 											disabled={loading}
 										/>
 									</button>
@@ -458,5 +452,9 @@
 				<div />
 			</div>
 		</div>
+		
+		{:else}
+		HA
+		{/if}
 	</section>
 </main>
