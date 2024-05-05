@@ -1,59 +1,59 @@
-/* import { redirect } from '@sveltejs/kit'
-import type { Actions } from '../auth/$types'
+/* import { redirect } from "@sveltejs/kit"
+import type { Actions } from "../auth/$types"
 
 export const actions: Actions = {
   signup: async ({ request, locals: { supabase } }) => {
     const formData = await request.formData()
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) {
       console.error(error)
-      return redirect(303, '/auth/error')
+      return redirect(303, "/auth/error")
     } else {
-      return redirect(303, '/')
+      return redirect(303, "/")
     }
   },
   login: async ({ request, locals: { supabase } }) => {
     const formData = await request.formData()
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       console.error(error)
-      return redirect(303, '/auth/error')
+      return redirect(303, "/auth/error")
     } else {
-      return redirect(303, '/private')
+      return redirect(303, "/private")
     }
   },
 } */
 
-/* import type { PageServerLoad } from './$types'
+/* import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
-  const { data: profiles } = await supabase.from('profiles')
+  const { data: profiles } = await supabase.from("profiles")
 				.select(
 					`username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
 				)
-				.eq('id', locals.user.id)
+				.eq("id", locals.user.id)
 				.single()
   return { profiles: profiles ?? []
    }
 } */
 
 
-// import type { PageServerLoad } from './$types'
+// import type { PageServerLoad } from "./$types"
 /* export const load: PageServerLoad = async ({ locals }) => {
  const { supabase, user } = locals;
  try {
     const { data: profiles, error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .select(
         `username, website, avatar_url, first_name, last_name, telephone, company_name, street, street_number, city, ico, dic, company`
       )
-      .eq('id', user.id)
+      .eq("id", user.id)
       .single();
 
     if (error) {
@@ -74,7 +74,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
  */
 
 
-import { error, fail, redirect } from "@sveltejs/kit";
+/* import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 // import { setError, superValidate } from "sveltekit-superforms/server";
 // import { emailSchema, passwordSchema, profileSchema } from "$lib/schemas";
@@ -96,7 +96,96 @@ export const load: PageServerLoad = async (event) => {
 		}
 		return profile;
 	}
+}; */
+import { fail, redirect } from "@sveltejs/kit"
+import type { Actions, PageServerLoad } from "./$types"
+
+export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
+  const { session } = await safeGetSession();
+
+  if (!session) {
+    throw redirect(303, "/");
+  }
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("username, first_name, last_name, telephone, street, street_number, city, ico, dic, company")
+    .eq("id", session.user.id)
+    .single();
+
+  if (error) {
+    console.error("Error fetching profile:", error);
+  } else {
+    console.log("TEST:", profile);
+  }
+
+  return { session, profile };
 };
+
+export const actions: Actions = {
+  update: async ({ request, locals: { supabase, safeGetSession } }) => {
+  const formData = await request.formData()
+	let first_name = formData.get("first_name") as string
+	let last_name = formData.get("last_name") as string
+	let telephone = formData.get("telephone") as string
+	let company_form = formData.get("company_form") as string 
+	let street = formData.get("street") as string
+	let street_number =formData.get("street_number") as string 
+	let city = formData.get("city") as string
+	let ico = formData.get("ico") as string
+	let dic = formData.get("dic") as string
+  let company = formData.get("company") as string  
+	let username = formData.get("username") as string
+  const { session } = await safeGetSession()
+
+    const { error } = await supabase.from("profiles").upsert({
+      id: session?.user.id,
+      first_name,
+			last_name,
+			telephone,
+			company_form,
+			street,
+			street_number,
+			city,
+			ico,
+			dic,
+			company,
+      username,   
+      updated_at: new Date(),
+    })
+
+    if (error) {
+      return fail(500, {
+      first_name,
+			last_name,
+			telephone,
+			company_form,
+			street,
+			street_number,
+			city,
+			ico,
+			dic,
+			company,
+      username,                 
+      })    }
+
+    return {
+      first_name,
+			last_name,
+			telephone,
+			company_form,
+			street,
+			street_number,
+			city,
+			ico,
+			dic,
+			company,
+      username,      
+    }
+  },
+};
+
+
 
 /* export const actions: Actions = {
 	updateProfile: async (event) => {

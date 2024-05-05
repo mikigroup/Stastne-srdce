@@ -1,48 +1,36 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-	import type { AuthSession } from '@supabase/supabase-js';
-	import client from '../../lib/sanityClient';
-	import { fade } from 'svelte/transition';
-	export let session: AuthSession;
+	import { onMount } from 'svelte'
+	import { enhance } from '$app/forms'
+	import type { SubmitFunction } from '@sveltejs/kit'
+	import client from '../../lib/sanityClient'
+	import { fade } from 'svelte/transition'
 
-	export let data;
+	export let data
+	export let form
+	let { session, supabase, profile } = data
+	$: ({ session, supabase, profile } = data)
 	// $: ({ profiles } = data);
 	// console.log(profiles);
 	// console.log(data);
-  // console.log();
-
-	let loading = false
-	let username: string | null = null
-	let website: string | null = null
-	let avatarUrl: string | null = null
-	let first_name = null
-	let last_name = null
-	let telephone = null
-	let company_name = null
-	let street = null
-	let street_number = null
-	let city = null
-	let ico = null
-	let dic = null
-	let company = null
+	// console.log();
 
 	let uniqueOrders = []
 
 	let orders: any[] = []
 	let itemsOrder: any[] = []
-	let visible_jiri = []	
-	let visible = false;
+	let visible_jiri = []
+	let visible = false
 
 	const toggleVisible = () => {
-		visible = !visible;
+		visible = !visible
 	}
-	
+
 	orders.forEach((order, index) => (visible[index] = false))
 	async function loadOrders(email) {
 		try {
 			let orders = await client.fetch(
 				`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`
-			)		
+			)
 			// Ensure the function still returns the fetched data
 			return orders
 		} catch (error) {
@@ -61,9 +49,34 @@
 		}
 	})
 
-	
+	let profileForm: HTMLFormElement
+	let loading = false
+	let firstName: string = profile?.first_name ?? ''
+	let lastName: string = profile?.last_name ?? ''
+	let telephone: string = profile?.telephone ?? ''
+	let companyForm: string = profile?.company_form ?? ''
+	let street: string = profile?.street ?? ''
+	let streetNumber: string = profile?.street_number ?? ''
+	let city: string = profile?.city ?? ''
+	let ico: string = profile?.ico ?? ''
+	let dic: string = profile?.dic ?? ''
+	let company: string = profile?.company ?? ''
+	const handleSubmit: SubmitFunction = () => {
+		loading = true
+		return async () => {
+			loading = false
+		}
+	}
 
-	async function updateProfile(supabase) {
+	const handleSignOut: SubmitFunction = () => {
+		loading = true
+		return async ({ update }) => {
+			loading = false
+			update()
+		}
+	}
+
+	/* async function updateProfile(supabase) {
 		try {
 			loading = true
 			const { user } = session
@@ -96,7 +109,7 @@
 		} finally {
 			loading = false
 		}
-	}
+	} */
 	//const email = session.user.email;
 	//console.log(email);
 </script>
@@ -392,7 +405,7 @@
 {:else}
 	<p>Nahrávám objednávky...</p>
 {/if} -->
-			<!-- 	</div>
+<!-- 	</div>
 			</div>
 		</div>
 	</div>
