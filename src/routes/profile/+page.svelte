@@ -192,10 +192,11 @@
 								</div>
 								<div class="w-full basis-1/2">
 									<input								
-										bind:value={first_name}
+										value={form?.first_name ?? first_name}
 										type="text"
+										name="first_name"
 										id="first_name"
-										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+										class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 										required
 										placeholder="Jméno"										
 									/>
@@ -209,9 +210,10 @@
 									<label class="pr-2" for="first_name">Příjmení</label>
 								</div>
 								<div class="w-full basis-1/2">
-									<input
-										bind:value={last_name}
+									<input										
+										value={form?.last_name ?? last_name}
 										type="text"
+										name="last_name"
 										id="last_name"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 										placeholder="Příjmení"
@@ -227,8 +229,9 @@
 								</div>
 								<div class="w-full basis-1/2">
 									<input
-										bind:value={telephone}
+										value={form?.telephone ?? telephone}
 										type="text"
+										name="telephone"
 										id="telephone"
 										class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 										placeholder="Telefon"
@@ -254,7 +257,8 @@
 										</div>
 										<div class="w-full basis-1/2">
 											<input
-												bind:value={street}
+												value={form?.street ?? street}												
+												name="street"
 												 type="text"
 												id="street"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
@@ -271,8 +275,9 @@
 										</div>
 										<div class="w-full basis-1/2">
 											<input
-												bind:value={street_number}
+											value={form?.street_number ?? street_number}												
 												 type="text"
+												 name="street_number"
 												id="street_number"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="Číslo popisné"
@@ -288,8 +293,9 @@
 										</div>
 										<div class="w-full basis-1/2">
 											<input
-												bind:value={city}
+											value={form?.city ?? city}
 												 type="text"
+												 name="city"
 												id="city"
 												class="form-control
                   </div>
@@ -307,8 +313,9 @@
 										</div>
 										<div class="w-full basis-1/2">
 											<input
-												bind:value={company}
+											value={form?.company ?? company}												
 												 type="text"
+												 name="company"
 												id="company"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="Firma"
@@ -324,8 +331,9 @@
 										</div>
 										<div class="w-full basis-1/2">
 											<input
-												bind:value={ico}
+											value={form?.ico ?? ico}												
 												 type="text"
+												 name="ico"
 												id="ico"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="IČO"
@@ -340,9 +348,10 @@
 											<label class="pr-2" for="dic">DIČ</label>
 										</div>
 										<div class="w-full basis-1/2">
-											<input
-												bind:value={dic}
+											<input												
+														value={form?.dic ?? dic}	
 												 type="text"
+												 name="dic"
 												id="dic"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="DIČ"

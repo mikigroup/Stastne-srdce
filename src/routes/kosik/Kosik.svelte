@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte'
 	import type { AuthSession } from '@supabase/supabase-js'
 
-	export let session: AuthSession
+	export let session: AuthSession	
 
 	$: cartItems = $CartItemsStore
 
@@ -48,7 +48,7 @@
 		try {
 			loading = true
 			const { user } = session
-			const { data, error, status } = await supabaseClient
+			const { data, error, status } = await supabase
 				.from('profiles')
 				.select(`first_name, last_name`)
 				.eq('id', user.id)
@@ -78,10 +78,10 @@
 			const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1
 
 			// Replace "yourFunctionName" with the correct Supabase function name
-			await supabaseClient.functions.invoke('sendOrderBySendGrid_T', {
+			await supabase.functions.invoke('sendOrderBySendGrid_T', {
 				body: JSON.stringify({
 					cart: get(CartItemsStore),
-					user: supabaseClient.auth.getUser(),
+					user: supabase.auth.getUser(),
 					txt: txt,
 					orderNumber: orderNumber
 				})

@@ -128,7 +128,6 @@ export const actions: Actions = {
 	let first_name = formData.get("first_name") as string
 	let last_name = formData.get("last_name") as string
 	let telephone = formData.get("telephone") as string
-	let company_form = formData.get("company_form") as string 
 	let street = formData.get("street") as string
 	let street_number =formData.get("street_number") as string 
 	let city = formData.get("city") as string
@@ -138,12 +137,24 @@ export const actions: Actions = {
 	let username = formData.get("username") as string
   const { session } = await safeGetSession()
 
+	    console.log('Form data in action:', {
+      first_name,
+      last_name,
+      telephone,
+      street,
+      street_number,
+      city,
+      ico,
+      dic,
+      company,
+      username
+    });
+
     const { error } = await supabase.from("profiles").upsert({
       id: session?.user.id,
       first_name,
 			last_name,
 			telephone,
-			company_form,
 			street,
 			street_number,
 			city,
@@ -159,7 +170,6 @@ export const actions: Actions = {
       first_name,
 			last_name,
 			telephone,
-			company_form,
 			street,
 			street_number,
 			city,
@@ -173,7 +183,6 @@ export const actions: Actions = {
       first_name,
 			last_name,
 			telephone,
-			company_form,
 			street,
 			street_number,
 			city,
