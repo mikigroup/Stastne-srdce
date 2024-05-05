@@ -12,23 +12,7 @@
 	let { supabase, session } = data
 	$: ({ supabase, session } = data)
 
-	let loadTime
-
 	onMount(() => {
-		// @ts-ignore
-		let performance =
-			window.performance ||
-			window.webkitPerformance ||
-			window.mozPerformance ||
-			window.msPerformance
-		if (performance) {
-			// @ts-ignore
-			let time = performance.timing
-			loadTime = (time.loadEventEnd - time.navigationStart) / 1000
-		}
-	});
-	
-		onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
 			if (!newSession) {
 				setTimeout(() => {
@@ -271,7 +255,7 @@
 
 <footer class="">
 	<div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">
-		<div class="grid col-span-2 text-sm">
+		<div class="grid col-span-2 text-sm ">
 			<p>
 				<a
 					class="items-center mt-3 text-sm sm:mt-0"
@@ -282,7 +266,7 @@
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">
-			<p>Šťastné srdce 2022-2024 ver_1.03. Stránka načtena za {loadTime} seconds</p>
+			<p>Šťastné srdce 2022-2024 ver_1.04</p>
 		</div>
 	</div>
 </footer>

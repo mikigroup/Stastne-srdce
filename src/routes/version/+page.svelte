@@ -1,4 +1,3 @@
-
 v1.02
 - nová vylepšená autentizace
 - redesign
@@ -12,5 +11,7 @@ v1.03
 - přidány efekty
 
 v1.04
-- 
+- přechod na komplet SSR
+- animace mob. menu
+
 
