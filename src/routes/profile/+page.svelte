@@ -15,14 +15,14 @@
 	let uniqueOrders = []
 	let orders: any[] = []
 	let itemsOrder: any[] = []
-	let visible_jiri = []
+	let visible_jiri: any[] = []
 	let visible = false
 
 	const toggleVisible = () => {
 		visible = !visible
 	}
 
-	orders.forEach((order, index) => (visible[index] = false))
+	orders.forEach((order, index) => (visible[index] = false))	
 	async function loadOrders(email) {
 		try {
 			let orders = await client.fetch(
@@ -52,26 +52,18 @@
 	let username: string = profile?.username ?? ''
 	let first_name: string = profile?.first_name ?? '';
 	let last_name: string = profile?.last_name ?? ''
-	let telephone: string = profile?.telephone ?? ''
-	let company_form: string = profile?.company_form ?? ''
+	let telephone: string = profile?.telephone ?? ''	
 	let street: string = profile?.street ?? ''
 	let street_number: string = profile?.street_number ?? ''
 	let city: string = profile?.city ?? ''
 	let ico: string = profile?.ico ?? ''
 	let dic: string = profile?.dic ?? ''
 	let company: string = profile?.company ?? ''
+	
 	const handleSubmit: SubmitFunction = () => {
 		loading = true
 		return async () => {
 			loading = false
-		}
-	}
-
-	const handleSignOut: SubmitFunction = () => {
-		loading = true
-		return async ({ update }) => {
-			loading = false
-			update()
 		}
 	}
 
@@ -374,14 +366,12 @@
 				</div>
 			</div>
 		</form>
-
-
 		<!-- Orders -->
-		<!-- <div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+	 <div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+			<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Objednávky
 			</h1>
-			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div class="px-5 border-2 rounded-md bg-slate-50">
 					{#if orders && orders.length > 0}
 						<ul>
@@ -423,42 +413,5 @@
 					{:else}
 						<p>Žádné objednávky</p>
 					{/if}
-
- -->
-
-		<!-- 		{#each orders as order, index (order._id)}
-			<li class="text-lg text-center transition duration-300 ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105">
-				<br>
-				<div class="p-5 border-2 rounded-md" on:click={() => visible[index] = !visible[index]}>
-					Objednávka: <span class="font-semibold">{order.orderNumber}</span>
-					<br>
-					Datum: {new Date(order.timestamp).toLocaleDateString('cs-CZ', {
-						weekday: 'short',
-						month: 'long',
-						day: 'numeric'
-					})}
-				</div>
-				{#if visible[index]}
-				<div class="p-5 border-2 rounded-md" in:fade|global={{duration: 500}}>
-					<ul>
-						<br>
-						{#each order.itemsOrder as item, i (i)}
-							<li>{item}</li>
-						{/each}
-					</ul>
-				</div>
-				{/if}
-				<br>
-				<hr>
-			</li>
-		{/each}
-	</ul>
-</div>
-{:else}
-	<p>Nahrávám objednávky...</p>
-{/if} -->
-		<!-- 	</div>
-			</div>
-		</div>-->
 	</div>
 </section>
