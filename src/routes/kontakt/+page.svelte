@@ -1,24 +1,26 @@
-<script>
+<script lang="ts">
+	export let data;
+	
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
+	
 	let message = { success: null, display: '' };
-
 	function onSubmit(e) {
-		const formData = new FormData(e.target);
-		const data = {};
+		const formData = new FormData(e.target);		
 		for (let field of formData) {
 			const [key, value] = field;
 			data[key] = value;
 		}		
-		supabaseClient.auth.functions.invoke('sendForm', {
+		supabase.functions.invoke('sendForm', {
 			body: JSON.stringify({ data: data })
 		});
 		if (data != null) {
 			setTimeout(function () {
 			window.location.reload();
 		}, 5000);
-			message = { display: 'Formulář odeslán' };
+		message = { display: 'Formulář odeslán' };					
 			return;
 		}
-		
 	}
 </script>
 
@@ -34,9 +36,9 @@
 </svelte:head>
 <main>
 	<section class="">
-		<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 			<h1
-				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand ">
+				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand ">
 				Kontakt
 			</h1>
 			<div class="grid grid-cols-1 p-5 bg-white border-2 rounded-lg md:grid-cols-1">
@@ -60,15 +62,12 @@
 				<iframe
 					class="w-full aspect-auto"
 					src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
-					style="border:0;"
-					allowfullscreen=""
+					style="border:0;"					
 					loading="lazy"
 					referrerpolicy="no-referrer-when-downgrade"
 					title="Šťastné srdce" />
 			</div>
 			
-
-
 			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
 				<!-- <div class="grid text-center"> -->
 					<div class="">

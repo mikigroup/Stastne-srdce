@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import './app.css'
 	import CartItemsStore from '../routes/Stores/stores'
 	import { page } from '$app/stores'
-	// import { supabaseClient } from '$lib/supabaseClient'
 	import { readable } from 'svelte/store'
 	import { goto, invalidate } from '$app/navigation';
 	import { onMount } from 'svelte'	
@@ -61,17 +61,11 @@
 		}
 	})
 
-	function toggleMenu() {
-		var menuBox = document.getElementById('menu-box')
-		// @ts-ignore
-		if (menuBox.style.display == 'block') {
-			// @ts-ignore
-			menuBox.style.display = 'none'
-		} else {
-			// @ts-ignore
-			menuBox.style.display = 'block'
-		}
-	}
+  let menuVisible = false;
+
+  function toggleMenu() {
+    menuVisible = !menuVisible;
+  }
 
 	let loading = false
 	async function signOut() {
@@ -168,7 +162,7 @@
 						</div>
 					</div>
 				{:else}
-					<div class="relative grid items-center hidden grid-cols-2 ml-auto md:flex">
+					<div class="relative items-center hidden grid-cols-2 ml-auto md:grid">
 						<div class="flex pr-2">
 							<a
 								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
@@ -185,11 +179,11 @@
 						</div>
 					</div>
 				{/if}
-				<div class="md:hidden">
-					<button class="" id="menu" on:click={() => toggleMenu()}>
+				<div class="grid justify-center md:hidden">
+					  <button on:click={toggleMenu} class="text-xl">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="w-6 h-6"
+							class="h-7 w-7"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -200,7 +194,7 @@
 								stroke-width="2"
 								d="M4 6h16M4 12h16M4 18h16"
 							/>
-						</svg>
+						</svg>					
 					</button>
 				</div>
 				<div class="md:hidden">
@@ -214,16 +208,17 @@
 		<div
 			class="flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white md:hidden"
 		>
-			<ul id="menu-box" style="" class="hidden mb-4">
+		 {#if menuVisible}
+			<ul id="menu-box" transition:slide={{ duration: 400, delay: 2}} class="mb-4">
 				<hr />
 				<div class="mt-4">
 					<a class="navItem" href="/">Úvod</a>
 				</div>
 				<div>
-					<a class="navItem" href="/jidelnicek"> Jídelníček </a>
+					<a class="navItem" href="/jidelnicek">Jídelníček</a>
 				</div>
 				<div>
-					<a class="navItem" href="/kontakt"> Kontakt </a>
+					<a class="navItem" href="/kontakt">Kontakt</a>
 				</div>
 				<div>
 					<a class="navItem" href="/kosik">Košík</a>
@@ -265,6 +260,7 @@
 					{/if}
 				</div>
 			</ul>
+		  {/if}
 		</div>
 		<hr class="mx-4" />
 	</nav>
@@ -272,6 +268,7 @@
 
 <div class="pt-5 mt-10" />
 <slot class="mt-10" />
+
 <footer class="">
 	<div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">
 		<div class="grid col-span-2 text-sm">
