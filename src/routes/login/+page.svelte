@@ -1,13 +1,62 @@
-<script>  
+<script lang="ts">
+	import { onMount } from "svelte";
+	import { enhance } from "$app/forms";
+	import type { SubmitFunction } from "@sveltejs/kit";
+	import client from "../../lib/sanityClient";
   import { page } from "$app/stores";
-	
-  export let data;
+	import { fade } from "svelte/transition";
 
-	let { session, supabase } = data
-	$: ({ session, supabase } = data)
-  let loading = false;
-	let email = [];
-  let password = [];
+	export let data
+	export let form
+	let { session, supabase, profile } = data
+	$: ({ session, supabase, profile } = data)
+	// console.log(data)
+	// console.log(data.session)
+
+	let uniqueOrders = []
+	let orders: any[] = []
+	let itemsOrder: any[] = []
+	let visible_jiri: any[] = []
+	let visible = false
+
+	const toggleVisible = () => {
+		visible = !visible
+	}
+
+	orders.forEach((order, index) => (visible[index] = false))	
+	async function loadOrders(email) {
+		try {
+			let orders = await client.fetch(
+				`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`
+			)
+			// Ensure the function still returns the fetched data
+			return orders
+		} catch (error) {
+			console.error('Failed to fetch orders:', error)
+			throw error // re-throw the error so it can be caught and handled by the calling function
+		}
+	}
+
+	let profileForm: HTMLFormElement
+	let loading = false
+	let username: string = profile?.username ?? ''
+	let first_name: string = profile?.first_name ?? '';
+	let last_name: string = profile?.last_name ?? ''
+	let telephone: string = profile?.telephone ?? ''	
+	let street: string = profile?.street ?? ''
+	let street_number: string = profile?.street_number ?? ''
+	let city: string = profile?.city ?? ''
+	let ico: string = profile?.ico ?? ''
+	let dic: string = profile?.dic ?? ''
+	let company: string = profile?.company ?? ''
+	
+	const handleSubmit: SubmitFunction = () => {
+		loading = true
+		return async () => {
+			loading = false
+		}
+	}
+
 	let message = { success: null, display: '' };
  
   const handleLogin = async () => {
@@ -25,25 +74,6 @@
 		}
 	};
 
-
-/*   let loading = false
-	let email: string
-
-	const handleLogin = async () => {
-		try {
-			loading = true
-			const { error } = await supabaseClient.auth.signInWithOtp({ email })
-			if (error) throw error
-			alert('Check your email for the login link!')
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message)
-			}
-		} finally {
-			loading = false
-		}
-	} */
-
  async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -55,15 +85,6 @@
     },
   })
 }
-
-
-/* 
-  async function signInWithFacebook() {
-    const { user, data, error } = await supabase.auth.signIn({
-      provider: "facebook",
-    });
-  }  */
-  
 </script>
 
 <svelte:head>

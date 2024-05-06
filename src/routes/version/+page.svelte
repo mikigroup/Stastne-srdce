@@ -11,7 +11,7 @@ v1.03
 - přidány efekty
 
 v1.04
-- přechod na komplet SSR
+- přechod komplet na SSR
 - animace mob. menu
 
 
