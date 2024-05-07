@@ -13,5 +13,6 @@ v1.03
 v1.04
 - přechod komplet na SSR
 - animace mob. menu
+- upraven kosik při hodnotě 0 qty = delete
 
 

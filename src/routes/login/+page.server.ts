@@ -1,11 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 
-type Message = {
-  success: boolean;
-  display: string;
-};
-
 export const actions: Actions = {
   handleLogin: async ({ request, locals: { supabase } }) => {
     const formData = await request.formData();
@@ -16,7 +11,7 @@ export const actions: Actions = {
     
     if (error) {
       console.error(error);
-      return fail(400, { message: { success: false, display: error.message } as Message });
+      return fail(400, { message: { success: false, display: error.message } });
     } else {
       throw redirect(303, "/jidelnicek");
     }

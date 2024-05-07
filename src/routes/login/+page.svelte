@@ -1,10 +1,8 @@
 <script lang="ts">	
 	import { page } from "$app/stores";
-	import { fade } from "svelte/transition";
-  let message = $page.data.message || { success: null, display: "" };
-
-	export let form
-
+	import { fade } from "svelte/transition";  
+  import type { Actions } from "@sveltejs/kit";	
+  export let form: Actions;
 	// console.log(data)
 	// console.log(data.session)
 
@@ -156,6 +154,9 @@
 									<img src="/google.svg" alt="" width="40" height="40" />
 								</button>
 							</div> -->
+							{#if form?.message}
+  <p class="error">{form.message.display}</p>
+{/if}
 						</div>
 					</div>
 				{/if}
