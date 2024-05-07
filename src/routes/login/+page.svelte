@@ -1,40 +1,12 @@
-<script lang="ts">
-	import { onMount } from "svelte";
-	import { enhance } from "$app/forms";
-	import type { SubmitFunction } from "@sveltejs/kit";
-	import client from "../../lib/sanityClient";
+<script lang="ts">	
 	import { page } from "$app/stores";
 	import { fade } from "svelte/transition";
+  let message = $page.data.message || { success: null, display: "" };
 
 	export let form
 
 	// console.log(data)
 	// console.log(data.session)
-
-	let profileForm: HTMLFormElement;
-	let loading = false;
-	let email: any;
-	let password: any;
-
-
-
-	let message = { success: null, display: "" }
-
-	/*   const handleLogin = async () => {
-		try {
-			loading = true;
-			const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-			if (error) throw error;
-			message = { success: true, display: "Úspěšně zalogován" };
-			window.location = "/jidelnicek";
-		} catch (error) {
-			let errorMsg = error.error_description || error.message;
-			message = { success: false, display: errorMsg };
-		} finally {
-			loading = false;
-		}
-	};
- */
 
 	/*  async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -57,7 +29,7 @@
 <section class="footer_fix">
 	<div class="">
 		<form method="POST"
-			class="form-widget"			
+			class=""			
 			action="?/handleLogin"						
 		>
 			<div class="pt-20 form-widget">
@@ -101,7 +73,7 @@
 										</svg>
 									</span>
 									<input
-										value={form?.email ?? email}
+										value={form?.email ?? ""}
 										type="email"
 										name="email"
 										id="email"
@@ -132,7 +104,7 @@
 										</svg>
 									</span>
 									<input
-										value={form?.password ?? password}
+										value={form?.password ?? ""}
 										type="password"
 										name="password"
 										id="password"
@@ -157,7 +129,7 @@
 								<button
 									type="submit"
 									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"								
-								>									
+								>Přihlásit se									
 								</button>
 							</div>
 
@@ -189,5 +161,16 @@
 				{/if}
 			</div>
 		</form>
+    {#if message.success !== null}
+  {#if message.success}
+    <div class="message success">
+      {message.display}
+    </div>
+  {:else}
+    <div class="message error">
+      {message.display}
+    </div>
+  {/if}
+{/if}
 	</div>
 </section>
