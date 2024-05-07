@@ -14,5 +14,6 @@ v1.04
 - přechod komplet na SSR
 - animace mob. menu
 - upraven kosik při hodnotě 0 qty = delete
+- fix mob. tlačítka v menu
 
 

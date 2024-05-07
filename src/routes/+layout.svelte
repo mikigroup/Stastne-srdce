@@ -213,12 +213,12 @@ onMount(() => {
 				<div class="grid grid-cols-2 mt-6">
 					{#if $page.data.session}
 						<div class="col-end-2 pr-2">
-							<a
-								class="p-1 px-6 text-sm text-green-800 border border-green-700 tooltip-text btn rounded-3xl hover:text-white hover:bg-green-800"
+							<button
+								class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
 								href="/profile"
 							>
 								Účet
-							</a>
+							</button>
 						</div>
 						<div class="">
 							<button

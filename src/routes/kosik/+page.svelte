@@ -60,8 +60,8 @@
 
 	export let data;
 	
-	let { session, supabase, profile } = data;
-	$: ({ session, supabase, profile } = data);
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
 		
 	$: cartItems = $CartItemsStore;
 
