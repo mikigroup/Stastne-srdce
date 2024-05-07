@@ -12,20 +12,23 @@
 	let { supabase, session } = data
 	$: ({ supabase, session } = data)
 
-	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
-			if (!newSession) {
-				setTimeout(() => {
-					goto('/', { invalidateAll: true });
-				});
-			}
-			if (newSession?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth');
-			}
-		});
+onMount(() => {
+  const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
+    if (event === 'SIGNED_OUT' && !newSession) {
+      setTimeout(() => {
+        if ($page.url.pathname !== '/login') {
+          goto('/', { invalidateAll: true });
+        }
+      });
+    }
+    if (newSession?.expires_at !== session?.expires_at) {
+      invalidate('supabase:auth');
+    }
+  });
 
-		return () => data.subscription.unsubscribe();
-	});
+  return () => data.subscription.unsubscribe();
+});
+
 
 	let src = '/android-chrome-192x192.png'
 

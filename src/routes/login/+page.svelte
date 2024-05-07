@@ -161,16 +161,5 @@
 				{/if}
 			</div>
 		</form>
-    {#if message.success !== null}
-  {#if message.success}
-    <div class="message success">
-      {message.display}
-    </div>
-  {:else}
-    <div class="message error">
-      {message.display}
-    </div>
-  {/if}
-{/if}
 	</div>
 </section>
