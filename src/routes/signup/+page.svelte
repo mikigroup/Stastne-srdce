@@ -5,7 +5,7 @@
 	let { session, supabase } = data
 	$: ({ session, supabase } = data)
 	
-	let email = "@" // doplnění value email
+	let email = "@";
 	let password, confirmpassword;
 	let loading = false;
 	let message = { success: '', display: '' };
@@ -38,7 +38,7 @@
 		}
 	};
 
-	
+	/* 
  async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -49,7 +49,7 @@
       },
     },
   })
-}
+} */
 	
 </script>
 
@@ -58,13 +58,27 @@
 	<meta name="description" content="SingUp" />
 </svelte:head>
 <section>
-	<div class="pt-20 footer_fix">
+
+
+<form method="POST" action="?/login" class="pt-20">
+	<label>
+		Email
+		<input name="email" type="email" />
+	</label>
+	<label>
+		Password
+		<input name="password" type="password" />
+	</label>	
+	<button formaction="?/signup">Sign up</button>
+</form>
+
+	<!-- <div class="pt-20 footer_fix">
 		<div
 			class="flex flex-col max-w-md px-4 pb-2 mx-auto mt-20 bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
 			<div
 				class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl ">
 				Vytvoření nového účtu
-			</div>
+			</div
 			<span
 				class="justify-center text-sm text-center text-gray-500 flex-items-center">
 				Máte již účet?
@@ -194,6 +208,6 @@
 						</form>
 					</div>
 				</div>
-	</div>
+	</div> -->
 
 </section>

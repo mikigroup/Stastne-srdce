@@ -74,7 +74,7 @@
 		}
 	};
 
- async function signInWithGoogle() {
+/*  async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -84,14 +84,13 @@
       },
     },
   })
-}
+} */
 </script>
 
 <svelte:head>
   <title>Šťastné srdce - Login</title>
   <meta name="description" content="Login" />
 </svelte:head>
-
 <section class="footer_fix">
   <div class="">
     <form on:submit|preventDefault={handleLogin}>

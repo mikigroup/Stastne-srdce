@@ -16,3 +16,4 @@ signup: async ({ request, locals: { supabase } }) => {
     }
   },
 };
+
