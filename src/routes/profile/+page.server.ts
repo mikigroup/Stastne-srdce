@@ -137,7 +137,7 @@ export const actions: Actions = {
 	let username = formData.get("username") as string
   const { session } = await safeGetSession()
 
-	    console.log('Form data in action:', {
+/* 	    console.log('Form data in action:', {
       first_name,
       last_name,
       telephone,
@@ -149,7 +149,7 @@ export const actions: Actions = {
       company,
       username
     });
-
+ */
     const { error } = await supabase.from("profiles").upsert({
       id: session?.user.id,
       first_name,
