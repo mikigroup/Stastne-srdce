@@ -163,9 +163,6 @@
 												<!-- //searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													{#if new Date(menu.releaseDate).toDateString() !== lastRenderedDate}
-														<script>
-															lastRenderedDate = new Date(menu.releaseDate).toDateString()
-														</script>
 														<div
 															class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
 														>
@@ -246,27 +243,6 @@
 													</div>
 												</div>
 											{/each}
-											<!-- 	{:else if data.menus && data.menus.length}										
-												{#each data.menus as menu}
-													<div class="p-2 my-3 border rounded-lg bg-stone-100">
-													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
-														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}
-														</p>														
-													</div>
-													<div class="p-5 my-3 text-lg border rounded-lg shadow-md">
-														<p class="pb-1 underline underline-offset-8 ">{menu.title}</p>
-														<span style="white-space: pre-line">{menu.description}</span>														
-													</div>
-													<hr class="px-5" />													
-												</div>
-												{/each}			 -->
 										{:else}
 											<p>Žádný jídelníček nenalezen</p>
 										{/if}
@@ -278,14 +254,6 @@
 						</div>
 					</div>
 					<div>
-						<!-- {#if $user && menu && menu.length}
-							{#each menus as menu}{/each}
-						{:else}{/if}
-						{#if $user && menu && menu.length}
-							{#each menus as menu}{/each}
-						{:else}{/if} -->
-
-						<hr />
 						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
