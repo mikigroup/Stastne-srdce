@@ -1,6 +1,6 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import Hello from "./Hello.svelte";
+// import Hello from "./Hello.svelte";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -24,8 +24,9 @@ export const actions: Actions = {
     const options = {
       from: "info@stastnesrdce.cz",
       to: email,
-      subject: "Nová zpráva z formuláře",
-      html: "<b>Hello world? {message}</b>",
+      // cc: "stastnesrdcekk@seznam.cz",
+      subject: "Šťastné srdce - Formulář",
+      text: `Dobrý den,\nbyla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz .\n\nKontaktní osoba: ${name}\nEmail: ${email}\nTelefon: ${tel}\n\nObsah zprávy:\n ${message}`,
     };
 
     try {
@@ -34,7 +35,7 @@ export const actions: Actions = {
       return { success: true };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
-      return fail(500, { message: "Chyba při odesílání e-mailu" });
+      return fail(500,  { message: { success: false, display: "Chyba při odesílání e-mailu" } });
     }
   },
 };

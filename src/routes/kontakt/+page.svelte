@@ -1,26 +1,26 @@
-<script lang="ts">	
-	import type { Actions } from "@sveltejs/kit";	
-  export let form: Actions;
-	export let data
+<script lang="ts">
+	import type { Actions } from "@sveltejs/kit";
+	export let form: Actions;
+	export let data;
 
-	let { session, supabase } = data
-	$: ({ session, supabase } = data)
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
 
-	let message = { success: null, display: '' }
-/* 	function onSubmit(e) {
+//	let message = { success: null, display: "" }
+	/* 	function onSubmit(e) {
 		const formData = new FormData(e.target)
 		for (let field of formData) {
 			const [key, value] = field
 			data[key] = value
 		}
-		supabase.functions.invoke('sendForm', {
+		supabase.functions.invoke("sendForm", {
 			body: JSON.stringify({ data: data })
 		})
 		if (data != null) {
 			setTimeout(function () {
 				window.location.reload()
 			}, 5000)
-			message = { display: 'Formulář odeslán' }
+			message = { display: "Formulář odeslán" }
 			return
 		}
 	} */
@@ -64,78 +64,80 @@
 					title="Šťastné srdce"
 				/>
 			</div>
-	<div class="">
-		<form method="POST"
-			class=""			
-			action="?/sendForm"									
-		>	
-				<!-- <div class="grid text-center"> -->
-				<div class="max-w-screen-sm py-20 mx-auto my-20">
-					<div>
-						<label for="email" class="block mb-2 text-sm font-medium text-gray-900">
-							<p class="pt-5 text-lg text-center md:text-left">Váš mail</p>
-						</label>
-						<input
-							value={form?.email ?? ''}
-							type="email"
-							name="email"
-							id="email"
-							class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
-							required
-							placeholder="Email"
-						/>
-					</div>
-					<div>
-						<label for="name" class="block mb-2 text-sm font-medium text-gray-900">
-							<p class="pt-5 text-lg text-center md:text-left">Jméno</p>
-						</label>
-						<input
-							value={form?.email ?? ''}
-							type="txt"
-							name="name"
-							id="name"
-							class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
-							required
-							placeholder="Jméno"
-						/>
-					</div>
-					<div>
-						<label for="phone" class="block mb-2 text-sm font-medium text-gray-900">
-							<p class="pt-5 text-lg text-center md:text-left">Telefon</p>
-						</label>
+			<div class="">
+				<form method="POST" class="" action="?/sendForm">
+					<!-- <div class="grid text-center"> -->
+					<div class="max-w-screen-sm py-20 mx-auto my-20">
+						<div>
+							<label for="email" class="block mb-2 text-sm font-medium text-gray-900">
+								<p class="pt-5 text-lg text-center md:text-left">Váš mail</p>
+							</label>
 							<input
-							value={form?.tel ?? ''}
-							type="txt"
-							name="name"
-							id="name"
-							class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
-							required
-							placeholder="Telefon"
-						/>
+								value={form?.email ?? ""}
+								type="email"
+								name="email"
+								id="email"
+								class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
+								required
+								placeholder="Email"
+							/>
+						</div>
+						<div>
+							<label for="name" class="block mb-2 text-sm font-medium text-gray-900">
+								<p class="pt-5 text-lg text-center md:text-left">Jméno</p>
+							</label>
+							<input
+								value={form?.email ?? ""}
+								type="txt"
+								name="name"
+								id="name"
+								class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
+								required
+								placeholder="Jméno"
+							/>
+						</div>
+						<div>
+							<label for="phone" class="block mb-2 text-sm font-medium text-gray-900">
+								<p class="pt-5 text-lg text-center md:text-left">Telefon</p>
+							</label>
+							<input
+								value={form?.tel ?? ""}
+								type="txt"
+								name="name"
+								id="name"
+								class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
+								required
+								placeholder="Telefon"
+							/>
+						</div>
+						<div class="sm:col-span-2">
+							<label for="message" class="block mb-2 text-sm font-medium text-gray-900">
+								<p class="pt-5 text-lg text-center md:text-left">Zpráva</p>
+							</label>
+							<textarea
+								value={form?.message ?? ""}
+								name="message"
+								id="message"
+								rows="6"
+								class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none"
+								placeholder="Zanechte zprávu ..."
+							/>
+						</div>
+						<button
+							type="submit"
+							value="submit"
+							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+						>
+							Odeslat
+						</button>
+						<div class="flex">
+							{#if form?.message}
+								<p class="error">{form.message.display}</p>
+							{/if}
+						</div>
 					</div>
-					<div class="sm:col-span-2">
-						<label for="message" class="block mb-2 text-sm font-medium text-gray-900">
-							<p class="pt-5 text-lg text-center md:text-left">Zpráva</p>
-						</label>
-						<textarea
-							value={form?.message ?? ''}
-							name="message"
-							id="message"
-							rows="6"
-							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none"
-							placeholder="Zanechte zprávu ..."
-						/>
-					</div>
-					<button
-						type="submit"
-						value="submit"
-						class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-					>
-						Odeslat
-					</button>
-					<div class="flex">{message.display}</div>
-				</div>
-			</form>
+				</form>
+			</div>
 		</div>
 	</section>
 </main>
