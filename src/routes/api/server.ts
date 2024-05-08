@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+/* import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals: { supabase, getSession } }) => {
@@ -8,4 +8,4 @@ export const GET: RequestHandler = async ({ locals: { supabase, getSession } }) 
 	}
 	const { data } = await supabase.from('test').select('*');
 	return json({ data });
-};
+}; */

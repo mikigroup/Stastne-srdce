@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button, Hr, Html, Text } from 'svelte-email';
 	export let data;
 	
 	let { session, supabase } = data;
@@ -70,7 +71,7 @@
 			
 			<form on:submit|preventDefault={onSubmit} class="mt-10 space-y-8">
 				<!-- <div class="grid text-center"> -->
-					<div class="">
+					<div class="max-w-screen-sm py-20 mx-auto my-20">
 				<div>
 					<label for="email" class="block mb-2 text-sm font-medium text-gray-900">
 						<p class="pt-5 text-lg text-center md:text-left">Váš mail</p>
