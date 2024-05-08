@@ -11,7 +11,7 @@ export const actions: Actions = {
     
     if (error) {
       console.error(error);
-      return fail(400, { message: { success: false, display: error.message } });
+      return fail(400, { message: { success: false, display: "Neplatné přihlašovací údaje. Zkontrolujte prosím e-mail a heslo." } });
     } else {
       throw redirect(303, "/jidelnicek");
     }
