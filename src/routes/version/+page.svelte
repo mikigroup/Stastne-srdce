@@ -15,5 +15,6 @@ v1.04
 - animace mob. menu
 - upraven kosik při hodnotě 0 qty = delete
 - fix mob. tlačítka v menu
+- redesign kontakt page a přechození na SMTP
 
 
