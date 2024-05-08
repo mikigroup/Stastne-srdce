@@ -1,6 +1,5 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { render } from "svelte-email";
 import Hello from "./Hello.svelte";
 import nodemailer from "nodemailer";
 
@@ -9,8 +8,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: "your_email@seznam.cz",
-    pass: "your_password"
+    user: "info@stastnesrdce.cz",
+    pass: "#QFUtwxDsQW5LEDT"
   }
 });
 
@@ -18,21 +17,15 @@ export const actions: Actions = {
   sendForm: async ({ request }) => {
     const formData = await request.formData();
     const email = formData.get("email") as string;
+		const tel = formData.get("tel") as string;
     const name = formData.get("name") as string;
     const message = formData.get("message") as string;
 
-    const emailHtml = render({
-      template: Hello,
-      props: {
-        name: name
-      }
-    });
-
     const options = {
-      from: "your_email@seznam.cz",
+      from: "info@stastnesrdce.cz",
       to: email,
       subject: "Nová zpráva z formuláře",
-      html: emailHtml
+      html: "<b>Hello world? {message}</b>",
     };
 
     try {
