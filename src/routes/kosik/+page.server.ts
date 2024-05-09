@@ -1,8 +1,8 @@
-/* import client from '../../lib/sanityClient'
+/* import client from "../../lib/sanityClient"
 
 export async function load() {
 	try {		
-	const data = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
+	const data = await client.fetch("*[_type == "order"] | order(_createdAt desc) [0]")
 	console.log(data);
 		if (data) {			
 			return {
@@ -10,24 +10,91 @@ export async function load() {
 				
 			}
 		}
-		throw new Error('No order data found.')
+		throw new Error("No order data found.")
 	} catch (error) {
-		console.error('Error:', error.message)
+		console.error("Error:", error.message)
 		return {
 			status: 500,
-			body: new Error('Internal Server Error')
+			body: new Error("Internal Server Error")
 		}
 	}
 }
  */
 
-// import { redirect } from '@sveltejs/kit';
+// import { redirect } from "@sveltejs/kit";
 
-// /** @type {import('./$types').LayoutServerLoad} */
+// /** @type {import("./$types").LayoutServerLoad} */
 
 /*
 export function load({ locals }) {
 	if (!locals.user) {
-		redirect(307, '/login');
+		redirect(307, "/login");
 	}
 } */
+
+import { error, fail } from '@sveltejs/kit';
+import type { Actions } from './$types';
+import client from '$lib/sanityClient';
+import nodemailer from 'nodemailer';
+		
+
+const transporter = nodemailer.createTransport({
+			host: "smtp.seznam.cz",
+			port: 465,
+			secure: true,
+			auth: {
+				user: "info@stastnesrdce.cz",
+				pass: "#QFUtwxDsQW5LEDT"
+			}
+		});
+
+export const actions: Actions = {
+  sendOrder: async ({ request, locals }) => {
+    const { user, session } = await locals.getSession();
+    const formData = await request.formData();
+    const txt = formData.get('txt') as string;
+
+    const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
+    const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
+
+    const { data } = await locals.supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single();
+
+    const fullname = `${data.first_name} ${data.last_name}`;
+    const email = session.user.email;
+
+    const doc = {
+      _type: 'order',
+      itemsOrder: locals.cartItems,
+      note: txt,
+      timestamp: new Date().toISOString(),
+      customer: fullname,
+      totalPrice: locals.totalPrice,
+      totalPieces: locals.totalPieces,
+      email: email,
+      orderNumber: orderNumber
+    };
+
+    const res = await client.create(doc);
+    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
+
+    await transporter.sendMail({
+      from: 'your-email@example.com',
+      to: email,
+      subject: `Objednávka č. ${orderNumber}`,
+      text: `
+        Děkujeme za vaši objednávku!
+        
+        Detaily objednávky:
+        Košík: ${JSON.stringify(locals.cartItems)}
+        Poznámka: ${txt}
+        Číslo objednávky: ${orderNumber}
+      `
+    });
+
+    return { success: true };
+  }
+};

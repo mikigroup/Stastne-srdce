@@ -2,16 +2,17 @@
 	import CartItemsStore from "../Stores/stores";
 	import { get } from "svelte/store";
 	import { page } from "$app/stores";
-	import { user } from "../Stores/stores";
+	// import { user } from "../Stores/stores";
 	import client from "../../lib/sanityClient"	;
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 
 	export let data;
 	
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
-		
+	let { session, supabase, user } = data;
+	$: ({ session, supabase, user } = data);
+	// console.log(data)	
+	
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -153,10 +154,10 @@ $: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0);
 	<section>
 		{#if $page.data.session}
 		<div
-			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
+			class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 		>
 			<h1
-				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
+				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
 			>
 				Košík
 			</h1>

@@ -103,8 +103,8 @@
 							<input
 								value={form?.tel ?? ""}
 								type="txt"
-								name="name"
-								id="name"
+								name="tel"
+								id="tel"
 								class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								required
 								placeholder="Telefon"
