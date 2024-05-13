@@ -1,25 +1,24 @@
 <script lang="ts">
-	import CartItemsStore from '../Stores/stores'
-	import { get } from 'svelte/store'
-	import { page } from '$app/stores'
-	// import { user } from "../Stores/stores";
-	import client from '../../lib/sanityClient'
-	import Modal from './Modal.svelte'
-	import { onMount } from 'svelte'
+	import CartItemsStore from "../Stores/stores";
+	import { get } from "svelte/store";
+	import { page } from "$app/stores";
+	import client from "../../lib/sanityClient";
+	import Modal from "./Modal.svelte";
+	import { onMount } from "svelte";
 
-	export let data
+	export let data;
 
-	let { session, supabase, user } = data
-	$: ({ session, supabase, user } = data)
+	let { session, supabase, user } = data;
+	$: ({ session, supabase, user } = data);
 	// console.log(data)
 
-	$: cartItems = $CartItemsStore
+	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
 		CartItemsStore.update((currentCartItems) => {
 			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
 		})
-	}
+	};
 
 	$: {
 		$CartItemsStore.forEach((item) => {
@@ -27,10 +26,10 @@
 				removeItem(item._id)
 			}
 		})
-	}
+	};
 
-	$: totalPrice = $CartItemsStore.reduce((sum, item) => sum + item.price * item.quantity, 0)
-	$: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0)
+	$: totalPrice = $CartItemsStore.reduce((sum, item) => sum + item.price * item.quantity, 0);
+	$: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0);
 
 	function refreshPage() {
 		location.reload(true)
@@ -54,11 +53,11 @@
 		try {
 			loading = true
 			// const { user } = session
-			console.log('TEST:', session.user.id)
+			console.log("TEST:", session.user.id)
 			const { data, error, status } = await supabase
-				.from('profiles')
+				.from("profiles")
 				.select(`first_name, last_name`)
-				.eq('id', session.user.id)
+				.eq("id", session.user.id)
 				.single()
 
 			if (data) {
@@ -93,7 +92,7 @@
 				})
 			});
 
-			const cart = JSON.parse(localStorage.getItem("cart") || '[]');
+			const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 			let totalPrice = 0
 			let totalPieces = 0
 			const order = []
@@ -185,9 +184,9 @@
 									</div>
 									<div class="m-2 text-center">
 										<p class="">
-											{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-												month: 'long',
-												day: 'numeric'
+											{new Date(cartItem.releaseDate).toLocaleDateString("cs-CZ", {
+												month: "long",
+												day: "numeric"
 											})}
 										</p>
 									</div>
@@ -291,9 +290,9 @@
 							>
 								<div class="text-center">
 									<p class="border-r-2 border-slate-300">
-										{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-											month: 'long',
-											day: 'numeric'
+										{new Date(cartItem.releaseDate).toLocaleDateString("cs-CZ", {
+											month: "long",
+											day: "numeric"
 										})}
 									</p>
 								</div>
@@ -386,12 +385,13 @@
 								{/if}
 								<Modal bind:showModal>
 									<form method="POST" action="?/sendOrder">
+										<input type="hidden" name="cartItems" value={JSON.stringify($CartItemsStore)} />
 										<div class="">
 											<input
 												formaction="?/sendOrder"
 												type="submit"
 												class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black hover:cursor-pointer"
-												value={loading ? 'Odesílá se...' : 'Odeslat'}
+												value={loading ? "Odesílá se..." : "Odeslat"}
 												disabled={loading}
 											/>
 										</div>

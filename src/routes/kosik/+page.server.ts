@@ -3,7 +3,6 @@ import type { Actions, PageServerLoad } from "./$types";
 import client from '$lib/sanityClient';
 import nodemailer from 'nodemailer';
 
-
 const transporter = nodemailer.createTransport({
 			host: "smtp.seznam.cz",
 			port: 465,
@@ -15,13 +14,17 @@ const transporter = nodemailer.createTransport({
 		});
 
 export const actions: Actions = {
-  sendOrder: async ({ locals: { supabase, safeGetSession }  }) => {    
+    sendOrder: async ({ request, locals: { supabase, safeGetSession, cartItems } }) => {    
     const { session } = await safeGetSession();
     // const user = locals.user;
 
     if (!session) {
     throw redirect(303, "/");
   }
+  
+  const formData = await request.formData();
+  cartItems = JSON.parse(formData.get('cartItems') as string);
+  console.log(cartItems);
 
    const { data: profile, error } = await supabase
     .from("profiles")
@@ -29,15 +32,70 @@ export const actions: Actions = {
     .eq("id", session.user.id)
     .single();
 
+     if (error) {
+      throw error;
+    }
+
     const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
-    const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
-
-
-    /* const fullname = `${data.first_name} ${data.last_name}`; */
+    const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;    
     const email = session.user.email;
-
-    console.log(email)
+    const fullname = `${profile.first_name} ${profile.last_name}`;
+    const txt = "txt";
+    // console.log(email)
     console.log(orderNumber)
+    // console.log(fullname)
+    // console.log(session)
+    
+
+    const formatCartItems = (cartItems: any[]) => {
+    return cartItems.map((item, index) => {
+        return `
+        Položka ${index + 1}:
+            Název: ${item.title}
+            Množství: ${item.quantity}
+            Cena: ${item.price}
+            Datum: ${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}
+            Popis: ${item.description}
+        `;
+    }).join('\n');
+};
+
+const options = {
+    from: "info@stastnesrdce.cz",
+    to: email,
+    subject: "Šťastné srdce - Objednávka",
+    text: `
+        Děkujeme za vaši objednávku!
+        
+        Detaily objednávky:        
+        Košík:
+${formatCartItems(cartItems)}
+
+        Poznámka: ${txt}
+        Číslo objednávky: ${orderNumber}
+    `,
+};
+/* 
+    const options = {
+      from: "info@stastnesrdce.cz",
+      to: email,
+      // cc: "stastnesrdcekk@seznam.cz",
+      subject: "Šťastné srdce - Objednávka",
+      text: `
+        Děkujeme za vaši objednávku!
+        
+        Detaily objednávky        
+        Košík: ${cartItems}
+        Poznámka: ${txt}
+        Číslo objednávky: ${orderNumber}
+      `,
+    };
+ */
+
  /*    const doc = {
       _type: 'order',
       itemsOrder: locals.cartItems,
@@ -67,6 +125,13 @@ export const actions: Actions = {
       `
     }); */
 
-    return { success: true };
-  }
+    try {
+      await transporter.sendMail(options);
+      console.log("E-mail odeslán na adresu:", email);
+      return { success: true };
+    } catch (error) {
+      console.error("Chyba při odesílání e-mailu:", error);
+      return fail(500,  { message: { success: false, display: "Chyba při odesílání e-mailu" } });
+    }
+  },      
 };

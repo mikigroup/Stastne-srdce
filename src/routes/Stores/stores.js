@@ -2,7 +2,6 @@
 import { writable  , readable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-
 /* const storeCartItems = localStorage?.getItem("cart");
 const initialStoreValue = storeCartItems == null?[]:JSON.parse(storeCartItems) */
 
@@ -37,9 +36,9 @@ userEmail.subscribe(value => {
 
 
 // export const currentCartItems = writable();
-export const user = writable(); //false ?
+// export const user = writable(); //false ?
 export default CartItemsStore;
-export const session = writable(null);
+// export const session = writable(null);
 
 
 //finta browser

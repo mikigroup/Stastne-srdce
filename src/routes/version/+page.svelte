@@ -16,5 +16,7 @@ v1.04
 - upraven kosik při hodnotě 0 qty = delete
 - fix mob. tlačítka v menu
 - redesign kontakt page a přechození na SMTP
+- vylepšená šablona emailu
+- lepší zabezpečení
 
 
