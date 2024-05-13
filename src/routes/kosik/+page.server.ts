@@ -32,11 +32,11 @@ export function load({ locals }) {
 	}
 } */
 
-import { error, fail } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import { error, fail, redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from "./$types";
 import client from '$lib/sanityClient';
 import nodemailer from 'nodemailer';
-		
+
 
 const transporter = nodemailer.createTransport({
 			host: "smtp.seznam.cz",
@@ -48,20 +48,42 @@ const transporter = nodemailer.createTransport({
 			}
 		});
 
-export const actions: Actions = {
-  sendOrder: async ({ request, locals }) => {
-    const { user, session } = await locals.getSession();
+
+  /*   export const actions = {
+  default: async ({ request, locals }) => {
     const formData = await request.formData();
-    const txt = formData.get('txt') as string;
+    const inputValue = formData.get("inputValue");
+    console.log("Vstupní hodnota:", inputValue);
+
+    locals.inputValue = inputValue;
+
+    return {
+      status: 200,
+      body: {
+        success: true
+      }
+    };
+  }
+}; */
+
+export const actions: Actions = {
+  sendOrder: async ({ locals: { supabase, safeGetSession }  }) => {    
+    const { session } = await safeGetSession();
+    // const user = locals.user;
+
+    if (!session) {
+    throw redirect(303, "/");
+  }
+
+   const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("first_name, last_name")
+    .eq("id", session.user.id)
+    .single();
 
     const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
     const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
 
-    const { data } = await locals.supabase
-      .from('profiles')
-      .select('first_name, last_name')
-      .eq('id', user.id)
-      .single();
 
     const fullname = `${data.first_name} ${data.last_name}`;
     const email = session.user.email;
@@ -93,7 +115,7 @@ export const actions: Actions = {
         Poznámka: ${txt}
         Číslo objednávky: ${orderNumber}
       `
-    });
+    }); */
 
     return { success: true };
   }

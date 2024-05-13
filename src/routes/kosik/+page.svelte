@@ -75,7 +75,7 @@ $: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0);
 		}
 	};
 
-	async function sendOrderAndCreateDoc2() {
+	/* async function sendOrderAndCreateDoc2() {
 		try {
 			loading = true
 			var txt = document.getElementById("txt").value
@@ -141,7 +141,7 @@ $: totalPieces = $CartItemsStore.reduce((sum, item) => sum + item.quantity, 0);
 		} finally {
 			loading = false
 		}
-	};
+	}; */
 
 	let showModal = false
 </script>
