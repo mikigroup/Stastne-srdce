@@ -23,8 +23,11 @@ export const actions: Actions = {
   }
   
   const formData = await request.formData();
+  const txt = formData.get("txt") as string;
+  console.log(txt);
+
   cartItems = JSON.parse(formData.get('cartItems') as string);
-  console.log(cartItems);
+  // console.log(cartItems);
 
    const { data: profile, error } = await supabase
     .from("profiles")
@@ -39,22 +42,35 @@ export const actions: Actions = {
     const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
     const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;    
     const email = session.user.email;
-    const fullname = `${profile.first_name} ${profile.last_name}`;
-    const txt = "txt";
+    const fullname = `${profile.first_name} ${profile.last_name}`;    
     // console.log(email)
     console.log(orderNumber)
     // console.log(fullname)
     // console.log(session)
-    
 
+      let totalPrice = 0;
+      let totalPieces = 0;
+      const order = [];
+
+      for (const obj of cartItems) {
+            order.push(obj.title);
+            const releaseDate = new Date(obj.releaseDate);
+            const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(releaseDate.getMonth() + 1).toString().padStart(2, "0")}-${releaseDate.getFullYear()}`;
+            order.push(formattedDate);
+            order.push(obj.description);
+            order.push(obj.quantity);
+            totalPrice += obj.price * obj.quantity;
+            totalPieces += obj.quantity;
+        };
+    
     const formatCartItems = (cartItems: any[]) => {
     return cartItems.map((item, index) => {
         return `
         Položka ${index + 1}:
-            Název: ${item.title}
+            ${item.title}
             Množství: ${item.quantity}
             Cena: ${item.price}
-            Datum: ${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
+            Datum:\n ${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -69,32 +85,14 @@ const options = {
     to: email,
     subject: "Šťastné srdce - Objednávka",
     text: `
-        Děkujeme za vaši objednávku!
+        Děkujeme za vaši objednávku ${orderNumber} !
         
-        Detaily objednávky:        
-        Košík:
+        Detail:                
 ${formatCartItems(cartItems)}
 
-        Poznámka: ${txt}
-        Číslo objednávky: ${orderNumber}
+        Poznámka: ${txt}     
     `,
 };
-/* 
-    const options = {
-      from: "info@stastnesrdce.cz",
-      to: email,
-      // cc: "stastnesrdcekk@seznam.cz",
-      subject: "Šťastné srdce - Objednávka",
-      text: `
-        Děkujeme za vaši objednávku!
-        
-        Detaily objednávky        
-        Košík: ${cartItems}
-        Poznámka: ${txt}
-        Číslo objednávky: ${orderNumber}
-      `,
-    };
- */
 
  /*    const doc = {
       _type: 'order',
@@ -128,7 +126,10 @@ ${formatCartItems(cartItems)}
     try {
       await transporter.sendMail(options);
       console.log("E-mail odeslán na adresu:", email);
-      return { success: true };
+        return {
+                success: true,
+                clearCart: true
+            };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
       return fail(500,  { message: { success: false, display: "Chyba při odesílání e-mailu" } });

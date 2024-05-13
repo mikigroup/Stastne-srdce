@@ -1,12 +1,15 @@
 <script lang="ts">
+	import type { Actions } from "@sveltejs/kit";
 	import CartItemsStore from "../Stores/stores";
 	import { get } from "svelte/store";
 	import { page } from "$app/stores";
 	import client from "../../lib/sanityClient";
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
 
 	export let data;
+	export let form: Actions;
 
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
@@ -74,6 +77,13 @@
 			loading = false
 		}
 	}
+
+	onMount(() => {
+        if (data.clearCart) {
+            CartItemsStore.update(() => []);
+            goto('/thankyou');
+        }
+    });
 
 	/* async function sendOrderAndCreateDoc2() {
 		try {
@@ -153,6 +163,7 @@
 <main>
 	<section>
 		{#if $page.data.session}
+			<form method="POST" action="?/sendOrder">
 			<div
 				class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 			>
@@ -338,6 +349,7 @@
 							<div class="grid p-5 border-b-2">
 								<p><label for="txt">Poznámka</label></p>
 								<textarea
+									value={form?.txt ?? ""}																
 									class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 appearance-none focus:outline-none focus:border-green-600 mb-5"
 									id="txt"
@@ -384,7 +396,7 @@
 									>
 								{/if}
 								<Modal bind:showModal>
-									<form method="POST" action="?/sendOrder">
+								
 										<input type="hidden" name="cartItems" value={JSON.stringify($CartItemsStore)} />
 										<div class="">
 											<input
@@ -395,7 +407,7 @@
 												disabled={loading}
 											/>
 										</div>
-									</form>
+									
 								</Modal>
 							</div>
 						</div>
@@ -404,7 +416,8 @@
 					<div />
 				</div>
 			</div>
-		{:else}
+		</form>
+			{:else}
 			HA
 		{/if}
 	</section>
