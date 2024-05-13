@@ -1,37 +1,3 @@
-/* import client from "../../lib/sanityClient"
-
-export async function load() {
-	try {		
-	const data = await client.fetch("*[_type == "order"] | order(_createdAt desc) [0]")
-	console.log(data);
-		if (data) {			
-			return {
-				orders: data
-				
-			}
-		}
-		throw new Error("No order data found.")
-	} catch (error) {
-		console.error("Error:", error.message)
-		return {
-			status: 500,
-			body: new Error("Internal Server Error")
-		}
-	}
-}
- */
-
-// import { redirect } from "@sveltejs/kit";
-
-// /** @type {import("./$types").LayoutServerLoad} */
-
-/*
-export function load({ locals }) {
-	if (!locals.user) {
-		redirect(307, "/login");
-	}
-} */
-
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from "./$types";
 import client from '$lib/sanityClient';
@@ -47,24 +13,6 @@ const transporter = nodemailer.createTransport({
 				pass: "#QFUtwxDsQW5LEDT"
 			}
 		});
-
-
-  /*   export const actions = {
-  default: async ({ request, locals }) => {
-    const formData = await request.formData();
-    const inputValue = formData.get("inputValue");
-    console.log("Vstupní hodnota:", inputValue);
-
-    locals.inputValue = inputValue;
-
-    return {
-      status: 200,
-      body: {
-        success: true
-      }
-    };
-  }
-}; */
 
 export const actions: Actions = {
   sendOrder: async ({ locals: { supabase, safeGetSession }  }) => {    
@@ -85,10 +33,12 @@ export const actions: Actions = {
     const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
 
 
-    const fullname = `${data.first_name} ${data.last_name}`;
+    /* const fullname = `${data.first_name} ${data.last_name}`; */
     const email = session.user.email;
 
-    const doc = {
+    console.log(email)
+    console.log(orderNumber)
+ /*    const doc = {
       _type: 'order',
       itemsOrder: locals.cartItems,
       note: txt,
