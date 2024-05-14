@@ -14,7 +14,7 @@ export const actions: Actions = {
       const { error } = await supabase.auth.updateUser({ password: new_password });
       if (error) {
       console.error(error);
-      return fail(400, { message: { success: false, display: "Email není evidován." } });
+      return fail(400, { message: { success: false, display: "Nepodařilo se změnit heslo" } });
     } else {
         return { message: { success: true, display: "Heslo změněno" }};
     }
