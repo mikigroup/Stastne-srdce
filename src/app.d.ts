@@ -10,9 +10,13 @@ declare global {
       user: User | null
       cartItems: any[];
     }
-    // interface PageData {}
+    interface PageData {
+      session: Session | null
+      user: User | null
+      // interface Error {}
     // interface PageState {}
     // interface Platform {}
+  }
   }
 }
 

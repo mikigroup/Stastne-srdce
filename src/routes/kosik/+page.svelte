@@ -78,13 +78,6 @@
 		}
 	}
 
-	onMount(() => {
-        if (data.clearCart) {
-            CartItemsStore.update(() => []);
-            goto('/thankyou');
-        }
-    });
-
 	/* async function sendOrderAndCreateDoc2() {
 		try {
 			loading = true
@@ -153,7 +146,16 @@
 		}
 	}; */
 
-	let showModal = false
+	let showModal = false;
+	let formSubmitted = false;
+
+	if (form?.success) {
+		 CartItemsStore.update(() => []);
+     localStorage.removeItem('cartItems');
+     goto('/thankyou');
+	} else {
+		console.log("Chyba vyprázdnění localStorage")
+	}
 </script>
 
 <svelte:head>
@@ -163,7 +165,7 @@
 <main>
 	<section>
 		{#if $page.data.session}
-			<form method="POST" action="?/sendOrder">
+			<form method="POST" action="?/sendOrder" on:submit={() => formSubmitted = true}>
 			<div
 				class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
 			>

@@ -1,10 +1,6 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, type RequestHandler } from "@sveltejs/kit";
 
-export const GET = async (event) => {
-	const {
-		url,
-		locals: { supabase }
-	} = event;
+export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const code = url.searchParams.get('code') as string;
 	const next = url.searchParams.get('next') ?? '/';
 
@@ -15,5 +11,24 @@ export const GET = async (event) => {
     }
   }
 
-  throw redirect(303, '/auth/auth-code-error');
+  throw redirect(303, '/reset');
+ /*  const { error } = await supabase.auth.exchangeCodeForSession(code)
+   if (!error) {
+      throw redirect(303, '/reset');
+    } else {
+      throw redirect(303, '/');
+    } */
 };
+
+/* import { redirect, type RequestHandler } from '@sveltejs/kit'
+
+export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
+  const code = url.searchParams.get('code')
+
+  if (code) {
+    await supabase.auth.exchangeCodeForSession(code)
+  }
+
+  throw redirect(303, '/')
+}
+ */

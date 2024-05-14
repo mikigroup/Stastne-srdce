@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Actions } from '@sveltejs/kit'
-	export let form: Actions
+	import type { Actions } from "@sveltejs/kit";
+	export let form: Actions;
 	let error = '',
 		message = '',
 		loading = false,
@@ -15,11 +15,6 @@
 <section class="footer_fix2">
 	<form method="POST" class="" action="?/resetRequest">
 		<div class="pt-20 form-widget">
-			<!--  <img
-									class="w-32 rounded-lg shadow-lg md:w-56 floating-img"
-									width="200"
-									src="/"
-									alt="1" /> -->
 			<div
 				class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow h-80 sm:px-6 md:px-8 lg:px-10"
 			>
@@ -43,8 +38,7 @@
 							</path>
 						</svg>
 					</span>
-					<!-- <input bind:value={email} type="email" id="email" class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none form-control focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" placeholder="Email"/>                 -->
-					<!-- <input class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" name="email" type="email" label="Email address" placeholder="Zadej svoji mailovou adresu" icon="mail" bind:value={email} required/> -->
+			
 					<input
 						value={form?.email ?? ''}
 						type="email"

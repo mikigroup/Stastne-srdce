@@ -94,45 +94,34 @@ ${formatCartItems(cartItems)}
     `,
 };
 
- /*    const doc = {
+/*    const doc = {
       _type: 'order',
-      itemsOrder: locals.cartItems,
+      itemsOrder: cartItems,
       note: txt,
       timestamp: new Date().toISOString(),
       customer: fullname,
-      totalPrice: locals.totalPrice,
-      totalPieces: locals.totalPieces,
+      totalPrice: totalPrice,
+      totalPieces: totalPieces,
       email: email,
       orderNumber: orderNumber
-    };
+    }; */
 
-    const res = await client.create(doc);
-    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
-
-    await transporter.sendMail({
-      from: 'your-email@example.com',
-      to: email,
-      subject: `Objednávka č. ${orderNumber}`,
-      text: `
-        Děkujeme za vaši objednávku!
-        
-        Detaily objednávky:
-        Košík: ${JSON.stringify(locals.cartItems)}
-        Poznámka: ${txt}
-        Číslo objednávky: ${orderNumber}
-      `
-    }); */
+   /*  const res = await client.create(doc); 
+    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`); */
 
     try {
       await transporter.sendMail(options);
       console.log("E-mail odeslán na adresu:", email);
         return {
                 success: true,
-                clearCart: true
+                clearCart: true,
+                redirect: "/thankyou"
             };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
-      return fail(500,  { message: { success: false, display: "Chyba při odesílání e-mailu" } });
+      return fail(500,
+          { message:
+             { success: false, display: "Chyba při odesílání e-mailu" } });
     }
   },      
 };
