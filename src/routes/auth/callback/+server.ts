@@ -10,25 +10,5 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
       throw redirect(303, `/${next.slice(1)}`);
     }
   }
-
-  throw redirect(303, '/reset');
- /*  const { error } = await supabase.auth.exchangeCodeForSession(code)
-   if (!error) {
-      throw redirect(303, '/reset');
-    } else {
-      throw redirect(303, '/');
-    } */
+  throw redirect(303, '/');
 };
-
-/* import { redirect, type RequestHandler } from '@sveltejs/kit'
-
-export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
-  const code = url.searchParams.get('code')
-
-  if (code) {
-    await supabase.auth.exchangeCodeForSession(code)
-  }
-
-  throw redirect(303, '/')
-}
- */

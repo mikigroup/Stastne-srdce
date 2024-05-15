@@ -12,17 +12,18 @@
 	// console.log(data)
 	// console.log(data.session)
 
-	let uniqueOrders = []
-	let orders: any[] = []
-	let itemsOrder: any[] = []
-	let visible_jiri: any[] = []
-	let visible = false
+	let uniqueOrders = [];
+	let orders: any[] = [];
+	let itemsOrder: any[] = [];
 
-	const toggleVisible = () => {
-		visible = !visible
-	}
+    let visible = false;
 
-	orders.forEach((order, index) => (visible[index] = false))	
+    const toggleVisible = () => {
+        visible =!visible;
+    }
+
+/* 	orders.forEach((order, index) => (visible[index] = false))	 */
+
 	async function loadOrders(email: string) {
 		try {
 			let orders = await client.fetch(
@@ -44,65 +45,28 @@
 		} catch (error) {
 			console.error(`Error fetching orders: ${error}`)
 		}
-	})
+	});
 
 	
-	let profileForm: HTMLFormElement
-	let loading = false
-	let username: string = profile?.username ?? ""
+	let profileForm: HTMLFormElement;
+	let loading = false;
+	let username: string = profile?.username ?? "";
 	let first_name: string = profile?.first_name ?? "";
-	let last_name: string = profile?.last_name ?? ""
-	let telephone: string = profile?.telephone ?? ""	
-	let street: string = profile?.street ?? ""
-	let street_number: string = profile?.street_number ?? ""
-	let city: string = profile?.city ?? ""
-	let ico: string = profile?.ico ?? ""
-	let dic: string = profile?.dic ?? ""
-	let company: string = profile?.company ?? ""
+	let last_name: string = profile?.last_name ?? "";
+	let telephone: string = profile?.telephone ?? ""	;
+	let street: string = profile?.street ?? "";
+	let street_number: string = profile?.street_number ?? "";
+	let city: string = profile?.city ?? "";
+	let ico: string = profile?.ico ?? "";
+	let dic: string = profile?.dic ?? "";
+	let company: string = profile?.company ?? "";
 	
 	const handleSubmit: SubmitFunction = () => {
 		loading = true
 		return async () => {
 			loading = false
 		}
-	}
-
-	/* async function updateProfile(supabase) {
-		try {
-			loading = true
-			const { user } = session
-
-			const updates = {
-				id: user.id,
-				avatar_url: avatarUrl,
-				updated_at: new Date(),
-				first_name,
-				last_name,
-				telephone,
-				company_name,
-				street,
-				street_number,
-				city,
-				ico,
-				dic,
-				company,
-				username,
-				website
-			}
-
-			let { error } = await supabase.from("profiles").upsert(updates)
-
-			if (error) throw error
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message)
-			}
-		} finally {
-			loading = false
-		}
-	} */
-	//const email = session.user.email;
-	//console.log(email);
+	};
 </script>
 
 <svelte:head>
@@ -241,13 +205,12 @@
 							<hr class="w-32" />
 						</div>
 						<div class="mt-5" on:click={toggleVisible}>
-							{#if visible}
-								Méně{/if}
-							{#if !visible}
-								Více
-							{/if}
-						</div>
-						<div></div>
+							  {#if visible}
+                    Méně
+                {:else}
+                    Více
+                {/if}
+						</div>						
 						{#if visible}
 							<div class="flex flex-col my-2">
 								<div class="my-2">

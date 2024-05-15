@@ -1,7 +1,7 @@
-import { redirect } from "@sveltejs/kit"
-import type { Actions } from "./$types"
+import { redirect } from "@sveltejs/kit";
+import type { Actions } from "./$types";
  
- export const actions: Actions = {  
+/*  export const actions: Actions = {  
  signout: async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession()
     if (session) {
@@ -9,4 +9,4 @@ import type { Actions } from "./$types"
       throw redirect(303, "/")
     }
   }
-};
+}; */

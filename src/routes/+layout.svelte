@@ -1,41 +1,43 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
-	import './app.css'
-	import CartItemsStore from '../routes/Stores/stores'
-	import { page } from '$app/stores'
-	import { readable } from 'svelte/store'
-	import { goto, invalidate } from '$app/navigation';
-	import { onMount } from 'svelte'	
-	// import 'animate.css';
+	import { slide } from "svelte/transition";
+	import "./app.css";	
+	import CartItemsStore from "../routes/Stores/stores";	
+	import { page } from "$app/stores";
+	import { readable } from "svelte/store";	
+	import { goto, invalidate } from "$app/navigation";
+	import { onMount } from "svelte";
+	import type { Actions } from "./$types";
+	import { redirect } from "@sveltejs/kit";		
+	// import "animate.css";
 	
-	export let data
-	let { supabase, session } = data
-	$: ({ supabase, session  } = data)
+	export let data;
+	let { supabase, session } = data;
+	$: ({ supabase, session  } = data);
 
-onMount(() => {
-  const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
-    if (event === 'SIGNED_OUT' && !newSession) {
-      setTimeout(() => {
-        if ($page.url.pathname !== '/login') {
-          goto('/', { invalidateAll: true });
-        }
-      });
+
+	$: signOut = async ( ) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error logging out:', error);
+    } else {      
+      window.location.href = '/';
     }
-    if (newSession?.expires_at !== session?.expires_at) {
-      invalidate('supabase:auth');
+  }
+
+/* 	 signout: async ({ locals: { supabase, safeGetSession } }) => {
+    const { session } = await safeGetSession()
+    if (session) {
+      await supabase.auth.signOut()
+      throw redirect(303, "/")
     }
-  });
+  } */
 
-  return () => data.subscription.unsubscribe();
-});
+	let src = "/android-chrome-192x192.png"
 
-
-	let src = '/android-chrome-192x192.png'
-
-	const formatter = new Intl.DateTimeFormat('en', {
+	const formatter = new Intl.DateTimeFormat("en", {
 		hour12: false,
-		hour: 'numeric',
-		minute: '2-digit'
+		hour: "numeric",
+		minute: "2-digit"
 	})
 
 	const time = readable(new Date(), function start(set) {
@@ -55,12 +57,12 @@ onMount(() => {
   }
 
 	let loading = false
-	async function signOut() {
+	/* async function signOut() {
 		try {
 			loading = true
 			let { error } = await supabase.auth.signOut()
 			if (error) throw error
-			window.location.href = '/';
+			window.location.href = "/";
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message)
@@ -68,7 +70,7 @@ onMount(() => {
 		} finally {
 			loading = false			
 		}
-	}
+	} */
 
 	$: totalPieces =
 		$CartItemsStore.length &&		
@@ -125,7 +127,7 @@ onMount(() => {
           <p class="font-semibold">Ahoj {usertest}</p> 
         </div> -->
 
-					<!-- 	<a activeClass={$page.url.pathname === '/orders'} href="/orders">
+					<!-- 	<a activeClass={$page.url.pathname === "/orders"} href="/orders">
 						<Button outline color="green" pill={true}>Objednávky</Button>
 					</a> -->
 
@@ -321,7 +323,7 @@ onMount(() => {
 	}
 
 	.navItem::after {
-		content: '';
+		content: "";
 		background: #d2691e;
 		height: 1px;
 		position: absolute;

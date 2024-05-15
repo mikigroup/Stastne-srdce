@@ -30,6 +30,9 @@ export const actions: Actions = {
   },
 } */
 
+
+
+
 /* import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
@@ -73,30 +76,6 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 };
  */
 
-
-/* import { error, fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
-// import { setError, superValidate } from "sveltekit-superforms/server";
-// import { emailSchema, passwordSchema, profileSchema } from "$lib/schemas";
-//import { getSubscriptionTier } from "$lib/server/subscriptions";
-//import { handleLoginRedirect } from "$lib/helpers";
-
-export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.getSession();
-	
-	async function getUserProfile() {
-		const { error: profileError, data: profile } = await event.locals.supabase
-			.from("profiles")
-			.select("*")
-			.limit(1)
-			.single();
-
-		if (profileError) {
-			throw error(500, "Error retreiving your profile, please try again later.");
-		}
-		return profile;
-	}
-}; */
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 

@@ -11,7 +11,7 @@ v1.03
 - přidány efekty
 
 v1.04
-- přechod komplet na SSR
+- přechod na SSR (soc. login není)
 - animace mob. menu
 - upraven kosik při hodnotě 0 qty = delete
 - fix mob. tlačítka v menu

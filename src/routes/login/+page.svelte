@@ -3,10 +3,13 @@
 	import { fade } from "svelte/transition";  
   import type { Actions } from "@sveltejs/kit";	
   export let form: Actions;
-	// console.log(data)
-	// console.log(data.session)
+	export let data;
+	let { session, supabase, user } = data;
+	$: ({ session, supabase, user } = data);
+	
+	let loading = false
 
-	/*  async function signInWithGoogle() {
+ async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
@@ -16,7 +19,7 @@
       },
     },
   })
-} */
+}
 </script>
 
 <svelte:head>
@@ -140,20 +143,7 @@
 						<div
 							class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10"
 						>
-							<!-- 	<div class="">
-								<button
-									on:click={() => {
-										signInWithGoogle()
-									}}
-									value={loading ? "Loading" : "Log in with Google"}
-									disabled={loading}
-									id="btn-success"
-									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-								>
-									<img src="/google.svg" alt="" width="40" height="40" />
-								</button>
-							</div> -->
+					
 							{#if form?.message}
   <p class="error">{form.message.display}</p>
 {/if}
@@ -162,5 +152,19 @@
 				{/if}
 			</div>
 		</form>
+
+							<div class="">
+								<button
+									on:click={signInWithGoogle}									
+									value={loading ? "Loading" : "Log in with Google"}
+									disabled={loading}
+									id="btn-success"
+									type="submit"
+									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
+								>
+									<img src="/google.svg" alt="" width="40" height="40" />
+								</button>
+							</div> 
+						
 	</div>
 </section>
