@@ -60,7 +60,7 @@
 <section>
 
 
-<form method="POST" action="?/login" class="pt-20">
+<!-- <form method="POST" action="?/signUp" class="pt-20">
 	<label>
 		Email
 		<input name="email" type="email" />
@@ -70,22 +70,21 @@
 		<input name="password" type="password" />
 	</label>	
 	<button formaction="?/signup">Sign up</button>
-</form>
+</form> -->
 
-	<!-- <div class="pt-20 footer_fix">
+	<div class="pt-20 footer_fix">
 		<div
 			class="flex flex-col max-w-md px-4 pb-2 mx-auto mt-20 bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
 			<div
 				class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl ">
 				Vytvoření nového účtu
-			</div
-			<span
-				class="justify-center text-sm text-center text-gray-500 flex-items-center">
+			</div>
+			<span class="justify-center text-sm text-center text-gray-500 flex-items-center">
 				Máte již účet?
 				<a href="/login" class="text-sm text-blue-500 underline hover:text-blue-700">Přihlášení</a>
 			</span>
 			<div class="mt-8">
-				<form on:submit|preventDefault={handleSignup}>
+					<form method="POST" action="?/signUp" class="pt-20">
 					<div class="flex flex-col mb-2">
 						<div class="relative flex">
 							<span
@@ -187,11 +186,9 @@
 						</div>
 					{/if}
 				</form>
-				
-
 			</div>
 		</div>
-		<div class="form-widget">
+		<!-- <div class="form-widget">
 					<div
 						class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
 						<form on:submit|preventDefault={signInWithGoogle}>
@@ -207,7 +204,7 @@
 							</div>
 						</form>
 					</div>
-				</div>
-	</div> -->
+				</div> -->
+	</div>
 
 </section>
