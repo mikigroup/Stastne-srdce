@@ -7,10 +7,9 @@
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
 
-	
 	let email = "@";
 	let loading = false;
-	let message = { success: '', display: '' };
+	let message = { success: "", display: "" };
 
 	/* const handleSignup = async () => {
 		if (password != confirmpassword) {
@@ -52,7 +51,6 @@
     },
   })
 } */
-	
 </script>
 
 <svelte:head>
@@ -60,9 +58,7 @@
 	<meta name="description" content="SingUp" />
 </svelte:head>
 <section>
-
-
-<!-- <form method="POST" action="?/signUp" class="pt-20">
+	<!-- <form method="POST" action="?/signUp" class="pt-20">
 	<label>
 		Email
 		<input name="email" type="email" />
@@ -78,15 +74,19 @@
 		<div
 			class="flex flex-col max-w-md px-4 pb-2 mx-auto mt-20 bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
 			<div
-				class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl ">
+				class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl">
 				Vytvoření nového účtu
 			</div>
-			<span class="justify-center text-sm text-center text-gray-500 flex-items-center">
+			<span
+				class="justify-center text-sm text-center text-gray-500 flex-items-center">
 				Máte již účet?
-				<a href="/login" class="text-sm text-blue-500 underline hover:text-blue-700">Přihlášení</a>
+				<a
+					href="/login"
+					class="text-sm text-blue-500 underline hover:text-blue-700"
+					>Přihlášení</a>
 			</span>
 			<div class="mt-8">
-					<form method="POST" action="?/signUp" class="">
+				<form method="POST" action="?/signUp" class="">
 					<div class="flex flex-col mb-2">
 						<div class="relative flex">
 							<span
@@ -106,15 +106,14 @@
 										41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z" />
 								</svg>
 							</span>
-							<input								
+							<input
 								value={form?.email ?? "@"}
 								type="email"
-								id="email"								
+								id="email"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
-								required
-								/>
+								required />
 						</div>
 					</div>
 					<div class="flex flex-col mb-2">
@@ -135,14 +134,13 @@
 								</svg>
 							</span>
 							<input
-								value={form?.password ?? ""}	
+								value={form?.password ?? ""}
 								type="password"
 								id="password"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								placeholder="Heslo (min 6 znaků)"
-								minlength="6" 
-								required
-								/>
+								minlength="6"
+								required />
 						</div>
 					</div>
 					<div class="flex flex-col mb-2">
@@ -163,27 +161,27 @@
 								</svg>
 							</span>
 							<input
-								value={form?.repassword ?? ""}																		
+								value={form?.repassword ?? ""}
 								type="repassword"
 								id="repassword"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								name="potvrzenihesla"
 								placeholder="Potvrzení hesla (napiš stejné heslo)"
-								minlength="6" 
-								required
-								/>
+								minlength="6"
+								required />
 						</div>
 					</div>
 					<div class="flex w-full my-4">
 						<button
 							type="submit"
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-							Registrace	
+							Registrace
 						</button>
-
 					</div>
 					{#if message.success != null}
-						<div class="alert {message.success ? 'alert-success' : 'alert-danger'}" role="alert">
+						<div
+							class="alert {message.success ? 'alert-success' : 'alert-danger'}"
+							role="alert">
 							{message.display}
 						</div>
 					{/if}
@@ -208,5 +206,4 @@
 					</div>
 				</div> -->
 	</div>
-
 </section>
