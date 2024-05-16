@@ -1,25 +1,25 @@
-<script lang="ts">	
-	import { page } from "$app/stores";
-	import { fade } from "svelte/transition";  
-  import type { Actions } from "@sveltejs/kit";	
-  export let form: Actions;
+<script lang="ts">
+	import { page } from "$app/stores"
+	import { fade } from "svelte/transition"
+	import type { Actions } from "@sveltejs/kit"
+	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
-	
+
 	let loading = false
 
- async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent",
-      },
-    },
-  })
-}
+	async function signInWithGoogle() {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				queryParams: {
+					access_type: "offline",
+					prompt: "consent"
+				}
+			}
+		})
+	}
 </script>
 
 <svelte:head>
@@ -29,10 +29,7 @@
 
 <section class="footer_fix">
 	<div class="">
-		<form method="POST"
-			class=""			
-			action="?/handleLogin"						
-		>
+		<form method="POST" class="" action="?/handleLogin">
 			<div class="pt-20 form-widget">
 				<div
 					class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10"
@@ -126,11 +123,11 @@
 								</div>
 							</div>
 
-							<div class="flex w-full">									
+							<div class="flex w-full">
 								<button
 									type="submit"
-									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"								
-								>Přihlásit se									
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
+									Přihlásit se
 								</button>
 							</div>
 
@@ -143,28 +140,25 @@
 						<div
 							class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10"
 						>
-					
+							<div class="">
+								<button
+									on:click={signInWithGoogle}
+									value={loading ? "Loading" : "Log in with Google"}
+									disabled={loading}
+									id="btn-success"
+									type="submit"
+									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800"
+								>
+									<img src="/google.svg" alt="" width="40" height="40" />
+								</button>
+							</div>
 							{#if form?.message}
-  <p class="error">{form.message.display}</p>
-{/if}
+								<p class="error">{form.message.display}</p>
+							{/if}
 						</div>
 					</div>
 				{/if}
 			</div>
 		</form>
-
-							<div class="">
-								<button
-									on:click={signInWithGoogle}									
-									value={loading ? "Loading" : "Log in with Google"}
-									disabled={loading}
-									id="btn-success"
-									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-								>
-									<img src="/google.svg" alt="" width="40" height="40" />
-								</button>
-							</div> 
-						
 	</div>
 </section>

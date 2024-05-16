@@ -15,14 +15,15 @@
 	let uniqueOrders = [];
 	let orders: any[] = [];
 	let itemsOrder: any[] = [];
+	let visible_jiri = [];
 
-    let visible = false;
+  let visible = false;
 
     const toggleVisible = () => {
         visible =!visible;
     }
 
-/* 	orders.forEach((order, index) => (visible[index] = false))	 */
+ 	// orders.forEach((order, index) => (visible[index] = false))
 
 	async function loadOrders(email: string) {
 		try {
@@ -41,6 +42,7 @@
 		const xemail = session.user.email
 		try {
 			orders = await loadOrders(xemail)
+			visible_jiri = new Array(orders.length).fill(false);
 			//console.log(`Fetched orders: ${JSON.stringify(orders)}`)
 		} catch (error) {
 			console.error(`Error fetching orders: ${error}`)
@@ -328,7 +330,7 @@
 						<div class="mt-10">
 							<button
 								type="submit"
-								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
 								disabled={loading}
 							>
 								{loading ? "Ukládá se..." : "Uložit"}
@@ -343,7 +345,7 @@
 			<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Objednávky
 			</h1>
-			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+			<div class="max-w-4xl p-5 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
 				<div class="px-5 border-2 rounded-md bg-slate-50">
 					{#if orders && orders.length > 0}
 						<ul>
@@ -351,7 +353,7 @@
 								<li class="text-lg transition duration-300 ease-in-out">
 									<br />
 									<div
-										class="p-5 text-center bg-white border-2 rounded-md"
+										class="p-5 text-center bg-white border-2 rounded-md hover:bg-slate-300"
 										on:click={() => (visible_jiri[index] = !visible_jiri[index])}
 									>
 										Objednávka: <span class="font-semibol d">{order.orderNumber}</span>
@@ -363,7 +365,7 @@
 										})}
 									</div>
 									{#if visible_jiri[index]}
-										<div class="p-5 border-2 rounded-md" in:fade|global={{ duration: 500 }}>
+										<div class="p-5 border-2 rounded-md" in:fade|global={{ duration: 500 }} out:fade={{duration: 200}}>
 											<ul>
 												<br />
 												{#each order.itemsOrder as item, i (i)}
