@@ -12,12 +12,11 @@
 	// console.log(data)
 	// console.log(data.session)
 
-	let uniqueOrders = [];
-	let orders: any[] = [];
-	let itemsOrder: any[] = [];
-	let visible_jiri = [];
-
-  let visible = false;
+	let uniqueOrders: any[];
+	let orders: any[];
+	let itemsOrder: any[];
+	let visible_jiri: boolean[];
+  let visible: boolean = false;
 
     const toggleVisible = () => {
         visible =!visible;
@@ -38,16 +37,22 @@
 		}
 	}
 
-	onMount(async () => {
-		const xemail = session.user.email
-		try {
-			orders = await loadOrders(xemail)
-			visible_jiri = new Array(orders.length).fill(false);
-			//console.log(`Fetched orders: ${JSON.stringify(orders)}`)
-		} catch (error) {
-			console.error(`Error fetching orders: ${error}`)
-		}
-	});
+onMount(async () => {
+    const xemail = session.user.email;
+    if (!xemail) {
+        console.error("Email není definován");
+        // Zde můžete přidat další logiku pro zpracování situace, kdy email není definován
+        return; // Ukončíme funkci, pokud email není definován
+    }
+    try {
+        orders = await loadOrders(xemail);
+        visible_jiri = new Array(orders.length).fill(false);
+        //console.log(`Fetched orders: ${JSON.stringify(orders)}`);
+    } catch (error) {
+        console.error(`Error fetching orders: ${error}`);
+    }
+});
+
 
 	
 	let profileForm: HTMLFormElement;
