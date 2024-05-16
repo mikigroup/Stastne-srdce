@@ -1,16 +1,18 @@
-<script>
-  // import { supabaseClient } from "$lib/supabaseClient";  
+<script lang="ts">
+	import { page } from "$app/stores";
+	import { fade } from "svelte/transition";
+	import type { Actions } from "@sveltejs/kit";
+	export let form: Actions;
 	export let data;
+	let { session, supabase, user } = data;
+	$: ({ session, supabase, user } = data);
 
-	let { session, supabase } = data
-	$: ({ session, supabase } = data)
 	
 	let email = "@";
-	let password, confirmpassword;
 	let loading = false;
 	let message = { success: '', display: '' };
 
-	const handleSignup = async () => {
+	/* const handleSignup = async () => {
 		if (password != confirmpassword) {
 			message = {
 				success: '',
@@ -36,7 +38,7 @@
 		} finally {
 			loading = false;
 		}
-	};
+	}; */
 
 	/* 
  async function signInWithGoogle() {
@@ -84,7 +86,7 @@
 				<a href="/login" class="text-sm text-blue-500 underline hover:text-blue-700">Přihlášení</a>
 			</span>
 			<div class="mt-8">
-					<form method="POST" action="?/signUp" class="pt-20">
+					<form method="POST" action="?/signUp" class="">
 					<div class="flex flex-col mb-2">
 						<div class="relative flex">
 							<span
@@ -104,11 +106,11 @@
 										41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z" />
 								</svg>
 							</span>
-							<input
-								bind:value={email}
+							<input								
+								value={form?.email ?? "@"}
 								type="email"
 								id="email"								
-								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
 								required
@@ -133,10 +135,10 @@
 								</svg>
 							</span>
 							<input
-								bind:value={password}
+								value={form?.password ?? ""}	
 								type="password"
 								id="password"
-								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								placeholder="Heslo (min 6 znaků)"
 								minlength="6" 
 								required
@@ -161,10 +163,10 @@
 								</svg>
 							</span>
 							<input
-								bind:value={confirmpassword}
-								type="password"
-								id="confirmpassword"
-								class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+								value={form?.repassword ?? ""}																		
+								type="repassword"
+								id="repassword"
+								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								name="potvrzenihesla"
 								placeholder="Potvrzení hesla (napiš stejné heslo)"
 								minlength="6" 
@@ -176,7 +178,7 @@
 						<button
 							type="submit"
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-							Registrace
+							Registrace	
 						</button>
 
 					</div>

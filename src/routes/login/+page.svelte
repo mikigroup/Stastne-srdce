@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { page } from "$app/stores"
-	import { fade } from "svelte/transition"
-	import type { Actions } from "@sveltejs/kit"
+	import { page } from "$app/stores";
+	import { fade } from "svelte/transition";
+	import type { Actions } from "@sveltejs/kit";
 	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
 
-	let loading = false
+	let loading = false;
 
 	async function signInWithGoogle() {
 		const { data, error } = await supabase.auth.signInWithOAuth({
@@ -18,7 +18,7 @@
 					prompt: "consent"
 				}
 			}
-		})
+		});
 	}
 </script>
 
@@ -75,7 +75,7 @@
 										type="email"
 										name="email"
 										id="email"
-										class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
+										class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 										required
 										placeholder="Email"
 									/>
@@ -106,7 +106,7 @@
 										type="password"
 										name="password"
 										id="password"
-										class="w-full px-4 py-2 text-base text-center bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
+										class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 										required
 										placeholder="Heslo"
 									/>
@@ -126,7 +126,8 @@
 							<div class="flex w-full">
 								<button
 									type="submit"
-									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
+								>
 									Přihlásit se
 								</button>
 							</div>
