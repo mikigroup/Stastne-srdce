@@ -39,18 +39,17 @@
 		}
 	}; */
 
-
- async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  })
-}
+	async function signInWithGoogle() {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				queryParams: {
+					access_type: "offline",
+					prompt: "consent"
+				}
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -98,6 +97,7 @@
 								value={form?.email ?? "@"}
 								type="email"
 								id="email"
+								name="email"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
@@ -125,6 +125,7 @@
 								value={form?.password ?? ""}
 								type="password"
 								id="password"
+								name="password"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								placeholder="Heslo (min 6 znaků)"
 								minlength="6"
@@ -152,8 +153,8 @@
 								value={form?.repassword ?? ""}
 								type="password"
 								id="repassword"
-								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								name="repassword"
+								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"								
 								placeholder="Potvrzení hesla (napiš stejné heslo)"
 								minlength="6"
 								required />
@@ -166,35 +167,30 @@
 							Registrace
 						</button>
 					</div>
-					{#if message.success != null}
-						<div
-							class="alert {message.success ? 'alert-success' : 'alert-danger'}"
-							role="alert">
-							{message.display}
+				{#if form?.message}
+						<div class="flex w-full p-2 my-4 border rounded-lg">
+							<p class="error">{form.message.display}</p>
 						</div>
 					{/if}
 				</form>
 			</div>
 		</div>
-		 <div class="form-widget">
-					<div
-						class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
-						<form on:submit|preventDefault={signInWithGoogle}>
-							<div class="">
-								<button
-									value={loading ? 'Loading' : 'Log in with Google'}
-									disabled={loading}
-									id="btn-success"
-									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
-									<img src="/google.svg" alt="" width="40" height="40" />
-								</button>
-							</div>
-								{#if form?.message}
-								<p class="error">{form.message.display}</p>
-							{/if}
-						</form>
-					</div>
-				</div>
+		<div class="form-widget">
+			<div
+				class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
+				<form on:submit|preventDefault={signInWithGoogle}>
+					<div class="">
+						<button
+							value={loading ? "Loading" : "Log in with Google"}
+							disabled={loading}
+							id="btn-success"
+							type="submit"
+							class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
+							<img src="/google.svg" alt="" width="40" height="40" />
+						</button>					
+					</div>					
+				</form>
+			</div>
+		</div>
 	</div>
 </section>

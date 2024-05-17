@@ -126,7 +126,7 @@
 								<p class="pt-5 text-lg text-center md:text-left">Zpráva</p>
 							</label>
 							<textarea
-								value={form?.message ?? ""}								
+								value={form?.message ?? ""}
 								name="message"
 								id="message"
 								rows="6"
@@ -139,11 +139,11 @@
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
 							Odeslat
 						</button>
-						<div class="flex">
-							{#if form?.message}
+						{#if form?.message}
+							<div class="flex w-full p-2 my-4 border rounded-lg">
 								<p class="error">{form.message.display}</p>
-							{/if}
-						</div>
+							</div>
+						{/if}
 					</div>
 				</form>
 			</div>
