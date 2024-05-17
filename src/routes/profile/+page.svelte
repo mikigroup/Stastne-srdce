@@ -211,11 +211,11 @@ onMount(async () => {
 							</div>
 							<hr class="w-32" />
 						</div>
-						<div class="mt-5" on:click={toggleVisible}>
+						<div class="flex justify-center mt-5" on:click={toggleVisible}>
 							  {#if visible}
-                    Méně
+                   <div><p class="w-24 cursor-pointer">Méně</p></div>
                 {:else}
-                    Více
+                    <div><p class="w-24 cursor-pointer">Více</p></div>
                 {/if}
 						</div>						
 						{#if visible}

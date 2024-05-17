@@ -6,7 +6,7 @@ signUp: async ({ request, locals: { supabase } }) => {
     const formData = await request.formData()
     const email = formData.get("email") as string
     const password = formData.get("password") as string
-    const repassword = formData.get("repassword") as string
+    const repassword = formData.get("repassword") as string    
 
    if (password !== repassword) {
       return fail(400, { message: { success: false, display: "Hesla nejsou stejná" } });
@@ -14,12 +14,12 @@ signUp: async ({ request, locals: { supabase } }) => {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) {
       console.error(error);
-      return fail(400, { message: { success: false, display: "Chyba" } });
+      return fail(400, { message: { success: false, display: "Chyba dotazu" } });
     } else {
-        redirect(303, "/jidelnicek");
-    }
-     }
+        return { message: { success: true, display: "Do emailové schránky jsme ti poslali instrukce" }};
       }
+     }
+   }
 };
 
 

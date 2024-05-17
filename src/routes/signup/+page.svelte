@@ -7,7 +7,6 @@
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
 
-	let email = "@";
 	let loading = false;
 	let message = { success: "", display: "" };
 
@@ -110,6 +109,7 @@
 								value={form?.email ?? "@"}
 								type="email"
 								id="email"
+								name="email"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								pattern="[^@]+@[^\.]+\..+"
 								placeholder="Email"
@@ -137,6 +137,7 @@
 								value={form?.password ?? ""}
 								type="password"
 								id="password"
+								name="password"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
 								placeholder="Heslo (min 6 znaků)"
 								minlength="6"
@@ -162,10 +163,10 @@
 							</span>
 							<input
 								value={form?.repassword ?? ""}
-								type="repassword"
+								type="password"
 								id="repassword"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-aceholder-gray-400 focus:outline-none focus:border-green-600"
-								name="potvrzenihesla"
+								name="repassword"
 								placeholder="Potvrzení hesla (napiš stejné heslo)"
 								minlength="6"
 								required />
@@ -178,11 +179,9 @@
 							Registrace
 						</button>
 					</div>
-					{#if message.success != null}
-						<div
-							class="alert {message.success ? 'alert-success' : 'alert-danger'}"
-							role="alert">
-							{message.display}
+						{#if form?.message}
+						<div class="flex w-full p-2 my-4 border rounded-lg">
+							<p class="error">{form.message.display}</p>
 						</div>
 					{/if}
 				</form>

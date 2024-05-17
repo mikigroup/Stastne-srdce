@@ -18,5 +18,6 @@ v1.04
 - redesign kontakt page a přechození na SMTP
 - vylepšená šablona emailu
 - lepší zabezpečení
+- coookie dle EU legislativy
 
 

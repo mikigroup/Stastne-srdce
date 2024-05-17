@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { slide } from "svelte/transition";
 	import "./app.css";	
+	import "./banner.css";
 	import CartItemsStore from "../routes/Stores/stores";	
 	import { page } from "$app/stores";
 	import { readable } from "svelte/store";	
-	import { goto, invalidate } from "$app/navigation";
-	import { onMount } from "svelte";
-	import type { Actions } from "./$types";
-	import { redirect } from "@sveltejs/kit";		
-	// import "animate.css";
+	import GDPR from "$lib/gdpr/Gdpr.svelte";
+				
 	
 	export let data;
 	let { supabase, session } = data;
@@ -257,6 +255,9 @@
 
 <div class="pt-5 mt-10" />
 <slot class="mt-10" />
+
+<GDPR cookieName="gdpr" />
+<!-- <GdprBanner bind:this={gdprBanner} cookieName="props.beyonk_gdpr" {...props} on:analytics={initAnalytics} /> -->
 
 <footer class="">
 	<div class="grid p-4 mt-40 text-gray-500 border-2 rounded-lg md:grid-cols-5 md:mx-4">
