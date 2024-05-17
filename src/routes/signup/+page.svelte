@@ -38,18 +38,17 @@
 		}
 	}; */
 
-	/* 
- async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  })
-} */
+	async function signInWithGoogle() {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				queryParams: {
+					access_type: "offline",
+					prompt: "consent"
+				}
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -57,18 +56,6 @@
 	<meta name="description" content="SingUp" />
 </svelte:head>
 <section>
-	<!-- <form method="POST" action="?/signUp" class="pt-20">
-	<label>
-		Email
-		<input name="email" type="email" />
-	</label>
-	<label>
-		Password
-		<input name="password" type="password" />
-	</label>	
-	<button formaction="?/signup">Sign up</button>
-</form> -->
-
 	<div class="pt-20 footer_fix">
 		<div
 			class="flex flex-col max-w-md px-4 pb-2 mx-auto mt-20 bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
@@ -187,22 +174,22 @@
 				</form>
 			</div>
 		</div>
-		<!-- <div class="form-widget">
-					<div
-						class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
-						<form on:submit|preventDefault={signInWithGoogle}>
-							<div class="">
-								<button
-									value={loading ? 'Loading' : 'Log in with Google'}
-									disabled={loading}
-									id="btn-success"
-									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2">
-									<img src="/google.svg" alt="" width="40" height="40" />
-								</button>
-							</div>
-						</form>
-					</div>
-				</div> -->
+		<div class="form-widget">
+			<div
+				class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
+				<form on:submit|preventDefault={signInWithGoogle}>
+					<div class="">
+						<button
+							value={loading ? "Loading" : "Log in with Google"}
+							disabled={loading}
+							id="btn-success"
+							type="submit"
+							class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
+							<img src="/google.svg" alt="" width="40" height="40" />
+						</button>					
+					</div>					
+				</form>
+			</div>
+		</div>
 	</div>
 </section>
