@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { enhance } from "$app/forms";
+	import { enhance } from "$app/forms";1
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import client from "../../lib/sanityClient";
 	import { fade } from "svelte/transition";

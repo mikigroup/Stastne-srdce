@@ -22,8 +22,7 @@ export const actions: Actions = {
         console.log('Registrovaný uživatel role:', user.role);
          if (user.role === "") {
           return fail(400, { message: { success: false, display: "Tento e-mail je již registrován." } });
-        } else {
-          // Uživatel je nově registrován
+        } else {          
           return { message: { success: true, display: "Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte." }};
         }
       }

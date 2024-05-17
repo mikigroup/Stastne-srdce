@@ -1,41 +1,11 @@
 <script lang="ts">
-	import { page } from "$app/stores";
-	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);     
-	let loading = false;
-//	let message = { success: "", display: "" };
-
-	/* const handleSignup = async () => {
-		if (password != confirmpassword) {
-			message = {
-				success: '',
-				display: 'Heslo a potvrzovací heslo není stejné, zadejte je prosím znovu'
-			};
-			return;
-		}
-
-		try {
-			loading = true;
-			const { error } = await supabase.auth.signUp({ email, password });
-			console.log(error);
-			if (error) throw error;
-			message = {
-				success: true,
-				display:
-					'Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte.'
-			};
-		} catch (error) {
-			console.log(error);
-			let errorMsg = error.error_description || error.message;
-			message = { success: false, display: errorMsg };
-		} finally {
-			loading = false;
-		}
-	}; */
+	
+	let loading = false;	
 
 	async function signInWithGoogle() {
 		const { data, error } = await supabase.auth.signInWithOAuth({
@@ -158,12 +128,14 @@
 								required />
 						</div>
 					</div>
-					<div class="flex w-full my-4">
-						<button
-							type="submit"
-							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-							Registrace
-						</button>
+					<div class="flex w-full my-4">						
+							<button
+								type="submit"
+								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
+								disabled={loading}
+							>
+								{loading ? "Probíhá registrace..." : "Registrovat"}
+							</button>
 					</div>
 						{#if form?.message}
 						<div class="flex w-full p-2 my-4 border rounded-lg">
