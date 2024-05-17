@@ -8,6 +8,8 @@ signUp: async ({ request, locals: { supabase } }) => {
     const password = formData.get("password") as string
     const repassword = formData.get("repassword") as string
 
+  console.log(email, password, repassword)
+
    if (password !== repassword) {
       return fail(400, { message: { success: false, display: "Hesla nejsou stejná" } });
     } else {
@@ -16,7 +18,7 @@ signUp: async ({ request, locals: { supabase } }) => {
       console.error(error);
       return fail(400, { message: { success: false, display: "Chyba" } });
     } else {
-        redirect(303, "/jidelnicek");
+        return { message: { success: true, display: "Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte." }};        
     }
      }
       }

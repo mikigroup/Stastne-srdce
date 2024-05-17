@@ -94,18 +94,16 @@
 				<p class="mt-3 text-center">
 					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
+					<span class="text-red-500"><strong>POZOR Změna čísla účtu!</strong></span>
 					<br />
 					<strong>
-						Platbu můžete provést přes účet 43-6168890227/0100, terminálem platební nebo
-						stravenkovou kartou</strong
-					>, vždy ale jen po předchozí domluvě na emailu nebo telefonicky.
-					<strong>Platba v hotovosti je stále možná a vítána.</strong>
-					Pokud potřebujete fakturu, dejte vědět.
+						Platbu můžete provést přes účet <span class="text-red-500">131-2288130267/0100</span>. Platba v hotovosti je
+					stále možná a vítána.</strong> Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky
+					Poslední roky ve <span class="text-red-500">Šťastném srdci</span> funguje Pořadník zájemců. V případě, že se chcete stát strávníky
 					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete
 					sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme
 					zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás
