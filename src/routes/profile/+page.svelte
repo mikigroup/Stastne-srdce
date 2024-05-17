@@ -41,8 +41,7 @@ onMount(async () => {
     const xemail = session.user.email;
     if (!xemail) {
         console.error("Email není definován");
-        // Zde můžete přidat další logiku pro zpracování situace, kdy email není definován
-        return; // Ukončíme funkci, pokud email není definován
+        return; 
     }
     try {
         orders = await loadOrders(xemail);
@@ -302,8 +301,8 @@ onMount(async () => {
 										<div class="w-full basis-1/2">
 											<input
 											value={form?.ico ?? ico}												
-												 type="text"
-												 name="ico"
+												type="text"
+												name="ico"
 												id="ico"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="IČO"

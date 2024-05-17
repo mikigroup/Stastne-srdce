@@ -5,10 +5,9 @@
 	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
-
+	$: ({ session, supabase, user } = data);     
 	let loading = false;
-	let message = { success: "", display: "" };
+//	let message = { success: "", display: "" };
 
 	/* const handleSignup = async () => {
 		if (password != confirmpassword) {
