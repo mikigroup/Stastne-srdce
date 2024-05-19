@@ -58,7 +58,7 @@
     'Abychom poskytli co nejlepší služby, používáme k ukládání a/nebo přístupu k informacím o zařízení, technologie jako jsou soubory cookies. Souhlas s těmito technologiemi nám umožní zpracovávat údaje, jako je chování při procházení nebo jedinečná ID na tomto webu. Nesouhlas nebo odvolání souhlasu může nepříznivě ovlivnit určité vlastnosti a funkce. Zde jsou  <a href="/gdpr">zásady použítí</a>.';
 
   export let cookieConfig = {
-      domain: "localhost", //domain: "stastnesrdce.cz",
+      domain: "stastnesrdce.cz",
       path: "/", 
   };
 

@@ -302,11 +302,6 @@
 		right: 0;
 	}
 
-	.navItem:hover ~ a::after {
-		left: 0;
-		right: 100%;
-	}
-
 	.navItem:hover::after {
 		left: 0;
 		right: 0;

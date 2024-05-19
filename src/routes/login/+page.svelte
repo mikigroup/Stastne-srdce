@@ -72,7 +72,7 @@
 										</svg>
 									</span>
 									<input
-										value={form?.email ?? ""}
+										value={form?.email ?? "@"}
 										type="email"
 										name="email"
 										id="email"
