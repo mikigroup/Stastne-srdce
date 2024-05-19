@@ -1,3 +1,4 @@
+import { sentrySvelteKit } from "@sentry/sveltekit";
 /* import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 
@@ -13,5 +14,10 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
-  plugins: [sveltekit()]
+  plugins: [sentrySvelteKit({
+   sourceMapsUploadOptions: {
+    org: "stastnesrdce",
+    project: "javascript-svelte"
+   }
+  }), sveltekit()]
 });

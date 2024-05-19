@@ -1,6 +1,6 @@
 {
 	"name": "Stastne srdce",
-	"version": "1.02",
+	"version": "1.04",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -32,11 +32,12 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@beyonk/gdpr-cookie-consent-banner": "^12.1.0",
 		"@sanity/client": "^5.4.2",
+		"@sentry/sveltekit": "^8.2.1",
 		"@supabase/ssr": "^0.3.0",
 		"@supabase/supabase-js": "^2.42.5",
 		"@types/node": "^20.12.7",
-		"@beyonk/gdpr-cookie-consent-banner": "^12.1.0",
 		"animate.css": "^4.1.1",
 		"node": "^20.10.0",
 		"nodemailer": "^6.9.13"
