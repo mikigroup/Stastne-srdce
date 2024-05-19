@@ -12,7 +12,7 @@
 	on:close={() => (showModal = false)}
 	on:click|self={() => dialog.close()}
 >
-	<div on:click|stopPropagation>
+		<div on:click|stopPropagation>
 		<div class="m-3 md:m-10">
 			<h5 class="pb-10 text-2xl text-center md:text-2xl">Opravdu chcete potvrdit košík a odeslat ?</h5>
 			<div class="grid grid-cols-2 gap-8">

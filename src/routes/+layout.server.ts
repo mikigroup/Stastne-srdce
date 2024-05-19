@@ -1,8 +1,18 @@
-import type { LayoutServerLoad } from './$types';
-import { getServerSession } from '@supabase/auth-helpers-sveltekit';
+import type { LayoutServerLoad } from "./$types";
+import { redirect } from "@sveltejs/kit";
+import type { Actions } from "./$types";
 
-export const load: LayoutServerLoad = async (event) => {
-	return {
-		session: await getServerSession(event)
-	};
-};
+export const load = (async ({ url, locals: { safeGetSession } }) => {
+  const { session, user } = await safeGetSession();
+
+if (!user && url.pathname === "/kosik") {  
+    throw redirect(302, "/");
+  }
+
+  return {
+    session,
+    user,
+  }
+}) satisfies LayoutServerLoad
+
+

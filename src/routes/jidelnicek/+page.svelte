@@ -1,49 +1,53 @@
 <script>
-	import CartItemsStore from '../Stores/stores'
-	import * as animateScroll from 'svelte-scrollto'
-	import client from '../../lib/sanityClient'
-	import { page } from '$app/stores'
+	import CartItemsStore from '../Stores/stores';
+	import client from '../../lib/sanityClient';
+	import { page } from '$app/stores';
 
-	let selectedTab = ''
+	let selectedTab = '';
 
 	const selectTab = (tabName) => {
-		selectedTab = tabName
+		selectedTab = tabName;
 	}
 
-	const currentDate = new Date()
+	const currentDate = new Date();
 	const dateRanges = [
 		[0, 10],
 		[10, 20],
 		[20, 30],
 		[30, 42]
-	]
+	];
 
 	const dates = dateRanges.map(([start, end]) => {
-		const startDate = new Date()
-		startDate.setDate(startDate.getDate() + start)
+		const startDate = new Date();
+		startDate.setDate(startDate.getDate() + start);
 
-		const endDate = new Date()
+		const endDate = new Date();
 		endDate.setDate(endDate.getDate() + end)
 
-		return { startDate, endDate }
-	})
+		return { startDate, endDate };
+	});
+	function skocNaPrvek() {
+				let skocPrvek = document.getElementById('cilovyPrvek');
+				skocPrvek.scrollIntoView({ behavior: 'smooth' });
+			};
 
 	const loadZalozka = (index) => {
 		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
-			// Assuming that data is defined somewhere in your script
-			data.menus = response
+			data.menus = response;
+			skocNaPrvek();
 		})
-		selectedTab = `${index + 1}. týden`
+
+		selectedTab = `${index + 1}. týden`;
 	}
 
-	let lastRenderedDate = null
-	export let data
+	let lastRenderedDate = null;
+	export let data;
 
 	export async function loadmenu(from, to) {
 		return client.fetch(
 			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		)
-	}
+	};
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -80,26 +84,26 @@
 </svelte:head>
 <main>
 	<section class="">
-		<div class="max-w-screen-lg py-8 py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
-			<h1 class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+		<div class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+			<h1
+				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
+			>
 				Jídelníček
 			</h1>
-			<div class="max-w-3xl max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
 				<p class="mt-3 text-center">
 					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
+					<span class="text-red-500"><strong>POZOR Změna čísla účtu!</strong></span>
 					<br />
 					<strong>
-						Platbu můžete provést přes účet 43-6168890227/0100, terminálem platební nebo
-						stravenkovou kartou</strong
-					>, vždy ale jen po předchozí domluvě na emailu nebo telefonicky.
-					<strong>Platba v hotovosti je stále možná a vítána.</strong>
-					Pokud potřebujete fakturu, dejte vědět.
+						Platbu můžete provést přes účet <span class="text-red-500">131-2288130267/0100</span>. Platba v hotovosti je
+					stále možná a vítána.</strong> Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední roky ve Šťastném srdce funguje Pořadník zájemců. V případě, že se chcete stát strávníky
+					Poslední roky ve <span class="text-red-500">Šťastném srdci</span> funguje Pořadník zájemců. V případě, že se chcete stát strávníky
 					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete
 					sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme
 					zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás
@@ -110,7 +114,7 @@
 					<br />
 					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
-				<br />
+				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
 				<form class="flex items-center">					
 					<label for="simple-search" class="sr-only">Search</label>
@@ -148,7 +152,7 @@
 				<div class="pb-10 tab-content" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
-							<div id="" class="">
+							<div class="">
 								<div class="">
 									<!-- karta menu -->
 									<div class="mb-5">
@@ -157,9 +161,6 @@
 												<!-- //searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													{#if new Date(menu.releaseDate).toDateString() !== lastRenderedDate}
-														<script>
-															lastRenderedDate = new Date(menu.releaseDate).toDateString()
-														</script>
 														<div
 															class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
 														>
@@ -227,42 +228,19 @@
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
 														<a href="/login">
-															<button class="text-sm">
-																<div
-																	class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+															<div
+																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
 																duration-150 ease-in-out"
-																>
-																	<div class="flex justify-end m-3 text-base">Přihlaš se</div>
-																</div>
-															</button>
+															>
+																<div class="flex justify-end m-3 text-base">Přihlaš se</div>
+															</div>
 														</a>
 													</div>
 												</div>
 											{/each}
-											<!-- 	{:else if data.menus && data.menus.length}										
-												{#each data.menus as menu}
-													<div class="p-2 my-3 border rounded-lg bg-stone-100">
-													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
-														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}
-														</p>														
-													</div>
-													<div class="p-5 my-3 text-lg border rounded-lg shadow-md">
-														<p class="pb-1 underline underline-offset-8 ">{menu.title}</p>
-														<span style="white-space: pre-line">{menu.description}</span>														
-													</div>
-													<hr class="px-5" />													
-												</div>
-												{/each}			 -->
 										{:else}
 											<p>Žádný jídelníček nenalezen</p>
 										{/if}
@@ -274,14 +252,6 @@
 						</div>
 					</div>
 					<div>
-						<!-- {#if $user && menu && menu.length}
-							{#each menus as menu}{/each}
-						{:else}{/if}
-						{#if $user && menu && menu.length}
-							{#each menus as menu}{/each}
-						{:else}{/if} -->
-
-						<hr />
 						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
@@ -289,13 +259,9 @@
 										? 'border-green-600'
 										: 'border-transparent hover:border-green-600'
 								}`}
-								on:click={() => {
+								on:click={async () => {
 									loadZalozka(0)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									skocNaPrvek()
 								}}
 							>
 								1. týden
@@ -308,11 +274,6 @@
 								}`}
 								on:click={() => {
 									loadZalozka(1)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
 								}}
 							>
 								2. týden
@@ -324,12 +285,7 @@
 										: 'border-transparent hover:border-green-600'
 								}`}
 								on:click={() => {
-									loadZalozka(2)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									loadZalozka(2)									
 								}}
 							>
 								3. týden
@@ -341,12 +297,7 @@
 										: 'border-transparent hover:border-green-600'
 								}`}
 								on:click={() => {
-									loadZalozka(3)
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})
+									loadZalozka(3)									
 								}}
 							>
 								4. týden
@@ -355,13 +306,10 @@
 
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
+								on:click={() => {
+									skocNaPrvek()
+								}}
 								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-								on:click={() =>
-									animateScroll.scrollTo({
-										element: 'tabs-1-tab',
-										duration: 1500,
-										offset: 480
-									})}
 							>
 								<p>Skoč nahoru</p>
 							</button>
@@ -373,9 +321,9 @@
 				<div class="flex text-md">
 					<a
 						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-						activeClass={$page.url.pathname === '/kosik'}
-						href="/kosik"><button class=""> Košík </button></a
-					>
+						href="/kosik"
+						>Košík
+					</a>
 				</div>
 			{/if}
 		</div>
@@ -387,5 +335,8 @@
 	.nav-link.active {
 		border-color: green !important;
 		color: black;
+	}
+	main {
+		scroll-behavior: smooth;
 	}
 </style>
