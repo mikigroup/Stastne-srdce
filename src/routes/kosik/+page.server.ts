@@ -94,7 +94,7 @@ ${formatCartItems(cartItems)}
     `,
 };
 
-/*    const doc = {
+   const doc = {
       _type: 'order',
       itemsOrder: cartItems,
       note: txt,
@@ -104,10 +104,10 @@ ${formatCartItems(cartItems)}
       totalPieces: totalPieces,
       email: email,
       orderNumber: orderNumber
-    }; */
+    };
 
-   /*  const res = await client.create(doc); 
-    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`); */
+    const res = await client.create(doc); 
+    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
 
     try {
       await transporter.sendMail(options);
