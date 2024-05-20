@@ -149,13 +149,16 @@
 	let showModal = false;
 	let formSubmitted = false;
 
+	onMount(() => {
 	if (form?.success) {
 		 CartItemsStore.update(() => []);
      localStorage.removeItem('cartItems');
      goto('/thankyou');
 	} else {
 		console.log("Chyba vyprázdnění localStorage")
-	}
+	}	
+	})
+	
 </script>
 
 <svelte:head>
@@ -349,13 +352,12 @@
 					{#if cartItems.length !== 0}
 						<div class="mt-5 border-2 rounded-lg">
 							<div class="grid p-5 border-b-2">
-								<p><label for="txt">Poznámka</label></p>
+								<p><label for="note">Poznámka</label></p>
 								<textarea
-									value={form?.txt ?? ""}																
 									class="shadow-sm bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5
 						appearance-none block w-full border border-gray-200 rounded-lg py-3 px-3 appearance-none focus:outline-none focus:border-green-600 mb-5"
-									id="txt"
-									name="txt"
+									id="note"
+									name="note"
 									rows="4"
 									cols="50"
 									placeholder="poznámka k objednávce"
