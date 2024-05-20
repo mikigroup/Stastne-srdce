@@ -4,9 +4,14 @@ import client from '$lib/sanityClient';
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  // nastavení pro nodemailer
+  host: "smtp.seznam.cz",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "info@stastnesrdce.cz",
+    pass: "#QFUtwxDsQW5LEDT"
+  }
 });
-
 export const actions: Actions = {
   sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
@@ -37,18 +42,21 @@ export const actions: Actions = {
     let totalPrice = 0;
     let totalPieces = 0;
 
-    const itemsOrder = cartItems.map((item: any) => ({
-      title: item.title,
-      description: item.description,
-      price: item.price,
-      quantity: item.quantity,
-      releaseDate: item.releaseDate
-    }));
-
-    cartItems.forEach((item: any) => {
-      totalPrice += item.price * item.quantity;
-      totalPieces += item.quantity;
-    });
+    const itemsOrder = [];
+    for (const obj of cartItems) {
+      itemsOrder.push(obj.title);
+      const releaseDate = new Date(obj.releaseDate);
+      const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+        releaseDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, '0')}-${releaseDate.getFullYear()}`;
+      itemsOrder.push(formattedDate);
+      itemsOrder.push(obj.description);
+      itemsOrder.push(obj.quantity);
+      totalPrice += obj.price * obj.quantity;
+      totalPieces += obj.quantity;
+    }
 
     const doc = {
       _type: 'order',
