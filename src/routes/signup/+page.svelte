@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
+	import { enhance } from '$app/forms';
 	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
@@ -7,23 +8,18 @@
 	
 	let loading = false;	
 
-	async function signInWithGoogle() {
-		const { data, error } = await supabase.auth.signInWithOAuth({
-			provider: "google",
-			options: {
-				queryParams: {
-					access_type: "offline",
-					prompt: "consent"
-				}
-			}
-		});
-	}
+
+ 
+  function signInWGoogle(e: any) {
+    console.log(e);
+  }
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Vytvoření nového účtu</title>
-	<meta name="description" content="SingUp" />
+  <title>Šťastné srdce - Vytvoření nového účtu</title>
+  <meta name="description" content="SingUp" />
 </svelte:head>
+
 <section>
 	<div class="pt-20 footer_fix">
 		<div
@@ -148,7 +144,7 @@
 		<div class="form-widget">
 			<div
 				class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
-				<form on:submit|preventDefault={signInWithGoogle}>
+				<form action="?/signInWithGoogle" method="POST" use:enhance>
 					<div class="">
 						<button
 							value={loading ? "Loading" : "Log in with Google"}

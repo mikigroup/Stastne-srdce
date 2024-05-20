@@ -20,7 +20,8 @@ export const actions: Actions = {
         const user = data.user;
         console.log('Registrovaný uživatel:', user);        
         console.log('Registrovaný uživatel role:', user.role);
-         if (user.role === "") {
+
+        if (user.role === "") {
           return fail(400, { message: { success: false, display: "Tento e-mail je již registrován." } });
         } else {          
           return { message: { success: true, display: "Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte." }};
@@ -28,4 +29,21 @@ export const actions: Actions = {
       }
     }
   },
+
+  signInWithGoogle: async ({ locals: { supabase } }) => {
+    console.log("TEST");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+       options: {
+        redirectTo: 'https://localhost:5173/auth/callback',
+  },
+    });
+
+    if (error) {
+      console.error('Chyba při přihlášení pomocí Google:', error.message);
+      return fail(400, { message: { success: false, display: "Chyba při přihlášení pomocí Google" } });
+    } else {
+      return { success: true };
+    }
+  }
 };
