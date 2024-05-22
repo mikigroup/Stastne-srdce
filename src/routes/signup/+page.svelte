@@ -1,23 +1,29 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
-	import { enhance } from '$app/forms';
+	import { enhance } from "$app/forms";
 	export let form: Actions;
 	export let data;
 	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);     
-	
-	let loading = false;	
+	$: ({ session, supabase, user } = data);
 
+	let loading = false;
 
- 
-  function signInWGoogle(e: any) {
-    console.log(e);
-  }
+	async function signInWithGoogle() {
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				queryParams: {
+					access_type: "offline",
+					prompt: "consent"
+				}
+			}
+		});
+	}
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - Vytvoření nového účtu</title>
-  <meta name="description" content="SingUp" />
+	<title>Šťastné srdce - Vytvoření nového účtu</title>
+	<meta name="description" content="SingUp" />
 </svelte:head>
 
 <section>
@@ -124,16 +130,15 @@
 								required />
 						</div>
 					</div>
-					<div class="flex w-full my-4">						
-							<button
-								type="submit"
-								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
-								disabled={loading}
-							>
-								{loading ? "Probíhá registrace..." : "Registrovat"}
-							</button>
+					<div class="flex w-full my-4">
+						<button
+							type="submit"
+							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
+							disabled={loading}>
+							{loading ? "Probíhá registrace..." : "Registrovat"}
+						</button>
 					</div>
-						{#if form?.message}
+					{#if form?.message}
 						<div class="flex w-full p-2 my-4 border rounded-lg">
 							<p class="error">{form.message.display}</p>
 						</div>
@@ -144,18 +149,19 @@
 		<div class="form-widget">
 			<div
 				class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
-				<form action="?/signInWithGoogle" method="POST" use:enhance>
+				
 					<div class="">
 						<button
+							on:click={signInWithGoogle}
 							value={loading ? "Loading" : "Log in with Google"}
 							disabled={loading}
 							id="btn-success"
 							type="submit"
 							class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
 							<img src="/google.svg" alt="" width="40" height="40" />
-						</button>					
-					</div>					
-				</form>
+						</button>
+					</div>
+				
 			</div>
 		</div>
 	</div>
