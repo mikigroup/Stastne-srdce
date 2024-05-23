@@ -16,10 +16,6 @@ export const actions: Actions = {
   sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
 
-    if (!session) {
-      throw redirect(303, "/");
-    }
-
     const formData = await request.formData();
     const note = formData.get("note") as string;
     const cartItems = JSON.parse(formData.get('cartItems') as string);
