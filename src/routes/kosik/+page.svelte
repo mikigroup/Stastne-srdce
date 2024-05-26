@@ -152,7 +152,8 @@
 	onMount(() => {
 	if (form?.success) {
 		 CartItemsStore.update(() => []);
-     localStorage.removeItem('cartItems');     
+     localStorage.removeItem('cartItems');
+		 goto("/thankyou");     
 	} else {
 		console.log("Chyba vyprázdnění localStorage")
 	}	

@@ -105,11 +105,7 @@ export const actions: Actions = {
 
       return {
         success: true,
-        clearCart: true,
-        status: 303,
-        headers: {
-          location: "/thankyou"
-        }
+        clearCart: true,        
       };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
