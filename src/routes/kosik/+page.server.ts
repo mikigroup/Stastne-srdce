@@ -75,7 +75,7 @@ export const actions: Actions = {
 
     const options = {
       from: "info@stastnesrdce.cz",
-      cc: "stastnesrdcekk@seznam.cz",
+      // cc: "stastnesrdcekk@seznam.cz",
       to: email,
       subject: "Šťastné srdce - Objednávka",
       text: `
@@ -104,6 +104,8 @@ export const actions: Actions = {
       console.log("E-mail odeslán na adresu:", email);
 
       return {
+        success: true,
+        clearCart: true,
         status: 303,
         headers: {
           location: "/thankyou"

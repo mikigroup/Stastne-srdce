@@ -14,7 +14,7 @@
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
 	// console.log(data)
-
+ 
 	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
@@ -56,7 +56,7 @@
 		try {
 			loading = true
 			// const { user } = session
-			console.log("TEST:", session.user.id)
+			// console.log("TEST:", session.user.id)
 			const { data, error, status } = await supabase
 				.from("profiles")
 				.select(`first_name, last_name`)
@@ -152,8 +152,7 @@
 	onMount(() => {
 	if (form?.success) {
 		 CartItemsStore.update(() => []);
-     localStorage.removeItem('cartItems');
-     goto('/thankyou');
+     localStorage.removeItem('cartItems');     
 	} else {
 		console.log("Chyba vyprázdnění localStorage")
 	}	
