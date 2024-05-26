@@ -1,7 +1,7 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import client from '$lib/sanityClient';
-import nodemailer from 'nodemailer';
+import client from "$lib/sanityClient";
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.seznam.cz",
@@ -14,20 +14,24 @@ const transporter = nodemailer.createTransport({
 });
 export const actions: Actions = {
   sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
-    const { session } = await safeGetSession();
+    const session = await safeGetSession();
+    if (!session) {
+      throw redirect(303, '/login');
+    }
 
     const formData = await request.formData();
     const note = formData.get("note") as string;
     const cartItems = JSON.parse(formData.get('cartItems') as string);
 
-    const { data: profile, error } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("first_name, last_name")
       .eq("id", session.user.id)
       .single();
 
-    if (error) {
-      throw fail(500, { message: { success: false, display: "Chyba při získávání profilu uživatele" } });
+    if (profileError) {
+      console.error('Chyba při získávání profilu uživatele:', profileError);
+      throw error(500, "Chyba při získávání profilu uživatele");
     }
 
     const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
@@ -42,11 +46,11 @@ export const actions: Actions = {
     for (const obj of cartItems) {
       itemsOrder.push(obj.title);
       const releaseDate = new Date(obj.releaseDate);
-      const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+      const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(
         releaseDate.getMonth() + 1
       )
         .toString()
-        .padStart(2, '0')}-${releaseDate.getFullYear()}`;
+        .padStart(2, "0")}-${releaseDate.getFullYear()}`;
       itemsOrder.push(formattedDate);
       itemsOrder.push(obj.description);
       itemsOrder.push(obj.quantity);
@@ -55,7 +59,7 @@ export const actions: Actions = {
     }
 
     const doc = {
-      _type: 'order',
+      _type: "order",
       itemsOrder,
       note,
       timestamp: new Date().toISOString(),
@@ -83,13 +87,13 @@ export const actions: Actions = {
             ${item.title}
             Množství: ${item.quantity}
             Cena: ${item.price}
-            Datum: ${new Date(item.releaseDate).toLocaleDateString('cs-CZ', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+            Datum: ${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
       })}
             Popis: ${item.description}
-        `).join('\n')}
+        `).join("\n")}
         
         Poznámka: ${note}
       `
@@ -98,14 +102,16 @@ export const actions: Actions = {
     try {
       await transporter.sendMail(options);
       console.log("E-mail odeslán na adresu:", email);
+
       return {
-        success: true,
-        clearCart: true,
-        redirect: "/thankyou"
+        status: 303,
+        headers: {
+          location: "/thankyou"
+        }
       };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
-      return fail(500, { message: { success: false, display: "Chyba při odesílání e-mailu" } });
+      throw error(500, "Chyba při odesílání e-mailu");
     }
   },
 };
