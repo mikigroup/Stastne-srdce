@@ -109,7 +109,7 @@
 	}
 
 	onMount(() => {
-		console.log("Komponenta Banner.svelte byla připojena");
+		//console.log("Komponenta Banner.svelte byla připojena");
 		if (!cookieName) {
 			console.error("Název cookie pro GDPR není nastaven");
 			throw new Error("Musíte nastavit GDPR cookie name");
