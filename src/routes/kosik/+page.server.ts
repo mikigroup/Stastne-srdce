@@ -23,21 +23,26 @@ export const actions: Actions = {
     const note = formData.get("note") as string;
     const cartItems = JSON.parse(formData.get('cartItems') as string);
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("first_name, last_name")
-      .eq("id", session.user.id)
-      .single();
+    let fullname = "";
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("id", session.user.id)
+        .single();
 
-    if (profileError) {
-      console.error('Chyba při získávání profilu uživatele:', profileError);
-      throw error(500, "Chyba při získávání profilu uživatele");
+      if (profileError) {
+        console.warn('Chyba při získávání profilu uživatele:', profileError);
+      } else {
+        fullname = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+      }
+    } catch (error) {
+      console.warn('Chyba při získávání profilu uživatele:', error);
     }
 
     const latestOrder = await client.fetch(`*[_type == "order"] | order(_createdAt desc) [0]`);
     const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
     const email = session.user.email;
-    const fullname = `${profile.first_name} ${profile.last_name}`;
 
     let totalPrice = 0;
     let totalPieces = 0;
@@ -105,7 +110,7 @@ export const actions: Actions = {
 
       return {
         success: true,
-        clearCart: true,        
+        clearCart: true,
       };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
