@@ -95,7 +95,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
   if (error) {
     console.error("Error fetching profile:", error);
   } else {
-    console.log("TEST:", profile);
+    // console.log("TEST:", profile);
   }
 
   return { session, profile };
