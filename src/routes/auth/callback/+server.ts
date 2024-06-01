@@ -6,12 +6,10 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      // Přesměrujte na stránku pro resetování hesla po úspěšném vyměnění kódu za session
+    if (!error) {      
       throw redirect(303, next);
     }
   }
-
-  // Pokud není kód poskytnut nebo dojde k chybě, přesměrujte na domovskou stránku
+  
   throw redirect(303, '/');
 };

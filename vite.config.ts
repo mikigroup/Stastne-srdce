@@ -1,4 +1,5 @@
 import { sentrySvelteKit } from "@sentry/sveltekit";
+import { PUBLIC_SENTRY_TOKEN } from "$env/static/public";
 /* import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 
@@ -17,7 +18,8 @@ export default defineConfig({
   plugins: [sentrySvelteKit({
    sourceMapsUploadOptions: {
     org: "stastnesrdce",
-    project: "javascript-svelte"
+    project: "javascript-svelte",
+    authToken: PUBLIC_SENTRY_TOKEN,
    }
   }), sveltekit()]
 });

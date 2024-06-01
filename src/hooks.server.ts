@@ -6,9 +6,10 @@ import { sequence } from "@sveltejs/kit/hooks";
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 
 Sentry.init({
-    dsn: "https://945c529c21324f78bf290bf4f0662070@o4504123775188992.ingest.us.sentry.io/4504124579184640",
-    tracesSampleRate: 1
-})
+  dsn: "https://945c529c21324f78bf290bf4f0662070@o4504123775188992.ingest.us.sentry.io/4504124579184640",
+  tracesSampleRate: 1.0,
+});
+
 
 const supabase: Handle = async ({ event, resolve }) => {
   event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
