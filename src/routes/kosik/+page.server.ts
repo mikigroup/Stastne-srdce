@@ -110,7 +110,7 @@ export const actions: Actions = {
 
       return {
         success: true,
-        clearCart: true,        
+        clearCart: true,
       };
     } catch (error) {
       console.error("Chyba při odesílání e-mailu:", error);
