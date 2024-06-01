@@ -1,5 +1,4 @@
 import { sentrySvelteKit } from "@sentry/sveltekit";
-import { PUBLIC_SENTRY_TOKEN } from "$env/static/public";
 /* import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 
@@ -19,7 +18,7 @@ export default defineConfig({
    sourceMapsUploadOptions: {
     org: "stastnesrdce",
     project: "javascript-svelte",
-    authToken: PUBLIC_SENTRY_TOKEN,
+    authToken: "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",
    }
   }), sveltekit()]
 });
