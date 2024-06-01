@@ -2,12 +2,14 @@ import * as Sentry from "@sentry/sveltekit";
 import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 
 Sentry.init({
   dsn: "https://945c529c21324f78bf290bf4f0662070@o4504123775188992.ingest.us.sentry.io/4504124579184640",
   tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
 });
 
 

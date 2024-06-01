@@ -35,7 +35,8 @@
 	"dependencies": {
 		"@beyonk/gdpr-cookie-consent-banner": "^12.1.0",
 		"@sanity/client": "^5.4.2",
-		"@sentry/sveltekit": "^8.2.1",
+		"@sentry/profiling-node": "^8.7.0",
+		"@sentry/sveltekit": "^8.7.0",
 		"@supabase/ssr": "^0.3.0",
 		"@supabase/supabase-js": "^2.42.5",
 		"@types/node": "^20.12.7",
