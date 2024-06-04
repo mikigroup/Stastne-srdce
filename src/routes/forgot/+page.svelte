@@ -57,14 +57,13 @@
 						class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">					
 						Reset hesla
 					</button>
-				</div>
-
+				</div>			
+			</div>
 				{#if form?.message}
 					<div class="flex w-full p-2 my-4 border rounded-lg">
 						<p class="error">{form.message.display}</p>
 					</div>
 				{/if}
-			</div>
 		</div>
 	</form>
 </section>
