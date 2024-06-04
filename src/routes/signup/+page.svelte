@@ -9,6 +9,7 @@
 	let loading = false;
 
 	async function signInWithGoogle() {
+		loading = true;
 		const { data, error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
 			options: {
@@ -18,6 +19,12 @@
 				}
 			}
 		});
+		if (error) {
+			console.error("Chyba při přihlášení pomocí Google:", error.message);
+		} else {
+			// Redirect or handle successful sign-in
+		}
+		loading = false;
 	}
 </script>
 

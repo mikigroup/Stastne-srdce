@@ -29,21 +29,4 @@ export const actions: Actions = {
       }
     }
   },
-
-  signInWithGoogle: async ({ locals: { supabase } }) => {
-    console.log("TEST");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-       options: {
-        redirectTo: 'https://localhost:5173/auth/callback',
-  },
-    });
-
-    if (error) {
-      console.error('Chyba při přihlášení pomocí Google:', error.message);
-      return fail(400, { message: { success: false, display: "Chyba při přihlášení pomocí Google" } });
-    } else {
-      return { success: true };
-    }
-  }
 };
