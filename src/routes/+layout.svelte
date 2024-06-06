@@ -1,36 +1,28 @@
 <script lang="ts">
 	import { slide } from "svelte/transition";
-	import "./app.css";	
+	import "./app.css";
 	import "./banner.css";
-	import CartItemsStore from "../routes/Stores/stores";	
+	import CartItemsStore from "../routes/Stores/stores";
 	import { page } from "$app/stores";
-	import { readable } from "svelte/store";	
+	import { readable } from "svelte/store";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
-	import { goto, invalidate } from '$app/navigation';
-	import { onMount } from 'svelte';
-				
+	import { goto, invalidate } from "$app/navigation";
+	import { onMount } from "svelte";
 
 	export let data;
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
 
-		onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
-			if (!newSession) {
+onMount(() => {
+  const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
+    if (newSession?.expires_at !== session?.expires_at) {
+      invalidate('supabase:auth');
+    }
+  });
+  return () => data.subscription.unsubscribe();
+});
 
-				setTimeout(() => {
-					goto('/', { invalidateAll: true });
-				});
-			}
-			if (newSession?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth');
-			}
-		});
-
-		return () => data.subscription.unsubscribe();
-	});
-
-	$: signOut = async () => {
+$: signOut = async () => {
 		const { error } = await supabase.auth.signOut();
 		if (error) {
 			console.error("Error logging out:", error);
@@ -230,7 +222,7 @@
 						{#if $page.data.session}
 							<div class="col-end-2 pr-2">
 								<button
-									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"									
+									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
 									><a href="/profile">Účet</a>
 								</button>
 							</div>
@@ -292,7 +284,7 @@
 	.textmenu {
 		font-size: 1em;
 	}
-	
+
 	header {
 		position: fixed;
 		top: 0px;
