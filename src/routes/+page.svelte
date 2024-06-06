@@ -11,7 +11,7 @@
 			<div class="">				
 				<div class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">					
 					<div
-						class="px-10 py-10 mt-20 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl"
+						class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl"
 					>
 					<!-- <div class="grid justify-center pb-5">
 					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>

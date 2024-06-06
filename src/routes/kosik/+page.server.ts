@@ -80,7 +80,7 @@ export const actions: Actions = {
 
     const options = {
       from: "info@stastnesrdce.cz",
-      cc: "stastnesrdcekk@seznam.cz",
+      // cc: "stastnesrdcekk@seznam.cz",
       to: email,
       subject: "Šťastné srdce - Objednávka",
       text: `
