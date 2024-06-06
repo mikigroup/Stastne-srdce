@@ -4,7 +4,6 @@ import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 import { PRIVATE_SBKey, PRIVATE_SBUrl } from '$env/static/private';
 
 Sentry.init({

@@ -175,7 +175,7 @@ $: signOut = async () => {
 					</div>
 				{/if}
 				<div class="grid justify-center md:hidden">
-					<button on:click={toggleMenu} class="text-xl">
+					<button on:click={toggleMenu} class="p-5 text-xl" id="toggleMenu">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-7 w-7"
