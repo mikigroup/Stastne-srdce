@@ -22,22 +22,15 @@ onMount(() => {
   return () => data.subscription.unsubscribe();
 });
 
-$: signOut = async () => {
-		const { error } = await supabase.auth.signOut();
-		if (error) {
+	async function signOut() {
+		try {
+			const { error } = await supabase.auth.signOut();
+			if (error) throw error;
+			await goto("/");
+		} catch (error) {
 			console.error("Error logging out:", error);
-		} else {
-			window.location.href = "/";
 		}
-	};
-
-	/* 	 signout: async ({ locals: { supabase, safeGetSession } }) => {
-    const { session } = await safeGetSession()
-    if (session) {
-      await supabase.auth.signOut()
-      throw redirect(303, "/")
-    }
-  } */
+	}
 
 	let src = "/android-chrome-192x192.png";
 
@@ -64,24 +57,13 @@ $: signOut = async () => {
 	}
 
 	let loading = false;
-	/* async function signOut() {
-		try {
-			loading = true
-			let { error } = await supabase.auth.signOut()
-			if (error) throw error
-			window.location.href = "/";
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message)
-			}
-		} finally {
-			loading = false			
-		}
-	} */
 
-	$: totalPieces =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
+	let totalPieces = 0;
+	$: {
+		if ($CartItemsStore.length) {
+			totalPieces = $CartItemsStore.reduce((sum: number, cartItems: { quantity: number }) => sum + cartItems.quantity, 0);
+		}
+	}
 </script>
 
 <!-- <Header /> -->

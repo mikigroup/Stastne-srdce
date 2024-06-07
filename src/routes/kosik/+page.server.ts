@@ -1,5 +1,5 @@
-import { error, fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
+import { error, redirect } from "@sveltejs/kit";
+import type { Actions } from "./$types";
 import client from "$lib/sanityClient";
 import nodemailer from "nodemailer";
 
@@ -112,8 +112,8 @@ export const actions: Actions = {
         success: true,
         clearCart: true,
       };
-    } catch (error) {
-      console.error("Chyba při odesílání e-mailu:", error);
+    } catch (err: unknown) {
+      console.error("Chyba při odesílání e-mailu:", err);
       throw error(500, "Chyba při odesílání e-mailu");
     }
   },
