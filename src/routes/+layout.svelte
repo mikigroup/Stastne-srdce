@@ -26,7 +26,7 @@ onMount(() => {
 		try {
 			const { error } = await supabase.auth.signOut();
 			if (error) throw error;
-			window.location.href = "/";
+			await goto("/");
 		} catch (error) {
 			console.error("Error logging out:", error);
 		}
