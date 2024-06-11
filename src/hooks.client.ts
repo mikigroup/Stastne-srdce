@@ -7,7 +7,15 @@ Sentry.init({
     tracesSampleRate: 1,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1,
-    integrations: [Sentry.replayIntegration()]
+    integrations: [Sentry.replayIntegration()],
+    ignoreErrors: [
+        'Http404',
+        /^https?:\/\/localhost(:\d+)?\/?/,
+    ],
+
+    denyUrls: [
+        /^https?:\/\/localhost(:\d+)?\/?/,
+    ],
 })
 
 export const handleError = Sentry.handleErrorWithSentry();

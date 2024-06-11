@@ -1,3 +1,4 @@
+/*
 import { error } from "@sveltejs/kit";
 import client from "$lib/sanityClient"; 
 
@@ -30,5 +31,4 @@ export async function load() {
 		error(500, 'Internal Server Error');
 	}
 };
-
-
+*/

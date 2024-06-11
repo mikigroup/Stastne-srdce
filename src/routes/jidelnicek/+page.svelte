@@ -1,10 +1,16 @@
 <script>
-	import CartItemsStore from '../Stores/stores';
-	import client from '../../lib/sanityClient';
-	import { page } from '$app/stores';
+	import CartItemsStore from "../Stores/stores";
+	import client from "../../lib/sanityClient";
+	import { page } from "$app/stores";
 
-	let selectedTab = '';
 
+	export let data;
+	let {  menus } = data;
+	$: ({  menus } = data);
+	console.log(menus)
+
+
+	let selectedTab = "";
 	const selectTab = (tabName) => {
 		selectedTab = tabName;
 	}
@@ -27,8 +33,8 @@
 		return { startDate, endDate };
 	});
 	function skocNaPrvek() {
-				let skocPrvek = document.getElementById('cilovyPrvek');
-				skocPrvek.scrollIntoView({ behavior: 'smooth' });
+				let skocPrvek = document.getElementById("cilovyPrvek");
+				skocPrvek.scrollIntoView({ behavior: "smooth" });
 			};
 
 	const loadZalozka = (index) => {
@@ -41,13 +47,13 @@
 	}
 
 	let lastRenderedDate = null;
-	export let data;
 
-	export async function loadmenu(from, to) {
+
+/*	export async function loadmenu(from, to) {
 		return client.fetch(
 			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		)
-	};
+	};*/
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
@@ -68,7 +74,7 @@
 			}
 		})
 	}
-	/* let search = '';
+	/* let search = "";
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
 	}); */
@@ -167,10 +173,10 @@
 															<p
 																class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
 															>
-																{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																	weekday: 'long',
-																	month: 'long',
-																	day: 'numeric'
+																{new Date(menu.releaseDate).toLocaleDateString("cs-CZ", {
+																	weekday: "long",
+																	month: "long",
+																	day: "numeric"
 																})}
 															</p>
 														</div>
@@ -212,10 +218,10 @@
 														<p
 															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
 														>
-															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
+															{new Date(menu.releaseDate).toLocaleDateString("cs-CZ", {
+																weekday: "long",
+																month: "long",
+																day: "numeric"
 															})}
 														</p>
 													</div>
@@ -255,9 +261,9 @@
 						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '1. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "1. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={async () => {
 									loadZalozka(0)
@@ -268,9 +274,9 @@
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '2. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "2. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
 									loadZalozka(1)
@@ -280,9 +286,9 @@
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '3. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "3. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
 									loadZalozka(2)									
@@ -292,9 +298,9 @@
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '4. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "4. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
 									loadZalozka(3)									

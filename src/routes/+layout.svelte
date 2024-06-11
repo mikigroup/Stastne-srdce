@@ -263,39 +263,35 @@ onMount(() => {
 </footer>
 
 <style lang="postcss">
-	.textmenu {
-		font-size: 1em;
-	}
+    .textmenu {
+        font-size: 1em;
+    }
+    header {
+        position: fixed;
+        top: 0px;
+        width: 100%;
+        height: 100px;
+        z-index: 1;
+    }
+    .navItem {
+        text-decoration: none;
+        position: relative;
+        display: inline-block;
 
-	header {
-		position: fixed;
-		top: 0px;
-		width: 100%;
-		height: 100px;
-		z-index: 1;
-	}
-	.navItem {
-		text-decoration: none;
-		position: relative;
-		display: inline-block;
-	}
+        &::after {
+            content: "";
+            background: #d2691e;
+            height: 1px;
+            position: absolute;
+            bottom: 0;
+            transition: 0.16s all 0.025s;
+            left: 100%;
+            right: 0;
+        }
 
-	.navItem::after {
-		content: "";
-		background: #d2691e;
-		height: 1px;
-		position: absolute;
-		bottom: 0;
-		transition: 0.16s all 0.025s;
-	}
-
-	.navItem::after {
-		left: 100%;
-		right: 0;
-	}
-
-	.navItem:hover::after {
-		left: 0;
-		right: 0;
-	}
+        &:hover::after {
+            left: 0;
+            right: 0;
+        }
+    }
 </style>
