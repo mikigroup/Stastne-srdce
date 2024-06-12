@@ -166,6 +166,7 @@
 								<div class="">
 									<!-- karta menu -->
 									<div class="mb-5">
+										<p>Polévka</p>
 										{#if $page.data.session && data.menus && data.menus.length}
 											{#each data.menus as menu}
 												<!-- //searchMenu -->
@@ -188,7 +189,7 @@
 														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
 														<p
 															class="pb-1 text-xl underline underline-offset-8">
-															{menu.title}
+															{menu.soup}
 														</p>
 														<span style="white-space: pre-line"
 															><p class="pt-2 text-lg">
@@ -255,6 +256,11 @@
 																<div class="flex justify-end m-3 text-base">
 																	Přihlaš se
 																</div>
+																{#if $page.data.session && data.menus && data.menus.length}
+																	<div class="flex justify-end text-sm uppercase">
+																		Přidat do košíku
+																	</div>
+																{/if}
 															</div>
 														</a>
 													</div>
