@@ -109,9 +109,9 @@
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
 					Poslední roky ve <span class="text-red-500">Šťastném srdci</span>
-					funguje Pořadník zájemců. V případě, že se chcete stát strávníky
-					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a
-					pokud nezvedáme, zašlete sms, případně na email
+					funguje Pořadník zájemců. V případě, že se chcete stát strávníky kuchyně,
+					prosíme o kontakt na tel. <strong>724 448 377</strong> a pokud
+					nezvedáme, zašlete sms, případně na email
 					<strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme zpět
 					a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce
 					pro Vás přínosem.
@@ -126,7 +126,7 @@
 				</p>
 				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
-				<form class="flex items-center">					
+				<form class="flex items-center">
 					<label for="simple-search" class="sr-only">Search</label>
 					<div class="relative w-full">
 						<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -145,15 +145,15 @@
 						</div>
 						<input
 							type="text"
-							
+
 							id="search"
 							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
 							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
 							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
 							dark:focus:green-blue-500 dark:focus:border-green-500"
 							placeholder="př. rizoto"
-							/>  bind:value={search} 
-					</div>										
+							/>  bind:value={search}
+					</div>
 				</form>
 				 <div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							 -->
 			</div>
@@ -174,7 +174,7 @@
 														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
 															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															{new Date(menu.releaseDate).toLocaleDateString(
+															{new Date(menu.date).toLocaleDateString(
 																"cs-CZ",
 																{
 																	weekday: "long",
