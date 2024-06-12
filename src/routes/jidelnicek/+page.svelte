@@ -3,17 +3,15 @@
 	import client from "../../lib/sanityClient";
 	import { page } from "$app/stores";
 
-
 	export let data;
-	let {  menus } = data;
-	$: ({  menus } = data);
-	console.log(menus)
-
+	let { menus } = data;
+	$: ({ menus } = data);
+	console.log(menus);
 
 	let selectedTab = "";
 	const selectTab = (tabName) => {
 		selectedTab = tabName;
-	}
+	};
 
 	const currentDate = new Date();
 	const dateRanges = [
@@ -28,28 +26,25 @@
 		startDate.setDate(startDate.getDate() + start);
 
 		const endDate = new Date();
-		endDate.setDate(endDate.getDate() + end)
+		endDate.setDate(endDate.getDate() + end);
 
 		return { startDate, endDate };
 	});
 	function skocNaPrvek() {
-				let skocPrvek = document.getElementById("cilovyPrvek");
-				skocPrvek.scrollIntoView({ behavior: "smooth" });
-			};
+		let skocPrvek = document.getElementById("cilovyPrvek");
+		skocPrvek.scrollIntoView({ behavior: "smooth" });
+	}
 
 	const loadZalozka = (index) => {
 		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
 			data.menus = response;
 			skocNaPrvek();
-		})
+		});
 
 		selectedTab = `${index + 1}. týden`;
-	}
+	};
 
-	let lastRenderedDate = null;
-
-
-/*	export async function loadmenu(from, to) {
+	/*	export async function loadmenu(from, to) {
 		return client.fetch(
 			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
 		)
@@ -59,7 +54,7 @@
 		CartItemsStore.update((currentCartItems) => {
 			const updatedCartItemIndex = currentCartItems.findIndex(
 				(cartItem) => cartItem._id === menu._id
-			)
+			);
 			if (updatedCartItemIndex === -1) {
 				return [
 					...currentCartItems,
@@ -67,12 +62,12 @@
 						...menu,
 						quantity: 1
 					}
-				]
+				];
 			} else {
-				currentCartItems[updatedCartItemIndex].quantity += 1
-				return currentCartItems
+				currentCartItems[updatedCartItemIndex].quantity += 1;
+				return currentCartItems;
 			}
-		})
+		});
 	}
 	/* let search = "";
 	$: searchMenu = menus.filter((menu) => {
@@ -81,7 +76,7 @@
 
 	$: totalPieces =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
 <svelte:head>
@@ -90,35 +85,44 @@
 </svelte:head>
 <main>
 	<section class="">
-		<div class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+		<div
+			class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
 			<h1
-				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
-			>
+				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
 			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
 				<p class="mt-3 text-center">
-					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
+					<strong
+						>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
-					<span class="text-red-500"><strong>POZOR Změna čísla účtu!</strong></span>
+					<span class="text-red-500"
+						><strong>POZOR Změna čísla účtu!</strong></span>
 					<br />
 					<strong>
-						Platbu můžete provést přes účet <span class="text-red-500">131-2288130267/0100</span>. Platba v hotovosti je
-					stále možná a vítána.</strong> Pokud potřebujete fakturu, dejte vědět.
+						Platbu můžete provést přes účet <span class="text-red-500"
+							>131-2288130267/0100</span
+						>. Platba v hotovosti je stále možná a vítána.</strong>
+					Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední roky ve <span class="text-red-500">Šťastném srdci</span> funguje Pořadník zájemců. V případě, že se chcete stát strávníky
-					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete
-					sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme
-					zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás
-					přínosem.
+					Poslední roky ve <span class="text-red-500">Šťastném srdci</span>
+					funguje Pořadník zájemců. V případě, že se chcete stát strávníky
+					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a
+					pokud nezvedáme, zašlete sms, případně na email
+					<strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme zpět
+					a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce
+					pro Vás přínosem.
 					<br />
-					Na každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
+					Na každého nového strávníka se těšíme a máme radost, pokud zůstane mezi
+					našimi věrnými. 
 					<br />
 					<br />
-					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
+					<strong
+						>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :)
+						!".</strong>
 				</p>
 				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
@@ -166,37 +170,42 @@
 											{#each data.menus as menu}
 												<!-- //searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
-													{#if new Date(menu.releaseDate).toDateString() !== lastRenderedDate}
-														<div
-															class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
-														>
-															<p
-																class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
-															>
-																{new Date(menu.releaseDate).toLocaleDateString("cs-CZ", {
+													<div
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
+														<p
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+															{new Date(menu.releaseDate).toLocaleDateString(
+																"cs-CZ",
+																{
 																	weekday: "long",
 																	month: "long",
 																	day: "numeric"
-																})}
-															</p>
-														</div>
-													{/if}
-													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+																}
+															)}
+														</p>
+													</div>
+													<div
+														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p
+															class="pb-1 text-xl underline underline-offset-8">
+															{menu.title}
+														</p>
 														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">{menu.description}</p></span
-														>
+															><p class="pt-2 text-lg">
+																{menu.description}
+															</p></span>
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
-														<button class="text-sm" on:click={() => addToCart(menu)}>
+														<button
+															class="text-sm"
+															on:click={() => addToCart(menu)}>
 															<div
 																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
-																duration-150 ease-in-out"
-															>
+																duration-150 ease-in-out">
 																<div class="flex justify-end">
 																	<p class="text-base">{menu.price} Kč</p>
 																</div>
@@ -213,23 +222,26 @@
 												<!-- // searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
-													>
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
-														>
-															{new Date(menu.releaseDate).toLocaleDateString("cs-CZ", {
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+															{new Date(menu.date).toLocaleDateString("cs-CZ", {
 																weekday: "long",
 																month: "long",
 																day: "numeric"
 															})}
 														</p>
 													</div>
-													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+													<div
+														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p
+															class="pb-1 text-xl underline underline-offset-8">
+															{menu.title}
+														</p>
 														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">{menu.description}</p></span
-														>
+															><p class="pt-2 text-lg">
+																{menu.description}
+															</p></span>
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
@@ -239,9 +251,10 @@
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
-																duration-150 ease-in-out"
-															>
-																<div class="flex justify-end m-3 text-base">Přihlaš se</div>
+																duration-150 ease-in-out">
+																<div class="flex justify-end m-3 text-base">
+																	Přihlaš se
+																</div>
 															</div>
 														</a>
 													</div>
@@ -252,13 +265,17 @@
 										{/if}
 									</div>
 								</div>
-								<div class="grid border-2 rounded-lg justify-items-end btn-group" role="group" />
+								<div
+									class="grid border-2 rounded-lg justify-items-end btn-group"
+									role="group" />
 							</div>
 							<hr />
 						</div>
 					</div>
 					<div>
-						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
+						<div
+							class="flex items-center pl-0 mb-4 text-center border-b-0"
+							id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
 									selectedTab === "1. týden"
@@ -266,10 +283,9 @@
 										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={async () => {
-									loadZalozka(0)
-									skocNaPrvek()
-								}}
-							>
+									loadZalozka(0);
+									skocNaPrvek();
+								}}>
 								1. týden
 							</button>
 							<button
@@ -279,9 +295,8 @@
 										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(1)
-								}}
-							>
+									loadZalozka(1);
+								}}>
 								2. týden
 							</button>
 							<button
@@ -291,9 +306,8 @@
 										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(2)									
-								}}
-							>
+									loadZalozka(2);
+								}}>
 								3. týden
 							</button>
 							<button
@@ -303,9 +317,8 @@
 										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(3)									
-								}}
-							>
+									loadZalozka(3);
+								}}>
 								4. týden
 							</button>
 						</div>
@@ -313,10 +326,9 @@
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
 								on:click={() => {
-									skocNaPrvek()
+									skocNaPrvek();
 								}}
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-							>
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 								<p>Skoč nahoru</p>
 							</button>
 						</div>
