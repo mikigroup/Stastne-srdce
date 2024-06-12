@@ -162,119 +162,109 @@
 				<div class="pb-10 tab-content" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
-							<div class="">
-								<div class="">
-									<!-- karta menu -->
-									<div class="mb-5">
-										<p>Polévka</p>
-										{#if $page.data.session && data.menus && data.menus.length}
-											{#each data.menus as menu}
-												<!-- //searchMenu -->
-												<div class="p-2 my-3 border rounded-lg bg-stone-100">
+							<!-- karta menu -->
+							<div class="mb-5">
+								{#if data.menus && data.menus.length}
+									{#each data.menus as menu}
+										<!-- //searchMenu -->
+										<div class="p-2 my-3 border rounded-lg bg-stone-100">
+											<div
+												class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
+												<p
+													class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+													{new Date(menu.date).toLocaleDateString("cs-CZ", {
+														weekday: "long",
+														month: "long",
+														day: "numeric"
+													})}
+												</p>
+											</div>
+											<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+												<p>Polévka:</p><br>
+												<p class="pb-1 text-xl">
+													{menu.soup}
+												</p>
+												<span style="white-space: pre-line"
+													><p class="pt-2 text-lg">
+														{menu.description}
+													</p></span>
+											</div>
+											<hr class="px-5" />
+											<div class="flex justify-end pt-2 basis-4">
+												<button
+													class="text-sm"
+													on:click={() => addToCart(menu)}>
 													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
-														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															{new Date(menu.date).toLocaleDateString(
-																"cs-CZ",
-																{
-																	weekday: "long",
-																	month: "long",
-																	day: "numeric"
-																}
-															)}
-														</p>
-													</div>
-													<div
-														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p
-															class="pb-1 text-xl underline underline-offset-8">
-															{menu.soup}
-														</p>
-														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">
-																{menu.description}
-															</p></span>
-													</div>
-													<hr class="px-5" />
-													<div class="flex justify-end pt-2 basis-4">
-														<button
-															class="text-sm"
-															on:click={() => addToCart(menu)}>
-															<div
-																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+														class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
 																duration-150 ease-in-out">
-																<div class="flex justify-end">
-																	<p class="text-base">{menu.price} Kč</p>
-																</div>
-																<div class="flex justify-end text-sm uppercase">
-																	Přidat do košíku
-																</div>
-															</div>
-														</button>
+														<div class="flex justify-end">
+															<p class="text-base">{menu.price} Kč</p>
+														</div>
+														<div class="flex justify-end text-sm uppercase">
+															Přidat do košíku
+														</div>
 													</div>
-												</div>
-											{/each}
-										{:else if data.menus && data.menus.length}
-											{#each data.menus as menu}
-												<!-- // searchMenu -->
-												<div class="p-2 my-3 border rounded-lg bg-stone-100">
+												</button>
+											</div>
+										</div>
+									{/each}
+								{:else if data.menus && data.menus.length}
+									{#each data.menus as menu}
+										<!-- // searchMenu -->
+										<div class="p-2 my-3 border rounded-lg bg-stone-100">
+											<div
+												class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
+												<p
+													class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+													{new Date(menu.date).toLocaleDateString("cs-CZ", {
+														weekday: "long",
+														month: "long",
+														day: "numeric"
+													})}
+												</p>
+											</div>
+											<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+												<p class="pb-1 text-xl underline underline-offset-8">
+													{menu.title}
+												</p>
+												<span style="white-space: pre-line"
+													><p class="pt-2 text-lg">
+														{menu.description}
+													</p></span>
+											</div>
+											<hr class="px-5" />
+											<div class="flex justify-end pt-2 basis-4">
+												<a href="/login">
 													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
-														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
-															{new Date(menu.date).toLocaleDateString("cs-CZ", {
-																weekday: "long",
-																month: "long",
-																day: "numeric"
-															})}
-														</p>
-													</div>
-													<div
-														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p
-															class="pb-1 text-xl underline underline-offset-8">
-															{menu.title}
-														</p>
-														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">
-																{menu.description}
-															</p></span>
-													</div>
-													<hr class="px-5" />
-													<div class="flex justify-end pt-2 basis-4">
-														<a href="/login">
-															<div
-																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+														class="p-3 flex flex-col border rounded-lg shadow-md inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
 																duration-150 ease-in-out">
-																<div class="flex justify-end m-3 text-base">
-																	Přihlaš se
-																</div>
-																{#if $page.data.session && data.menus && data.menus.length}
-																	<div class="flex justify-end text-sm uppercase">
-																		Přidat do košíku
-																	</div>
-																{/if}
+														<div class="flex justify-end m-3 text-base">
+															Přihlaš se
+														</div>
+														{#if $page.data.session && data.menus && data.menus.length}
+															<div class="flex justify-end text-sm uppercase">
+																Přidat do košíku
 															</div>
-														</a>
+														{/if}
 													</div>
-												</div>
-											{/each}
-										{:else}
-											<p>Žádný jídelníček nenalezen</p>
-										{/if}
-									</div>
-								</div>
-								<div
-									class="grid border-2 rounded-lg justify-items-end btn-group"
-									role="group" />
+												</a>
+											</div>
+										</div>
+									{/each}
+								{:else}
+									<p>Žádný jídelníček nenalezen</p>
+								{/if}
 							</div>
+
+							<div
+								class="grid border-2 rounded-lg justify-items-end btn-group"
+								role="group" />
 							<hr />
 						</div>
 					</div>
