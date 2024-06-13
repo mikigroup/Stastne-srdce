@@ -75,7 +75,7 @@ onMount(() => {
 				<div class="grid grid-cols-2 w-80">
 					<h1
 						class="grid items-center text-xl font-semibold animate__flipInX animate__animated animate__delay-2s">
-						<a href="/"> Šťastné srdce</a>
+						<a href="/">Šťastné srdce</a>
 					</h1>
 					<img
 						{src}
