@@ -50,7 +50,7 @@
 		)
 	};*/
 
-	function addToCart(menu, selectedVariant) {
+	function addToCart(menu, selectedVariant, selectedVariantValue) {
 		CartItemsStore.update((currentCartItems) => {
 			const existingMenuIndex = currentCartItems.findIndex(
 				(item) => item.id === menu.id && item.date === menu.date
@@ -59,7 +59,7 @@
 			if (existingMenuIndex !== -1) {
 				const existingVariantIndex = currentCartItems[
 					existingMenuIndex
-				].variants.findIndex((item) => item.variantId === selectedVariant);
+					].variants.findIndex((item) => item.variantId === selectedVariant);
 
 				if (existingVariantIndex !== -1) {
 					currentCartItems[existingMenuIndex].variants[existingVariantIndex]
@@ -67,7 +67,8 @@
 				} else {
 					currentCartItems[existingMenuIndex].variants.push({
 						variantId: selectedVariant,
-						quantity: 1
+						quantity: 1,
+						value: selectedVariantValue
 					});
 				}
 			} else {
@@ -76,7 +77,8 @@
 					variants: [
 						{
 							variantId: selectedVariant,
-							quantity: 1
+							quantity: 1,
+							value: selectedVariantValue
 						}
 					]
 				});
@@ -182,7 +184,7 @@
 																	<button
 																		class="text-sm"
 																		on:click={$page.data.session
-																			? () => addToCart(menu, key)
+																			? () => addToCart(menu, key, value)
 																			: null}>
 																		<div class="flex justify-end pt-2 basis-4">
 																			<div class="p-3 flex flex-col border rounded-lg shadow-md md:inline-block

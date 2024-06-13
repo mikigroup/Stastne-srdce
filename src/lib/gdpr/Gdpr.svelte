@@ -116,9 +116,9 @@
 		}
 
 		const cookie = Cookies.get(cookieName);
-		console.log(`Hodnota cookie: ${cookie ? cookie : "není nastavena"}`);
+		// console.log(`Hodnota cookie: ${cookie ? cookie : "není nastavena"}`);
 		if (!cookie) {
-			console.log(`Používá se název cookie: ${cookieName}`);
+			// console.log(`Používá se název cookie: ${cookieName}`);
 			show();
 			return;
 		}
@@ -143,22 +143,22 @@
 	});
 
 	function setCookie(choices) {
-		console.log("Nastavování cookie s preferencemi:", choices);
+		// console.log("Nastavování cookie s preferencemi:", choices);
 		const expires = new Date();
 		expires.setDate(expires.getDate() + 365);
 
 		const options = Object.assign({}, defaults, cookieConfig, { expires });
 		Cookies.set(cookieName, JSON.stringify({ choices }), options);
-		console.log("Nastavení cookie s těmito možnostmi:", options);
-		console.log(
+		// console.log("Nastavení cookie s těmito možnostmi:", options);
+		/*console.log(
 			"Volání Cookies.set s:",
 			"userPreferences",
 			JSON.stringify(choices),
 			options
-		);
+		);*/
 
 		// Ověření, že cookie byla správně nastavena (v reálném případě byste ověřovali skutečnou cookie)
-		console.log("Ověření, že cookie 'userPreferences' je správně nastavena.");
+		// console.log("Ověření, že cookie 'userPreferences' je správně nastavena.");
 	}
 
 	function removeCookie() {
@@ -189,9 +189,9 @@
 	}
 
 	function choose() {
-		console.log("Uživatel potvrdil své preference:", cookieChoices);
+		// console.log("Uživatel potvrdil své preference:", cookieChoices);
 		setCookie(cookieChoices);
-		console.log("Cookie byla nastavena.");
+		// console.log("Cookie byla nastavena.");
 		execute(cookieChoices);
 	}
 

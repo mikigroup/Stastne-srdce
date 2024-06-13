@@ -2,12 +2,13 @@
 	import { slide } from "svelte/transition";
 	import "./app.css";
 	import "./banner.css";
-	import CartItemsStore from "../routes/Stores/stores";
+	import { totalPiecesStore } from "../routes/Stores/totalPiecesStore";
 	import { page } from "$app/stores";
 	import { readable } from "svelte/store";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { goto, invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
+
 
 	export let data;
 	let { supabase, session } = data;
@@ -58,12 +59,7 @@ onMount(() => {
 
 	let loading = false;
 
-	$: totalPieces = $CartItemsStore.reduce((sum:any, item:any) => {
-		if (item.variants) {
-			return sum + item.variants.reduce((variantSum:any, variant:any) => variantSum + variant.quantity, 0);
-		}
-		return sum;
-	}, 0);
+	$: totalPieces = $totalPiecesStore;
 </script>
 
 <!-- <Header /> -->
@@ -114,8 +110,8 @@ onMount(() => {
 
 			<div class="flex items-center justify-self-end">
 				{#if $page.data.session}
-					<!-- <div class=""> 
-          <p class="font-semibold">Ahoj {usertest}</p> 
+					<!-- <div class="">
+          <p class="font-semibold">Ahoj {usertest}</p>
         </div> -->
 
 					<!-- 	<a activeClass={$page.url.pathname === "/orders"} href="/orders">
