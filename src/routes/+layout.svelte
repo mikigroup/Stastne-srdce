@@ -58,12 +58,12 @@ onMount(() => {
 
 	let loading = false;
 
-	let totalPieces = 0;
-	$: {
-		if ($CartItemsStore.length) {
-			totalPieces = $CartItemsStore.reduce((sum: number, cartItems: { quantity: number }) => sum + cartItems.quantity, 0);
+	$: totalPieces = $CartItemsStore.reduce((sum:any, item:any) => {
+		if (item.variants) {
+			return sum + item.variants.reduce((variantSum:any, variant:any) => variantSum + variant.quantity, 0);
 		}
-	}
+		return sum;
+	}, 0);
 </script>
 
 <!-- <Header /> -->
@@ -239,7 +239,7 @@ onMount(() => {
 </header>
 
 <div class="pt-5 mt-20" />
-<slot class="mt-10" />
+<slot class="mt-10" {totalPieces} />
 
 <GDPR cookieName="gdpr" />
 <!-- <GdprBanner bind:this={gdprBanner} cookieName="props.beyonk_gdpr" {...props} on:analytics={initAnalytics} /> -->

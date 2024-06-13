@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
 	import CartItemsStore from "../Stores/stores";
 	import { page } from "$app/stores";
 
+	export let totalPieces: number;
 	export let data;
 	let { menus } = data;
 	$: ({ menus } = data);
@@ -51,32 +52,44 @@
 
 	function addToCart(menu, selectedVariant) {
 		CartItemsStore.update((currentCartItems) => {
-			const updatedCartItemIndex = currentCartItems.findIndex(
-				(cartItem) => cartItem.id === menu.id && cartItem.selectedVariant === selectedVariant
+			const existingMenuIndex = currentCartItems.findIndex(
+				(item) => item.id === menu.id && item.date === menu.date
 			);
-			if (updatedCartItemIndex === -1) {
-				return [
-					...currentCartItems,
-					{
-						...menu,
-						selectedVariant,
+
+			if (existingMenuIndex !== -1) {
+				const existingVariantIndex = currentCartItems[
+					existingMenuIndex
+				].variants.findIndex((item) => item.variantId === selectedVariant);
+
+				if (existingVariantIndex !== -1) {
+					currentCartItems[existingMenuIndex].variants[existingVariantIndex]
+						.quantity++;
+				} else {
+					currentCartItems[existingMenuIndex].variants.push({
+						variantId: selectedVariant,
 						quantity: 1
-					}
-				];
+					});
+				}
 			} else {
-				currentCartItems[updatedCartItemIndex].quantity += 1;
-				return currentCartItems;
+				currentCartItems.push({
+					...menu,
+					variants: [
+						{
+							variantId: selectedVariant,
+							quantity: 1
+						}
+					]
+				});
 			}
+
+			return currentCartItems;
 		});
 	}
+
 	/* let search = "";
 	$: searchMenu = menus.filter((menu) => {
 		return menu.description.includes(search);
 	}); */
-
-	$: totalPieces =
-		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
 <svelte:head>
@@ -149,46 +162,47 @@
 											</div>
 											<div class="my-3 border rounded-lg shadow-md md:p-8">
 												<p class="text-lg">Polévka</p>
-												<div class="p-5">
+												<div class="p-5 border rounded-2xl">
 													<p class="p-2 text-xl">
 														{menu.soup}
 													</p>
 												</div>
 												<span style="white-space: pre-line">
 													<div class="py-2 text-lg rounded-2xl">
-														<p class="text-lg mb-5">Hlavní jídlo</p>
+														<p class="text-lg mt-5">Hlavní jídlo</p>
 														{#each Object.entries(menu.variants) as [key, value] (key)}
 															<div class="border rounded-2xl p-5">
 																<div class="">
 																	<!--<div>{key}</div>-->
-																	<div class="p-2">
+																	<div class="p-2 text-lg">
 																		{value}
 																	</div>
 																</div>
 																<div class="flex justify-end pt-2 basis-4">
-																	<button class="text-sm">
+																	<button
+																		class="text-sm"
+																		on:click={$page.data.session
+																			? () => addToCart(menu, key)
+																			: null}>
 																		<div class="flex justify-end pt-2 basis-4">
-																			<div
-																				class="p-3 flex flex-col border rounded-lg shadow-md inline-block
-																								px-6 py-2.5 hover:bg-white hover:shadow-xl
-																								focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
-																								active:bg-green-800 active:shadow-lg active:text-white transition
-																								duration-150 ease-in-out">
-																				{#if $page.data.session && data.menus && data.menus.length}
+																			<div class="p-3 flex flex-col border rounded-lg shadow-md md:inline-block
+																					px-6 py-2.5 hover:bg-white hover:shadow-xl
+																					focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
+																					active:bg-green-800 active:shadow-lg active:text-white transition
+																					duration-150 ease-in-out">
+																				{#if !$page.data.session && data.menus && data.menus.length}
 																					<div
 																						class="flex justify-end m-3 text-base">
 																						<a href="/login">Přihlaš se</a>
 																					</div>
-																				{/if}
-																				{#if !$page.data.session && data.menus && data.menus.length}
+																				{:else}
 																					<div class="flex justify-end">
 																						<p class="text-base">
 																							{menu.price} Kč
 																						</p>
 																					</div>
 																					<div
-																						class="flex justify-end text-sm uppercase"
-																						on:click={() => addToCart(menu)}>
+																						class="flex justify-end text-sm uppercase">
 																						Přidat do košíku
 																					</div>
 																				{/if}
