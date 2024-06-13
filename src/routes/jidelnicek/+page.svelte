@@ -1,6 +1,5 @@
 <script>
 	import CartItemsStore from "../Stores/stores";
-	import client from "../../lib/sanityClient";
 	import { page } from "$app/stores";
 
 	export let data;
@@ -50,16 +49,17 @@
 		)
 	};*/
 
-	function addToCart(menu) {
+	function addToCart(menu, selectedVariant) {
 		CartItemsStore.update((currentCartItems) => {
 			const updatedCartItemIndex = currentCartItems.findIndex(
-				(cartItem) => cartItem._id === menu._id
+				(cartItem) => cartItem.id === menu.id && cartItem.selectedVariant === selectedVariant
 			);
 			if (updatedCartItemIndex === -1) {
 				return [
 					...currentCartItems,
 					{
 						...menu,
+						selectedVariant,
 						quantity: 1
 					}
 				];
@@ -125,37 +125,6 @@
 						!".</strong>
 				</p>
 				<br id="cilovyPrvek" />
-				<!-- <h6 class="pb-2">Vyhledávání</h6> 
-				<form class="flex items-center">
-					<label for="simple-search" class="sr-only">Search</label>
-					<div class="relative w-full">
-						<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-							<svg
-								aria-hidden="true"
-								class="w-5 h-5 text-gray-500 dark:text-gray-400"
-								fill="currentColor"
-								viewBox="0 0 20 20"
-								xmlns="http://www.w3.org/2000/svg">
-								<path
-									fill-rule="evenodd"
-									d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0
-									01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-									clip-rule="evenodd" />
-							</svg>
-						</div>
-						<input
-							type="text"
-
-							id="search"
-							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-							focus:ring-green-500 focus:border-green-500 block w-full pl-10 p-2.5 dark:bg-gray-700
-							dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-							dark:focus:green-blue-500 dark:focus:border-green-500"
-							placeholder="př. rizoto"
-							/>  bind:value={search}
-					</div>
-				</form>
-				 <div class="text-sm text-slate-500 ">* citlivé na velikost písmen</div>							 -->
 			</div>
 
 			<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">
@@ -178,49 +147,62 @@
 													})}
 												</p>
 											</div>
-											<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-												<p class="text-xl">Polévka:</p>
-												<br />
-												<p class="p-2 text-xl border rounded-2xl">
-													{menu.soup}
-												</p>
-												<span style="white-space: pre-line"
-													><p class="py-2 text-lg">
+											<div class="my-3 border rounded-lg shadow-md md:p-8">
+												<p class="text-lg">Polévka</p>
+												<div class="p-5">
+													<p class="p-2 text-xl">
+														{menu.soup}
+													</p>
+												</div>
+												<span style="white-space: pre-line">
+													<div class="py-2 text-lg rounded-2xl">
+														<p class="text-lg mb-5">Hlavní jídlo</p>
 														{#each Object.entries(menu.variants) as [key, value] (key)}
-															Menu {key}: {value}<br />
+															<div class="border rounded-2xl p-5">
+																<div class="">
+																	<!--<div>{key}</div>-->
+																	<div class="p-2">
+																		{value}
+																	</div>
+																</div>
+																<div class="flex justify-end pt-2 basis-4">
+																	<button class="text-sm">
+																		<div class="flex justify-end pt-2 basis-4">
+																			<div
+																				class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+																								px-6 py-2.5 hover:bg-white hover:shadow-xl
+																								focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
+																								active:bg-green-800 active:shadow-lg active:text-white transition
+																								duration-150 ease-in-out">
+																				{#if $page.data.session && data.menus && data.menus.length}
+																					<div
+																						class="flex justify-end m-3 text-base">
+																						<a href="/login">Přihlaš se</a>
+																					</div>
+																				{/if}
+																				{#if !$page.data.session && data.menus && data.menus.length}
+																					<div class="flex justify-end">
+																						<p class="text-base">
+																							{menu.price} Kč
+																						</p>
+																					</div>
+																					<div
+																						class="flex justify-end text-sm uppercase"
+																						on:click={() => addToCart(menu)}>
+																						Přidat do košíku
+																					</div>
+																				{/if}
+																			</div>
+																		</div>
+																	</button>
+																</div>
+															</div>
 														{/each}
-													</p></span>
+													</div>
+												</span>
 											</div>
 											<div></div>
 											<hr class="px-5" />
-											<div class="flex justify-end pt-2 basis-4">
-												<button class="text-sm">
-													<div class="flex justify-end pt-2 basis-4">
-														<div
-															class="p-3 flex flex-col border rounded-lg shadow-md inline-block
-																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
-																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
-																active:bg-green-800 active:shadow-lg active:text-white transition
-																duration-150 ease-in-out">
-															{#if $page.data.session && data.menus && data.menus.length}
-																<div class="flex justify-end m-3 text-base">
-																	<a href="/login">Přihlaš se</a>
-																</div>
-															{/if}
-															{#if !$page.data.session && data.menus && data.menus.length}
-																<div class="flex justify-end">
-																	<p class="text-base">{menu.price} Kč</p>
-																</div>
-																<div
-																	class="flex justify-end text-sm uppercase"
-																	on:click={() => addToCart(menu)}>
-																	Přidat do košíku
-																</div>
-															{/if}
-														</div>
-													</div>
-												</button>
-											</div>
 										</div>
 									{/each}
 									<p>Žádný jídelníček nenalezen</p>
