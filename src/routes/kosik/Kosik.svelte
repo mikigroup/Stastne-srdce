@@ -316,8 +316,7 @@
 								<!-- animate__animated animate__flip -->
 								<button
 									class="hover:animate-spin"
-									on:click={() => {
-										removeItem(cartItem._id)
+									on:click={() => removeItem(cartItem.id, variant.value)}
 									}}
 								>
 									X

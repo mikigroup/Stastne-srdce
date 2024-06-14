@@ -19,8 +19,8 @@ const supabaseLeo = createClient(
 );
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { safeGetSession } }) => {
-		const session = await safeGetSession();
+	sendOrder: async ({ request, locals: { supabase } }) => {
+		const session = await getSession();
 		if (!session) {
 			throw redirect(303, "/login");
 		}
@@ -28,10 +28,12 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const note = formData.get("note") as string;
 		const cartItems = JSON.parse(formData.get("cartItems") as string);
+		console.log("session.user.id:", session.user.id);
 
-		let fullname = "";
+		let first_name = "";
+		let last_name = "";
 		try {
-			const { data: profile, error: profileError } = await supabaseLeo
+			const { data: profile, error: profileError } = await supabase
 				.from("profiles")
 				.select("first_name, last_name")
 				.eq("id", session.user.id)
@@ -40,8 +42,8 @@ export const actions: Actions = {
 			if (profileError) {
 				console.warn("Chyba při získávání profilu uživatele:", profileError);
 			} else {
-				fullname =
-					`${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+				first_name = profile.first_name || "";
+				last_name = profile.last_name || "";
 			}
 		} catch (error) {
 			console.warn("Chyba při získávání profilu uživatele:", error);
@@ -52,41 +54,54 @@ export const actions: Actions = {
 		let totalPrice = 0;
 		let totalPieces = 0;
 
-		const itemsOrder = [];
-		for (const obj of cartItems) {
-			itemsOrder.push(obj.soup);
-			const releaseDate = new Date(obj.date);
-			const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(
-				releaseDate.getMonth() + 1
-			)
-				.toString()
-				.padStart(2, "0")}-${releaseDate.getFullYear()}`;
-			itemsOrder.push(formattedDate);
+		const items = cartItems.map((item: any) => {
+			const variants = item.variants.map((variant: any) => ({
+				variantId: variant.variantId,
+				quantity: variant.quantity,
+				value: variant.value
+			}));
 
-			for (const variant of obj.variants) {
-				itemsOrder.push(variant.value);
-				itemsOrder.push(variant.quantity);
-				totalPrice += obj.price * variant.quantity;
-				totalPieces += variant.quantity;
-			}
-		}
+			totalPrice +=
+				item.price *
+				item.variants.reduce(
+					(sum: number, variant: any) => sum + variant.quantity,
+					0
+				);
+			totalPieces += item.variants.reduce(
+				(sum: number, variant: any) => sum + variant.quantity,
+				0
+			);
+
+			return {
+				id: item.id,
+				date: item.date,
+				soup: item.soup,
+				price: item.price,
+				variants
+			};
+		});
 
 		const doc = {
 			created_at: new Date().toISOString(),
+			items: JSON.stringify(items),
+			note,
 			customer_email: email,
-			items: JSON.stringify(itemsOrder),
+			customer_first_name: first_name,
+			customer_last_name: last_name,
+			total_price: totalPrice,
+			total_pieces: totalPieces,
 			user_id: session.user.id
-			// Další relevantní sloupce podle vašich požadavků
-			// například:
-			// customer_first_name: ...,
-			// customer_last_name: ...,
-			// delivery_street: ...,
-			// atd.
 		};
+
+		console.log("cartItems:", cartItems);
+		console.log("session.user.id:", session.user.id);
+		console.log("first_name:", first_name);
+		console.log("last_name:", last_name);
+		console.log("doc:", doc);
 
 		const { data: order, error: orderError } = await supabaseLeo
 			.from("orders")
-			.insert([doc])
+			.insert([{ customer_first_name: TESTSSSS }])
 			.select();
 
 		if (orderError) {
