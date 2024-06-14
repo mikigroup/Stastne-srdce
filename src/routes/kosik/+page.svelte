@@ -32,27 +32,31 @@
 
 	function updateCartItems() {
 		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems.map((item) => {
-				const updatedVariants = item.variants.map((variant) => ({
-					...variant,
-					quantity: variant.quantity < 0 ? 0 : variant.quantity,
-				})).filter((variant) => variant.quantity > 0);
+			return currentCartItems
+				.map((item) => {
+					const updatedVariants = item.variants
+						.map((variant) => ({
+							...variant,
+							quantity: variant.quantity < 0 ? 0 : variant.quantity
+						}))
+						.filter((variant) => variant.quantity > 0);
 
-				if (updatedVariants.length === 0) {
-					return null;
-				}
+					if (updatedVariants.length === 0) {
+						return null;
+					}
 
-				return {
-					...item,
-					variants: updatedVariants,
-				};
-			}).filter((item) => item !== null);
+					return {
+						...item,
+						variants: updatedVariants
+					};
+				})
+				.filter((item) => item !== null);
 		});
 	}
 
 	$: totalPrice = $CartItemsStore.reduce((sum, item) => {
 		const itemTotalPrice = item.variants.reduce((itemSum, variant) => {
-			return itemSum + (item.price * variant.quantity);
+			return itemSum + item.price * variant.quantity;
 		}, 0);
 		return sum + itemTotalPrice;
 	}, 0);
@@ -210,7 +214,31 @@
 								{/if}
 							</div>
 						</div>
-						
+						<!-- nadpisy sloupců pro desktop -->
+						<div
+							class="hidden max-w-screen-xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid border-b-transparen">
+							<div
+								class="grid items-center grid-cols-9 p-2 pl-5 text-lg border divide-x rounded-lg border-slate-600 bg-slate-300">
+								<div class="font-light text-center">
+									<p>Den</p>
+								</div>
+								<div class="font-light text-center">
+									<p>Menu č.</p>
+								</div>
+								<div class="font-light text-center">
+									<p>Počet</p>
+								</div>
+								<div class="font-light text-center">
+									<p>Cena</p>
+								</div>
+								<div class="col-span-4 font-light text-center">
+									<p>Popis</p>
+								</div>
+								<div class="font-light text-center">
+									<p>Odebrat</p>
+								</div>
+							</div>
+						</div>
 						<!-- Obsah košíku pro desktopová zařízení -->
 						<div
 							class="hidden max-w-screen-xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
@@ -237,15 +265,20 @@
 											<p class="border-r-2 border-slate-300">{cartItem.soup}</p>
 										</div>
 										<div class="text-center">
-											<p>{cartItem.variants.reduce((sum, variant) => sum + (cartItem.price * variant.quantity), 0)},-</p>
+											<p>
+												{cartItem.variants.reduce(
+													(sum, variant) =>
+														sum + cartItem.price * variant.quantity,
+													0
+												)},-
+											</p>
 										</div>
-										<div
-											class="col-span-4 p-8 font-light border-x-2">
-												{#each cartItem.variants as variant}
-													<p class="my-5">
+										<div class="col-span-4 p-8 font-light border-x-2">
+											{#each cartItem.variants as variant}
+												<p class="my-5">
 													{variant.value}
-													</p>
-												{/each}
+												</p>
+											{/each}
 										</div>
 										<div class="text-center">
 											{#each cartItem.variants as variant}
