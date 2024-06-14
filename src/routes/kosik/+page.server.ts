@@ -1,6 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import client from "$lib/sanityClient";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
