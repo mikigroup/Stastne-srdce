@@ -1,6 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
+import { createClient } from "@supabase/supabase-js";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -12,8 +13,13 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
+const supabaseLeo = createClient(
+	"https://palzpgxkjhkksatqkwqf.supabase.co",
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbHpwZ3hramhra3NhdHFrd3FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Njk3MzEzODcsImV4cCI6MTk4NTMwNzM4N30.mTC4NMV-1ljAzNwaZJqGiMx9dbMOCkVWY3oiOOv_sOQ"
+);
+
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
+	sendOrder: async ({ request, locals: { safeGetSession } }) => {
 		const session = await safeGetSession();
 		if (!session) {
 			throw redirect(303, "/login");
@@ -25,7 +31,7 @@ export const actions: Actions = {
 
 		let fullname = "";
 		try {
-			const { data: profile, error: profileError } = await supabase
+			const { data: profile, error: profileError } = await supabaseLeo
 				.from("profiles")
 				.select("first_name, last_name")
 				.eq("id", session.user.id)
@@ -41,10 +47,6 @@ export const actions: Actions = {
 			console.warn("Chyba při získávání profilu uživatele:", error);
 		}
 
-		const latestOrder = await client.fetch(
-			`*[_type == "order"] | order(_createdAt desc) [0]`
-		);
-		const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
 		const email = session.user.email;
 
 		let totalPrice = 0;
@@ -52,58 +54,76 @@ export const actions: Actions = {
 
 		const itemsOrder = [];
 		for (const obj of cartItems) {
-			itemsOrder.push(obj.title);
-			const releaseDate = new Date(obj.releaseDate);
+			itemsOrder.push(obj.soup);
+			const releaseDate = new Date(obj.date);
 			const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(
 				releaseDate.getMonth() + 1
 			)
 				.toString()
 				.padStart(2, "0")}-${releaseDate.getFullYear()}`;
 			itemsOrder.push(formattedDate);
-			itemsOrder.push(obj.description);
-			itemsOrder.push(obj.quantity);
-			totalPrice += obj.price * obj.quantity;
-			totalPieces += obj.quantity;
+
+			for (const variant of obj.variants) {
+				itemsOrder.push(variant.value);
+				itemsOrder.push(variant.quantity);
+				totalPrice += obj.price * variant.quantity;
+				totalPieces += variant.quantity;
+			}
 		}
 
 		const doc = {
-			_type: "order",
-			itemsOrder,
-			note,
-			timestamp: new Date().toISOString(),
-			customer: fullname,
-			totalPrice,
-			totalPieces,
-			email,
-			orderNumber
+			created_at: new Date().toISOString(),
+			customer_email: email,
+			items: JSON.stringify(itemsOrder),
+			user_id: session.user.id
+			// Další relevantní sloupce podle vašich požadavků
+			// například:
+			// customer_first_name: ...,
+			// customer_last_name: ...,
+			// delivery_street: ...,
+			// atd.
 		};
 
-		/*const res = await client.create(doc);
-    console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);*/
+		const { data: order, error: orderError } = await supabaseLeo
+			.from("orders")
+			.insert([doc])
+			.select();
+
+		if (orderError) {
+			console.error("Chyba při vytváření objednávky:", orderError);
+			throw error(500, "Chyba při vytváření objednávky");
+		}
+
+		// console.log(`Objednávka byla vytvořena, ID objednávky je ${order[0].id}`);
 
 		const options = {
 			from: "info@stastnesrdce.cz",
-			// cc: "stastnesrdcekk@seznam.cz",
 			to: email,
 			subject: "Šťastné srdce - Objednávka",
 			text: `
-        Děkujeme za vaši objednávku ${orderNumber}!
+        Děkujeme za vaši objednávku!
         
         Detail:
         ${cartItems
 					.map(
 						(item: any, index: number) => `
-          Položka ${index + 1}:
-            ${item.title}
-            Množství: ${item.quantity}
-            Cena: ${item.price}
-            Datum: ${new Date(item.releaseDate).toLocaleDateString("cs-CZ", {
-							year: "numeric",
-							month: "long",
-							day: "numeric"
-						})}
-            Popis: ${item.description}
-        `
+              Položka ${index + 1}:
+                ${item.soup}
+                Datum: ${new Date(item.date).toLocaleDateString("cs-CZ", {
+									year: "numeric",
+									month: "long",
+									day: "numeric"
+								})}
+                Varianty:
+                  ${item.variants
+										.map(
+											(variant: any) => `
+                        - ${variant.value}
+                          Množství: ${variant.quantity}
+                      `
+										)
+										.join("\n")}
+            `
 					)
 					.join("\n")}
         

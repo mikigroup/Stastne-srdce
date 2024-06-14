@@ -25,6 +25,7 @@
 		$CartItemsStore.length &&
 		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
 
+/*
 	function refreshPage() {
 		location.reload(true)
 	}
@@ -32,6 +33,7 @@
 	function delayRefreshPage(mileSeconds) {
 		window.setTimeout(refreshPage, mileSeconds)
 	}
+*/
 
 	let loading = false
 	let first_name = null
@@ -228,11 +230,9 @@
 								<div class="font-light text-center">
 									<button
 										class="m-5"
-										on:click={() => {
-											removeItem(cartItem._id)
 										}}
 									>
-										✕
+										X
 									</button>
 								</div>
 							</div>
