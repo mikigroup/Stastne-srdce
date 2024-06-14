@@ -20,26 +20,43 @@
 			cartItems = value;
 			console.log("cartItems", cartItems);
 		});
-
 		return unsubscribe;
 	});
 	console.log("CartItemsStore", $CartItemsStore);
 	console.log("cartItems", cartItems);
 
-	function removeItem(id) {
-		CartItemsStore.update((items) => items.filter((item) => item.id !== id));
+	function removeItem(itemId: any, variantValue: any) {
+		CartItemsStore.update((currentCartItems) => {
+			return currentCartItems
+				.map((item: any) => {
+					if (item.id === itemId) {
+						const updatedVariants = item.variants.filter(
+							(variant: any) => variant.value !== variantValue
+						);
+						if (updatedVariants.length === 0) {
+							return null;
+						}
+						return {
+							...item,
+							variants: updatedVariants
+						};
+					}
+					return item;
+				})
+				.filter((item) => item !== null);
+		});
 	}
 
 	function updateCartItems() {
 		CartItemsStore.update((currentCartItems) => {
 			return currentCartItems
-				.map((item) => {
+				.map((item: any) => {
 					const updatedVariants = item.variants
-						.map((variant) => ({
+						.map((variant: any) => ({
 							...variant,
 							quantity: variant.quantity < 0 ? 0 : variant.quantity
 						}))
-						.filter((variant) => variant.quantity > 0);
+						.filter((variant: any) => variant.quantity > 0);
 
 					if (updatedVariants.length === 0) {
 						return null;
@@ -106,7 +123,6 @@
 	};
 
 	let showModal = false;
-	let formSubmitted = false;
 
 	onMount(() => {
 		if (form?.success) {
@@ -203,9 +219,8 @@
 											<div class="font-light text-center">
 												<button
 													class="m-5"
-													on:click={() => {
-														removeItem(cartItem.id);
-													}}>
+													on:click={() =>
+														removeItem(cartItem.id, variant.value)}>
 													✕
 												</button>
 											</div>
@@ -223,16 +238,13 @@
 									<p>Den</p>
 								</div>
 								<div class="font-light text-center">
-									<p>Menu č.</p>
-								</div>
-								<div class="font-light text-center">
-									<p>Počet</p>
-								</div>
-								<div class="font-light text-center">
-									<p>Cena</p>
+									<p>Polévka</p>
 								</div>
 								<div class="col-span-4 font-light text-center">
 									<p>Popis</p>
+								</div>
+								<div class="col-span-2 font-light text-center">
+									<p>Počet</p>
 								</div>
 								<div class="font-light text-center">
 									<p>Odebrat</p>
@@ -262,9 +274,9 @@
 											</p>
 										</div>
 										<div class="text-center">
-											<p class="border-r-2 border-slate-300">{cartItem.soup}</p>
+											<p class="">{cartItem.soup}</p>
 										</div>
-										<div class="text-center">
+										<!--	<div class="text-center">
 											<p>
 												{cartItem.variants.reduce(
 													(sum, variant) =>
@@ -272,7 +284,7 @@
 													0
 												)},-
 											</p>
-										</div>
+										</div>-->
 										<div class="col-span-4 p-8 font-light border-x-2">
 											{#each cartItem.variants as variant}
 												<p class="my-5">
@@ -280,23 +292,30 @@
 												</p>
 											{/each}
 										</div>
-										<div class="text-center">
+										<div class="col-span-2 text-center h-full flex flex-col items-center justify-center">
 											{#each cartItem.variants as variant}
-												<input
-													min="0"
-													max="99"
-													type="number"
-													bind:value={variant.quantity}
-													on:change={updateCartItems}
-													class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600" />
+												<div class="flex flex-row items-center justify-center h-full gap-5">
+													<input
+														min="0"
+														max="99"
+														type="number"
+														bind:value={variant.quantity}
+														on:change={updateCartItems}
+														class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
+													/>
+													<button
+														class="hover:animate-spin"
+														on:click={() => removeItem(cartItem.id, variant.value)}
+													>
+														X
+													</button>
+												</div>
 											{/each}
 										</div>
 										<div class="text-center">
 											<button
 												class="hover:animate-spin"
-												on:click={() => {
-													removeItem(cartItem.id);
-												}}>
+												on:click={() => removeItem(cartItem.id, variant.value)}>
 												X
 											</button>
 										</div>

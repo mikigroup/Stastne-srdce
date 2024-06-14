@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
 		pass: "#QFUtwxDsQW5LEDT"
 	}
 });
+
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const session = await safeGetSession();
