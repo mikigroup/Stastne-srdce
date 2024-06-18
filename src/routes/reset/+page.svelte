@@ -88,15 +88,14 @@
 						id="btn-success"
 						type="submit"
 						class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-						Nastavit heslo
+						{loading ? "Měnim heslo..." : "Změna hesla"}
 					</button>
-
-					{#if form?.message}
-						<div class="flex w-full p-2 my-4 border rounded-lg">
-							<p class="error">{form.message.display}</p>
-						</div>
-					{/if}
 				</div>
+				{#if form?.message}
+					<div class="flex w-full p-2 my-4 border rounded-lg">
+						<p class="error">{form.message.display}</p>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</form>
