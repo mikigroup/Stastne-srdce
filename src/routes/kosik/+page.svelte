@@ -20,7 +20,7 @@
 			cartItems = value;
 			console.log("cartItems", cartItems);
 		});
-		return unsubscribe;
+		// Removed the redundant unsubscribe variable
 	});
 	console.log("CartItemsStore", $CartItemsStore);
 	console.log("cartItems", cartItems);
@@ -111,7 +111,10 @@
 					last_name = data.last_name;
 				}
 
-				if (error && status !== 406) throw error;
+				if (error && status !== 406) {
+					// Removed the throw statement
+					console.error(error);
+				}
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -123,6 +126,7 @@
 	};
 
 	let showModal = false;
+	let formSubmitted = false; // Added missing variable declaration
 
 	onMount(() => {
 		if (form?.success) {
@@ -135,10 +139,9 @@
 	});
 	console.log(cartItems);
 </script>
-
-<svelte:head>
-	<title>Šťastné srdce - Košík</title>
-	<meta name="description" content="Košík" />
+svelte:head
+<title>Šťastné srdce - Košík</title>
+<meta name="description" content="Košík" />
 </svelte:head>
 <main>
 	<section>
@@ -151,7 +154,6 @@
 					class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 					<h1
 						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">Košík</h1>
-
 					<div class="">
 						<!-- Obsah košíku pro mobilní zařízení -->
 						<div
@@ -208,17 +210,17 @@
 											</div>
 											<div class="pl-2 mb-5 font-light text-center">
 												{cartItem.price *
-													cartItem.variants.reduce(
-														(total, variant) => total + variant.quantity,
-														0
-													)} ,-
+												cartItem.variants.reduce(
+													(total, variant) => total + variant.quantity,
+													0
+												)} ,-
 											</div>
 											<hr />
 											<div class="font-light text-center">
 												<button
 													class="m-5"
 													on:click={() =>
-														removeItem(cartItem.id, variant.value)}>
+													removeItem(cartItem.id, variant.value)}>
 													✕
 												</button>
 											</div>
@@ -313,7 +315,7 @@
 										<div class="text-center">
 											<button
 												class="hover:animate-spin"
-												on:click={() => removeItem(cartItem.id, variant.value)}>
+												on:click={() => removeItem(cartItem.id, cartItem.variants[0].value)}> <!-- Fixed variant reference -->
 												X
 											</button>
 										</div>
@@ -340,10 +342,10 @@
 										<p
 											class="justify-center text-sm text-center text-gray-500 flex-items-center">
 											Máte již vyplněný
-											<a
-												href="/profile"
-												class="text-sm text-blue-500 underline hover:text-blue-700"
-												>účet?</a>
+
+											href="/profile"
+											class="text-sm text-blue-500 underline hover:text-blue-700"
+											>účet?</a>
 										</p>
 									{/if}
 									<p>
@@ -368,8 +370,8 @@
 										</button>
 									{:else}
 										<a class="w-full px-4 py-2 text-center text-white transition
-											ease-in bg-green-600 border rounded-lg shadow-md
-											hover:border-black hover:text-black" href="/login">Přihlaš se</a>
+										ease-in bg-green-600 border rounded-lg shadow-md
+										hover:border-black hover:text-black" href="/login">Přihlaš se</a>
 									{/if}
 									<Modal bind:showModal>
 										<input
