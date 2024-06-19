@@ -13,14 +13,14 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-const supabaseLeo = createClient(
-	"https://palzpgxkjhkksatqkwqf.supabase.co",
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhbHpwZ3hramhra3NhdHFrd3FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Njk3MzEzODcsImV4cCI6MTk4NTMwNzM4N30.mTC4NMV-1ljAzNwaZJqGiMx9dbMOCkVWY3oiOOv_sOQ"
+const supabase = createClient(
+	"https://orgshebezwfizhmlmeum.supabase.co",
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74"
 );
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase } }) => {
-		const session = await getSession();
+	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const session = await safeGetSession();
 		if (!session) {
 			throw redirect(303, "/login");
 		}
@@ -34,7 +34,7 @@ export const actions: Actions = {
 		let last_name = "";
 		try {
 			const { data: profile, error: profileError } = await supabase
-				.from("profiles")
+				.from("customers")
 				.select("first_name, last_name")
 				.eq("id", session.user.id)
 				.single();
@@ -99,9 +99,9 @@ export const actions: Actions = {
 		console.log("last_name:", last_name);
 		console.log("doc:", doc);
 
-		const { data: order, error: orderError } = await supabaseLeo
+		const { data: order, error: orderError } = await supabase
 			.from("orders")
-			.insert([{ customer_first_name: TESTSSSS }])
+			.insert([doc])
 			.select();
 
 		if (orderError) {

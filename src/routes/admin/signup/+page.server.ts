@@ -1,5 +1,5 @@
 import { redirect, fail } from "@sveltejs/kit";
-import type { Actions, ActionFailure } from "./$types";
+import type { Actions } from "./$types";
 
 type ActionData = {
 	message: {

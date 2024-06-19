@@ -1,4 +1,3 @@
-// +page.server.ts
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { type Provider } from "@supabase/supabase-js";
@@ -34,6 +33,7 @@ export const actions: Actions = {
 			});
 		} else {
 			return { message: { success: true } };
+			throw redirect(303, "http://localhost:5173/");
 		}
 	}
 };

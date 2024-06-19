@@ -101,7 +101,7 @@
 			loading = true;
 			if (session && session.user) {
 				const { data, error, status } = await supabase
-					.from("profiles")
+					.from("customers")
 					.select(`first_name, last_name`)
 					.eq("id", session.user.id)
 					.single();
@@ -150,9 +150,7 @@
 				<div
 					class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 					<h1
-						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
-						Košík
-					</h1>
+						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">Košík</h1>
 
 					<div class="">
 						<!-- Obsah košíku pro mobilní zařízení -->
@@ -369,11 +367,9 @@
 											<span>Potvrzení košíku</span>
 										</button>
 									{:else}
-										<a>
-											class="w-full px-4 py-2 text-center text-white transition
+										<a class="w-full px-4 py-2 text-center text-white transition
 											ease-in bg-green-600 border rounded-lg shadow-md
-											hover:border-black hover:text-black" href="/login">Přihlaš
-											se</a>
+											hover:border-black hover:text-black" href="/login">Přihlaš se</a>
 									{/if}
 									<Modal bind:showModal>
 										<input

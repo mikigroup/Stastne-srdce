@@ -51,7 +51,7 @@
 			loading = true
 			const { user } = session
 			const { data, error, status } = await supabase
-				.from('profiles')
+				.from('customers')
 				.select(`first_name, last_name`)
 				.eq('id', user.id)
 				.single()
