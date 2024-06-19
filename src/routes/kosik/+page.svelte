@@ -139,9 +139,10 @@
 	});
 	console.log(cartItems);
 </script>
-svelte:head
-<title>Šťastné srdce - Košík</title>
-<meta name="description" content="Košík" />
+
+<svelte:head>
+	<title>Šťastné srdce - Košík</title>
+	<meta name="description" content="Košík" />
 </svelte:head>
 <main>
 	<section>
@@ -153,7 +154,9 @@ svelte:head
 				<div
 					class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 					<h1
-						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">Košík</h1>
+						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+						Košík
+					</h1>
 					<div class="">
 						<!-- Obsah košíku pro mobilní zařízení -->
 						<div
@@ -210,17 +213,17 @@ svelte:head
 											</div>
 											<div class="pl-2 mb-5 font-light text-center">
 												{cartItem.price *
-												cartItem.variants.reduce(
-													(total, variant) => total + variant.quantity,
-													0
-												)} ,-
+													cartItem.variants.reduce(
+														(total, variant) => total + variant.quantity,
+														0
+													)} ,-
 											</div>
 											<hr />
 											<div class="font-light text-center">
 												<button
 													class="m-5"
 													on:click={() =>
-													removeItem(cartItem.id, variant.value)}>
+														removeItem(cartItem.id, variant.value)}>
 													✕
 												</button>
 											</div>
@@ -292,21 +295,22 @@ svelte:head
 												</p>
 											{/each}
 										</div>
-										<div class="col-span-2 text-center h-full flex flex-col items-center justify-center">
+										<div
+											class="col-span-2 text-center h-full flex flex-col items-center justify-center">
 											{#each cartItem.variants as variant}
-												<div class="flex flex-row items-center justify-center h-full gap-5">
+												<div
+													class="flex flex-row items-center justify-center h-full gap-5">
 													<input
 														min="0"
 														max="99"
 														type="number"
 														bind:value={variant.quantity}
 														on:change={updateCartItems}
-														class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
-													/>
+														class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600" />
 													<button
 														class="hover:animate-spin"
-														on:click={() => removeItem(cartItem.id, variant.value)}
-													>
+														on:click={() =>
+															removeItem(cartItem.id, variant.value)}>
 														X
 													</button>
 												</div>
@@ -315,7 +319,9 @@ svelte:head
 										<div class="text-center">
 											<button
 												class="hover:animate-spin"
-												on:click={() => removeItem(cartItem.id, cartItem.variants[0].value)}> <!-- Fixed variant reference -->
+												on:click={() =>
+													removeItem(cartItem.id, cartItem.variants[0].value)}>
+												<!-- Fixed variant reference -->
 												X
 											</button>
 										</div>
@@ -342,10 +348,10 @@ svelte:head
 										<p
 											class="justify-center text-sm text-center text-gray-500 flex-items-center">
 											Máte již vyplněný
-
-											href="/profile"
-											class="text-sm text-blue-500 underline hover:text-blue-700"
-											>účet?</a>
+											<a
+												href="/profile"
+												class="text-sm text-blue-500 underline hover:text-blue-700"
+												>účet?</a>
 										</p>
 									{/if}
 									<p>
@@ -369,9 +375,11 @@ svelte:head
 											<span>Potvrzení košíku</span>
 										</button>
 									{:else}
-										<a class="w-full px-4 py-2 text-center text-white transition
+										<a
+											class="w-full px-4 py-2 text-center text-white transition
 										ease-in bg-green-600 border rounded-lg shadow-md
-										hover:border-black hover:text-black" href="/login">Přihlaš se</a>
+										hover:border-black hover:text-black"
+											href="/login">Přihlaš se</a>
 									{/if}
 									<Modal bind:showModal>
 										<input
