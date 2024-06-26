@@ -1,118 +1,123 @@
 <script lang="ts">
-	import CartItemsStore from '../Stores/stores'
-	import { get } from 'svelte/store'
-	import { page } from '$app/stores'
-	import { user } from '../Stores/stores'
-	import client from '../../lib/sanityClient'	
-	import Modal from './Modal.svelte'
-	import { onMount } from 'svelte'
-	import type { AuthSession } from '@supabase/supabase-js'
+	import CartItemsStore from "../Stores/stores";
+	import { get } from "svelte/store";
+	import { page } from "$app/stores";
+	import { user } from "../Stores/stores";
+	import client from "../../lib/sanityClient";
+	import Modal from "./Modal.svelte";
+	import { onMount } from "svelte";
+	import type { AuthSession } from "@supabase/supabase-js";
 
-	export let session: AuthSession	
+	export let session: AuthSession;
 
-	$: cartItems = $CartItemsStore
+	$: cartItems = $CartItemsStore;
 
 	function removeItem(menuid) {
 		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems.filter((cartItem) => cartItem._id != menuid)
-		})
+			return currentCartItems.filter((cartItem) => cartItem._id != menuid);
+		});
 	}
 
 	$: totalPrice =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.price * cartItems.quantity, 0)
+		$CartItemsStore.reduce(
+			(sum, cartItems) => sum + cartItems.price * cartItems.quantity,
+			0
+		);
 	$: totalPieces =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 
 	function refreshPage() {
-		location.reload(true)
+		location.reload(true);
 	}
 
 	function delayRefreshPage(mileSeconds) {
-		window.setTimeout(refreshPage, mileSeconds)
+		window.setTimeout(refreshPage, mileSeconds);
 	}
 
-	let loading = false
-	let first_name = null
-	let last_name = null
+	let loading = false;
+	let first_name = null;
+	let last_name = null;
 
-	const email = session.user.email
-	console.log(email)
+	const email = session.user.email;
+	console.log(email);
 
 	onMount(() => {
-		getProfile()
-	})
+		getProfile();
+	});
 
 	const getProfile = async () => {
 		try {
-			loading = true
-			const { user } = session
+			loading = true;
+			const { user } = session;
 			const { data, error, status } = await supabase
-				.from('profiles')
+				.from("profiles")
 				.select(`first_name, last_name`)
-				.eq('id', user.id)
-				.single()
+				.eq("id", user.id)
+				.single();
 
 			if (data) {
-				first_name = data.first_name
-				last_name = data.last_name
+				first_name = data.first_name;
+				last_name = data.last_name;
 			}
 
-			if (error && status !== 406) throw error
+			if (error && status !== 406) throw error;
 		} catch (error) {
 			if (error instanceof Error) {
-				alert(error.message)
+				alert(error.message);
 			}
 		} finally {
-			loading = false
+			loading = false;
 		}
-	}
+	};
 
 	async function sendOrderAndCreateDoc2() {
 		try {
-			loading = true
-			var txt = document.getElementById('txt').value
+			loading = true;
+			var txt = document.getElementById("txt").value;
 
-			const latestOrder = await client.fetch('*[_type == "order"] | order(_createdAt desc) [0]')
-			const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1
+			const latestOrder = await client.fetch(
+				'*[_type == "order"] | order(_createdAt desc) [0]'
+			);
+			const orderNumber = latestOrder ? latestOrder.orderNumber + 1 : 1;
 
 			// Replace "yourFunctionName" with the correct Supabase function name
-			await supabase.functions.invoke('sendOrderBySendGrid_T', {
+			await supabase.functions.invoke("sendOrderBySendGrid_T", {
 				body: JSON.stringify({
 					cart: get(CartItemsStore),
 					user: supabase.auth.getUser(),
 					txt: txt,
 					orderNumber: orderNumber
 				})
-			})
+			});
 
-			const cart = JSON.parse(localStorage.getItem('cart'))
-			let totalPrice = 0
-			let totalPieces = 0
-			const order = []
+			const cart = JSON.parse(localStorage.getItem("cart"));
+			let totalPrice = 0;
+			let totalPieces = 0;
+			const order = [];
 			for (const obj of cart) {
-				order.push(obj.title)
-				const releaseDate = new Date(obj.releaseDate)
-				const formattedDate = `${releaseDate.getDate().toString().padStart(2, '0')}-${(
+				order.push(obj.title);
+				const releaseDate = new Date(obj.releaseDate);
+				const formattedDate = `${releaseDate.getDate().toString().padStart(2, "0")}-${(
 					releaseDate.getMonth() + 1
 				)
 					.toString()
-					.padStart(2, '0')}-${releaseDate.getFullYear()}`
-				order.push(formattedDate)
-				order.push(obj.description)
-				order.push(obj.quantity)
-				totalPrice += obj.price * obj.quantity
-				totalPieces += obj.quantity
+					.padStart(2, "0")}-${releaseDate.getFullYear()}`;
+				order.push(formattedDate);
+				order.push(obj.description);
+				order.push(obj.quantity);
+				totalPrice += obj.price * obj.quantity;
+				totalPieces += obj.quantity;
 			}
 
-			const now = new Date()
-			const timestamp = now.toISOString()
-			const fullname = `${first_name} ${last_name}`
-			const email = session.user.email
+			const now = new Date();
+			const timestamp = now.toISOString();
+			const fullname = `${first_name} ${last_name}`;
+			const email = session.user.email;
 
 			const doc = {
-				_type: 'order',
+				_type: "order",
 				itemsOrder: order,
 				note: txt,
 				timestamp: timestamp,
@@ -121,24 +126,24 @@
 				totalPieces: totalPieces,
 				email: email,
 				orderNumber: orderNumber
-			}
+			};
 
-			const res = await client.create(doc)
-			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`)
+			const res = await client.create(doc);
+			console.log(`Objednávka byla vytvořena, document ID je ${res._id}`);
 
 			CartItemsStore.update(() => {
-				return []
-			})
+				return [];
+			});
 
-			window.location.href = '/thankyou'
+			window.location.href = "/thankyou";
 		} catch (error) {
-			console.error(error)
+			console.error(error);
 		} finally {
-			loading = false
+			loading = false;
 		}
 	}
 
-	let showModal = false
+	let showModal = false;
 </script>
 
 <svelte:head>
@@ -148,11 +153,9 @@
 <main>
 	<section>
 		<div
-			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix"
-		>
+			class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 			<h1
-				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
-			>
+				class="mb-4 mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Košík
 			</h1>
 
@@ -162,7 +165,8 @@
 					<!-- obsah košíku pokud je prázdný pro mobile -->
 					<div class="text-lg place-items-center">
 						{#if cartItems.length === 0}
-							<div class="flex flex-col items-center justify-center w-full overflow-hidden">
+							<div
+								class="flex flex-col items-center justify-center w-full overflow-hidden">
 								<div class="my-20 text-xl font-bold text-center md:text-2xl">
 									<p>Košík je prázdný...</p>
 								</div>
@@ -178,10 +182,13 @@
 								</div>
 								<div class="m-2 text-center">
 									<p class="">
-										{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-											month: 'long',
-											day: 'numeric'
-										})}
+										{new Date(cartItem.releaseDate).toLocaleDateString(
+											"cs-CZ",
+											{
+												month: "long",
+												day: "numeric"
+											}
+										)}
 									</p>
 								</div>
 								<hr />
@@ -204,9 +211,8 @@
 										type="number"
 										bind:value={cartItem.quantity}
 										on:change={(e) => {
-											CartItemsStore.update((items) => items)
-										}}
-									/>
+											CartItemsStore.update((items) => items);
+										}} />
 								</div>
 								<hr />
 								<div class="mt-5 font-light text-center">
@@ -223,15 +229,16 @@
 										<strong>Popis</strong>
 									</p>
 								</div>
-								<div class="col-span-4 p-8 mb-5 font-light">{cartItem.description}</div>
+								<div class="col-span-4 p-8 mb-5 font-light">
+									{cartItem.description}
+								</div>
 								<hr />
 								<div class="font-light text-center">
 									<button
 										class="m-5"
 										on:click={() => {
-											removeItem(cartItem._id)
-										}}
-									>
+											removeItem(cartItem._id);
+										}}>
 										✕
 									</button>
 								</div>
@@ -241,11 +248,9 @@
 				</div>
 				<!-- nadpisy sloupců pro desktop -->
 				<div
-					class="hidden max-w-screen-xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid border-b-transparen"
-				>
+					class="hidden max-w-screen-xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid border-b-transparen">
 					<div
-						class="grid items-center grid-cols-9 p-2 pl-5 text-lg border divide-x rounded-lg border-slate-600 bg-slate-300"
-					>
+						class="grid items-center grid-cols-9 p-2 pl-5 text-lg border divide-x rounded-lg border-slate-600 bg-slate-300">
 						<div class="font-light text-center">
 							<p>Den</p>
 						</div>
@@ -268,10 +273,12 @@
 				</div>
 
 				<!-- obsah košíku pro desktop -->
-				<div class="hidden max-w-screen-xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
+				<div
+					class="hidden max-w-screen-xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
 					<!-- obsah košíku pokud je prázdný pro desktop -->
 					{#if cartItems.length === 0}
-						<div class="flex flex-col items-center justify-center w-full overflow-hidden">
+						<div
+							class="flex flex-col items-center justify-center w-full overflow-hidden">
 							<div class="my-20 text-2xl font-bold text-center">
 								<p>Košík je prázdný...</p>
 							</div>
@@ -280,13 +287,12 @@
 					<!-- obsah pro desktop -->
 					{#each cartItems as cartItem, i (cartItem._id)}
 						<div
-							class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-9 bg-stone-100 md:grid"
-						>
+							class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-9 bg-stone-100 md:grid">
 							<div class="text-center">
 								<p class="border-r-2 border-slate-300">
-									{new Date(cartItem.releaseDate).toLocaleDateString('cs-CZ', {
-										month: 'long',
-										day: 'numeric'
+									{new Date(cartItem.releaseDate).toLocaleDateString("cs-CZ", {
+										month: "long",
+										day: "numeric"
 									})}
 								</p>
 							</div>
@@ -300,10 +306,9 @@
 									type="number"
 									bind:value={cartItem.quantity}
 									on:change={(e) => {
-										CartItemsStore.update((items) => items)
+										CartItemsStore.update((items) => items);
 									}}
-									class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600"
-								/>
+									class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600" />
 							</div>
 
 							<div class="text-center">
@@ -317,9 +322,8 @@
 								<button
 									class="hover:animate-spin"
 									on:click={() => {
-										removeItem(cartItem._id)
-									}}
-								>
+										removeItem(cartItem._id);
+									}}>
 									X
 								</button>
 							</div>
@@ -338,16 +342,17 @@
 								name="txt"
 								rows="4"
 								cols="50"
-								placeholder="poznámka k objednávce"
-							/>
+								placeholder="poznámka k objednávce" />
 						</div>
 						<div class="grid p-5 border-b-2 justify-items-end">
 							{#if $page.data.session}
-								<p class="justify-center text-sm text-center text-gray-500 flex-items-center">
+								<p
+									class="justify-center text-sm text-center text-gray-500 flex-items-center">
 									Máte již vyplněný
-									<a href="/kosik" class="text-sm text-blue-500 underline hover:text-blue-700"
-										>účet?</a
-									>
+									<a
+										href="/kosik"
+										class="text-sm text-blue-500 underline hover:text-blue-700"
+										>účet?</a>
 								</p>
 							{/if}
 							<p>
@@ -367,31 +372,25 @@
 									data-te-toggle="modal"
 									data-te-target="#exampleModal"
 									data-te-ripple-init
-									data-te-ripple-color="light"
-								>
+									data-te-ripple-color="light">
 									<span class="">Potvrzení košíku</span>
 								</button>
 							{:else}
 								<a
 									class="w-full px-4 py-2 text-center text-white transition ease-in bg-green-600 border rounded-lg shadow-md hover:border-black hover:text-black"
-									href="/login">Přihlaš se</a
-								>
+									href="/login">Přihlaš se</a>
 							{/if}
 
 							<Modal bind:showModal>
 								<div class="">
 									<button
 										on:click={() => {
-											sendOrderAndCreateDoc2()
+											sendOrderAndCreateDoc2();
 										}}
 										type="button"
 										class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black"
-										><input
-											type="submit"
-											class=""
-											value={loading ? 'Odesílá se...' : 'Odeslat'}
-											disabled={loading}
-										/>
+										disabled={loading}>
+										{loading ? "Odesílá se..." : "Odeslat"}
 									</button>
 									<!-- <button type="button" class="p-2 border hover:bg-slate-400">Zavřít</button> -->
 								</div>
