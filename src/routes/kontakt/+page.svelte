@@ -6,7 +6,7 @@
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 
-	const key = "6Ldvac0ZAAAAAFmtvwilkJ3MOD4IGou9KjhRglIo";
+	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
 	let State = {
 		idle: "idle",
 		requesting: "requesting",
