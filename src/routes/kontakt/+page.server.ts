@@ -23,7 +23,7 @@ export const actions: Actions = {
 
     const options = {
       from: "info@stastnesrdce.cz",
-      to: email,
+      to: "info@stastnesrdce.cz",
       // cc: "stastnesrdcekk@seznam.cz",
       subject: "Šťastné srdce - Formulář",
       text: `Dobrý den,\nbyla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz .\n\nKontaktní osoba: ${name}\nEmail: ${email}\nTelefon: ${tel}\n\nObsah zprávy:\n ${message}`,
