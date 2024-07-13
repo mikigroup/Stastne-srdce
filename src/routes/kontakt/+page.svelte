@@ -6,29 +6,42 @@
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 
-	//	let message = { success: null, display: "" }
-	/* 	function onSubmit(e) {
-		const formData = new FormData(e.target)
-		for (let field of formData) {
-			const [key, value] = field
-			data[key] = value
-		}
-		supabase.functions.invoke("sendForm", {
-			body: JSON.stringify({ data: data })
-		})
-		if (data != null) {
-			setTimeout(function () {
-				window.location.reload()
-			}, 5000)
-			message = { display: "Formulář odeslán" }
-			return
-		}
-	} */
+	const key = "6Ldvac0ZAAAAAFmtvwilkJ3MOD4IGou9KjhRglIo";
+	let State = {
+		idle: "idle",
+		requesting: "requesting",
+		success: "success"
+	};
+	/*	let token;
+		let state = State.idle;*/
+
+	let token = "";
+	let state = State.idle;
+
+
+	function doRecaptcha(e:any) {
+		grecaptcha.ready(function() {
+			grecaptcha.execute(key, { action: "submit" }).then(function(t:any) {
+				state = State.success;
+				token = t;
+
+				const form = e.target;
+				const tokenInput = document.createElement('input');
+				tokenInput.type = 'hidden';
+				tokenInput.name = 'g-recaptcha-response';
+				tokenInput.value = token;
+				form.appendChild(tokenInput);
+
+				form.submit();
+			});
+		});
+	}
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Kontakt</title>
 	<meta name="description" content="Kontakt" />
+	<script src="https://www.google.com/recaptcha/api.js?render={key}"></script>
 </svelte:head>
 <main>
 	<section class="">
@@ -71,7 +84,7 @@
 				</div>
 			</div>
 			<div class="">
-				<form method="POST" class="" action="?/sendForm">
+				<form method="POST" class="" action="?/sendForm" on:submit|preventDefault={doRecaptcha}>
 					<!-- <div class="grid text-center"> -->
 					<div class="max-w-screen-sm py-20 mx-auto my-20">
 						<div>
@@ -152,7 +165,7 @@
 </main>
 
 <style>
-	textarea:focus-visible {
-		outline: 1px solid green !important;
-	}
+    textarea:focus-visible {
+        outline: 1px solid green !important;
+    }
 </style>
