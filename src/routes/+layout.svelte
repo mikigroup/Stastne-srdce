@@ -9,19 +9,18 @@
 	import { goto, invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
 
-
 	export let data;
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
 
-onMount(() => {
-  const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
-    if (newSession?.expires_at !== session?.expires_at) {
-      invalidate('supabase:auth');
-    }
-  });
-  return () => data.subscription.unsubscribe();
-});
+	onMount(() => {
+		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
+			if (newSession?.expires_at !== session?.expires_at) {
+				invalidate("supabase:auth");
+			}
+		});
+		return () => data.subscription.unsubscribe();
+	});
 
 	async function signOut() {
 		try {
@@ -259,35 +258,35 @@ onMount(() => {
 </footer>
 
 <style lang="postcss">
-    .textmenu {
-        font-size: 1em;
-    }
-    header {
-        position: fixed;
-        top: 0px;
-        width: 100%;
-        height: 100px;
-        z-index: 1;
-    }
-    .navItem {
-        text-decoration: none;
-        position: relative;
-        display: inline-block;
+	.textmenu {
+		font-size: 1em;
+	}
+	header {
+		position: fixed;
+		top: 0px;
+		width: 100%;
+		height: 100px;
+		z-index: 1;
+	}
+	.navItem {
+		text-decoration: none;
+		position: relative;
+		display: inline-block;
 
-        &::after {
-            content: "";
-            background: #d2691e;
-            height: 1px;
-            position: absolute;
-            bottom: 0;
-            transition: 0.16s all 0.025s;
-            left: 100%;
-            right: 0;
-        }
+		&::after {
+			content: "";
+			background: #d2691e;
+			height: 1px;
+			position: absolute;
+			bottom: 0;
+			transition: 0.16s all 0.025s;
+			left: 100%;
+			right: 0;
+		}
 
-        &:hover::after {
-            left: 0;
-            right: 0;
-        }
-    }
+		&:hover::after {
+			left: 0;
+			right: 0;
+		}
+	}
 </style>
