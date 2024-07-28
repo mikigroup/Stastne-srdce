@@ -2,7 +2,7 @@
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
-	import type { ActionData } from "../../../../.svelte-kit/types/src/routes";
+	import type { ActionData } from './$types';
 	import { onMount } from "svelte";
 
 	export let form: ActionData;
@@ -18,7 +18,8 @@
 			options: {
 				queryParams: {
 					access_type: "offline",
-					prompt: "consent"
+					prompt: "consent",
+					redirectTo: "/admin"
 				}
 			}
 		});

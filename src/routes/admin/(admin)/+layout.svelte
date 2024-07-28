@@ -4,7 +4,7 @@
 </script>
 
 <header>
-	HELLO
+Header /admin layout
 </header>
 
 <main>

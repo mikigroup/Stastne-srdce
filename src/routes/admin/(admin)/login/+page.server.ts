@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import type { Actions } from "../../../../.svelte-kit/types/src/routes";
+import type { Actions } from "@sveltejs/kit";
 import { type Provider } from "@supabase/supabase-js";
 
 export type ActionData = {
@@ -32,8 +32,7 @@ export const actions: Actions = {
 				}
 			});
 		} else {
-			return { message: { success: true } };
-			throw redirect(303, "http://localhost:5173/");
+			throw redirect(303, "/admin");
 		}
 	}
 };

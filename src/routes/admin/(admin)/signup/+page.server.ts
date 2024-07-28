@@ -1,5 +1,5 @@
 import { redirect, fail } from "@sveltejs/kit";
-import type { Actions } from "../../../../.svelte-kit/types/src/routes";
+import type { Actions } from "@sveltejs/kit";
 
 type ActionData = {
 	message: {
