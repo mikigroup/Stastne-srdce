@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import type { ActionData, PageData } from "./$types";
+	import type { ActionData, PageData } from "../../../../.svelte-kit/types/src/routes";
 	import { enhance } from "$app/forms";
 
 	export let form: ActionData;
