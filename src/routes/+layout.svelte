@@ -12,8 +12,8 @@
 		import HeaderCustomer from "$lib/component/HeaderCustomer.svelte";
 
 		export let data;
-		let { supabase, session } = data;
-		$: ({ supabase, session } = data);
+		let { supabase, session, user } = data;
+		$: ({ supabase, session, user  } = data);
 
 		onMount(() => {
 			const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
@@ -24,54 +24,20 @@
 			return () => data.subscription.unsubscribe();
 		});
 
-		async function signOut() {
-			try {
-				const { error } = await supabase.auth.signOut();
-				if (error) throw error;
-				await goto("/");
-			} catch (error) {
-				console.error("Error logging out:", error);
-			}
-		}
 
-		let src = "/android-chrome-192x192.png";
-
-		const formatter = new Intl.DateTimeFormat("en", {
-			hour12: false,
-			hour: "numeric",
-			minute: "2-digit"
-		});
-
-		const time = readable(new Date(), function start(set) {
-			const interval = setInterval(() => {
-				set(new Date());
-			}, 1000);
-
-			return function stop() {
-				clearInterval(interval);
-			};
-		});
-
-		let menuVisible = false;
-
-		function toggleMenu() {
-			menuVisible = !menuVisible;
-		}
-
-		let loading = false;
-
-		$: totalPieces = $totalPiecesStore;
 		$: isAdminRoute = $page.url.pathname.startsWith('/admin');
 	</script>
 
 	<!-- <Header /> -->
-	{#if !isAdminRoute}
-		<HeaderCustomer />
+	<HeaderCustomer {data} />
+
+	<!--{#if !isAdminRoute}
+
 	{:else}
 	<HeaderAdmin {data} />
-	{/if}
+	{/if}-->
 	<div class="pt-5 mt-20" />
-	<slot class="mt-10" {totalPieces} />
+	<slot class="mt-10" />
 
 	<GDPR cookieName="gdpr" />
 	<!-- <GdprBanner bind:this={gdprBanner} cookieName="props.beyonk_gdpr" {...props} on:analytics={initAnalytics} /> -->

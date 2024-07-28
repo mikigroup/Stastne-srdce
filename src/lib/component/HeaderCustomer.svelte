@@ -1,5 +1,51 @@
 <script>
 import { page } from "$app/stores";
+import { goto, invalidate } from "$app/navigation";
+import { readable } from "svelte/store";
+import { totalPiecesStore } from "../../routes/Stores/totalPiecesStore.js";
+import { onMount } from "svelte";
+
+export let data;
+let { supabase, session, user } = data;
+$: ({ supabase, session, user } = data);
+
+async function signOut() {
+	try {
+		const { error } = await supabase.auth.signOut();
+		if (error) throw error;
+		await goto("/");
+	} catch (error) {
+		console.error("Error logging out:", error);
+	}
+}
+
+let src = "/android-chrome-192x192.png";
+
+const formatter = new Intl.DateTimeFormat("en", {
+	hour12: false,
+	hour: "numeric",
+	minute: "2-digit"
+});
+
+const time = readable(new Date(), function start(set) {
+	const interval = setInterval(() => {
+		set(new Date());
+	}, 1000);
+
+	return function stop() {
+		clearInterval(interval);
+	};
+});
+
+let menuVisible = false;
+
+function toggleMenu() {
+	menuVisible = !menuVisible;
+}
+
+let loading = false;
+
+$: totalPieces = $totalPiecesStore;
 </script>
 <header class="bg-white">
 	<nav>

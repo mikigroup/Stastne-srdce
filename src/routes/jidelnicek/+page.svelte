@@ -6,7 +6,8 @@
 	export let data;
 	let { menus } = data;
 	$: ({ menus } = data);
-	console.log(menus);
+	// console.log(menus);
+	console.log("HAHA", data.menus);
 
 	let selectedTab = "";
 	const selectTab = (tabName) => {
@@ -132,7 +133,7 @@
 					pro Vás přínosem.
 					<br />
 					Na každého nového strávníka se těšíme a máme radost, pokud zůstane mezi
-					našimi věrnými. 
+					našimi věrnými.
 					<br />
 					<br />
 					<strong
@@ -143,7 +144,7 @@
 			</div>
 
 			<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">
-				<div class="pb-10 tab-content" id="tabs-tabContent">
+				<div class="pb-10" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
 							<div class="mb-5">
@@ -221,6 +222,7 @@
 											<hr class="px-5" />
 										</div>
 									{/each}
+								{:else}
 									<p>Žádný jídelníček nenalezen</p>
 								{/if}
 							</div>

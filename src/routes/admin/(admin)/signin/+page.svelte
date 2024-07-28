@@ -2,7 +2,7 @@
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
-	import type { ActionData } from './$types';
+	import type { ActionData } from "./$types";
 	import { onMount } from "svelte";
 
 	export let form: ActionData;
@@ -18,8 +18,7 @@
 			options: {
 				queryParams: {
 					access_type: "offline",
-					prompt: "consent",
-					redirectTo: "/admin"
+					prompt: "consent"
 				}
 			}
 		});
@@ -54,13 +53,13 @@
 					<a
 						href="/signup"
 						class="text-blue-700 hover:underline dark:text-blue-500"
-					>Pojď na to!</a>
+						>Pojď na to!</a>
 				</div>
 				<div>
 					<label
 						for="email"
 						class="block mt-5 mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Email</label>
+						>Email</label>
 					<input
 						value={form?.email ?? "@"}
 						type="email"
@@ -74,7 +73,7 @@
 					<label
 						for="password"
 						class="block mt-5 mb-2 text-sm font-medium text-gray-900"
-					>Heslo</label>
+						>Heslo</label>
 					<input
 						value={form?.password ?? ""}
 						type="password"
@@ -94,12 +93,12 @@
 					<a
 						href="/forgot"
 						class="mt-5 ml-auto text-sm text-blue-700 hover:underline"
-					>Pokud neznáš heslo</a>
+						>Pokud neznáš heslo</a>
 				</div>
 				<button
 					type="submit"
 					class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center my-10"
-				>Potvrdit</button>
+					>Potvrdit</button>
 				{#if form?.message}
 					<div class="flex w-full p-2 my-4 border rounded-lg">
 						<p class="error">{form.message.display}</p>

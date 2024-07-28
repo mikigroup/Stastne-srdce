@@ -109,10 +109,10 @@
 					tabindex="0"
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
 					<li><a href="/">Domů</a></li>
-					<li><a href="/customer">Zákazníci</a></li>
+					<li><a href="/admin/customer">Zákazníci</a></li>
 					<!-- <li><a href="/item">Produkty</a></li> -->
-					<li><a href="/order">Objednávky</a></li>
-					<li><a href="/menu">Menu</a></li>
+					<li><a href="/admin/order">Objednávky</a></li>
+					<li><a href="/admin/menu">Menu</a></li>
 					<!-- <li class="">
 						<details open>
 							<summary>ANS</summary>
@@ -210,7 +210,7 @@
 							class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
 							<li>
 								<!-- svelte-ignore a11y-missing-attribute -->
-								<a href="/settings" class="justify-between">
+								<a href="/admin/settings" class="justify-between">
 									Nastavení účtu
 									<span class="badge">Nový</span>
 								</a>
@@ -221,11 +221,11 @@
 				</div>
 			{:else}
 			<button><a
-					href="/signin"
+					href="/admin/signin"
 					class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
 					>Přihlásit</a></button>
 				<button><a
-					href="/signup"
+					href="/admin/signup"
 					class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
 					>Registrovat</a></button>
 			{/if}
