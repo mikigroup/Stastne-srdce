@@ -59,9 +59,11 @@
 		let loading = false;
 
 		$: totalPieces = $totalPiecesStore;
+		$: isAdminRoute = $page.url.pathname.startsWith('/admin');
 	</script>
 
 	<!-- <Header /> -->
+	{#if !isAdminRoute}
 	<header class="bg-white">
 		<nav>
 			<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl">
@@ -232,7 +234,7 @@
 			<hr class="mx-4" />
 		</nav>
 	</header>
-
+	{/if}
 	<div class="pt-5 mt-20" />
 	<slot class="mt-10" {totalPieces} />
 
