@@ -29,13 +29,12 @@
 	</script>
 
 	<!-- <Header /> -->
-	<HeaderCustomer {data} />
-
-	<!--{#if !isAdminRoute}
-
+	{#if !isAdminRoute}
+		<HeaderCustomer {data} />
 	{:else}
 	<HeaderAdmin {data} />
-	{/if}-->
+	{/if}
+
 	<div class="pt-5 mt-20" />
 	<slot class="mt-10" />
 

@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({
 	const { data: orders, error } = await supabase
 		.from("orders")
 		.select(
-			"state, date, id, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, delivery_street, delivery_street_number, delivery_zip_code, delivery_first_name, delivery_last_name, delivery_telephone, pay_state, delivery_city, currency, order_number, item_id, shipping_method, pay_method"
+			"state, date, id, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, delivery_street, delivery_street_number, delivery_zip_code, delivery_first_name, delivery_last_name, delivery_telephone, pay_state, delivery_city, currency, order_number, items, shipping_method, pay_method"
 		);
 	if (error) {
 		console.error("Error fetching orders:", error);
