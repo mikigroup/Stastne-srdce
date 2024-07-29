@@ -1,18 +1,21 @@
 import { redirect, fail } from "@sveltejs/kit";
-import type { Actions } from "@sveltejs/kit";
+import type { Actions, ActionFailure } from "@sveltejs/kit";
 
 type ActionData = {
 	message: {
 		success: boolean;
 		display: string;
 	};
-	confirmpassword: string;
-	email: string;
-	password: string;
+	confirmpassword?: string;
+	email?: string;
+	password?: string;
 };
 
 export const actions: Actions = {
-	signUp: async ({ request, locals: { supabase } }) => {
+	signUp: async ({
+		request,
+		locals: { supabase }
+	}): Promise<ActionFailure<ActionData> | ActionData> => {
 		const formData = await request.formData();
 
 		const email = formData.get("email") as string;
@@ -24,11 +27,21 @@ export const actions: Actions = {
 				message: {
 					success: false,
 					display: "Hesla nejsou stejná"
-				}
+				},
+				email,
+				confirmpassword
 			});
 		}
 
-		const { data, error } = await supabase.auth.signUp({ email, password });
+		const { data, error } = await supabase.auth.signUp({
+			email,
+			password,
+			options: {
+				data: {
+					user_type: "admin"
+				}
+			}
+		});
 
 		if (error) {
 			console.error("Chyba při registraci uživatele:", error.message);
@@ -36,18 +49,20 @@ export const actions: Actions = {
 				message: {
 					success: false,
 					display: "Chyba při registraci"
-				}
+				},
+				email
 			});
 		}
 
 		const user = data.user;
 
-		if (user?.role === "") {
+		if (!user) {
 			return fail(400, {
 				message: {
 					success: false,
 					display: "Tento e-mail je již registrován."
-				}
+				},
+				email
 			});
 		}
 
@@ -57,27 +72,6 @@ export const actions: Actions = {
 				display:
 					"Na Vaši emailovou schránku byla odeslána zpráva. Prosím potvrďte ji a následně se přihlašte."
 			}
-		} as ActionData;
+		};
 	}
-
-	/*   signInWithGoogle: async ({ locals: { supabase } }) => {
-			const { error } = await supabase.auth.signInWithOAuth({
-				provider: "google",
-				options: {
-					redirectTo: "https://localhost:5173/auth/callback",
-				},
-			});
-	
-			if (error) {
-				console.error("Chyba při přihlášení pomocí Google:", error.message);
-				return fail(400, {
-					message: {
-						success: false,
-						display: "Chyba při přihlášení pomocí Google",
-					},
-				});
-			}
-
-			throw redirect(303, "/");
-		}, */
 };
