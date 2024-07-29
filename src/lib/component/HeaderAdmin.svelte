@@ -113,20 +113,7 @@
 					<!-- <li><a href="/item">Produkty</a></li> -->
 					<li><a href="/admin/order">Objednávky</a></li>
 					<li><a href="/admin/menu">Menu</a></li>
-					<!-- <li class="">
-						<details open>
-							<summary>ANS</summary>
-							<ul>
-								<li><a>Kontrola EANu</a></li>
-								<li>
-									<a href="/ans_kontrola_exp"
-										>Kontrola EANu - načtení z expeďáku</a>
-								</li>
-								<li><a href="/ans">Produkty - ve vývoji</a></li>
-								<li></li>
-							</ul>
-						</details>
-					</li> -->					
+
 				</ul>
 			</div>
 			<p class="text-xl">Malý LEO</p>

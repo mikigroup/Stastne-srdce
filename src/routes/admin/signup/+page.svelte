@@ -48,8 +48,8 @@
 				<div class="text-sm font-medium text-center text-gray-500">
 					nebo <br />se chceš přihlásit?
 					<a
-						href="/signin"
-						aria-current={$page.url.pathname === "/signin" ? "page" : undefined}
+						href="/admin/signin"
+						aria-current={$page.url.pathname === "/admin/signin" ? "page" : undefined}
 						class="text-blue-700 hover:underline dark:text-blue-500"
 					>Klikni sem!</a>
 				</div>
