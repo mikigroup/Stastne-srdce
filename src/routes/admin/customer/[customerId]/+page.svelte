@@ -62,7 +62,7 @@
 	}
 
 	async function back() {
-		goto("/customer");
+		goto("/admin/customer");
 	}
 
 	function closeModal() {
@@ -150,95 +150,106 @@
 
 			<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
-			<div class="mb-8 md:flex md:flex-wrap md:justify-between">
-				<div class="w-full mb-2 md:w-1/2 md:mb-0">
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={first_name}
-						placeholder="Jméno"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={last_name}
-						placeholder="Příjmení"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={street}
-						placeholder="Ulice"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={street_number}
-						placeholder="Číslo"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={city}
-						placeholder="Město"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={zip_code}
-						placeholder="PSČ"
-					/>
+			<div class="mb-8 max-w-3xl">
+				<div class="collapse collapse-plus bg-base-200">
+					<input type="radio" name="my-accordion-3" checked="checked" />
+					<div class="collapse-title text-xl font-medium">
+						Osobní údaje
+					</div>
+					<div class="collapse-content">
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Jméno</span>
+							</div>
+							<input type="text" bind:value={first_name} placeholder="Zadejte jméno" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Příjmení</span>
+							</div>
+							<input type="text" bind:value={last_name} placeholder="Zadejte příjmení" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Telefon</span>
+							</div>
+							<input type="text" bind:value={telephone} placeholder="Zadejte telefon" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Email</span>
+							</div>
+							<input type="text" bind:value={email} placeholder="Zadejte email" class="input input-bordered w-full max-w-xs" readonly disabled/>
+						</label>
+					</div>
 				</div>
 
-				<div class="w-full md:w-1/2">
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={telephone}
-						placeholder="Telefon"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={email}
-						placeholder="Email"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={ico}
-						placeholder="IČO"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={dic}
-						placeholder="DIČ"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={company}
-						placeholder="Společnost"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={website}
-						placeholder="Web"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={username}
-						placeholder="Uživatelské jméno"
-					/>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={user_role}
-						placeholder="Role uživatele"
-					/>
+				<div class="collapse collapse-plus bg-base-200">
+					<input type="radio" name="my-accordion-3" />
+					<div class="collapse-title text-xl font-medium">
+						Adresa
+					</div>
+					<div class="collapse-content">
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Ulice a číslo</span>
+							</div>
+							<input type="text" bind:value={street} placeholder="Zadejte ulici a číslo" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Město</span>
+							</div>
+							<input type="text" bind:value={city} placeholder="Zadejte město" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">PSČ</span>
+							</div>
+							<input type="text" bind:value={zip_code} placeholder="Zadejte PSČ" class="input input-bordered w-full max-w-xs" />
+						</label>
+					</div>
+				</div>
+
+				<div class="collapse collapse-plus bg-base-200">
+					<input type="radio" name="my-accordion-3" />
+					<div class="collapse-title text-xl font-medium">
+						Firemní údaje
+					</div>
+					<div class="collapse-content">
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">IČO</span>
+							</div>
+							<input type="text" bind:value={ico} placeholder="Zadejte IČO" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">DIČ</span>
+							</div>
+							<input type="text" bind:value={dic} placeholder="Zadejte DIČ" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Společnost</span>
+							</div>
+							<input type="text" bind:value={company} placeholder="Zadejte společnost" class="input input-bordered w-full max-w-xs" />
+						</label>
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Web</span>
+							</div>
+							<input type="text" bind:value={website} placeholder="Zadejte web" class="input input-bordered w-full max-w-xs" />
+						</label>
+					</div>
 				</div>
 			</div>
 		</div>

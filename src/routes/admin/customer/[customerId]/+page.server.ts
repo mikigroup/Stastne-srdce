@@ -23,8 +23,7 @@ export const load: PageServerLoad = async ({
       dic,
       company,
       website,
-      username,
-      user_role,
+      username,      
       id
     `
 		)

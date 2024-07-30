@@ -27,7 +27,7 @@
 
 	const columnOrder = Object.keys(columnNames);
 
-	let visibleColumns = columnOrder.reduce((obj, column) => {
+	let visibleColumns = profileTableSettings?.table_settings_customers ?? columnOrder.reduce((obj, column) => {
 		obj[column] = true;
 		return obj;
 	}, {});
@@ -52,7 +52,6 @@
 			return obj;
 		}, {});
 
-		// Přeskupení vlastností podle columnOrder
 		const orderedSettings = columnOrder.reduce((obj, column) => {
 			obj[column] = updatedSettings[column];
 			return obj;
@@ -70,11 +69,13 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	const columns: ColumnDef<typeof customers[0]>[] = columnOrder.map(key => ({
-		accessorKey: key,
-		header: columnNames[key],
-		cell: ({ getValue }) => getValue(),
-	}));
+	const columns: ColumnDef<typeof customers[0]>[] = columnOrder
+		.filter(key => $visibleColumnsStore[key])
+		.map(key => ({
+			accessorKey: key,
+			header: columnNames[key],
+			cell: ({ getValue }) => getValue(),
+		}));
 
 	const options = writable<TableOptions<typeof customers[0]>>({
 		data: customers,
@@ -82,13 +83,23 @@
 		getCoreRowModel: getCoreRowModel(),
 	});
 
+	visibleColumnsStore.subscribe(value => {
+		options.update(options => ({
+			...options,
+			columns: columns.filter(column => value[column.accessorKey]),
+		}));
+	});
+
 	const table = createSvelteTable(options);
+
+	function truncateText(text: string | null | undefined, maxLength: number = 20): string {
+		if (text == null) return '';
+		return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+	}
 </script>
-
 <svelte:head>
-	<title>LEO - Zákazníci</title>
+<title>LEO - Zákazníci</title>
 </svelte:head>
-
 <div class="relative p-5 shadow-md sm:rounded-lg">
 	<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row">
@@ -133,17 +144,13 @@
 			{#each $table.getRowModel().rows as row}
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
-						<div class="w-full lg:w-1/8 xl:w-1/8">
-							{#if typeof cell.getValue() === 'function'}
-								{cell.getValue()()}
-							{:else}
-								{cell.getValue()}
-							{/if}
+						<div class="w-full lg:w-1/8 xl:w-1/8 truncate-cell" title={cell.getValue()}>
+							{truncateText(cell.getValue())}
 						</div>
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
 						<a
-						href="/customer/{row.original.id}"
+						href="/admin/customer/{row.original.id}"
 						data-sveltekit-preload-data
 						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
 						>
@@ -157,3 +164,10 @@
 		{/if}
 	</div>
 </div>
+<style>
+    .truncate-cell {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }</style>
