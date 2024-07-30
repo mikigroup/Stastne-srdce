@@ -70,8 +70,7 @@
 	const columns: ColumnDef<typeof customers[0]>[] = Object.keys(columnNames).map(key => ({
 		accessorKey: key,
 		header: columnNames[key],
-		cell: info => info.getValue(),
-		footer: info => info.column.id,
+		cell: ({ getValue }) => getValue(),
 	}));
 
 	const options = writable<TableOptions<typeof customers[0]>>({
@@ -81,6 +80,11 @@
 	});
 
 	const table = createSvelteTable(options);
+
+	$: {
+		console.log('Customers data:', customers);
+		console.log('Table data:', $table.getRowModel().rows);
+	}
 </script>
 
 <svelte:head>
@@ -93,7 +97,7 @@
 			<div>
 				<button
 					on:click={() => goto("/customer/newcustomer")}
-					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
 					Vytvořit zákazníka
 				</button>
 			</div>
@@ -134,11 +138,15 @@
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div class="w-full lg:w-1/8 xl:w-1/8">
-							{cell.renderCell()}
+							{#if typeof cell.getValue() === 'function'}
+								{cell.getValue()()}
+							{:else}
+								{cell.getValue()}
+							{/if}
 						</div>
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
-						<a>
+						<a
 						href="/customer/{row.original.id}"
 						data-sveltekit-preload-data
 						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
