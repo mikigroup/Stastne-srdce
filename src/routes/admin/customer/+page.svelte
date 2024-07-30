@@ -14,17 +14,6 @@
 	let { supabase, session, customers, profileTableSettings } = data;
 	$: ({ supabase, session, customers, profileTableSettings } = data);
 
-	let visibleColumns = profileTableSettings?.table_settings_customers ?? {
-		first_name: true,
-		last_name: true,
-		email: true,
-		telephone: true,
-		street: true,
-		city: true,
-		street_number: true,
-		zip_code: true
-	};
-
 	const columnNames = {
 		first_name: "Jméno",
 		last_name: "Příjmení",
@@ -35,6 +24,13 @@
 		street_number: "Číslo popisné",
 		zip_code: "PSČ"
 	};
+
+	const columnOrder = Object.keys(columnNames);
+
+	let visibleColumns = columnOrder.reduce((obj, column) => {
+		obj[column] = true;
+		return obj;
+	}, {});
 
 	const visibleColumnsStore = writable(visibleColumns);
 
@@ -51,9 +47,20 @@
 			return;
 		}
 
+		const updatedSettings = columnOrder.reduce((obj, column) => {
+			obj[column] = $visibleColumnsStore[column];
+			return obj;
+		}, {});
+
+		// Přeskupení vlastností podle columnOrder
+		const orderedSettings = columnOrder.reduce((obj, column) => {
+			obj[column] = updatedSettings[column];
+			return obj;
+		}, {});
+
 		const { data, error } = await supabase
 			.from("profiles")
-			.update({ table_settings_customers: $visibleColumnsStore })
+			.update({ table_settings_customers: orderedSettings })
 			.eq("id", session.user.id);
 
 		if (error) {
@@ -61,13 +68,9 @@
 		}
 	}
 
-	$: {
-		saveTableSettings();
-	}
-
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	const columns: ColumnDef<typeof customers[0]>[] = Object.keys(columnNames).map(key => ({
+	const columns: ColumnDef<typeof customers[0]>[] = columnOrder.map(key => ({
 		accessorKey: key,
 		header: columnNames[key],
 		cell: ({ getValue }) => getValue(),
@@ -80,11 +83,6 @@
 	});
 
 	const table = createSvelteTable(options);
-
-	$: {
-		console.log('Customers data:', customers);
-		console.log('Table data:', $table.getRowModel().rows);
-	}
 </script>
 
 <svelte:head>
@@ -106,7 +104,6 @@
 	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Filtry</button>
-		<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -125,9 +122,8 @@
 	</div>
 	<div class="flex flex-wrap">
 		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
-			{#each Object.keys($visibleColumnsStore).filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div
-					class="w-full lg:w-1/8 xl:w-1/8 {column !== Object.keys($visibleColumnsStore).filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+				<div class="w-full lg:w-1/8 xl:w-1/8 {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
