@@ -27,7 +27,7 @@
 	if (form?.message?.success) {
 		onMount(() => {
 			setTimeout(() => {
-				goto("/");
+				goto("/admin");
 			}, 3000);
 		});
 	}

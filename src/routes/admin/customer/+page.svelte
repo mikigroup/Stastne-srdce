@@ -95,7 +95,7 @@
 			<div>
 				<button
 					on:click={() => goto("/customer/newcustomer")}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
 					Vytvořit zákazníka
 				</button>
 			</div>
