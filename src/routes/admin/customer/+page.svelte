@@ -69,7 +69,15 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	const columns: ColumnDef<typeof customers[0]>[] = columnOrder
+	let searchQuery = "";
+
+	$: filteredCustomers = customers?.filter((customer) =>
+		Object.values(customer).some((value) =>
+			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
+
+	$: columns = columnOrder
 		.filter(key => $visibleColumnsStore[key])
 		.map(key => ({
 			accessorKey: key,
@@ -77,20 +85,20 @@
 			cell: ({ getValue }) => getValue(),
 		}));
 
-	const options = writable<TableOptions<typeof customers[0]>>({
-		data: customers,
+	$: options = writable<TableOptions<typeof customers[0]>>({
+		data: filteredCustomers,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
 
-	visibleColumnsStore.subscribe(value => {
+	$: visibleColumnsStore.subscribe(value => {
 		options.update(options => ({
 			...options,
 			columns: columns.filter(column => value[column.accessorKey]),
 		}));
 	});
 
-	const table = createSvelteTable(options);
+	$: table = createSvelteTable(options);
 
 </script>
 <svelte:head>
@@ -105,6 +113,14 @@
 					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
 					Vytvořit zákazníka
 				</button>
+			</div>
+			<div>
+				<input
+					type="text"
+					placeholder="Hledat zákazníky..."
+					class="px-3 py-2 border rounded-lg"
+					bind:value={searchQuery}
+				/>
 			</div>
 		</div>
 	</div>
@@ -130,17 +146,17 @@
 	<div class="flex flex-wrap">
 		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-				<div class:wider={column === 'email'}>
+				<div class={column === 'email' ? 'md:col-span-2' : ''}>
 					{columnNames[column]}
 				</div>
 			{/each}
 			<div class="text-right">Editovat</div>
 		</div>
-		{#if customers && customers.length > 0}
+		{#if filteredCustomers && filteredCustomers.length > 0}
 			{#each $table.getRowModel().rows as row}
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
 					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-						<div class="truncate-cell" class:wider={column === 'email'} title={row.getValue(column) ?? ''}>
+						<div class={column === 'email' ? 'md:col-span-2 truncate-cell' : 'truncate-cell'} title={row.getValue(column) ?? ''}>
 							{row.getValue(column) ?? ''}
 						</div>
 					{/each}
@@ -159,19 +175,12 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
-
-
 </div>
 <style>
-/*    .truncate-cell {
-        max-width: 150px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }*/
-
-.wider {
-    grid-column: span 2;
-}
-
+    /*    .truncate-cell {
+						max-width: 150px;
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+				}*/
 </style>

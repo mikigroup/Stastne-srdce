@@ -41,7 +41,7 @@
 		state: "Stav",
 		shipping_method: "Způsob dopravy",
 		pay_method: "Platební metoda",
-		currency: "Měna",
+		// currency: "Měna",
 		customer_first_name: "Jméno",
 		customer_last_name: "Příjmení",
 		pay_state: "Stav platby",
@@ -50,7 +50,7 @@
 		customer_city: "Město",
 		customer_zip_code: "PSČ", */
 		customer_email: "E-mail",
-		customer_telephone: "Telefon",
+		// customer_telephone: "Telefon",
 	/*	delivery_street: "D-Ulice",
 		delivery_street_number: "D-Číslo domu",
 		delivery_zip_code: "D-PSČ",
