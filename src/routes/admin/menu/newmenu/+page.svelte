@@ -1,28 +1,88 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { createEventDispatcher } from "svelte";
 	import { goto } from "$app/navigation";
+	import { fade, fly } from 'svelte/transition';
 
 	export let data;
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
-
+	let { session, supabase, menus } = data;
+	$: ({ session, supabase, menus } = data);
 	let loading = false;
-	let date: string = new Date().toISOString().slice(0, 10);
-	let soup: string = "";
-	let price: number = 0;
-	let variants: any = {
+	let date: string = menus?.date ?? "";
+	let soup: string = menus?.soup ?? "";
+	let price: number = menus?.price ?? 0;
+	let variants: any = menus?.variants ?? {
 		1: "",
 		2: "",
 		3: ""
 	};
+	let active: boolean = menus?.active;
+	let notes: string = menus?.notes ?? "";
+	let type: string = menus?.type ?? "";
+	let nutri: string = menus?.nutri ?? "";
+	let menuId: string = menus?.id;
+	let formattedDate = date ? formatSupabaseDate(date) : "";
 
-	let active: boolean = false;
-	let notes: string = "";
-	let type: string = "";
-	let nutri: string = "";
+	let updateMessage = "";
+	async function updateMenu() {
+		try {
+			loading = true;
 
-	let formattedDate: string = "";
+			const update = {
+				updated_at: new Date().toISOString(),
+				date: date ? new Date(date).toISOString() : null,
+				soup,
+				price,
+				variants,
+				active,
+				notes,
+				type,
+				nutri
+			};
+
+			console.log("Menu se ukládá s těmito daty:", update);
+
+			const { data, error } = await supabase
+				.from("menus")
+				.update(update)
+				.eq("id", menuId)
+				.select("*");
+			if (error) {
+				console.error("Chyba ukládání:", error);
+				throw error;
+			} else {
+				console.log("Menu úspěšně uložena!");
+				updateMessage = "Menu úspěšně uložena!";
+			}
+		} catch (error) {
+			if (error instanceof Error) {
+				console.error("Chyba ukládání:", error);
+				alert(error.message);
+			}
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function deleteMenu() {
+		try {
+			loading = true;
+			const { error } = await supabase.from("menus").delete().eq("id", menuId);
+
+			if (error) {
+				console.error("Error deleting menu:", error);
+				throw error;
+			} else {
+				console.log("Menu deleted successfully!");
+				await goto("/menu", { replaceState: true });
+			}
+		} catch (error) {
+			if (error instanceof Error) {
+				console.error("Error in Delete menu:", error);
+				alert(error.message);
+			}
+		} finally {
+			loading = false;
+		}
+	}
 
 	// Datum
 	let isValidDate: boolean = true;
@@ -55,206 +115,123 @@
 	function formatSupabaseDate(inputDate: string) {
 		if (!inputDate) return "";
 		const [year, month, day] = inputDate.split("-");
-		return `${day}-${month}-${year}`;
+		return `${day.padStart(2, "0")}-${month.padStart(2, "0")}-${year}`;
 	}
 
-	function back() {
-		goto("/menu");
+	async function back() {
+		await goto("/admin/menu");
 	}
 
-	async function createMenu() {
-		try {
-			loading = true;
-			const { user } = session;
-
-			const createMenuData = {
-				created_at: new Date().toISOString(),
-				date: date ? new Date(date).toISOString() : null,
-				soup,
-				price,
-				variants,
-				active,
-				notes,
-				type,
-				nutri
-			};
-
-			console.log(createMenuData);
-
-			let { error } = await supabase.from("menus").insert(createMenuData);
-			if (error) throw error;
-			console.log("Menu created successfully!");
-			goto("/menu", { replaceState: true });
-		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message);
-			}
-		} finally {
-			loading = false;
-		}
+	let showAdvanced = false;
+	function toggleAdvanced() {
+		showAdvanced = !showAdvanced;
 	}
 </script>
-
-<svelte:head>
-	<title>LEO - Nové menu</title>
-</svelte:head>
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg">
-	<div class="flex justify-between">
-		<div>
-			<button
-				value={loading ? "Tvořím..." : "Vytvořeno"}
-				disabled={loading}
-				type="submit"
-				on:click={back}
-				class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-				>Zpět</button>
-		</div>
-		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
-				<button
-					value={loading ? "Tvořím..." : "Vytvořeno"}
-					disabled={loading}
-					type="submit"
-					on:click={createMenu}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					>Vytvoř</button>
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
+	<div class="flex justify-between items-center mb-4">
+		<button on:click={back} class="btn btn-outline">Zpět</button>
+		{#if updateMessage}
+			<div class="alert alert-success shadow-lg" transition:fade>
+				<div>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+					<span>{updateMessage}</span>
+				</div>
 			</div>
+		{/if}
+		<div class="flex gap-2">
+			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Upravit</button>
+			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
 		</div>
 	</div>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+	<div class="divider"></div>
+	<div class="bg-base-100">
+		<div class="py-6 px-4">
+			<h2 class="text-2xl font-bold mb-6">Menu</h2>
 
-	<div class="antialiased bg-white sans-serif">
-		<div class="md:py-6 md:px-4">
-			<div class="flex justify-between">
-				<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-					Menu
-				</h2>
-				<div />
-			</div>
+			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
 
-			<div class="justify-between mb-8 md:flex">
-				<div class="md:w-2/4">
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Datum</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								placeholder="DD-MM-YYYY"
-								autocomplete="off"
-								bind:value={formattedDate}
-								on:input={handleDateInput}
-								class:invalid={!isValidDate} />
-						</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Datum</span>
+						</label>
+						<input type="text" placeholder="DD-MM-YYYY" autocomplete="off" class="input input-bordered w-full" class:input-error={!isValidDate} bind:value={formattedDate} on:input={handleDateInput} />
 					</div>
 
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Polévka</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-2">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								placeholder=""
-								autocomplete="off"
-								bind:value={soup} />
-						</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Cena</span>
+						</label>
+						<input type="number" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={price} />
 					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Cena</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-2">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="number"
-								placeholder=""
-								autocomplete="off"
-								bind:value={price} />
-						</div>
-					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Aktivní</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-2">
-							<select
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={active}>
-								<option value={false}>Ne</option>
-								<option value={true}>Ano</option>
-							</select>
-						</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Aktivní</span>
+						</label>
+						<select class="select select-bordered w-full" bind:value={active}>
+							<option value={false}>NE</option>
+							<option value={true}>Ano</option>
+						</select>
 					</div>
 				</div>
-				<div class="md:w-2/4">
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Poznámky</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={notes}></textarea>
-						</div>
+
+
+				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
+
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Polévka</span>
+						</label>
+						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
 					</div>
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Hlavní chod</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[1]} />
-						</div>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[2]} />
-						</div>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[3]} />
+
+
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Hlavní chod</span>
+						</label>
+						<div class="grid grid-rows-3 gap-2">
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[1]}></textarea>
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[2]}></textarea>
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[3]}></textarea>
 						</div>
 					</div>
 
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Nutriční info</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								bind:value={nutri} />
-						</div>						
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Poznámky</span>
+						</label>
+						<textarea class="textarea textarea-bordered" bind:value={notes}></textarea>
 					</div>
-					<div>Napadlo me, italske jidlo, ceske, atd. dalsi tagy.</div>
 				</div>
 			</div>
+
+			<div class="text-center">
+				<button class="btn btn-link" on:click={toggleAdvanced}>
+					{#if showAdvanced}
+						Skrýt pokročilé
+					{:else}
+						Zobrazit pokročilé
+					{/if}
+				</button>
+			</div>
+
+			{#if showAdvanced}
+				<div class="mt-8" transition:fade>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Nutriční info</span>
+						</label>
+						<input type="text" class="input input-bordered w-full" bind:value={nutri} />
+					</div>
+				</div>
+				<div class="form-control w-full mb-2">
+					<label class="label">
+						<span class="label-text">Typ</span>
+					</label>
+					<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

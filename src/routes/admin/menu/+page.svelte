@@ -20,7 +20,7 @@
 	}
 
 	function newMenuPage() {
-		goto("/menu/newmenu");
+		goto("/admin/menu/newmenu");
 	}
 
 	function formatDateToCzech(date: any) {

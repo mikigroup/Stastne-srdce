@@ -139,8 +139,8 @@
 			</div>
 		{/if}
 		<div class="flex gap-2">
-			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-primary">Upravit</button>
-			<button class="btn btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
+			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Upravit</button>
+			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
 		</div>
 	</div>
 	<div class="divider"></div>
@@ -151,6 +151,7 @@
 
 			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
+
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Datum</span>
@@ -160,18 +161,10 @@
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
-							<span class="label-text">Polévka</span>
-						</label>
-						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
 							<span class="label-text">Cena</span>
 						</label>
 						<input type="number" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={price} />
 					</div>
-
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Aktivní</span>
@@ -181,21 +174,24 @@
 							<option value={true}>Ano</option>
 						</select>
 					</div>
+				</div>
+
+
+				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
-							<span class="label-text">Typ</span>
+							<span class="label-text">Polévka</span>
 						</label>
-						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
+						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
 					</div>
-				</div>
 
-				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
+
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Hlavní chod</span>
 						</label>
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+						<div class="grid grid-rows-3 gap-2">
 							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[1]}></textarea>
 							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[2]}></textarea>
 							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[3]}></textarea>
@@ -229,6 +225,12 @@
 						</label>
 						<input type="text" class="input input-bordered w-full" bind:value={nutri} />
 					</div>
+				</div>
+				<div class="form-control w-full mb-2">
+					<label class="label">
+						<span class="label-text">Typ</span>
+					</label>
+					<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
 				</div>
 			{/if}
 		</div>
