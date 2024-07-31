@@ -92,10 +92,6 @@
 
 	const table = createSvelteTable(options);
 
-	function truncateText(text: string | null | undefined, maxLength: number = 20): string {
-		if (text == null) return '';
-		return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
-	}
 </script>
 <svelte:head>
 <title>LEO - Zákazníci</title>
@@ -132,23 +128,23 @@
 		</ul>
 	</div>
 	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div class="w-full lg:w-1/8 xl:w-1/8 {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}">
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
+				<div class:wider={column === 'email'}>
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full lg:w-1/6 xl:w-1/6">Editovat</div>
+			<div class="text-right">Editovat</div>
 		</div>
-		{#if customers.length > 0}
+		{#if customers && customers.length > 0}
 			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
-					{#each row.getVisibleCells() as cell}
-						<div class="w-full lg:w-1/8 xl:w-1/8 truncate-cell" title={cell.getValue()}>
-							{truncateText(cell.getValue())}
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
+					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
+						<div class="truncate-cell" class:wider={column === 'email'} title={row.getValue(column) ?? ''}>
+							{row.getValue(column) ?? ''}
 						</div>
 					{/each}
-					<div class="w-full lg:w-1/6 xl:w-1/6">
+					<div>
 						<a
 						href="/admin/customer/{row.original.id}"
 						data-sveltekit-preload-data
@@ -163,11 +159,19 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
+
+
 </div>
 <style>
-    .truncate-cell {
+/*    .truncate-cell {
         max-width: 150px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }</style>
+    }*/
+
+.wider {
+    grid-column: span 2;
+}
+
+</style>

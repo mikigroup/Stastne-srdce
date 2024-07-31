@@ -108,7 +108,7 @@
 				<ul
 					tabindex="0"
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-					<li><a href="/">Domů</a></li>
+					<li><a href="/admin">Domů</a></li>
 					<li><a href="/admin/customer">Zákazníci</a></li>
 					<!-- <li><a href="/item">Produkty</a></li> -->
 					<li><a href="/admin/order">Objednávky</a></li>

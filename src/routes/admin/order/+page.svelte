@@ -36,28 +36,28 @@
 	}
 
 	const columnNames = {
-		state: "Stav",
+		order_number: "Objednávka",
 		date: "Datum",
+		state: "Stav",
+		shipping_method: "Způsob dopravy",
+		pay_method: "Platební metoda",
+		currency: "Měna",
 		customer_first_name: "Jméno",
 		customer_last_name: "Příjmení",
-		customer_street: "Ulice",
+		pay_state: "Stav platby",
+		/*customer_street: "Ulice",
 		customer_street_number: "Číslo domu",
 		customer_city: "Město",
-		customer_zip_code: "PSČ",
-		customer_telephone: "Telefon",
+		customer_zip_code: "PSČ", */
 		customer_email: "E-mail",
-		delivery_street: "D-Ulice",
+		customer_telephone: "Telefon",
+	/*	delivery_street: "D-Ulice",
 		delivery_street_number: "D-Číslo domu",
 		delivery_zip_code: "D-PSČ",
 		delivery_first_name: "D-Jméno příjemce",
 		delivery_last_name: "D-Příjmení příjemce",
-		delivery_telephone: "D-Telefon",
-		pay_state: "Stav platby",
-		delivery_city: "D-Město",
-		currency: "Měna",
-		order_number: "Objednávka",
-		shipping_method: "Způsob dopravy",
-		pay_method: "Platební metoda",
+		delivery_telephone: "D-Telefon",*/
+		// delivery_city: "D-Město",
 	};
 
 	const columnOrder = Object.keys(columnNames);
@@ -136,11 +136,6 @@
 	function formatPayState(pay_state: boolean) {
 		return pay_state ? "Ano" : "Ne";
 	}
-
-	function truncateText(text: string | null | undefined, maxLength: number = 20): string {
-		if (text == null) return '';
-		return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
-	}
 </script>
 <svelte:head>
 	<title>LEO - Objednávky</title>
@@ -189,12 +184,8 @@
 			{#each $table.getRowModel().rows as row}
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
-						<div class="w-full lg:w-1/6 xl:w-1/6 truncate-cell" title={cell.getValue()}>
-							{#if typeof cell.getValue() === 'function'}
-								{truncateText(cell.getValue()())}
-							{:else}
-								{truncateText(cell.getValue())}
-							{/if}
+						<div class="w-full lg:w-1/6 xl:w-1/6 truncate-cell" title={cell.getValue() ?? ''}>
+							{cell.getValue() ?? ''}
 						</div>
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
@@ -213,10 +204,10 @@
 	</div>
 </div>
 <style>
-    .truncate-cell {
+/*    .truncate-cell {
         max-width: 300px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
+    }*/
 </style>
