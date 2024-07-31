@@ -1,13 +1,18 @@
 <script lang="ts">
+	import { createEventDispatcher, onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { onMount } from "svelte";
 	import { writable } from "svelte/store";
+	import {
+		createSvelteTable,
+		flexRender,
+		getCoreRowModel,
+	} from "@tanstack/svelte-table";
+	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+
 	export let data;
 
 	let { session, supabase, menus, profileTableSettings } = data;
 	$: ({ session, supabase, menus, profileTableSettings } = data);
-
-	let selectedMenu = null;
 
 	function editMenu(id: any) {
 		selectedMenu = id;
@@ -22,22 +27,11 @@
 		if (!date) return ""; // Return empty string if date is null or undefined
 		const parts = date.split("-");
 		if (parts.length !== 3) {
-			return date; // Return the original date if it's not in the expected format
+			return date; // Return the original date if it"s not in the expected format
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
 	}
-	console.log(menus);
-	let visibleColumns = profileTableSettings?.table_settings_menus ?? {
-		date: true,
-		active: true,
-		price: true,
-		soup: true,
-		variants: true,
-		notes: true,
-		type: true,
-		nutri: true
-	};
 
 	const columnNames: Record<string, string> = {
 		date: "Datum",
@@ -50,9 +44,16 @@
 		nutri: "Nutriční informace"
 	};
 
+	const columnOrder = Object.keys(columnNames);
+
+	let visibleColumns = profileTableSettings?.table_settings_menus ?? columnOrder.reduce((obj, column) => {
+		obj[column] = true;
+		return obj;
+	}, {});
+
 	const visibleColumnsStore = writable(visibleColumns);
 
-	function toggleColumn(column: any) {
+	function toggleColumn(column) {
 		visibleColumnsStore.update((cols) => ({
 			...cols,
 			[column]: !cols[column]
@@ -60,95 +61,85 @@
 	}
 
 	async function saveTableSettings() {
-		const { error } = await supabase
+		if (session?.user.id == undefined) {
+			console.error("Uživatel není přihlášen");
+			return;
+		}
+
+		const updatedSettings = columnOrder.reduce((obj, column) => {
+			obj[column] = $visibleColumnsStore[column];
+			return obj;
+		}, {});
+
+		const orderedSettings = columnOrder.reduce((obj, column) => {
+			obj[column] = updatedSettings[column];
+			return obj;
+		}, {});
+
+		const { data, error } = await supabase
 			.from("profiles")
-			.update({ table_settings_menus: $visibleColumnsStore })
-			.eq("id", session?.user.id);
+			.update({ table_settings_menus: orderedSettings })
+			.eq("id", session.user.id);
 
 		if (error) {
-			console.error("Chyba při ukládání nastavení tabulky:", error);
+			console.error("Chyba při ukládání nastavení filtrů:", error);
 		}
-	}
-
-	$: {
-		saveTableSettings();
 	}
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
 	let filterDate = "";
 	let filterActive = "";
-	let filterSoup = "";
 	let searchQuery = "";
 
-	$: filteredMenus = menus?.length
-		? menus.filter((menu) => {
-				const matchesDate = !filterDate || menu.date === filterDate;
-				const matchesActive =
-					!filterActive || menu.active === (filterActive === "true");
-				const matchesSearch =
-					!searchQuery ||
-					menu.soup?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					menu.price
-						?.toString()
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()) ||
-					Object.values(menu.variants)?.some((variants) =>
-						variants.toLowerCase().includes(searchQuery.toLowerCase())
-					) ||
-					menu.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					menu.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					menu.nutri
-						?.toString()
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase());
-				return matchesDate && matchesActive && matchesSearch;
-			})
-		: [];
+	$: filteredMenus = menus?.filter((menu) =>
+		filterDate
+			? menu.date === filterDate
+			: filterActive
+				? menu.active === (filterActive === "true")
+				: searchQuery
+					? Object.values(menu).some((value) =>
+						value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+					)
+					: true
+	);
 
-	const searchMenus = async () => {
-		if (!searchQuery) {
-			filteredMenus = menus?.filter((menu) => {
-				const matchesDate = !filterDate || menu.date === filterDate;
-				const matchesActive =
-					!filterActive || menu.active === (filterActive === "true");
-				return matchesDate && matchesActive;
-			});
-			return;
-		}
+	$: columns = columnOrder
+		.filter(key => $visibleColumnsStore[key])
+		.map(key => ({
+			accessorKey: key,
+			header: columnNames[key],
+			cell: ({ getValue }) => {
+				const value = getValue();
+				if (key === "date") {
+					return formatDateToCzech(value);
+				} else if (key === "variants") {
+					return Object.entries(value).map(([k, v], i) => `${i + 1}. ${v}`).join("<br>");
+				} else if (key === "active") {
+					return value ? "ANO" : "NE";
+				}
+				return value;
+			},
+		}));
 
-		const { data: searchResults, error } = await supabase
-			.from("menus")
-			.textSearch("fulltext", searchQuery, {
-				config: "english"
-			});
+	$: options = writable<TableOptions<typeof menus[0]>>({
+		data: filteredMenus,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+	});
 
-		if (error) {
-			console.error("Error searching menus:", error);
-		} else {
-			filteredMenus = searchResults?.filter((menu) => {
-				const matchesDate = !filterDate || menu.date === filterDate;
-				const matchesActive =
-					!filterActive || menu.active.toString() === filterActive;
-				const matchesType = !filterType || menu.type === filterType;
-				const matchesSearch =
-					!searchQuery ||
-					menu.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					menu.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					menu.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					Object.values(menu.variants)?.some((variant) =>
-						variant.toLowerCase().includes(searchQuery.toLowerCase())
-					);
-				return matchesDate && matchesActive && matchesType && matchesSearch;
-			});
-		}
-	};
+	$: visibleColumnsStore.subscribe(value => {
+		options.update(options => ({
+			...options,
+			columns: columns.filter(column => value[column.accessorKey]),
+		}));
+	});
 
-	$: filteredMenus = searchMenus();
+	$: table = createSvelteTable(options);
+console.log(menus);
 </script>
-
 <svelte:head>
-	<title>LEO - Menu</title>
+<title>LEO - Menu</title>
 </svelte:head>
 <div class="relative p-5 shadow-md sm:rounded-lg">
 	<div class="flex justify-between">
@@ -156,10 +147,10 @@
 			<div>
 				<button
 					on:click={newMenuPage}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					>Vytvořit menu</button>
+					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					Vytvořit menu
+				</button>
 			</div>
-
 			<div class="flex gap-2">
 				<input
 					type="date"
@@ -173,8 +164,7 @@
 				<input
 					type="text"
 					placeholder="Hledat menu..."
-					data-tip="hello"
-					class="px-3 py-2 border rounded-lg lg:tooltip"
+					class="px-3 py-2 border rounded-lg"
 					bind:value={searchQuery} />
 			</div>
 		</div>
@@ -182,7 +172,6 @@
 	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Sloupce</button>
-		<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -200,46 +189,42 @@
 		</ul>
 	</div>
 	<div class="flex flex-wrap">
-		<div
-			class="items-center hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
-			{#each Object.keys($visibleColumnsStore).filter((col) => $visibleColumnsStore[col]) as column}
-				<div
-					class="w-full lg:w-1/6 xl:w-1/6 {column !==
-					Object.keys($visibleColumnsStore)
-						.filter((col) => $visibleColumnsStore[col])
-						.pop()
-						? 'border-r-2'
-						: ''}">
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length + 1}, 1fr); grid-auto-flow: column;">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
+				<div class={column === "variants" ? "md:col-span-2" : ""}>
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full lg:w-1/6 xl:w-1/6">Editovat</div>
+			<div class="text-right">Editovat</div>
 		</div>
-		{#if filteredMenus.length > 0}
-			{#each filteredMenus as menu (menu.id)}
-				<div
-					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
-					{#each Object.keys($visibleColumnsStore).filter((col) => $visibleColumnsStore[col]) as column}
-						<div class="w-full lg:w-1/6 xl:w-1/6">
-							{#if column === "date"}
-								{formatDateToCzech(menu[column])}
-							{:else if column === "variants"}
-								{#each Object.entries(menu[column]) as [key, value], i}
-									{i + 1}. {value}<br />
-								{/each}
-							{:else if column === "active"}
-								{menu[column] ? "ANO" : "NE"}
+		{#if filteredMenus && filteredMenus.length > 0}
+			{#each $table.getRowModel().rows as row}
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length + 1}, 1fr); grid-auto-flow: column;">
+					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
+						<div class={column === "variants" ? "md:col-span-2" : ""} title={row.getValue(column) ?? ""}>
+							{#if column === "variants"}
+								{#if typeof row.original[column] === "string"}
+									{#each JSON.parse(row.original[column]) as variant, i}
+										{variant.key}. {variant.value}<br />
+									{/each}
+								{:else if typeof row.original[column] === "object"}
+									{#each Object.entries(row.original[column]) as [key, value], i}
+										{key}. {value}<br />
+									{/each}
+								{/if}
 							{:else}
-								{menu[column]}
+								{@html row.getValue(column) ?? ""}
 							{/if}
 						</div>
 					{/each}
-					<div class="flex justify-end w-full lg:w-1/6 xl:w-1/6">
+					<div>
 						<a
-							href="/menu/{menu.id}"
-							data-sveltekit-preload-data
-							class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-							on:click={editMenu.bind(this, menu.id)}>Upravit</a>
+						href="/menu/{row.original.id}"
+						data-sveltekit-preload-data
+						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
+						>
+						Upravit
+						</a>
 					</div>
 				</div>
 			{/each}
@@ -248,19 +233,3 @@
 		{/if}
 	</div>
 </div>
-
-<style>
-	.question-bubble {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 16px;
-		height: 16px;
-		background-color: #9ca3af; /* šedá barva */
-		color: white;
-		border-radius: 50%;
-		font-size: 12px;
-		font-weight: bold;
-		cursor: help;
-	}
-</style>
