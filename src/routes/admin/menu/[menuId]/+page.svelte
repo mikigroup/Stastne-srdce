@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { fade, fly } from 'svelte/transition';
 
 	export let data;
 	let { session, supabase, menus } = data;
 	$: ({ session, supabase, menus } = data);
-
 	let loading = false;
 	let date: string = menus?.date ?? "";
 	let soup: string = menus?.soup ?? "";
 	let price: number = menus?.price ?? 0;
-		let variants: any = menus?.variants ?? {
+	let variants: any = menus?.variants ?? {
 		1: "",
 		2: "",
 		3: ""
@@ -20,7 +20,7 @@
 	let nutri: string = menus?.nutri ?? "";
 	let menuId: string = menus?.id;
 	let formattedDate = date ? formatSupabaseDate(date) : "";
-	
+
 	let updateMessage = "";
 	async function updateMenu() {
 		try {
@@ -61,7 +61,7 @@
 			loading = false;
 		}
 	}
-	
+
 	async function deleteMenu() {
 		try {
 			loading = true;
@@ -119,237 +119,118 @@
 	}
 
 	async function back() {
-		await goto("/menu");
+		await goto("/admin/menu");
 	}
 
-	// Testy
-	// console.log("Meny:", menus);
-
-	// ---------------
+	let showAdvanced = false;
+	function toggleAdvanced() {
+		showAdvanced = !showAdvanced;
+	}
 </script>
-
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg">
-	<div class="flex justify-between">
-		<div>
-			<button
-				on:click={back}
-				class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-				>Zpět</button>
-		</div>
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
+	<div class="flex justify-between items-center mb-4">
+		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
-			<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-				{updateMessage}
+			<div class="alert alert-success shadow-lg" transition:fade>
+				<div>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+					<span>{updateMessage}</span>
+				</div>
 			</div>
 		{/if}
-		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
-				<button
-					value={loading ? "Nahrává se..." : "Upraveno"}
-					disabled={loading}
-					type="submit"
-					on:click={updateMenu}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					>Upravit</button>
-			</div>
-			<div>
-				<button
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					value={loading ? "Nahrává se..." : "Update"}
-					disabled={loading}
-					type="submit"
-					on:click={deleteMenu}>Smazat</button>
-			</div>
+		<div class="flex gap-2">
+			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-primary">Upravit</button>
+			<button class="btn btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
 		</div>
 	</div>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-	<!-- --- -->
+	<div class="divider"></div>
 
-	<div class="antialiased bg-white sans-serif">
-		<div class="md:py-6 md:px-4">
-			<div class="flex justify-between">
-				<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-					Menu
-				</h2>
-				<div />
-			</div>
+	<div class="bg-base-100">
+		<div class="py-6 px-4">
+			<h2 class="text-2xl font-bold mb-6">Menu</h2>
 
-			<div class="antialiased bg-white sans-serif">
-				<div class="md:py-6 md:px-4">
-					<div class="flex justify-between">
-						<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-							Menu
-						</h2>
-						<div />
+			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Datum</span>
+						</label>
+						<input type="text" placeholder="DD-MM-YYYY" autocomplete="off" class="input input-bordered w-full" class:input-error={!isValidDate} bind:value={formattedDate} on:input={handleDateInput} />
 					</div>
 
-					<div class="justify-between mb-8 md:flex">
-						<div class="md:w-2/4">
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Datum</label>
-								<span class="hidden block mr-4 md:inline-block">:</span>
-								<div class="flex-1">
-									<input
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										type="text"
-										placeholder="DD-MM-YYYY"
-										autocomplete="off"
-										bind:value={formattedDate}
-										on:input={handleDateInput}
-										class:invalid={!isValidDate} />
-								</div>
-							</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Polévka</span>
+						</label>
+						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
+					</div>
 
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Polévka</label>
-								<span class="hidden mr-4 md:inline-block">:</span>
-								<div class="flex-2">
-									<input
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										type="text"
-										placeholder=""
-										autocomplete="off"
-										bind:value={soup} />
-								</div>
-							</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Cena</span>
+						</label>
+						<input type="number" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={price} />
+					</div>
 
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Cena</label>
-								<span class="hidden mr-4 md:inline-block">:</span>
-								<div class="flex-2">
-									<input
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										type="number"
-										placeholder=""
-										autocomplete="off"
-										bind:value={price} />
-								</div>
-							</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Aktivní</span>
+						</label>
+						<select class="select select-bordered w-full" bind:value={active}>
+							<option value={false}>NE</option>
+							<option value={true}>Ano</option>
+						</select>
+					</div>
 
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Aktivní</label>
-								<span class="hidden mr-4 md:inline-block">:</span>
-								<div class="flex-2">
-									<select
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										bind:value={active}>
-										<option value={false}>NE</option>
-										<option value={true}>Ano</option>
-									</select>
-								</div>
-							</div>
-						</div>
-						<div class="md:w-2/4">
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Poznámky</label>
-								<span class="hidden mr-4 md:inline-block">:</span>
-								<div class="flex-1">
-									<textarea
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										bind:value={notes}></textarea>
-								</div>
-							</div>
-							<div class="items-center mb-2 md:mb-1 md:flex">
-						<!-- svelte-ignore a11y-label-has-associated-control -->
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Hlavní chod</label>
-						<span class="hidden mr-4 md:inline-block">:</span>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[1]} />
-						</div>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[2]} />
-						</div>
-						<div class="flex-1">
-							<textarea
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								rows="4"
-								bind:value={variants[3]} />
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Typ</span>
+						</label>
+						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
+					</div>
+				</div>
+
+				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Hlavní chod</span>
+						</label>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[1]}></textarea>
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[2]}></textarea>
+							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[3]}></textarea>
 						</div>
 					</div>
 
-							<div class="items-center mb-2 md:mb-1 md:flex">
-								<!-- svelte-ignore a11y-label-has-associated-control -->
-								<label
-									class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-									>Nutriční info</label>
-								<span class="hidden mr-4 md:inline-block">:</span>
-								<div class="flex-1">
-									<input
-										class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-										type="text"
-										bind:value={nutri} />
-								</div>
-							</div>
-						</div>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Poznámky</span>
+						</label>
+						<textarea class="textarea textarea-bordered" bind:value={notes}></textarea>
 					</div>
 				</div>
 			</div>
+
+			<div class="text-center">
+				<button class="btn btn-link" on:click={toggleAdvanced}>
+					{#if showAdvanced}
+						Skrýt pokročilé
+					{:else}
+						Zobrazit pokročilé
+					{/if}
+				</button>
+			</div>
+
+			{#if showAdvanced}
+				<div class="mt-8" transition:fade>
+					<div class="form-control w-full mb-2">
+						<label class="label">
+							<span class="label-text">Nutriční info</span>
+						</label>
+						<input type="text" class="input input-bordered w-full" bind:value={nutri} />
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>
-
-<style>
-	.date-input .pika-select-month,
-	.date-input .pika-select-year {
-		display: inline-block;
-		border: 1px solid #ddd;
-		color: #444;
-		background-color: #fff;
-		border-radius: 10px;
-		font-size: 0.9rem;
-		padding-left: 0.5em;
-		padding-right: 0.5em;
-		padding-top: 0.25em;
-		padding-bottom: 0.25em;
-		appearance: none;
-	}
-	.date-input .pika-select-month:focus,
-	.date-input .pika-select-year:focus {
-		border-color: #cbd5e0;
-		outline: none;
-	}
-	.date-input table td button {
-		width: 1.8em;
-		height: 1.8em;
-		text-align: center;
-		color: #555;
-		border-radius: 10px;
-	}
-	.date-input table td button:hover {
-		background-color: #bee3f8;
-	}
-	.date-input table td.is-today button {
-		background-color: #ebf8ff;
-	}
-	.date-input table td.is-selected button {
-		background-color: #3182ce;
-	}
-	.date-input table td.is-selected button {
-		color: white;
-	}
-	.date-input table td.is-selected button:hover {
-		color: white;
-	}
-</style>

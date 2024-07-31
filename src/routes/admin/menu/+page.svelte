@@ -219,7 +219,7 @@ console.log(menus);
 					{/each}
 					<div>
 						<a
-						href="/menu/{row.original.id}"
+						href="/admin/menu/{row.original.id}"
 						data-sveltekit-preload-data
 						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
 						>
