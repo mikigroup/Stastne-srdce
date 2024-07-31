@@ -22,7 +22,7 @@
 	}
 
 	function newOrderPage() {
-		goto("/order/neworder");
+		goto("/admin/order/neworder");
 	}
 
 	function formatDateToCzech(date) {
@@ -190,7 +190,7 @@
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
 						<a
-						href="/order/{row.original.id}"
+						href="/admin/order/{row.original.id}"
 						data-sveltekit-preload-data
 						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline">
 						Upravit

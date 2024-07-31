@@ -112,7 +112,7 @@
 				<div>
 					<button
 						on:click={back}
-						class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
+						class="btn btn-outline"
 					>
 						Zpět
 					</button>
@@ -150,13 +150,21 @@
 
 			<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
-			<div class="mb-8 max-w-3xl">
-				<div class="collapse collapse-plus bg-base-200">
+			<div class="mb-8 max-w-3xl mx-auto">
+				<div class="collapse collapse-plus bg-base-200 p-10 border-slate-300 border">
 					<input type="radio" name="my-accordion-3" checked="checked" />
 					<div class="collapse-title text-xl font-medium">
 						Osobní údaje
 					</div>
 					<div class="collapse-content">
+
+						<label class="form-control w-full max-w-xs">
+							<div class="label">
+								<span class="label-text">Email</span>
+							</div>
+							<input type="text" bind:value={email} placeholder="Zadejte email" class="input input-bordered w-full max-w-xs !border-white !text-stone-700 " readonly disabled/>
+						</label>
+
 						<label class="form-control w-full max-w-xs">
 							<div class="label">
 								<span class="label-text">Jméno</span>
@@ -178,16 +186,11 @@
 							<input type="text" bind:value={telephone} placeholder="Zadejte telefon" class="input input-bordered w-full max-w-xs" />
 						</label>
 
-						<label class="form-control w-full max-w-xs">
-							<div class="label">
-								<span class="label-text">Email</span>
-							</div>
-							<input type="text" bind:value={email} placeholder="Zadejte email" class="input input-bordered w-full max-w-xs" readonly disabled/>
-						</label>
+
 					</div>
 				</div>
 
-				<div class="collapse collapse-plus bg-base-200">
+				<div class="collapse collapse-plus bg-base-200 p-10 border-slate-300 border">
 					<input type="radio" name="my-accordion-3" />
 					<div class="collapse-title text-xl font-medium">
 						Adresa
@@ -216,7 +219,7 @@
 					</div>
 				</div>
 
-				<div class="collapse collapse-plus bg-base-200">
+				<div class="collapse collapse-plus bg-base-200 p-10 border-slate-300 border">
 					<input type="radio" name="my-accordion-3" />
 					<div class="collapse-title text-xl font-medium">
 						Firemní údaje
