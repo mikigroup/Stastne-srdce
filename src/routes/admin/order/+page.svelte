@@ -26,10 +26,10 @@
 	}
 
 	function formatDateToCzech(date) {
-		if (!date) return ''; // Return empty string if date is null or undefined
+		if (!date) return ''; //
 		const parts = date.split("-");
 		if (parts.length !== 3) {
-			return date; // Return the original date if it's not in the expected format
+			return date;
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
@@ -191,7 +191,7 @@
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div class="w-full lg:w-1/6 xl:w-1/6 truncate-cell" title={cell.getValue() ?? ''}>
-							{cell.getValue() ?? ''}
+							{cell.column.id === 'date' ? formatDateToCzech(cell.getValue()) : cell.getValue() ?? ''}
 						</div>
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
