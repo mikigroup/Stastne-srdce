@@ -15,6 +15,7 @@
 	$: ({ supabase, session, customers, profileTableSettings } = data);
 
 	const columnNames = {
+		created_at: "Datum vytvoření",
 		first_name: "Jméno",
 		last_name: "Příjmení",
 		email: "E-mail",
@@ -82,7 +83,12 @@
 		.map(key => ({
 			accessorKey: key,
 			header: columnNames[key],
-			cell: ({ getValue }) => getValue(),
+			cell: ({ getValue }) => {
+				if (key === "created_at") {
+					return formatDateToCzech(getValue());
+				}
+				return getValue();
+			},
 		}));
 
 	$: options = writable<TableOptions<typeof customers[0]>>({
@@ -90,7 +96,6 @@
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
-
 	$: visibleColumnsStore.subscribe(value => {
 		options.update(options => ({
 			...options,
@@ -99,6 +104,17 @@
 	});
 
 	$: table = createSvelteTable(options);
+
+	function formatDateToCzech(date) {
+		if (!date) return ''; //
+		const dateObj = new Date(date);
+		const day = dateObj.getDate().toString().padStart(2, '0');
+		const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+		const year = dateObj.getFullYear();
+		const hours = dateObj.getHours().toString().padStart(2, '0');
+		const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+		return `${day}.${month}.${year} ${hours}:${minutes}`;
+	}
 
 </script>
 <svelte:head>
@@ -157,7 +173,11 @@
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
 					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
 						<div class={column === 'email' ? 'md:col-span-2 truncate-cell' : 'truncate-cell'} title={row.getValue(column) ?? ''}>
-							{row.getValue(column) ?? ''}
+							{#if column === 'created_at'}
+								{formatDateToCzech(row.getValue(column))}
+							{:else}
+								{row.getValue(column) ?? ''}
+							{/if}
 						</div>
 					{/each}
 					<div>

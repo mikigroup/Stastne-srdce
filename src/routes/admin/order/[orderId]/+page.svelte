@@ -183,7 +183,7 @@
 					on:click={updateOrder}
 					class="btn btn-outline">Upravit</button>
 				<button
-					class="btn btn-outline btn-error"
+					class="btn btn-outline btn-error invisible"
 					value={loading ? "Nahrává se..." : "Update"}
 					disabled={loading}
 					type="submit"

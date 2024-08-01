@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({
 	const { data: customers, error } = await supabase
 		.from("customers")
 		.select("*")
-		.order("id", { ascending: false })
+		.order("created_at", { ascending: false })
 		.limit(100);
 
 	if (error) {
