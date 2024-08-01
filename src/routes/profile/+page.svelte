@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { enhance } from "$app/forms";
-	1;
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import { fade } from "svelte/transition";
 
@@ -64,6 +63,7 @@
 	let ico: string = profile?.ico ?? "";
 	let dic: string = profile?.dic ?? "";
 	let company: string = profile?.company ?? "";
+	let zip_code: string = profile?.zip ?? "";
 
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -220,6 +220,23 @@
 												id="city"
 												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 												placeholder="Město" />
+										</div>
+									</div>
+									<hr class="w-32" />
+								</div>
+								<div class="my-2">
+									<div class="flex flex-col items-center md:flex-row">
+										<div class="flex justify-start basis-1/2">
+											<label class="pr-2" for="city">PSČ</label>
+										</div>
+										<div class="w-full basis-1/2">
+											<input
+												value={form?.city ?? zip_code}
+												type="text"
+												name="zip_code"
+												id="zip_code"
+												class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+												placeholder="PSČ" />
 										</div>
 									</div>
 									<hr class="w-32" />
