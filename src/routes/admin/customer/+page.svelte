@@ -104,21 +104,21 @@
 <svelte:head>
 <title>LEO - Zákazníci</title>
 </svelte:head>
-<div class="relative p-5 shadow-md sm:rounded-lg">
-	<div class="flex justify-between">
-		<div class="flex flex-col gap-2 md:flex-row">
+
+	<div class="flex">
+		<div class="flex flex-col gap-2 md:flex-row items-center">
 			<div>
 				<button
 					on:click={() => goto("/customer/newcustomer")}
-					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					class="invisible w-full p-4 px-5 btn btn-outline">
 					Vytvořit zákazníka
 				</button>
 			</div>
 			<div>
 				<input
 					type="text"
-					placeholder="Hledat zákazníky..."
-					class="px-3 py-2 border rounded-lg"
+					placeholder="Hledat..."
+					class="input input-bordered input-md w-full max-w-xs border-black"
 					bind:value={searchQuery}
 				/>
 			</div>
@@ -126,7 +126,7 @@
 	</div>
 	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 	<div class="flex justify-end dropdown">
-		<button class="m-1 btn" tabindex="0">Filtry</button>
+		<button class="m-1 btn" tabindex="0">Sloupce</button>
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -175,7 +175,6 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
-</div>
 <style>
     /*    .truncate-cell {
 						max-width: 150px;

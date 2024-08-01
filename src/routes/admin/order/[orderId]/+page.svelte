@@ -173,7 +173,7 @@
 			<h2 class="text-2xl font-bold mb-6">Objednávka</h2>
 
 			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
+				<div class="border border-black rounded-xl bg-base-100 p-10" in:fly="{{ x: -50, duration: 500, delay: 200 }}">
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
@@ -203,7 +203,7 @@
 					</div>
 				</div>
 
-				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
+				<div class="border border-black rounded-xl bg-base-100 p-10" in:fly="{{ x: 50, duration: 500, delay: 400 }}">
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
@@ -257,7 +257,7 @@
 			</div>
 
 			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div in:fly="{{ x: -50, duration: 500, delay: 600 }}">
+				<div class="border border-black rounded-xl bg-base-100 p-10" in:fly="{{ x: -50, duration: 500, delay: 600 }}">
 					<label class="label">
 						<span class="label-text">Fakturační adresa</span>
 					</label>
@@ -284,7 +284,7 @@
 					</div>
 				</div>
 
-				<div in:fly="{{ x: 50, duration: 500, delay: 800 }}">
+				<div class="border border-black rounded-xl bg-base-100 p-10" in:fly="{{ x: 50, duration: 500, delay: 800 }}">
 					<label class="label">
 						<span class="label-text">Dodací adresa</span>
 					</label>

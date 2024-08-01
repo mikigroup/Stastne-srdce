@@ -141,34 +141,38 @@ console.log(menus);
 <svelte:head>
 <title>LEO - Menu</title>
 </svelte:head>
-<div class="relative p-5 shadow-md sm:rounded-lg">
-	<div class="flex justify-between">
+<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row">
 			<div>
 				<button
 					on:click={newMenuPage}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					class="btn btn-outline">
 					Vytvořit menu
 				</button>
 			</div>
-			<div class="flex gap-2">
+
+				<div>
 				<input
 					type="date"
 					bind:value={filterDate}
-					class="px-3 py-2 border rounded-lg" />
-				<select bind:value={filterActive} class="px-3 py-2 border rounded-lg">
+					class="btn btn-outline">
+				</div>
+				<div>
+				<select bind:value={filterActive} class="select select-bordered w-full max-w-xs border-black">
 					<option value="">Všechny aktivity</option>
 					<option value="true">Aktivní</option>
 					<option value="false">Neaktivní</option>
 				</select>
+				</div>
+				<div>
 				<input
 					type="text"
-					placeholder="Hledat menu..."
-					class="px-3 py-2 border rounded-lg"
+					placeholder="Hledat..."
+					class="input input-bordered input-md w-full max-w-xs border-black"
 					bind:value={searchQuery} />
+				</div>
 			</div>
 		</div>
-	</div>
 	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Sloupce</button>
@@ -232,4 +236,3 @@ console.log(menus);
 			<p>Žádná menu</p>
 		{/if}
 	</div>
-</div>

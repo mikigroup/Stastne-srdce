@@ -140,21 +140,25 @@
 <svelte:head>
 	<title>LEO - Objednávky</title>
 </svelte:head>
-<div class="relative p-5 shadow-md sm:rounded-lg">
+<section>
 	<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row">
 			<div>
 				<button
 					on:click={newOrderPage}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100">
+					class="btn btn-outline">
 					Vytvořit objednávku
 				</button>
 			</div>
 		</div>
 	</div>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+</section>
+
+<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+
+<section>
 	<div class="flex justify-end dropdown">
-		<button class="m-1 btn" tabindex="0">Filtry</button>
+		<button class="m-1 btn" tabindex="0">Sloupce</button>
 		<ul tabindex="0" class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
 			{#each Object.keys(visibleColumns) as column}
 				<li>
@@ -169,7 +173,9 @@
 			{/each}
 		</ul>
 	</div>
+</section>
 
+<section>
 	<div class="flex flex-wrap">
 		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
@@ -202,7 +208,7 @@
 			<p>Žádné objednávky</p>
 		{/if}
 	</div>
-</div>
+</section>
 <style>
 /*    .truncate-cell {
         max-width: 300px;
