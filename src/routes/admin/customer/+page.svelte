@@ -120,7 +120,7 @@
 <svelte:head>
 <title>LEO - Zákazníci</title>
 </svelte:head>
-
+<section>
 	<div class="flex">
 		<div class="flex flex-col gap-2 md:flex-row items-center">
 			<div>
@@ -140,7 +140,10 @@
 			</div>
 		</div>
 	</div>
+</section>
 	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+
+<section>
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Sloupce</button>
 		<ul
@@ -159,34 +162,33 @@
 			{/each}
 		</ul>
 	</div>
+</section>
+
+<section>
 	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-				<div class={column === 'email' ? 'md:col-span-2' : ''}>
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+				<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2' : ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="text-right">Editovat</div>
+			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">Editovat</div>
 		</div>
 		{#if filteredCustomers && filteredCustomers.length > 0}
 			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length}, 1fr) 1fr; grid-auto-flow: column;">
-					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-						<div class={column === 'email' ? 'md:col-span-2 truncate-cell' : 'truncate-cell'} title={row.getValue(column) ?? ''}>
-							{#if column === 'created_at'}
-								{formatDateToCzech(row.getValue(column))}
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+					{#each row.getVisibleCells() as cell}
+						<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 truncate-cell flex items-center" title={cell.getValue() ?? ''}>
+							{#if cell.column.id === 'created_at'}
+								{formatDateToCzech(cell.getValue())}
 							{:else}
-								{row.getValue(column) ?? ''}
+								{cell.getValue() ?? ''}
 							{/if}
 						</div>
 					{/each}
-					<div>
-						<a
-						href="/admin/customer/{row.original.id}"
-						data-sveltekit-preload-data
-						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
-						>
-						Upravit
+					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+						<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+							Upravit
 						</a>
 					</div>
 				</div>
@@ -195,6 +197,7 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
+</section>
 <style>
     /*    .truncate-cell {
 						max-width: 150px;
