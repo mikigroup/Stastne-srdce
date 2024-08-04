@@ -192,47 +192,39 @@ console.log(menus);
 			{/each}
 		</ul>
 	</div>
-	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length + 1}, 1fr); grid-auto-flow: column;">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-				<div class={column === "variants" ? "md:col-span-2" : ""}>
-					{columnNames[column]}
-				</div>
-			{/each}
-			<div class="text-right">Editovat</div>
-		</div>
-		{#if filteredMenus && filteredMenus.length > 0}
-			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:grid rounded-xl hover:bg-slate-100" style="grid-template-columns: repeat({columnOrder.filter((col) => $visibleColumnsStore[col]).length + 1}, 1fr); grid-auto-flow: column;">
-					{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-						<div class={column === "variants" ? "md:col-span-2" : ""} title={row.getValue(column) ?? ""}>
-							{#if column === "variants"}
-								{#if typeof row.original[column] === "string"}
-									{#each JSON.parse(row.original[column]) as variant, i}
-										{variant.key}. {variant.value}<br />
-									{/each}
-								{:else if typeof row.original[column] === "object"}
-									{#each Object.entries(row.original[column]) as [key, value], i}
-										{key}. {value}<br />
-									{/each}
-								{/if}
-							{:else}
-								{@html row.getValue(column) ?? ""}
-							{/if}
-						</div>
-					{/each}
-					<div>
-						<a
-						href="/admin/menu/{row.original.id}"
-						data-sveltekit-preload-data
-						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
-						>
-						Upravit
-						</a>
-					</div>
-				</div>
-			{/each}
-		{:else}
-			<p>Žádná menu</p>
-		{/if}
+<div class="flex flex-wrap">
+	<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+			<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2' : ''}">
+				{columnNames[column]}
+			</div>
+		{/each}
+		<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">Editovat</div>
 	</div>
+	{#if filteredMenus && filteredMenus.length > 0}
+		{#each $table.getRowModel().rows as row}
+			<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+				{#each row.getVisibleCells() as cell}
+					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 truncate-cell flex items-center" title={cell.getValue() ?? ''}>
+						{#if cell.column.id === 'variants'}
+							{#if typeof cell.getValue() === 'string'}
+								{@html cell.getValue().replace(/\n/g, '<br>')}
+							{:else if typeof cell.getValue() === 'object'}
+								{@html Object.entries(cell.getValue()).map(([key, value]) => `${key}. ${value}`).join('<br>')}
+							{/if}
+						{:else}
+							{@html cell.getValue() ?? ''}
+						{/if}
+					</div>
+				{/each}
+				<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+					<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+						Upravit
+					</a>
+				</div>
+			</div>
+		{/each}
+	{:else}
+		<p>Žádná menu</p>
+	{/if}
+</div>
