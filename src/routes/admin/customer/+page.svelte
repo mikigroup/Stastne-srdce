@@ -197,6 +197,10 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
+	<div class="join grid grid-cols-2">
+		<button class="join-item btn btn-outline">Previous page</button>
+		<button class="join-item btn btn-outline">Next</button>
+	</div>
 </section>
 <style>
     /*    .truncate-cell {

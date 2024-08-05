@@ -221,10 +221,10 @@
 											<hr />
 											<div class="font-light text-center">
 												<button
-													class="m-5"
-													on:click={() =>
+													class="hover:animate-spin"
+													on:click|preventDefault={() =>
 														removeItem(cartItem.id, variant.value)}>
-													✕
+													X
 												</button>
 											</div>
 										</div>
@@ -309,8 +309,10 @@
 														class="w-20 text-lg text-center transition-all duration-200 ease-in-out bg-white border border-transparent rounded-lg focus:outline-none focus:border-green-600" />
 													<button
 														class="hover:animate-spin"
-														on:click={() =>
-															removeItem(cartItem.id, variant.value)}>
+														on:click={(event) => {
+															event.preventDefault();
+															removeItem(cartItem.id, variant.value);
+														}}>
 														X
 													</button>
 												</div>
@@ -318,10 +320,10 @@
 										</div>
 										<div class="text-center">
 											<button
+												type="button"
 												class="hover:animate-spin"
-												on:click={() =>
+												on:click|preventDefault={() =>
 													removeItem(cartItem.id, cartItem.variants[0].value)}>
-												<!-- Fixed variant reference -->
 												X
 											</button>
 										</div>
@@ -367,7 +369,7 @@
 										<button
 											on:click={() => (showModal = true)}
 											type="button"
-											class="w-full px-4 py-2 text-center text-white transition ease-in bg-green-600 border rounded-lg shadow-md hover:border-black hover:text-black"
+											class="w-full px-4 py-2 text-center text-white transition ease-in bg-green-800 border rounded-lg shadow-md hover:border-black"
 											data-te-toggle="modal"
 											data-te-target="#exampleModal"
 											data-te-ripple-init
@@ -377,7 +379,7 @@
 									{:else}
 										<a
 											class="w-full px-4 py-2 text-center text-white transition
-										ease-in bg-green-600 border rounded-lg shadow-md
+										ease-in bg-green-800 border rounded-lg shadow-md
 										hover:border-black hover:text-black"
 											href="/login">Přihlaš se</a>
 									{/if}

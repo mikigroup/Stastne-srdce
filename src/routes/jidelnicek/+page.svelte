@@ -1,13 +1,14 @@
 <script lang="ts">
 	import CartItemsStore from "../Stores/stores";
 	import { page } from "$app/stores";
+	import { totalPiecesStore } from "../Stores/totalPiecesStore";
 
 	export let totalPieces: number;
 	export let data;
 	let { menus } = data;
 	$: ({ menus } = data);
-	// console.log(menus);
 	console.log("HAHA", data.menus);
+	$: totalPieces = $totalPiecesStore;
 
 	let selectedTab = "";
 	const selectTab = (tabName) => {
@@ -153,7 +154,7 @@
 										<!-- //searchMenu -->
 										<div class="p-2 my-3 border rounded-lg bg-stone-100">
 											<div
-												class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
+												class="py-1 bg-green-800 border rounded-lg shadow-md sm:py-3">
 												<p
 													class="pl-3 text-2xl font-bold tracking-tight text-gray-200 dark:text-white">
 													{new Date(menu.date).toLocaleDateString("cs-CZ", {
@@ -288,7 +289,7 @@
 								on:click={() => {
 									skocNaPrvek();
 								}}
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900">
 								<p>Skoč nahoru</p>
 							</button>
 						</div>
@@ -296,9 +297,9 @@
 				</div>
 			</div>
 			{#if totalPieces > 0 && $page.data.session}
-				<div class="flex text-md">
+				<div class="flex text-md justify-center">
 					<a
-						class="w-full py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 f ocus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+						class="w-full lg:w-1/2 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900"
 						href="/kosik"
 						>Košík
 					</a>

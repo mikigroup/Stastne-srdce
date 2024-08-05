@@ -123,12 +123,13 @@ export const actions: Actions = {
 					.map(
 						(item: any, index: number) => `
               Položka ${index + 1}:
-                ${item.soup}
+                
                 Datum: ${new Date(item.date).toLocaleDateString("cs-CZ", {
 									year: "numeric",
 									month: "long",
 									day: "numeric"
 								})}
+								Polévka: ${item.soup}
                 Varianty:
                   ${item.variants
 										.map(
@@ -143,6 +144,9 @@ export const actions: Actions = {
 					.join("\n")}
         
         Poznámka: ${note}
+        
+        
+        Tým Šťasného Srdce přeje dobrou chuť :)
       `
 		};
 
