@@ -11,8 +11,26 @@
 
 	export let data;
 
-	let { supabase, session, customers, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage  } = data;
-	$: ({ supabase, session, customers, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage  } = data);
+	let {
+		supabase,
+		session,
+		customers,
+		profileTableSettings,
+		currentPage,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage
+	} = data;
+	$: ({
+		supabase,
+		session,
+		customers,
+		profileTableSettings,
+		currentPage,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage
+	} = data);
 
 	const columnNames = {
 		created_at: "Datum vytvoření",
@@ -116,7 +134,7 @@
 		const hours = dateObj.getHours().toString().padStart(2, "0");
 		const minutes = dateObj.getMinutes().toString().padStart(2, "0");
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
-	};
+	}
 
 	function previousPage() {
 		if (currentPage > 1) {
@@ -129,7 +147,6 @@
 			goto(`?page=${currentPage + 1}`);
 		}
 	}
-
 </script>
 
 <svelte:head>
@@ -230,7 +247,8 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+	<div
+		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet zákazníků: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
 		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
@@ -250,9 +268,6 @@
 			Next page
 		</button>
 	</div>
-
-
-
 </section>
 
 <style>

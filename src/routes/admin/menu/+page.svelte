@@ -5,14 +5,34 @@
 	import {
 		createSvelteTable,
 		flexRender,
-		getCoreRowModel,
+		getCoreRowModel
 	} from "@tanstack/svelte-table";
 	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
 
 	export let data;
 
-	let { session, supabase, menus, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage, itemsPerPage } = data;
-	$: ({ session, supabase, menus, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage, itemsPerPage } = data);
+	let {
+		session,
+		supabase,
+		menus,
+		profileTableSettings,
+		currentPage,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	} = data;
+	$: ({
+		session,
+		supabase,
+		menus,
+		profileTableSettings,
+		currentPage,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	} = data);
 
 	function editMenu(id: any) {
 		selectedMenu = id;
@@ -46,10 +66,12 @@
 
 	const columnOrder = Object.keys(columnNames);
 
-	let visibleColumns = profileTableSettings?.table_settings_menus ?? columnOrder.reduce((obj, column) => {
-		obj[column] = true;
-		return obj;
-	}, {});
+	let visibleColumns =
+		profileTableSettings?.table_settings_menus ??
+		columnOrder.reduce((obj, column) => {
+			obj[column] = true;
+			return obj;
+		}, {});
 
 	const visibleColumnsStore = writable(visibleColumns);
 
@@ -99,14 +121,17 @@
 				? menu.active === (filterActive === "true")
 				: searchQuery
 					? Object.values(menu).some((value) =>
-						value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-					)
+							value
+								?.toString()
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase())
+						)
 					: true
 	);
 
 	$: columns = columnOrder
-		.filter(key => $visibleColumnsStore[key])
-		.map(key => ({
+		.filter((key) => $visibleColumnsStore[key])
+		.map((key) => ({
 			accessorKey: key,
 			header: columnNames[key],
 			cell: ({ getValue }) => {
@@ -114,24 +139,26 @@
 				if (key === "date") {
 					return formatDateToCzech(value);
 				} else if (key === "variants") {
-					return Object.entries(value).map(([k, v], i) => `${i + 1}. ${v}`).join("<br>");
+					return Object.entries(value)
+						.map(([k, v], i) => `${i + 1}. ${v}`)
+						.join("<br>");
 				} else if (key === "active") {
 					return value ? "ANO" : "NE";
 				}
 				return value;
-			},
+			}
 		}));
 
-	$: options = writable<TableOptions<typeof menus[0]>>({
+	$: options = writable<TableOptions<(typeof menus)[0]>>({
 		data: filteredMenus,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
+		getCoreRowModel: getCoreRowModel()
 	});
 
-	$: visibleColumnsStore.subscribe(value => {
-		options.update(options => ({
+	$: visibleColumnsStore.subscribe((value) => {
+		options.update((options) => ({
 			...options,
-			columns: columns.filter(column => value[column.accessorKey]),
+			columns: columns.filter((column) => value[column.accessorKey])
 		}));
 	});
 
@@ -149,118 +176,138 @@
 		}
 	}
 
-console.log(menus);
+	console.log(menus);
 </script>
+
 <svelte:head>
-<title>LEO - Menu</title>
+	<title>LEO - Menu</title>
 </svelte:head>
 <div class="flex justify-between">
-		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
-				<button
-					on:click={newMenuPage}
-					class="btn btn-outline">
-					Vytvořit menu
-				</button>
-			</div>
-
-				<div>
-				<input
-					type="date"
-					bind:value={filterDate}
-					class="btn btn-outline">
-				</div>
-				<div>
-				<select bind:value={filterActive} class="select select-bordered w-full max-w-xs border-black">
-					<option value="">Všechny aktivity</option>
-					<option value="true">Aktivní</option>
-					<option value="false">Neaktivní</option>
-				</select>
-				</div>
-				<div>
-				<input
-					type="text"
-					placeholder="Hledat..."
-					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchQuery} />
-				</div>
-			</div>
+	<div class="flex flex-col gap-2 md:flex-row">
+		<div>
+			<button on:click={newMenuPage} class="btn btn-outline">
+				Vytvořit menu
+			</button>
 		</div>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-	<div class="flex justify-end dropdown">
-		<button class="m-1 btn" tabindex="0">Sloupce</button>
-		<ul
-			tabindex="0"
-			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-			{#each Object.keys(visibleColumns) as column}
-				<li>
-					<label>
-						<input
-							type="checkbox"
-							checked={$visibleColumnsStore[column]}
-							on:change={() => toggleColumn(column)} />
-						{columnNames[column]}
-					</label>
-				</li>
-			{/each}
-		</ul>
+
+		<div>
+			<input type="date" bind:value={filterDate} class="btn btn-outline" />
+		</div>
+		<div>
+			<select
+				bind:value={filterActive}
+				class="select select-bordered w-full max-w-xs border-black">
+				<option value="">Všechny aktivity</option>
+				<option value="true">Aktivní</option>
+				<option value="false">Neaktivní</option>
+			</select>
+		</div>
+		<div>
+			<input
+				type="text"
+				placeholder="Hledat..."
+				class="input input-bordered input-md w-full max-w-xs border-black"
+				bind:value={searchQuery} />
+		</div>
 	</div>
+</div>
+<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+<div class="flex justify-end dropdown">
+	<button class="m-1 btn" tabindex="0">Sloupce</button>
+	<ul
+		tabindex="0"
+		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
+		{#each Object.keys(visibleColumns) as column}
+			<li>
+				<label>
+					<input
+						type="checkbox"
+						checked={$visibleColumnsStore[column]}
+						on:change={() => toggleColumn(column)} />
+					{columnNames[column]}
+				</label>
+			</li>
+		{/each}
+	</ul>
+</div>
 
 <section>
-<div class="flex flex-wrap">
-	<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
-		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-			<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2' : ''}">
-				{columnNames[column]}
-			</div>
-		{/each}
-		<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">Editovat</div>
-	</div>
-	{#if filteredMenus && filteredMenus.length > 0}
-		{#each $table.getRowModel().rows as row}
-			<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
-				{#each row.getVisibleCells() as cell}
-					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 truncate-cell flex items-center" title={cell.getValue() ?? ''}>
-						{#if cell.column.id === 'variants'}
-							{#if typeof cell.getValue() === 'string'}
-								{@html cell.getValue().replace(/\n/g, '<br>')}
-							{:else if typeof cell.getValue() === 'object'}
-								{@html Object.entries(cell.getValue()).map(([key, value]) => `${key}. ${value}`).join('<br>')}
-							{/if}
-						{:else}
-							{@html cell.getValue() ?? ''}
-						{/if}
-					</div>
-				{/each}
-				<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-					<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-						Upravit
-					</a>
+	<div class="flex flex-wrap">
+		<div
+			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+				<div
+					class="w-full {column === 'variants'
+						? 'md:w-1/3'
+						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
+					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+						? 'border-r-2'
+						: ''}">
+					{columnNames[column]}
 				</div>
+			{/each}
+			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
+				Editovat
 			</div>
-		{/each}
-	{:else}
-		<p>Žádná menu</p>
-	{/if}
-</div>
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-	<p>Celkový počet meníček: {totalItems}</p>
-	<p>Stránka {currentPage} z {totalPages}</p>
-	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} meníček</p>
+		</div>
+		{#if filteredMenus && filteredMenus.length > 0}
+			{#each $table.getRowModel().rows as row}
+				<div
+					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+					{#each row.getVisibleCells() as cell}
+						<div
+							class="w-full truncate-cell flex items-center {cell.column.id ===
+							'variants'
+								? 'md:w-1/3'
+								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+							title={cell.getValue() ?? ""}>
+							{#if cell.column.id === "variants"}
+								{#if typeof cell.getValue() === "string"}
+									{@html cell.getValue().replace(/\n/g, "<br>")}
+								{:else if typeof cell.getValue() === "object"}
+									{@html Object.entries(cell.getValue())
+										.map(([key, value]) => `${key}. ${value}`)
+										.join("<br>")}
+								{/if}
+							{:else}
+								{@html cell.getValue() ?? ""}
+							{/if}
+						</div>
+					{/each}
+					<div
+						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+						<a
+							href="/admin/menu/{row.original.id}"
+							data-sveltekit-preload-data
+							class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+							Upravit
+						</a>
+					</div>
+				</div>
+			{/each}
+		{:else}
+			<p>Žádná menu</p>
+		{/if}
+	</div>
+	<div
+		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet meníček: {totalItems}</p>
+		<p>Stránka {currentPage} z {totalPages}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} meníček</p>
 	</div>
 
-<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
-	<button
-		class="join-item btn btn-outline"
-		on:click={previousPage}
-		disabled={currentPage === 1}>
-		Předchozí stránka
-	</button>
-	<button
-		class="join-item btn btn-outline"
-		on:click={nextPage}
-		disabled={currentPage === totalPages}>
-		Další stránka
-	</button>
-</div>
+	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+		<button
+			class="join-item btn btn-outline"
+			on:click={previousPage}
+			disabled={currentPage === 1}>
+			Předchozí stránka
+		</button>
+		<button
+			class="join-item btn btn-outline"
+			on:click={nextPage}
+			disabled={currentPage === totalPages}>
+			Další stránka
+		</button>
+	</div>
 </section>
