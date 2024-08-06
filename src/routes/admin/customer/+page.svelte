@@ -230,6 +230,12 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet zákazníků: {totalItems}</p>
+		<p>Stránka {currentPage} z {totalPages}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+	</div>
+
 	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
 		<button
 			class="join-item btn btn-outline"
@@ -244,8 +250,9 @@
 			Next page
 		</button>
 	</div>
-	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
-	<p>Stránka {currentPage} of {totalPages}</p>
+
+
+
 </section>
 
 <style>

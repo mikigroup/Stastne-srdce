@@ -2,35 +2,50 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, session }
+	locals: { supabase, session },
+	url
 }) => {
-	if (!session) {
-		throw redirect(303, "/login");
+	const page = parseInt(url.searchParams.get("page") || "1");
+	const itemsPerPage = 20; // Můžete upravit podle potřeby
+	const start = (page - 1) * itemsPerPage;
+
+	const {
+		data: orders,
+		error,
+		count
+	} = await supabase
+		.from("orders")
+		.select("*", { count: "exact" })
+		.order("date", { ascending: false })
+		.range(start, start + itemsPerPage - 1);
+
+	if (error) {
+		console.error("Error fetching orders:", error);
+		throw error;
 	}
 
-	const { data: orders, error: ordersError } = await supabase
-		.from("orders")
-		.select(
-			"state, date, id, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, delivery_street, delivery_street_number, delivery_zip_code, delivery_first_name, delivery_last_name, delivery_telephone, pay_state, delivery_city, currency, order_number, items, shipping_method, pay_method"
-		);
-	if (ordersError) {
-		console.error("Error fetching orders:", ordersError);
-		return fail(500, {
-			message: "Error fetching orders. Please try again later."
-		});
-	}
+	const totalItems = count ?? 0;
+	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+	const itemsOnCurrentPage = orders?.length ?? 0;
 
 	const { data: profileTableSettings, error: profileError } = await supabase
 		.from("profiles")
 		.select("table_settings_orders")
-		.eq("id", session.user.id)
+		.eq("id", session?.user.id)
 		.single();
+
 	if (profileError) {
 		console.error("Error fetching profile:", profileError);
-		return fail(500, {
-			message: "Error fetching profile settings. Please try again later."
-		});
+		throw profileError;
 	}
 
-	return { orders, profileTableSettings };
+	return {
+		orders,
+		profileTableSettings,
+		currentPage: page,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	};
 };
