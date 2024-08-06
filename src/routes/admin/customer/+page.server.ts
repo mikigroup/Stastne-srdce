@@ -2,18 +2,31 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, session }
+	locals: { supabase, session },
+	url
 }) => {
-	const { data: customers, error } = await supabase
+	const page = parseInt(url.searchParams.get("page") || "1");
+	const itemsPerPage = 100;
+	const start = (page - 1) * itemsPerPage;
+
+	const {
+		data: customers,
+		error,
+		count
+	} = await supabase
 		.from("customers")
-		.select("*")
+		.select("*", { count: "exact" })
 		.order("created_at", { ascending: false })
-		.limit(100);
+		.range(start, start + itemsPerPage - 1);
 
 	if (error) {
 		console.error("Error fetching customers:", error);
 		throw error;
 	}
+
+	const totalItems = count ?? 0;
+	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+	const itemsOnCurrentPage = customers?.length ?? 0;
 
 	const { data: profileTableSettings, error: profileError } = await supabase
 		.from("profiles")
@@ -26,5 +39,13 @@ export const load: PageServerLoad = async ({
 		throw profileError;
 	}
 
-	return { customers, profileTableSettings };
+	return {
+		customers,
+		profileTableSettings,
+		currentPage: page,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	};
 };

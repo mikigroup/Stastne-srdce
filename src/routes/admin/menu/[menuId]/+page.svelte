@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly } from "svelte/transition";
 
 	export let data;
 	let { session, supabase, menus } = data;
@@ -49,8 +49,8 @@
 				console.error("Chyba ukládání:", error);
 				throw error;
 			} else {
-				console.log("Menu úspěšně uložena!");
-				updateMessage = "Menu úspěšně uložena!";
+				console.log("Menu úspěšně uloženo!");
+				updateMessage = "Menu úspěšně uloženo!";
 			}
 		} catch (error) {
 			if (error instanceof Error) {
@@ -127,20 +127,38 @@
 		showAdvanced = !showAdvanced;
 	}
 </script>
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
+
+<div
+	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg"
+	in:fly={{ y: 50, duration: 500 }}>
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
-			<div class="alert alert-success shadow-lg" transition:fade>
-				<div>
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-					<span>{updateMessage}</span>
-				</div>
+			<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
+				{updateMessage}
 			</div>
 		{/if}
-		<div class="flex gap-2">
-			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Upravit</button>
-			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
+		<div class="flex flex-col gap-2 md:flex-row">
+			<div>
+				<button
+					value={loading ? "Nahrává se..." : "Změněno"}
+					disabled={loading}
+					type="submit"
+					on:click={updateMenu}
+					class="btn btn-outline">
+					Upravit
+				</button>
+			</div>
+			<div>
+				<button
+					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
+					value={loading ? "Nahrává se..." : "Update"}
+					disabled={loading}
+					type="submit"
+					on:click={deleteMenu}>
+					Smazat
+				</button>
+			</div>
 		</div>
 	</div>
 	<div class="divider"></div>
@@ -150,20 +168,33 @@
 			<h2 class="text-2xl font-bold mb-6">Menu</h2>
 
 			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
-
+				<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Datum</span>
 						</label>
-						<input type="text" placeholder="DD-MM-YYYY" autocomplete="off" class="input input-bordered w-full" class:input-error={!isValidDate} bind:value={formattedDate} on:input={handleDateInput} />
+						<input
+							type="text"
+							placeholder="DD-MM-YYYY"
+							autocomplete="off"
+							class="input input-bordered w-full"
+							class:input-error={!isValidDate}
+							bind:value={formattedDate}
+							on:input={handleDateInput} />
 					</div>
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Cena</span>
 						</label>
-						<input type="number" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={price} />
+						<input
+							type="number"
+							placeholder=""
+							autocomplete="off"
+							class="input input-bordered w-full"
+							bind:value={price}
+							min="0"
+						/>
 					</div>
 					<div class="form-control w-full mb-2">
 						<label class="label">
@@ -176,25 +207,36 @@
 					</div>
 				</div>
 
-
-				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
-
+				<div in:fly={{ x: 50, duration: 500, delay: 400 }}>
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Polévka</span>
 						</label>
-						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
+						<input
+							type="text"
+							placeholder=""
+							autocomplete="off"
+							class="input input-bordered w-full"
+							bind:value={soup} />
 					</div>
-
 
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Hlavní chod</span>
 						</label>
 						<div class="grid grid-rows-3 gap-2">
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[1]}></textarea>
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[2]}></textarea>
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[3]}></textarea>
+							<textarea
+								class="textarea textarea-bordered"
+								rows="4"
+								bind:value={variants[1]}></textarea>
+							<textarea
+								class="textarea textarea-bordered"
+								rows="4"
+								bind:value={variants[2]}></textarea>
+							<textarea
+								class="textarea textarea-bordered"
+								rows="4"
+								bind:value={variants[3]}></textarea>
 						</div>
 					</div>
 
@@ -202,7 +244,8 @@
 						<label class="label">
 							<span class="label-text">Poznámky</span>
 						</label>
-						<textarea class="textarea textarea-bordered" bind:value={notes}></textarea>
+						<textarea class="textarea textarea-bordered" bind:value={notes}
+						></textarea>
 					</div>
 				</div>
 			</div>
@@ -223,14 +266,22 @@
 						<label class="label">
 							<span class="label-text">Nutriční info</span>
 						</label>
-						<input type="text" class="input input-bordered w-full" bind:value={nutri} />
+						<input
+							type="text"
+							class="input input-bordered w-full"
+							bind:value={nutri} />
 					</div>
 				</div>
 				<div class="form-control w-full mb-2">
 					<label class="label">
 						<span class="label-text">Typ</span>
 					</label>
-					<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
+					<input
+						type="text"
+						placeholder=""
+						autocomplete="off"
+						class="input input-bordered w-full"
+						bind:value={type} />
 				</div>
 			{/if}
 		</div>

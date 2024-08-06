@@ -11,8 +11,8 @@
 
 	export let data;
 
-	let { session, supabase, menus, profileTableSettings } = data;
-	$: ({ session, supabase, menus, profileTableSettings } = data);
+	let { session, supabase, menus, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage, itemsPerPage } = data;
+	$: ({ session, supabase, menus, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage, itemsPerPage } = data);
 
 	function editMenu(id: any) {
 		selectedMenu = id;
@@ -136,6 +136,19 @@
 	});
 
 	$: table = createSvelteTable(options);
+
+	function previousPage() {
+		if (currentPage > 1) {
+			goto(`?page=${currentPage - 1}`);
+		}
+	}
+
+	function nextPage() {
+		if (currentPage < totalPages) {
+			goto(`?page=${currentPage + 1}`);
+		}
+	}
+
 console.log(menus);
 </script>
 <svelte:head>
@@ -192,6 +205,8 @@ console.log(menus);
 			{/each}
 		</ul>
 	</div>
+
+<section>
 <div class="flex flex-wrap">
 	<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
@@ -228,3 +243,20 @@ console.log(menus);
 		<p>Žádná menu</p>
 	{/if}
 </div>
+<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+	<button
+		class="join-item btn btn-outline"
+		on:click={previousPage}
+		disabled={currentPage === 1}>
+		Předchozí stránka
+	</button>
+	<button
+		class="join-item btn btn-outline"
+		on:click={nextPage}
+		disabled={currentPage === totalPages}>
+		Další stránka
+	</button>
+</div>
+<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} meníček</p>
+<p>Stránka {currentPage} of {totalPages}</p>
+</section>

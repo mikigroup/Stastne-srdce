@@ -159,35 +159,31 @@
 		<div class="flex justify-between items-center mb-4">
 			<button on:click={back} class="btn btn-outline">Zpět</button>
 			{#if updateMessage}
-				<div class="alert alert-success shadow-lg" transition:fade>
-					<div>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-6 w-6 flex-shrink-0 stroke-current"
-							fill="none"
-							viewBox="0 0 24 24"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-						<span>{updateMessage}</span>
-					</div>
+				<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
+					{updateMessage}
 				</div>
 			{/if}
-			<div class="flex gap-2">
-				<button
-					value={loading ? "Nahrává se..." : "Upraveno"}
-					disabled={loading}
-					type="submit"
-					on:click={updateOrder}
-					class="btn btn-outline">Upravit</button>
-				<button
-					class="btn btn-outline btn-error invisible"
-					value={loading ? "Nahrává se..." : "Update"}
-					disabled={loading}
-					type="submit"
-					on:click={deleteOrder}>Smazat</button>
+			<div class="flex flex-col gap-2 md:flex-row">
+				<div>
+					<button
+						value={loading ? "Nahrává se..." : "Změněno"}
+						disabled={loading}
+						type="submit"
+						on:click={updateOrder}
+						class="btn btn-outline">
+						Upravit
+					</button>
+				</div>
+				<div>
+					<button
+						class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
+						value={loading ? "Nahrává se..." : "Update"}
+						disabled={loading}
+						type="submit"
+						on:click={deleteOrder}>
+						Smazat
+					</button>
+				</div>
 			</div>
 		</div>
 	</section>

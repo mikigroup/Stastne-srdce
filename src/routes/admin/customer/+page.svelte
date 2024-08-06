@@ -5,14 +5,14 @@
 	import {
 		createSvelteTable,
 		flexRender,
-		getCoreRowModel,
+		getCoreRowModel
 	} from "@tanstack/svelte-table";
 	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
 
 	export let data;
 
-	let { supabase, session, customers, profileTableSettings } = data;
-	$: ({ supabase, session, customers, profileTableSettings } = data);
+	let { supabase, session, customers, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage  } = data;
+	$: ({ supabase, session, customers, profileTableSettings, currentPage, totalPages, totalItems, itemsOnCurrentPage  } = data);
 
 	const columnNames = {
 		created_at: "Datum vytvoření",
@@ -28,10 +28,12 @@
 
 	const columnOrder = Object.keys(columnNames);
 
-	let visibleColumns = profileTableSettings?.table_settings_customers ?? columnOrder.reduce((obj, column) => {
-		obj[column] = true;
-		return obj;
-	}, {});
+	let visibleColumns =
+		profileTableSettings?.table_settings_customers ??
+		columnOrder.reduce((obj, column) => {
+			obj[column] = true;
+			return obj;
+		}, {});
 
 	const visibleColumnsStore = writable(visibleColumns);
 
@@ -79,8 +81,8 @@
 	);
 
 	$: columns = columnOrder
-		.filter(key => $visibleColumnsStore[key])
-		.map(key => ({
+		.filter((key) => $visibleColumnsStore[key])
+		.map((key) => ({
 			accessorKey: key,
 			header: columnNames[key],
 			cell: ({ getValue }) => {
@@ -88,37 +90,50 @@
 					return formatDateToCzech(getValue());
 				}
 				return getValue();
-			},
+			}
 		}));
 
-	$: options = writable<TableOptions<typeof customers[0]>>({
+	$: options = writable<TableOptions<(typeof customers)[0]>>({
 		data: filteredCustomers,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
+		getCoreRowModel: getCoreRowModel()
 	});
-	$: visibleColumnsStore.subscribe(value => {
-		options.update(options => ({
+	$: visibleColumnsStore.subscribe((value) => {
+		options.update((options) => ({
 			...options,
-			columns: columns.filter(column => value[column.accessorKey]),
+			columns: columns.filter((column) => value[column.accessorKey])
 		}));
 	});
 
 	$: table = createSvelteTable(options);
 
 	function formatDateToCzech(date) {
-		if (!date) return ''; //
+		if (!date) return ""; //
 		const dateObj = new Date(date);
-		const day = dateObj.getDate().toString().padStart(2, '0');
-		const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+		const day = dateObj.getDate().toString().padStart(2, "0");
+		const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
 		const year = dateObj.getFullYear();
-		const hours = dateObj.getHours().toString().padStart(2, '0');
-		const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+		const hours = dateObj.getHours().toString().padStart(2, "0");
+		const minutes = dateObj.getMinutes().toString().padStart(2, "0");
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
+	};
+
+	function previousPage() {
+		if (currentPage > 1) {
+			goto(`?page=${currentPage - 1}`);
+		}
+	}
+
+	function nextPage() {
+		if (currentPage < totalPages) {
+			goto(`?page=${currentPage + 1}`);
+		}
 	}
 
 </script>
+
 <svelte:head>
-<title>LEO - Zákazníci</title>
+	<title>LEO - Zákazníci</title>
 </svelte:head>
 <section>
 	<div class="flex">
@@ -135,13 +150,12 @@
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchQuery}
-				/>
+					bind:value={searchQuery} />
 			</div>
 		</div>
 	</div>
 </section>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
 	<div class="flex justify-end dropdown">
@@ -166,28 +180,47 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		<div
+			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div class="w-full {column === 'email' ? 'md:w-1/3' : 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2' : ''}">
+				<div
+					class="w-full {column === 'email'
+						? 'md:w-1/3'
+						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
+					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+						? 'border-r-2'
+						: ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">Editovat</div>
+			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
+				Editovat
+			</div>
 		</div>
 		{#if filteredCustomers && filteredCustomers.length > 0}
 			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+				<div
+					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
-						<div class="w-full truncate-cell flex items-center {cell.column.id === 'email' ? 'md:w-1/3' : 'md:w-1/6 lg:w-1/6 xl:w-1/6'}" title={cell.getValue() ?? ''}>
-							{#if cell.column.id === 'created_at'}
+						<div
+							class="w-full truncate-cell flex items-center {cell.column.id ===
+							'email'
+								? 'md:w-1/3'
+								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+							title={cell.getValue() ?? ""}>
+							{#if cell.column.id === "created_at"}
 								{formatDateToCzech(cell.getValue())}
 							{:else}
-								{cell.getValue() ?? ''}
+								{cell.getValue() ?? ""}
 							{/if}
 						</div>
 					{/each}
-					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-						<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+					<div
+						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+						<a
+							href="/admin/customer/{row.original.id}"
+							data-sveltekit-preload-data
+							class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
 							Upravit
 						</a>
 					</div>
@@ -197,13 +230,26 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
-	<div class="join grid grid-cols-2">
-		<button class="join-item btn btn-outline">Previous page</button>
-		<button class="join-item btn btn-outline">Next</button>
+	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+		<button
+			class="join-item btn btn-outline"
+			on:click={previousPage}
+			disabled={currentPage === 1}>
+			Previous page
+		</button>
+		<button
+			class="join-item btn btn-outline"
+			on:click={nextPage}
+			disabled={currentPage === totalPages}>
+			Next page
+		</button>
 	</div>
+	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+	<p>Stránka {currentPage} of {totalPages}</p>
 </section>
+
 <style>
-    /*    .truncate-cell {
+	/*    .truncate-cell {
 						max-width: 150px;
 						white-space: nowrap;
 						overflow: hidden;

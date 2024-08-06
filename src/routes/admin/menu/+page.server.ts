@@ -1,26 +1,51 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals: { supabase, session } }) => {
-  const { data: menus, error } = await supabase
-    .from("menus")
-    .select("id, date, soup, price, variants, active, notes, type, nutri");
+export const load: PageServerLoad = async ({
+	locals: { supabase, session },
+	url
+}) => {
+	const page = parseInt(url.searchParams.get("page") || "1");
+	const itemsPerPage = 100;
+	const start = (page - 1) * itemsPerPage;
 
-  if (error) {
-    console.error("Error fetching daily menus:", error);
-    throw error;
-  }
+	const {
+		data: menus,
+		error,
+		count
+	} = await supabase
+		.from("menus")
+		.select("*", { count: "exact" })
+		.order("date", { ascending: false })
+		.range(start, start + itemsPerPage - 1);
 
-  const { data: profileTableSettings } = await supabase
-    .from("profiles")
-    .select("table_settings_menus")
-    .eq("id", session?.user.id)
-    .single();
+	if (error) {
+		console.error("Error fetching menus:", error);
+		throw error;
+	}
 
-  if (error) {
-    console.error("Error fetching profile:", error);
-    throw error;
-  }
+	const totalItems = count ?? 0;
+	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+	const itemsOnCurrentPage = menus?.length ?? 0;
 
-  return { menus, profileTableSettings };
+	const { data: profileTableSettings, error: profileError } = await supabase
+		.from("profiles")
+		.select("table_settings_menus")
+		.eq("id", session?.user.id)
+		.single();
+
+	if (profileError) {
+		console.error("Error fetching profile:", profileError);
+		throw profileError;
+	}
+
+	return {
+		menus,
+		profileTableSettings,
+		currentPage: page,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	};
 };

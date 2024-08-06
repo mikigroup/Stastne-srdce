@@ -26,8 +26,6 @@
 	let user_role: string = customers?.user_role ?? "";
 	let customerId: string = customers?.id;
 
-	const dispatch = createEventDispatcher();
-
 	let updateMessage = "";
 	async function updateCustomer() {
 		try {
@@ -50,8 +48,8 @@
 			};
 
 			console.log("Zákazník se ukládá s těmito daty:", update);
-
 			console.log("customerID:", customerId);
+			
 			const { error } = await supabase
 				.from("customers")
 				.update(update)
@@ -76,10 +74,6 @@
 
 	async function back() {
 		goto("/admin/customer");
-	}
-
-	function closeModal() {
-		loading = false;
 	}
 
 	async function deleteCustomer() {
