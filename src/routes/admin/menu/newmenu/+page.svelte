@@ -3,8 +3,8 @@
 	import { fade, fly } from 'svelte/transition';
 
 	export let data;
-	let { session, supabase, menus } = data;
-	$: ({ session, supabase, menus } = data);
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
 	let loading = false;
 	let date: string = menus?.date ?? "";
 	let soup: string = menus?.soup ?? "";
@@ -22,39 +22,49 @@
 	let formattedDate = date ? formatSupabaseDate(date) : "";
 
 	let updateMessage = "";
-	async function updateMenu() {
+	async function createMenu() {
 		try {
 			loading = true;
 
-			const update = {
-				updated_at: new Date().toISOString(),
+			const menuData = {
 				date: date ? new Date(date).toISOString() : null,
 				soup,
 				price,
-				variants,
 				active,
 				notes,
 				type,
 				nutri
 			};
 
-			console.log("Menu se ukládá s těmito daty:", update);
-
-			const { data, error } = await supabase
+			const { data: menuData, error: menuError } = await supabase
 				.from("menus")
-				.update(update)
-				.eq("id", menuId)
-				.select("*");
-			if (error) {
-				console.error("Chyba ukládání:", error);
-				throw error;
-			} else {
-				console.log("Menu úspěšně uložena!");
-				updateMessage = "Menu úspěšně uložena!";
+				.insert(menuData)
+				.select()
+				.single();
+
+			if (menuError) throw menuError;
+
+			menuId = menuData.id;
+
+			for (const [variantNumber, description] of Object.entries(variants)) {
+				const { error: variantError } = await supabase
+					.from("menu_variants")
+					.insert({
+						menu_id: menuId,
+						variant_number: parseInt(variantNumber),
+						description
+					});
+
+				if (variantError) throw variantError;
 			}
+
+			console.log("Menu a varianty úspěšně vytvořeny!");
+			updateMessage = "Menu a varianty úspěšně vytvořeny!";
+
+			await goto("/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Chyba ukládání:", error);
+				console.error("Chyba při vytváření:", error);
 				alert(error.message);
 			}
 		} finally {
@@ -65,18 +75,26 @@
 	async function deleteMenu() {
 		try {
 			loading = true;
-			const { error } = await supabase.from("menus").delete().eq("id", menuId);
 
-			if (error) {
-				console.error("Error deleting menu:", error);
-				throw error;
-			} else {
-				console.log("Menu deleted successfully!");
-				await goto("/menu", { replaceState: true });
-			}
+			const { error: variantError } = await supabase
+				.from("menu_variants")
+				.delete()
+				.eq("menu_id", menuId);
+
+			if (variantError) throw variantError;
+
+			const { error: menuError } = await supabase
+				.from("menus")
+				.delete()
+				.eq("id", menuId);
+
+			if (menuError) throw menuError;
+
+			console.log("Menu a varianty úspěšně smazány!");
+			await goto("/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Error in Delete menu:", error);
+				console.error("Chyba při mazání menu:", error);
 				alert(error.message);
 			}
 		} finally {
@@ -84,7 +102,6 @@
 		}
 	}
 
-	// Datum
 	let isValidDate: boolean = true;
 	let isEditingDate = false;
 
@@ -101,7 +118,6 @@
 		isEditingDate = true;
 	}
 
-	// Datum - Validace
 	function validateDate(inputDate: string): boolean {
 		const datePattern = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
 		return datePattern.test(inputDate);
@@ -139,7 +155,7 @@
 			</div>
 		{/if}
 		<div class="flex gap-2">
-			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Upravit</button>
+			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Vytvoř</button>
 			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
 		</div>
 	</div>
