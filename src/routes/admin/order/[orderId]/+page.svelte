@@ -3,8 +3,8 @@
 	import { fade, fly } from "svelte/transition";
 
 	export let data;
-	let { session, supabase, orders } = data;
-	$: ({ session, supabase, orders } = data);
+	let { session, supabase, orders, orderItems } = data;
+	$: ({ session, supabase, orders, orderItems } = data);
 
 	let loading = false;
 	let date: string = orders?.date ?? "";
@@ -153,7 +153,7 @@
 </script>
 
 <div
-	class="relative p-5 overflow-x-auto shadow-lg sm:rounded-lg border "
+	class="relative p-5 overflow-x-auto shadow-lg sm:rounded-lg border"
 	in:fly={{ y: 50, duration: 500 }}>
 	<section>
 		<div class="flex justify-between items-center mb-4">
@@ -197,7 +197,8 @@
 
 				<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
 							<input type="checkbox" name="my-accordion-1" checked="checked" />
 							<div class="collapse-title text-xl font-medium">
 								Základní údaje
@@ -248,7 +249,8 @@
 					</div>
 
 					<div in:fly={{ x: 50, duration: 500, delay: 400 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
 							<input type="checkbox" name="my-accordion-2" checked="checked" />
 							<div class="collapse-title text-xl font-medium">
 								Platební údaje
@@ -315,7 +317,8 @@
 					</div>
 
 					<div in:fly={{ x: -50, duration: 500, delay: 600 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
 							<input type="checkbox" />
 							<div class="collapse-title text-xl font-medium">
 								Fakturační údaje
@@ -375,7 +378,8 @@
 					</div>
 
 					<div in:fly={{ x: 50, duration: 500, delay: 800 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
 							<input type="checkbox" />
 							<div class="collapse-title text-xl font-medium">
 								Dodací adresa
@@ -437,13 +441,33 @@
 
 				<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
 							<input type="checkbox" name="" checked="checked" />
 							<div class="collapse-title text-xl font-medium">
-								Objednané zboží
+								Položky:
 							</div>
 							<div class="collapse-content">
 								<div class="form-control w-full mb-2">
+									<table class="table w-full">
+										<thead>
+										<tr>
+											<th>Název</th>
+											<th>Množství</th>
+											<th>Cena</th>
+										</tr>
+										</thead>
+										<tbody>
+										{#each orderItems as item}
+											<tr>
+												<td>{item.menus.variants.find(variant => variant.key === 'name')?.value}</td>
+												<td>{item.quantity}</td>
+												<td>{item.price}</td>
+											</tr>
+										{/each}
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</div>
 					</div>
