@@ -61,7 +61,7 @@
 							<br />
 							Potoční 16
 							<br />
-							Mikulovice 79081
+							Mikulovice 79084
 							<br />
 							IČO: 21300674<br />
 							DIČ: CZ21300674

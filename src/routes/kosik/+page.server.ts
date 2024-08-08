@@ -13,10 +13,10 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-const supabase = createClient(
+/*const supabase = createClient(
 	"https://orgshebezwfizhmlmeum.supabase.co",
 	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74"
-);
+);*/
 
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {

@@ -58,13 +58,13 @@
 	const columnNames = {
 		order_number: "Objednávka",
 		date: "Datum",
+		customer_email: "E-mail",
+		customer_first_name: "Jméno",
+		customer_last_name: "Příjmení",
 		state: "Stav",
 		shipping_method: "Způsob dopravy",
 		pay_method: "Platební metoda",
-		customer_first_name: "Jméno",
-		customer_last_name: "Příjmení",
-		pay_state: "Stav platby",
-		customer_email: "E-mail"
+		pay_state: "Stav platby"
 	};
 
 	const columnOrder = Object.keys(columnNames);

@@ -301,13 +301,13 @@
 
 								<div class="form-control w-full mb-2">
 									<label class="label">
-										<span class="label-text">Uhrazeno</span>
+										<span class="label-text">Stav platby</span>
 									</label>
 									<select
 										class="select select-bordered w-full"
 										bind:value={isPaid}>
-										<option value={false}>Ne</option>
-										<option value={true}>Ano</option>
+										<option value={false}>Neuhrazena</option>
+										<option value={true}>Uhrazena</option>
 									</select>
 								</div>
 							</div>
@@ -435,7 +435,19 @@
 					</div>
 				</div>
 
-				<button class="btn btn-outline mt-6"> Připojit dokument </button>
+				<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
+						<div class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+							<input type="checkbox" name="" checked="checked" />
+							<div class="collapse-title text-xl font-medium">
+								Objednané zboží
+							</div>
+							<div class="collapse-content">
+								<div class="form-control w-full mb-2">
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</section>
