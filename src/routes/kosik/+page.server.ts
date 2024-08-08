@@ -83,8 +83,8 @@ export const actions: Actions = {
 
 		const doc = {
 			created_at: new Date().toISOString(),
-			items: JSON.stringify(items),
-			note,
+			/*			items: JSON.stringify(items),
+			note,*/
 			customer_email: email,
 			customer_first_name: first_name,
 			customer_last_name: last_name,
@@ -108,6 +108,25 @@ export const actions: Actions = {
 			console.error("Chyba při vytváření objednávky:", orderError);
 			throw error(500, "Chyba při vytváření objednávky");
 		}
+
+		const orderId = order[0].id;
+
+		try {
+			const { data: orderItems, error: orderItemsError } = await supabase
+				.from("order_items")
+				.insert(
+					items.map((item: any) => ({
+						order_id: orderId,
+						menu_id: item.id,
+						quantity: item.variants.reduce((sum: number, variant: any) => sum + variant.quantity, 0),
+						price: item.price
+					}))
+				);
+
+			if (orderItemsError) {
+				console.error("Chyba při vytváření položek objednávky:", orderItemsError);
+				throw error(500, "Chyba při vytváření položek objednávky");
+			}
 
 		// console.log(`Objednávka byla vytvořena, ID objednávky je ${order[0].id}`);
 
