@@ -10,8 +10,8 @@
 	export let data;
 	export let form: Actions;
 
-	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
+	let { session, supabase, user, variants } = data;
+	$: ({ session, supabase, user, variants } = data);
 	$: totalPieces = $totalPiecesStore;
 	let cartItems: any = [];
 

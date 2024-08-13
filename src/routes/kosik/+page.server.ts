@@ -19,8 +19,8 @@ const transporter = nodemailer.createTransport({
 );*/
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
-		const session = await safeGetSession();
+	sendOrder: async ({ request, locals: { supabase, getSession } }) => {
+		const session = await getSession();
 		if (!session) {
 			throw redirect(303, "/login");
 		}
@@ -28,29 +28,15 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const note = formData.get("note") as string;
 		const cartItems = JSON.parse(formData.get("cartItems") as string);
-		console.log("session.user.id:", session.user.id);
 
-		let first_name = "";
-		let last_name = "";
-		try {
-			const { data: profile, error: profileError } = await supabase
-				.from("customers")
-				.select("first_name, last_name")
-				.eq("id", session.user.id)
-				.single();
-
-			if (profileError) {
-				console.warn("Chyba při získávání profilu uživatele:", profileError);
-			} else {
-				first_name = profile.first_name || "";
-				last_name = profile.last_name || "";
-			}
-		} catch (error) {
-			console.warn("Chyba při získávání profilu uživatele:", error);
+		if (cartItems.length === 0) {
+			return {
+				success: false,
+				message: "Košík je prázdný. Nelze vytvořit objednávku."
+			};
 		}
 
 		const email = session.user.email;
-
 		let totalPrice = 0;
 		let totalPieces = 0;
 
@@ -81,117 +67,62 @@ export const actions: Actions = {
 			};
 		});
 
-		const doc = {
+		const orderData = {
 			created_at: new Date().toISOString(),
-			// items: JSON.stringify(items),
-			note,
 			customer_email: email,
-			customer_first_name: first_name,
-			customer_last_name: last_name,
 			total_price: totalPrice,
 			total_pieces: totalPieces,
-			user_id: session.user.id
+			note
 		};
 
-		console.log("cartItems:", cartItems);
-		console.log("session.user.id:", session.user.id);
-		console.log("first_name:", first_name);
-		console.log("last_name:", last_name);
-		console.log("doc:", doc);
-
-		const { data: order, error: orderError } = await supabase
-			.from("orders")
-			.insert([doc])
-			.select();
-
-		if (orderError) {
-			console.error("Chyba při vytváření objednávky:", orderError);
-			throw error(500, "Chyba při vytváření objednávky");
-		}
-
-		const orderId = order[0].id;
-
 		try {
-			const { data: orderItems, error: orderItemsError } = await supabase
+			// Začátek transakce
+			const { data: order, error: orderError } = await supabase
+				.from("orders")
+				.insert(orderData)
+				.select();
+
+			if (orderError) {
+				throw orderError;
+			}
+
+			const orderId = order[0].id;
+
+			const orderItems = items.map((item: any) => ({
+				order_id: orderId,
+				menu_id: item.id,
+				quantity: item.variants.reduce(
+					(sum: number, variant: any) => sum + variant.quantity,
+					0
+				),
+				price: item.price
+			}));
+
+			const { data: createdOrderItems, error: orderItemsError } = await supabase
 				.from("order_items")
-				.insert(
-					items.map((item: any) => ({
-						order_id: orderId,
-						menu_id: item.id,
-						quantity: item.variants.reduce(
-							(sum: number, variant: any) => sum + variant.quantity,
-							0
-						),
-						price: item.price
-					}))
-				);
+				.insert(orderItems);
 
 			if (orderItemsError) {
-				console.error(
-					"Chyba při vytváření položek objednávky:",
-					orderItemsError
-				);
-				throw error(500, "Chyba při vytváření položek objednávky");
+				// Pokud došlo k chybě při vkládání položek objednávky, smazat vytvořenou objednávku
+				await supabase.from("orders").delete().eq("id", orderId);
+				throw orderItemsError;
 			}
-		} catch (err: unknown) {
-			console.error("Chyba při vytváření položek objednávky:", err);
 
-			await supabase.from("orders").delete().eq("id", orderId);
-			throw error(500, "Chyba při vytváření položek objednávky");
-		}
+			// Konec transakce
 
-		// console.log(`Objednávka byla vytvořena, ID objednávky je ${order[0].id}`);
-
-		const options = {
-			from: "info@stastnesrdce.cz",
-			to: email,
-			subject: "Šťastné srdce - Objednávka",
-			text: `
-        Děkujeme za vaši objednávku!
-        
-        Detail:
-        ${cartItems
-					.map(
-						(item: any, index: number) => `
-              Položka ${index + 1}:
-                
-                Datum: ${new Date(item.date).toLocaleDateString("cs-CZ", {
-									year: "numeric",
-									month: "long",
-									day: "numeric"
-								})}
-								Polévka: ${item.soup}
-                Varianty:
-                  ${item.variants
-										.map(
-											(variant: any) => `
-                        - ${variant.value}
-                          Množství: ${variant.quantity}
-                      `
-										)
-										.join("\n")}
-            `
-					)
-					.join("\n")}
-        
-        Poznámka: ${note}
-        
-        
-        Tým Šťasného Srdce přeje dobrou chuť :)
-      `
-		};
-
-		try {
-			await transporter.sendMail(options);
-			console.log("E-mail odeslán na adresu:", email);
+			// Odeslání e-mailu a další akce
 
 			return {
 				success: true,
-				clearCart: true
+				message: "Objednávka byla úspěšně vytvořena.",
+				orderId: orderId
 			};
-		} catch (err: unknown) {
-			console.error("Chyba při odesílání e-mailu:", err);
-			throw error(500, "Chyba při odesílání e-mailu");
+		} catch (error) {
+			console.error("Chyba při vytváření objednávky:", error);
+			return {
+				success: false,
+				message: "Při vytváření objednávky došlo k chybě."
+			};
 		}
 	}
 };

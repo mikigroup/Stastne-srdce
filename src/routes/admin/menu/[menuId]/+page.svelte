@@ -182,14 +182,7 @@
 				</button>
 			</div>
 			<div>
-				<button
-					class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					value={loading ? "Nahrává se..." : "Update"}
-					disabled={loading}
-					type="submit"
-					on:click={deleteMenu}>
-					Smazat
-				</button>
+				<!--<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>-->
 			</div>
 		</div>
 	</div>
