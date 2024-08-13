@@ -6,20 +6,20 @@
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 	let loading = false;
-	let date: string = menus?.date ?? "";
-	let soup: string = menus?.soup ?? "";
-	let price: number = menus?.price ?? 0;
-	let variants: any = menus?.variants ?? {
+	let date: string = "";
+	let soup: string = "";
+	let price: number = 0;
+	let variants: any = {
 		1: "",
 		2: "",
 		3: ""
 	};
-	let active: boolean = menus?.active;
-	let notes: string = menus?.notes ?? "";
-	let type: string = menus?.type ?? "";
-	let nutri: string = menus?.nutri ?? "";
-	let menuId: string = menus?.id;
-	let formattedDate = date ? formatSupabaseDate(date) : "";
+	let active: boolean = false;
+	let notes: string = "";
+	let type: string = "";
+	let nutri: string = "";
+	let menuId: string = "";
+	let formattedDate = "";
 
 	let updateMessage = "";
 	async function createMenu() {
@@ -36,7 +36,7 @@
 				nutri
 			};
 
-			const { data: menuData, error: menuError } = await supabase
+			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
 				.insert(menuData)
 				.select()
@@ -44,7 +44,7 @@
 
 			if (menuError) throw menuError;
 
-			menuId = menuData.id;
+			menuId = createdMenu.id;
 
 			for (const [variantNumber, description] of Object.entries(variants)) {
 				const { error: variantError } = await supabase
@@ -61,7 +61,7 @@
 			console.log("Menu a varianty úspěšně vytvořeny!");
 			updateMessage = "Menu a varianty úspěšně vytvořeny!";
 
-			await goto("/menu", { replaceState: true });
+			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
 				console.error("Chyba při vytváření:", error);
@@ -155,7 +155,7 @@
 			</div>
 		{/if}
 		<div class="flex gap-2">
-			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={updateMenu} class="btn btn-outline">Vytvoř</button>
+			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={createMenu} class="btn btn-outline">Vytvoř</button>
 			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
 		</div>
 	</div>

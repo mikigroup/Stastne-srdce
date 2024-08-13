@@ -3,58 +3,82 @@
 	import { fade, fly } from "svelte/transition";
 
 	export let data;
-	let { session, supabase, menus } = data;
-	$: ({ session, supabase, menus } = data);
+	let { session, supabase, menu, variants  } = data;
+	$: ({ session, supabase, menu, variants  } = data);
 	let loading = false;
-	let date: string = menus?.date ?? "";
-	let soup: string = menus?.soup ?? "";
-	let price: number = menus?.price ?? 0;
-	let variants: any = menus?.variants ?? {
-		1: "",
-		2: "",
-		3: ""
-	};
-	let active: boolean = menus?.active;
-	let notes: string = menus?.notes ?? "";
-	let type: string = menus?.type ?? "";
-	let nutri: string = menus?.nutri ?? "";
-	let menuId: string = menus?.id;
+	let date: string = menu?.date ?? "";
+	let soup: string = menu?.soup ?? "";
+	let price: number = menu?.price ?? 0;
+	let active: boolean = menu?.active;
+	let notes: string = menu?.notes ?? "";
+	let type: string = menu?.type ?? "";
+	let nutri: string = menu?.nutri ?? "";
+	let menuId: string = menu?.id;
 	let formattedDate = date ? formatSupabaseDate(date) : "";
 
+
 	let updateMessage = "";
+
 	async function updateMenu() {
 		try {
 			loading = true;
 
 			const update = {
 				updated_at: new Date().toISOString(),
-				date: date ? new Date(date).toISOString() : null,
 				soup,
 				price,
-				variants,
 				active,
 				notes,
 				type,
 				nutri
 			};
 
-			console.log("Menu se ukládá s těmito daty:", update);
+			console.log("Menu update data:", update);
+			console.log("Menu ID:", menuId);
 
-			const { data, error } = await supabase
+			const { data: existingVariants, error: variantsError } = await supabase
+				.from("menu_variants")
+				.select("*")
+				.eq("menu_id", menuId);
+
+			if (variantsError) {
+				console.error("Error fetching menu variants:", variantsError);
+				throw variantsError;
+			}
+
+			const updatedVariants = existingVariants.map((variant) => ({
+				id: variant.id, // Include the variant ID for updating
+				menu_id: menuId,
+				variant_number: variant.variant_number,
+				description: variants[variant.variant_number],
+			}));
+
+			const { data: updatedMenu, error: menuError } = await supabase
 				.from("menus")
 				.update(update)
 				.eq("id", menuId)
-				.select("*");
-			if (error) {
-				console.error("Chyba ukládání:", error);
-				throw error;
-			} else {
-				console.log("Menu úspěšně uloženo!");
-				updateMessage = "Menu úspěšně uloženo!";
+				.single();
+
+			if (menuError) {
+				console.error("Error updating menu:", menuError);
+				throw menuError;
 			}
+
+			const { data: updatedVariantsData, error: updateVariantsError } = await supabase
+				.from("menu_variants")
+				.upsert(updatedVariants)
+				.eq("id", updatedVariants.map((variant) => variant.id)); // Use variant IDs for upsert
+
+			if (updateVariantsError) {
+				console.error("Chyba při úpravě menu::", updateVariantsError);
+				throw updateVariantsError;
+			}
+
+			console.log("Menu upraveno!");
+			updateMessage = "Menu upraveno!";
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Chyba ukládání:", error);
+				console.error("Error updating menu:", error);
 				alert(error.message);
 			}
 		} finally {
@@ -65,18 +89,32 @@
 	async function deleteMenu() {
 		try {
 			loading = true;
-			const { error } = await supabase.from("menus").delete().eq("id", menuId);
 
-			if (error) {
-				console.error("Error deleting menu:", error);
-				throw error;
-			} else {
-				console.log("Menu deleted successfully!");
-				await goto("/menu", { replaceState: true });
+			const { error: deleteVariantsError } = await supabase
+				.from("menu_variants")
+				.delete()
+				.eq("menu_id", menuId);
+
+			if (deleteVariantsError) {
+				console.error("Chyba při mazání variant menu:", deleteVariantsError);
+				throw deleteVariantsError;
 			}
+
+			const { error: deleteMenuError } = await supabase
+				.from("menus")
+				.delete()
+				.eq("id", menuId);
+
+			if (deleteMenuError) {
+				console.error("Chyba při mazání menu:", deleteMenuError);
+				throw deleteMenuError;
+			}
+
+			console.log("Menu a varianty úspěšně smazány!");
+			await goto("/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Error in Delete menu:", error);
+				console.error("Chyba při mazání menu:", error);
 				alert(error.message);
 			}
 		} finally {
