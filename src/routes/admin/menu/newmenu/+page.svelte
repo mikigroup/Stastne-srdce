@@ -72,35 +72,7 @@
 		}
 	}
 
-	async function deleteMenu() {
-		try {
-			loading = true;
 
-			const { error: variantError } = await supabase
-				.from("menu_variants")
-				.delete()
-				.eq("menu_id", menuId);
-
-			if (variantError) throw variantError;
-
-			const { error: menuError } = await supabase
-				.from("menus")
-				.delete()
-				.eq("id", menuId);
-
-			if (menuError) throw menuError;
-
-			console.log("Menu a varianty úspěšně smazány!");
-			await goto("/menu", { replaceState: true });
-		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Chyba při mazání menu:", error);
-				alert(error.message);
-			}
-		} finally {
-			loading = false;
-		}
-	}
 
 	let isValidDate: boolean = true;
 	let isEditingDate = false;
@@ -156,7 +128,7 @@
 		{/if}
 		<div class="flex gap-2">
 			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={createMenu} class="btn btn-outline">Vytvoř</button>
-			<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>
+			<!--<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>-->
 		</div>
 	</div>
 	<div class="divider"></div>

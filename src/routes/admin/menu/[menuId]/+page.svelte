@@ -90,25 +90,19 @@
 		try {
 			loading = true;
 
-			const { error: deleteVariantsError } = await supabase
+			const { error: variantError } = await supabase
 				.from("menu_variants")
 				.delete()
 				.eq("menu_id", menuId);
 
-			if (deleteVariantsError) {
-				console.error("Chyba při mazání variant menu:", deleteVariantsError);
-				throw deleteVariantsError;
-			}
+			if (variantError) throw variantError;
 
-			const { error: deleteMenuError } = await supabase
+			const { error: menuError } = await supabase
 				.from("menus")
 				.delete()
 				.eq("id", menuId);
 
-			if (deleteMenuError) {
-				console.error("Chyba při mazání menu:", deleteMenuError);
-				throw deleteMenuError;
-			}
+			if (menuError) throw menuError;
 
 			console.log("Menu a varianty úspěšně smazány!");
 			await goto("/menu", { replaceState: true });
