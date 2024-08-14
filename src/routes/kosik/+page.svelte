@@ -15,15 +15,22 @@
 	$: totalPieces = $totalPiecesStore;
 	let cartItems: any = [];
 
+	$: totalPrice = $CartItemsStore.reduce((sum, item) => {
+		const itemTotalPrice = item.variants.reduce((itemSum, variant) => {
+			return itemSum + item.price * variant.quantity;
+		}, 0);
+		return sum + itemTotalPrice;
+	}, 0);
+
 	onMount(() => {
 		const unsubscribe = CartItemsStore.subscribe((value) => {
 			cartItems = value;
-			console.log("cartItems", cartItems);
 		});
-		// Removed the redundant unsubscribe variable
+
+		return () => {
+			unsubscribe();
+		};
 	});
-	console.log("CartItemsStore", $CartItemsStore);
-	console.log("cartItems", cartItems);
 
 	function removeItem(itemId: any, variantValue: any) {
 		CartItemsStore.update((currentCartItems) => {
@@ -71,32 +78,13 @@
 		});
 	}
 
-	$: totalPrice = $CartItemsStore.reduce((sum, item) => {
-		const itemTotalPrice = item.variants.reduce((itemSum, variant) => {
-			return itemSum + item.price * variant.quantity;
-		}, 0);
-		return sum + itemTotalPrice;
-	}, 0);
-
-	function refreshPage() {
-		location.reload(true);
-	}
-
-	function delayRefreshPage(mileSeconds) {
-		window.setTimeout(refreshPage, mileSeconds);
-	}
-
 	let loading = false;
 	let first_name = null;
 	let last_name = null;
 
 	const email = session?.user?.email;
 
-	onMount(() => {
-		getProfile();
-	});
-
-	const getProfile = async () => {
+	async function getProfile() {
 		try {
 			loading = true;
 			if (session && session.user) {
@@ -112,7 +100,6 @@
 				}
 
 				if (error && status !== 406) {
-					// Removed the throw statement
 					console.error(error);
 				}
 			}
@@ -123,21 +110,24 @@
 		} finally {
 			loading = false;
 		}
-	};
+	}
 
 	let showModal = false;
-	let formSubmitted = false; // Added missing variable declaration
+	let orderSubmitted = false;
+
+	function handleOrderSubmit() {
+		orderSubmitted = true;
+	}
+
+	$: if (orderSubmitted && form?.success) {
+		CartItemsStore.set([]);
+		localStorage.removeItem("cartItems");
+		goto("/thankyou");
+	}
 
 	onMount(() => {
-		if (form?.success) {
-			CartItemsStore.update(() => []);
-			localStorage.removeItem("cartItems");
-			goto("/thankyou");
-		} else {
-			console.log("Chyba vyprázdnění localStorage");
-		}
+		getProfile();
 	});
-	console.log(cartItems);
 </script>
 
 <svelte:head>
@@ -150,7 +140,7 @@
 			<form
 				method="POST"
 				action="?/sendOrder"
-				on:submit={() => (formSubmitted = true)}>
+				on:submit={handleOrderSubmit}>
 				<div
 					class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100 footer_fix">
 					<h1

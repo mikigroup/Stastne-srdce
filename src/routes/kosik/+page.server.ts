@@ -1,7 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
-import { createClient } from "@supabase/supabase-js";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -13,21 +12,44 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-/*const supabase = createClient(
-	"https://orgshebezwfizhmlmeum.supabase.co",
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTg2MDMzNjMsImV4cCI6MTk3NDE3OTM2M30.0LA1TPH2v93s10ChjJiX6iTX4LSXMsWOe3MTTxb5_74"
-);*/
+interface CartItem {
+	id: string;
+	date: string;
+	soup: string;
+	price: number;
+	active: boolean;
+	notes: string;
+	type: string;
+	nutri: string;
+	alergens: any;
+	variants: {
+		variantId: string;
+		quantity: number;
+		value: string;
+	}[];
+}
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, getSession } }) => {
-		const session = await getSession();
+	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const session = await safeGetSession();
+
 		if (!session) {
 			throw redirect(303, "/login");
 		}
 
+		const email = session.user.email;
+
+		console.log(email);
+
+		if (!email) {
+			throw error(400, "Email uživatele není k dispozici");
+		}
+
 		const formData = await request.formData();
 		const note = formData.get("note") as string;
-		const cartItems = JSON.parse(formData.get("cartItems") as string);
+		const cartItems = JSON.parse(
+			formData.get("cartItems") as string
+		) as CartItem[];
 
 		if (cartItems.length === 0) {
 			return {
@@ -36,86 +58,78 @@ export const actions: Actions = {
 			};
 		}
 
-		const email = session.user.email;
 		let totalPrice = 0;
 		let totalPieces = 0;
 
-		const items = cartItems.map((item: any) => {
-			const variants = item.variants.map((variant: any) => ({
-				variantId: variant.variantId,
-				quantity: variant.quantity,
-				value: variant.value
-			}));
-
-			totalPrice +=
-				item.price *
-				item.variants.reduce(
-					(sum: number, variant: any) => sum + variant.quantity,
-					0
-				);
-			totalPieces += item.variants.reduce(
-				(sum: number, variant: any) => sum + variant.quantity,
+		const items = cartItems.map((item: CartItem) => {
+			const itemTotalPieces = item.variants.reduce(
+				(sum, variant) => sum + variant.quantity,
 				0
 			);
+			const itemTotalPrice = item.price * itemTotalPieces;
+
+			totalPrice += itemTotalPrice;
+			totalPieces += itemTotalPieces;
 
 			return {
-				id: item.id,
-				date: item.date,
-				soup: item.soup,
-				price: item.price,
-				variants
+				...item,
+				totalPieces: itemTotalPieces,
+				totalPrice: itemTotalPrice
 			};
 		});
 
 		const orderData = {
 			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			state: "new",
+			date: new Date().toISOString(),
 			customer_email: email,
-			total_price: totalPrice,
+			user_id: session.user.id,
+			note,
 			total_pieces: totalPieces,
-			note
+			total_price: totalPrice
 		};
 
 		try {
-			// Začátek transakce
+			// Vložení objednávky
 			const { data: order, error: orderError } = await supabase
 				.from("orders")
 				.insert(orderData)
-				.select();
+				.select()
+				.single();
 
-			if (orderError) {
-				throw orderError;
-			}
+			if (orderError) throw orderError;
 
-			const orderId = order[0].id;
+			// Vložení položek objednávky
+			const orderItems = cartItems.flatMap((item) =>
+				item.variants.map((variant) => ({
+					order_id: order.id,
+					menu_id: item.id,
+					variant_id: variant.variantId,
+					price: item.price,
+					quantity: variant.quantity
+				}))
+			);
 
-			const orderItems = items.map((item: any) => ({
-				order_id: orderId,
-				menu_id: item.id,
-				quantity: item.variants.reduce(
-					(sum: number, variant: any) => sum + variant.quantity,
-					0
-				),
-				price: item.price
-			}));
-
-			const { data: createdOrderItems, error: orderItemsError } = await supabase
+			const { error: itemsError } = await supabase
 				.from("order_items")
 				.insert(orderItems);
 
-			if (orderItemsError) {
-				// Pokud došlo k chybě při vkládání položek objednávky, smazat vytvořenou objednávku
-				await supabase.from("orders").delete().eq("id", orderId);
-				throw orderItemsError;
-			}
+			if (itemsError) throw itemsError;
 
-			// Konec transakce
-
-			// Odeslání e-mailu a další akce
+			await sendOrderConfirmationEmail(
+				session.user.email,
+				order.id,
+				cartItems,
+				totalPrice,
+				totalPieces,
+				note
+			);
 
 			return {
 				success: true,
 				message: "Objednávka byla úspěšně vytvořena.",
-				orderId: orderId
+				orderId: order.id
 			};
 		} catch (error) {
 			console.error("Chyba při vytváření objednávky:", error);
@@ -126,3 +140,51 @@ export const actions: Actions = {
 		}
 	}
 };
+
+async function sendOrderConfirmationEmail(
+	email: string,
+	orderId: string,
+	items: CartItem[],
+	totalPrice: number,
+	totalPieces: number,
+	note: string
+) {
+	const mailOptions = {
+		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
+		to: email,
+		subject: `Potvrzení objednávky #${orderId}`,
+		html: `
+      <h1>Potvrzení objednávky #${orderId}</h1>
+      <p>Děkujeme za Vaši objednávku. Zde jsou detaily:</p>
+      <ul>
+        ${items
+					.map(
+						(item) => `
+          <li>
+            Datum: ${item.date}<br>
+            Polévka: ${item.soup}<br>
+            ${item.variants
+							.map(
+								(v) => `
+              Varianta: ${v.value} - Množství: ${v.quantity} - Cena: ${item.price * v.quantity} Kč
+            `
+							)
+							.join("<br>")}
+          </li>
+        `
+					)
+					.join("")}
+      </ul>
+      <p>Celkový počet kusů: ${totalPieces}</p>
+      <p>Celková cena: ${totalPrice} Kč</p>
+      ${note ? `<p>Poznámka: ${note}</p>` : ""}
+    `
+	};
+
+	try {
+		await transporter.sendMail(mailOptions);
+		console.log("E-mail s potvrzením objednávky byl odeslán");
+	} catch (error) {
+		console.error("Chyba při odesílání e-mailu:", error);
+	}
+}
