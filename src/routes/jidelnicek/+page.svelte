@@ -46,13 +46,7 @@
 		selectedTab = `${index + 1}. týden`;
 	};
 
-	/*	export async function loadmenu(from, to) {
-		return client.fetch(
-			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
-		)
-	};*/
-
-	function addToCart(menu, selectedVariant, selectedVariantValue) {
+	function addToCart(menu, variantId) {
 		CartItemsStore.update((currentCartItems) => {
 			const existingMenuIndex = currentCartItems.findIndex(
 				(item) => item.id === menu.id && item.date === menu.date
@@ -61,26 +55,32 @@
 			if (existingMenuIndex !== -1) {
 				const existingVariantIndex = currentCartItems[
 					existingMenuIndex
-					].variants.findIndex((item) => item.variantId === selectedVariant);
+					].variants.findIndex((item) => item.variantId === variantId);
 
 				if (existingVariantIndex !== -1) {
 					currentCartItems[existingMenuIndex].variants[existingVariantIndex]
 						.quantity++;
 				} else {
+					const selectedVariant = menu.variants.find(
+						(variant) => variant.id === variantId
+					);
 					currentCartItems[existingMenuIndex].variants.push({
-						variantId: selectedVariant,
+						variantId: selectedVariant.id,
 						quantity: 1,
-						value: selectedVariantValue
+						value: selectedVariant.description
 					});
 				}
 			} else {
+				const selectedVariant = menu.variants.find(
+					(variant) => variant.id === variantId
+				);
 				currentCartItems.push({
 					...menu,
 					variants: [
 						{
-							variantId: selectedVariant,
+							variantId: selectedVariant.id,
 							quantity: 1,
-							value: selectedVariantValue
+							value: selectedVariant.description
 						}
 					]
 				});
@@ -89,37 +89,28 @@
 			return currentCartItems;
 		});
 	}
-
-	/* let search = "";
-	$: searchMenu = menus.filter((menu) => {
-		return menu.description.includes(search);
-	}); */
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Jídelníček</title>
 	<meta name="description" content="Jídelníček" />
 </svelte:head>
+
 <main>
 	<section class="">
-		<div
-			class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
-			<h1
-				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+		<div class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+			<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
 			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
 				<p class="mt-3 text-center">
-					<strong
-						>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
+					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
 					<br />
-					<span class="text-red-500"
-						><strong>POZOR Změna čísla účtu!</strong></span>
+					<span class="text-red-500"><strong>POZOR Změna čísla účtu!</strong></span>
 					<br />
 					<strong>
-						Platbu můžete provést přes účet <span class="text-red-500"
-							>131-2288130267/0100</span
-						>. Platba v hotovosti je stále možná a vítána.</strong>
+						Platbu můžete provést přes účet <span class="text-red-500">131-2288130267/0100</span>.
+						Platba v hotovosti je stále možná a vítána.</strong>
 					Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
@@ -137,9 +128,7 @@
 					našimi věrnými.
 					<br />
 					<br />
-					<strong
-						>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :)
-						!".</strong>
+					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
 				</p>
 				<br id="cilovyPrvek" />
 			</div>
@@ -151,12 +140,9 @@
 							<div class="mb-5">
 								{#if data.menus && data.menus.length}
 									{#each data.menus as menu}
-										<!-- //searchMenu -->
 										<div class="p-2 my-3 border rounded-lg bg-stone-100">
-											<div
-												class="py-1 bg-green-800 border rounded-lg shadow-md sm:py-3">
-												<p
-													class="pl-3 text-2xl font-bold tracking-tight text-gray-200 dark:text-white">
+											<div class="py-1 bg-green-800 border rounded-lg shadow-md sm:py-3">
+												<p class="pl-3 text-2xl font-bold tracking-tight text-gray-200 dark:text-white">
 													{new Date(menu.date).toLocaleDateString("cs-CZ", {
 														weekday: "long",
 														month: "long",
@@ -174,19 +160,16 @@
 												<span style="white-space: pre-line">
 													<div class="py-2 text-lg rounded-2xl">
 														<p class="text-lg mt-5">Hlavní jídlo</p>
-														{#each Object.entries(menu.variants) as [key, value] (key)}
+														{#each menu.variants as variant (variant.id)}
 															<div class="border rounded-2xl p-5">
-																<div class="">
-																	<!--<div>{key}</div>-->
-																	<div class="p-2 text-lg">
-																		{value}
-																	</div>
+																<div class="p-2 text-lg">
+																	{variant.description}
 																</div>
 																<div class="flex justify-end pt-2 basis-4">
 																	<button
 																		class="text-sm"
 																		on:click={$page.data.session
-																			? () => addToCart(menu, key, value)
+																			? () => addToCart(menu, variant.id)
 																			: null}>
 																		<div class="flex justify-end pt-2 basis-4">
 																			<div class="p-3 flex flex-col border rounded-lg shadow-md md:inline-block
@@ -195,8 +178,7 @@
 																					active:bg-green-800 active:shadow-lg active:text-white transition
 																					duration-150 ease-in-out">
 																				{#if !$page.data.session && data.menus && data.menus.length}
-																					<div
-																						class="flex justify-end m-3 text-base">
+																					<div class="flex justify-end m-3 text-base">
 																						<a href="/login">Přihlaš se</a>
 																					</div>
 																				{:else}
@@ -205,8 +187,7 @@
 																							{menu.price} Kč
 																						</p>
 																					</div>
-																					<div
-																						class="flex justify-end text-sm uppercase">
+																					<div class="flex justify-end text-sm uppercase">
 																						Přidat do košíku
 																					</div>
 																				{/if}
@@ -227,16 +208,12 @@
 									<p>Žádný jídelníček nenalezen</p>
 								{/if}
 							</div>
-							<div
-								class="grid border-2 rounded-lg justify-items-end btn-group"
-								role="group" />
+							<div class="grid border-2 rounded-lg justify-items-end btn-group" role="group" />
 							<hr />
 						</div>
 					</div>
 					<div>
-						<div
-							class="flex items-center pl-0 mb-4 text-center border-b-0"
-							id="tabs-tab">
+						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
 									selectedTab === "1. týden"
@@ -301,7 +278,7 @@
 					<a
 						class="w-full lg:w-1/2 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900"
 						href="/kosik"
-						>Košík
+					>Košík
 					</a>
 				</div>
 			{/if}
@@ -310,7 +287,7 @@
 </main>
 
 <style>
-	main {
-		scroll-behavior: smooth;
-	}
+    main {
+        scroll-behavior: smooth;
+    }
 </style>

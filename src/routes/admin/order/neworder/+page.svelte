@@ -73,7 +73,7 @@
 	}
 
 	function back() {
-		goto("/order");
+		goto("/admin/order");
 	}
 	async function createOrder() {
 		try {
