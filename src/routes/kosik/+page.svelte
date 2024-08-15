@@ -119,14 +119,13 @@
 		orderSubmitted = true;
 	}
 
-	$: if (orderSubmitted && form?.success) {
-		CartItemsStore.set([]);
-		localStorage.removeItem("cartItems");
-		goto("/thankyou");
-	}
-
 	onMount(() => {
 		getProfile();
+		if (form?.success) {
+			CartItemsStore.set([]);
+			localStorage.removeItem("cartItems");
+			goto("/thankyou");
+		}
 	});
 </script>
 

@@ -32,15 +32,11 @@ interface CartItem {
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const session = await safeGetSession();
-
 		if (!session) {
 			throw redirect(303, "/login");
 		}
 
 		const email = session.user.email;
-
-		console.log(email);
-
 		if (!email) {
 			throw error(400, "Email uživatele není k dispozici");
 		}
@@ -91,7 +87,6 @@ export const actions: Actions = {
 		};
 
 		try {
-			// Vložení objednávky
 			const { data: order, error: orderError } = await supabase
 				.from("orders")
 				.insert(orderData)
@@ -118,7 +113,7 @@ export const actions: Actions = {
 			if (itemsError) throw itemsError;
 
 			await sendOrderConfirmationEmail(
-				session.user.email,
+				email,
 				order.id,
 				cartItems,
 				totalPrice,
@@ -152,7 +147,7 @@ async function sendOrderConfirmationEmail(
 	const mailOptions = {
 		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
 		to: email,
-		subject: `Potvrzení objednávky #${orderId}`,
+		subject: `Šťastné srdce - Potvrzení objednávky`,
 		html: `
       <h1>Potvrzení objednávky #${orderId}</h1>
       <p>Děkujeme za Vaši objednávku. Zde jsou detaily:</p>
