@@ -3,39 +3,40 @@
 	import { fade, fly } from "svelte/transition";
 
 	export let data;
-	let { session, supabase, orders, orderItems } = data;
-	$: ({ session, supabase, orders, orderItems } = data);
+	let { session, supabase, order } = data;
+	$: ({ session, supabase, order } = data);
 
 	let loading = false;
-	let date: string = orders?.date ?? "";
-	let order_number: number = orders?.order_number ?? "";
-	let state: string = orders?.state ?? "";
-	let customer_first_name: string = orders?.customer_first_name ?? "";
-	let customer_last_name: string = orders?.customer_last_name ?? "";
-	let customer_street: string = orders?.customer_street ?? "";
-	let customer_street_number: string = orders?.customer_street ?? "";
-	let customer_city: string = orders?.customer_city ?? "";
-	let customer_zip_code: string = orders?.customer_zip_code ?? "";
-	let customer_email: string = orders?.customer_email ?? "";
-	let customer_telephone: string = orders?.customer_telephone ?? "";
-	let delivery_first_name: string = orders?.delivery_first_name ?? "";
-	let delivery_last_name: string = orders?.delivery_last_name ?? "";
-	let delivery_street_number: string = orders?.delivery_street_number ?? "";
-	let delivery_street: string = orders?.delivery_street ?? "";
-	let delivery_telephone: string = orders?.delivery_telephone ?? "";
-	let delivery_zip_code: string = orders?.delivery_zip_code ?? "";
-	let delivery_city: string = orders?.delivery_city ?? "";
-	let itemId: string = orders?.id;
+	let date: string = order?.date ?? "";
+	let order_number: number = order?.order_number ?? "";
+	let state: string = order?.state ?? "";
+	let customer_first_name: string = order?.customer_first_name ?? "";
+	let customer_last_name: string = order?.customer_last_name ?? "";
+	let customer_street: string = order?.customer_street ?? "";
+	let customer_street_number: string = order?.customer_street_number ?? "";
+	let customer_city: string = order?.customer_city ?? "";
+	let customer_zip_code: string = order?.customer_zip_code ?? "";
+	let customer_email: string = order?.customer_email ?? "";
+	let customer_telephone: string = order?.customer_telephone ?? "";
+	let delivery_first_name: string = order?.delivery_first_name ?? "";
+	let delivery_last_name: string = order?.delivery_last_name ?? "";
+	let delivery_street_number: string = order?.delivery_street_number ?? "";
+	let delivery_street: string = order?.delivery_street ?? "";
+	let delivery_telephone: string = order?.delivery_telephone ?? "";
+	let delivery_zip_code: string = order?.delivery_zip_code ?? "";
+	let delivery_city: string = order?.delivery_city ?? "";
+	let orderId: string = order?.id;
 	let formattedDate = date ? formatSupabaseDate(date) : "";
-	let selectedPaymentMethod: string = orders?.pay_method;
+	let selectedPaymentMethod: string = order?.pay_method;
 	let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
-	let selectedOrderState: string = orders?.state;
+	let selectedOrderState: string = order?.state;
 	let orderStateOptions = ["Přijata", "Expedována", "Vyfakturována"];
-	let selectedCurrency: string = orders?.currency;
+	let selectedCurrency: string = order?.currency;
 	let currencyOptions = ["CZK", "EUR", "USD"];
-	let selectedShippingMethod: string = orders?.shipping_method;
+	let selectedShippingMethod: string = order?.shipping_method;
 	let shippingMethodOptions = ["Osobní odběr", "Kurýr", "Česká pošta"];
-	let isPaid: boolean = orders?.pay_state || false;
+	let isPaid: boolean = order?.pay_state || false;
+	let note: string = order?.note ?? "";
 
 	let updateMessage = "";
 	async function updateOrder() {
@@ -64,28 +65,28 @@
 				delivery_city,
 				currency: selectedCurrency,
 				shipping_method: selectedShippingMethod,
-				pay_method: selectedPaymentMethod
+				pay_method: selectedPaymentMethod,
+				note
 			};
-
-			console.log("Objednávka se ukládá s těmito daty:", update);
 
 			const { data, error } = await supabase
 				.from("orders")
 				.update(update)
-				.eq("id", itemId)
+				.eq("id", orderId)
 				.select(
-					"id, updated_at, order_number, state, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, pay_state, delivery_first_name, delivery_last_name, delivery_street_number, delivery_street, delivery_telephone, delivery_zip_code, delivery_city, currency"
+					"id, updated_at, order_number, state, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, pay_state, delivery_first_name, delivery_last_name, delivery_street_number, delivery_street, delivery_telephone, delivery_zip_code, delivery_city, currency, note"
 				);
+
 			if (error) {
-				console.error("Chyba ukládání:", error);
+				console.error("Error saving:", error);
 				throw error;
 			} else {
-				console.log("Objednávka úspěšně uložena!");
-				updateMessage = "Objednávka úspěšně uložena!";
+				console.log("Order saved successfully!");
+				updateMessage = "Order saved successfully!";
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Chyba ukládání:", error);
+				console.error("Error saving:", error);
 				alert(error.message);
 			}
 		} finally {
@@ -96,7 +97,7 @@
 	async function deleteOrder() {
 		try {
 			loading = true;
-			const { error } = await supabase.from("orders").delete().eq("id", itemId);
+			const { error } = await supabase.from("orders").delete().eq("id", orderId);
 
 			if (error) {
 				console.error("Error deleting order:", error);
@@ -195,11 +196,13 @@
 			<div class="py-6 px-4">
 				<h2 class="text-2xl font-bold mb-6">Objednávka</h2>
 
-				<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+					<!--Základní údaje-->
 					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
 						<div
-							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
-							<input type="checkbox" name="my-accordion-1" checked="checked" />
+							class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+							<input type="checkbox" checked="checked" />
 							<div class="collapse-title text-xl font-medium">
 								Základní údaje
 							</div>
@@ -244,87 +247,96 @@
 										{/each}
 									</select>
 								</div>
-							</div>
-						</div>
-					</div>
+								<div class="collapse">
+									<input type="checkbox" />
+									<div class="collapse-title text-lg font-medium">
+										Platební údaje
+									</div>
+									<div class="collapse-content">
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Způsob platby</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedPaymentMethod}>
+												{#each paymentMethodOptions as method}
+													<option value={method}>
+														{method}
+													</option>
+												{/each}
+											</select>
+										</div>
 
-					<div in:fly={{ x: 50, duration: 500, delay: 400 }}>
-						<div
-							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
-							<input type="checkbox" name="my-accordion-2" checked="checked" />
-							<div class="collapse-title text-xl font-medium">
-								Platební údaje
-							</div>
-							<div class="collapse-content">
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Způsob platby</span>
-									</label>
-									<select
-										class="select select-bordered w-full"
-										bind:value={selectedPaymentMethod}>
-										{#each paymentMethodOptions as method}
-											<option value={method}>
-												{method}
-											</option>
-										{/each}
-									</select>
-								</div>
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Měna</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedCurrency}>
+												{#each currencyOptions as currency}
+													<option value={currency}>
+														{currency}
+													</option>
+												{/each}
+											</select>
+										</div>
 
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Měna</span>
-									</label>
-									<select
-										class="select select-bordered w-full"
-										bind:value={selectedCurrency}>
-										{#each currencyOptions as currency}
-											<option value={currency}>
-												{currency}
-											</option>
-										{/each}
-									</select>
-								</div>
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Doprava</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedShippingMethod}>
+												{#each shippingMethodOptions as method}
+													<option value={method}>
+														{method}
+													</option>
+												{/each}
+											</select>
+										</div>
 
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Doprava</span>
-									</label>
-									<select
-										class="select select-bordered w-full"
-										bind:value={selectedShippingMethod}>
-										{#each shippingMethodOptions as method}
-											<option value={method}>
-												{method}
-											</option>
-										{/each}
-									</select>
-								</div>
-
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Stav platby</span>
-									</label>
-									<select
-										class="select select-bordered w-full"
-										bind:value={isPaid}>
-										<option value={false}>Neuhrazena</option>
-										<option value={true}>Uhrazena</option>
-									</select>
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Stav platby</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={isPaid}>
+												<option value={false}>Neuhrazena</option>
+												<option value={true}>Uhrazena</option>
+											</select>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 
+					<!--Fakturační-->
 					<div in:fly={{ x: -50, duration: 500, delay: 600 }}>
-						<div
-							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
-							<input type="checkbox" />
+						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+							<input type="checkbox" checked="checked" />
 							<div class="collapse-title text-xl font-medium">
 								Fakturační údaje
 							</div>
 							<div class="collapse-content">
 								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">E-mail</span>
+									</label>
+									<input
+										type="text"
+										placeholder="E-mail"
+										class="input input-bordered w-full"
+										bind:value={customer_email} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Jméno</span>
+									</label>
 									<input
 										type="text"
 										placeholder="Jméno"
@@ -332,57 +344,68 @@
 										bind:value={customer_first_name} />
 								</div>
 								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Příjmení</span>
+									</label>
 									<input
 										type="text"
 										placeholder="Příjmení"
 										class="input input-bordered w-full"
 										bind:value={customer_last_name} />
 								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Ulice"
-										class="input input-bordered w-full"
-										bind:value={customer_street} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Číslo"
-										class="input input-bordered w-full"
-										bind:value={customer_street_number} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Město"
-										class="input input-bordered w-full"
-										bind:value={customer_city} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="PSČ"
-										class="input input-bordered w-full"
-										bind:value={customer_zip_code} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Telefon"
-										class="input input-bordered w-full"
-										bind:value={customer_telephone} />
+								<div class="collapse">
+									<input type="checkbox" />
+									<div class="collapse-title text-lg font-medium">
+										Další fakturační údaje
+									</div>
+									<div class="collapse-content">
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Ulice"
+												class="input input-bordered w-full"
+												bind:value={customer_street} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Číslo"
+												class="input input-bordered w-full"
+												bind:value={customer_street_number} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Město"
+												class="input input-bordered w-full"
+												bind:value={customer_city} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="PSČ"
+												class="input input-bordered w-full"
+												bind:value={customer_zip_code} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Telefon"
+												class="input input-bordered w-full"
+												bind:value={customer_telephone} />
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 
+					<!--Dodací adresa-->
 					<div in:fly={{ x: 50, duration: 500, delay: 800 }}>
-						<div
-							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
+						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
 							<input type="checkbox" />
 							<div class="collapse-title text-xl font-medium">
-								Dodací adresa
+								Dodací údaje
 							</div>
 							<div class="collapse-content">
 								<div class="form-control w-full mb-2">
@@ -439,40 +462,57 @@
 					</div>
 				</div>
 
-				<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-						<div
-							class="border-black collapse collapse-plus bg-base-200 p-10 border shadow-xl">
-							<input type="checkbox" name="" checked="checked" />
-							<div class="collapse-title text-xl font-medium">
-								Položky:
-							</div>
-							<div class="collapse-content">
-								<div class="form-control w-full mb-2">
-									<table class="table w-full">
-										<thead>
-										<tr>
-											<th>Název</th>
-											<th>Množství</th>
-											<th>Cena</th>
-										</tr>
-										</thead>
-										<tbody>
-										{#each orderItems as item}
-											<tr>
-												<td>{item.menus.variants.find(variant => variant.key === 'name')?.value}</td>
-												<td>{item.quantity}</td>
-												<td>{item.price}</td>
-											</tr>
-										{/each}
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
+				<!--Položky:-->
+				<div class="border-black p-4 border shadow-xl rounded-lg">
+					<div class="font-medium text-lg mb-4">Položky objednávky</div>
+
+					<div class="overflow-x-auto">
+						<table class="table table-zebra w-full">
+							<thead>
+							<tr class="grid grid-cols-12 gap-4">
+								<th>Výběr</th>
+								<th>Pořadí</th>
+								<th class="col-span-9">Název</th>
+								<th>Množství</th>
+							</tr>
+							</thead>
+							<tbody>
+							{#each order.order_items as item, i}
+								<tr class="hover grid grid-cols-12 gap-4">
+									<td>
+										<label>
+											<input type="checkbox" class="checkbox" />
+										</label>
+									</td>
+									<td>
+										{i + 1}
+									</td>
+									<td class="col-span-9">
+										<div class="flex items-center space-x-3">
+											<div>
+												<div class="font-bold">{item.variant_id.description}</div>
+												<div class="text-sm opacity-50">{item.variant_id.menu_id.type}</div>
+											</div>
+										</div>
+									</td>
+									<td>{item.quantity}</td>
+								</tr>
+							{/each}
+							</tbody>
+							<tfoot>
+							<tr class="grid grid-cols-3 gap-4">
+								<th colspan="4"></th>
+								<th class="text-right">Cena {order.order_items.reduce((sum, item) => sum + item.quantity * item.price, 0)} CZK a množství {order.order_items.reduce((sum, item) => sum + item.quantity,0)} </th>
+							</tr>
+							</tfoot>
+						</table>
+					</div>
+
+					<div class="mt-4">
+						<div class="text-sm text-gray-500">Počet položek: {order.order_items.length}</div>
 					</div>
 				</div>
+
 			</div>
-		</div>
 	</section>
 </div>

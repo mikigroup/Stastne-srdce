@@ -233,49 +233,50 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
-					class="w-full {column === 'variants'
-						? 'md:w-1/3'
-						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
-					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-						? 'border-r-2'
-						: ''}">
+					class="w-full {column === 'variants' || column === 'soup'
+                ? 'md:w-1/4'
+                : 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+                ? 'border-r-2'
+                : ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
+			<div class="flex justify-end w-full md:w-16 lg:w-16 xl:w-16">
 				Editovat
 			</div>
 		</div>
 		{#if filteredMenus && filteredMenus.length > 0}
 			{#each $table.getRowModel().rows as row}
-				<div
-					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div
-							class="w-full truncate-cell flex items-center {cell.column.id ===
-							'variants'
-								? 'md:w-1/3'
-								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+							class="w-full truncate-cell flex items-center {cell.column.id === 'variants' || cell.column.id === 'soup'
+      ? 'md:w-1/4'
+      : 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
 							title={cell.getValue() ?? ""}>
 							{#if cell.column.id === "variants"}
-								{#if typeof cell.getValue() === "string"}
-									{@html cell.getValue().replace(/\n/g, "<br>")}
-								{:else if typeof cell.getValue() === "object"}
-									{@html Object.entries(cell.getValue())
-										.map(([key, value]) => `${key}. ${value}`)
-										.join("<br>")}
+								{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
+									<ol class="list-decimal pl-4">
+										{#each cell.getValue() as variant}
+											<li>{variant.description}</li>
+										{/each}
+									</ol>
+								{:else}
+									<span class="text-gray-400">Žádné varianty</span>
 								{/if}
+							{:else if cell.column.id === "active"}
+								{cell.getValue() ? "Ano" : "Ne"}
+							{:else if cell.column.id === "date"}
+								{formatDateToCzech(cell.getValue())}
 							{:else}
-								{@html cell.getValue() ?? ""}
+								{cell.getValue() ?? ""}
 							{/if}
 						</div>
 					{/each}
-					<div
-						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+					<div class="w-full md:w-16 lg:w-16 xl:w-16 flex items-center justify-end">
 						<a
 							href="/admin/menu/{row.original.id}"
 							data-sveltekit-preload-data
@@ -293,7 +294,7 @@
 		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet meníček: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} meníček</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
 	</div>
 
 	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">

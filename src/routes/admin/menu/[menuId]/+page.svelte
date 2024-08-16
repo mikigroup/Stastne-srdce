@@ -251,7 +251,7 @@
 						</label>
 						<div class="grid grid-rows-3 gap-2">
 							<textarea
-								class="textarea textarea-bordered"
+								class="textarea textarea-bordered text-md"
 								rows="4"
 								bind:value={variants[1]}></textarea>
 							<textarea
@@ -312,3 +312,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+		textarea{
+				font-size: 1em;
+		}
+</style>

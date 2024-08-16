@@ -5,6 +5,10 @@ export const load: PageServerLoad = async ({
 	locals: { supabase, session },
 	url
 }) => {
+	if (!session) {
+		throw redirect(303, "/");
+	}
+
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const itemsPerPage = 100;
 	const start = (page - 1) * itemsPerPage;
@@ -15,7 +19,13 @@ export const load: PageServerLoad = async ({
 		count
 	} = await supabase
 		.from("menus")
-		.select("*", { count: "exact" })
+		.select(
+			`
+      *,
+      variants:menu_variants(id, description)
+    `,
+			{ count: "exact" }
+		)
 		.order("date", { ascending: false })
 		.range(start, start + itemsPerPage - 1);
 
@@ -31,7 +41,7 @@ export const load: PageServerLoad = async ({
 	const { data: profileTableSettings, error: profileError } = await supabase
 		.from("profiles")
 		.select("table_settings_menus")
-		.eq("id", session?.user.id)
+		.eq("id", session.user.id)
 		.single();
 
 	if (profileError) {
@@ -49,3 +59,17 @@ export const load: PageServerLoad = async ({
 		itemsPerPage
 	};
 };
+
+// Zde můžete přidat další serverové akce, pokud jsou potřeba
+// Například:
+
+/*
+export const actions = {
+  updateMenu: async ({ request, locals: { supabase, session } }) => {
+    // Implementace aktualizace menu
+  },
+  deleteMenu: async ({ request, locals: { supabase, session } }) => {
+    // Implementace smazání menu
+  }
+};
+*/

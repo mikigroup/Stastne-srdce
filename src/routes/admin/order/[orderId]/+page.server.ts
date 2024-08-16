@@ -6,11 +6,23 @@ export const load: PageServerLoad = async ({
 	params
 }) => {
 	const id = params.orderId;
-	// console.log("params.orderId:", params.orderId);
 
-	const { data: orders, error: orderError } = await supabase
+	const { data: order, error: orderError } = await supabase
 		.from("orders")
-		.select("*")
+		.select(
+			`
+     *,
+     order_items(
+       *,
+       variant_id(
+         *,
+         menu_id(
+           *
+         )
+       )
+     )
+   `
+		)
 		.eq("id", id)
 		.single();
 
@@ -19,26 +31,7 @@ export const load: PageServerLoad = async ({
 		throw orderError;
 	}
 
-	const { data: orderItems, error: orderItemsError } = await supabase
-		.from("order_items")
-		.select(
-			`
-        *,
-        menus(
-            id,
-            variants
-        )
-    `
-		)
-		.eq("order_id", id);
-
-	if (orderItemsError) {
-		console.error("Error fetching order items:", orderItemsError);
-		throw orderItemsError;
-	}
-
 	return {
-		orders,
-		orderItems
+		order
 	};
 };
