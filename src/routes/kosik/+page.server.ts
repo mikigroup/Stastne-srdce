@@ -74,19 +74,36 @@ export const actions: Actions = {
 			};
 		});
 
-		const orderData = {
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-			state: "new",
-			date: new Date().toISOString(),
-			customer_email: email,
-			user_id: session.user.id,
-			note,
-			total_pieces: totalPieces,
-			total_price: totalPrice
-		};
-
 		try {
+			// Získání údajů o zákazníkovi z tabulky "customers"
+			const { data: customer, error: customerError } = await supabase
+				.from("customers")
+				.select(
+					"first_name, last_name, street, street_number, city, zip_code, telephone"
+				)
+				.eq("id", session.user.id)
+				.single();
+			if (customerError) throw customerError;
+
+			const orderData = {
+				created_at: new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+				state: "Nová",
+				date: new Date().toISOString(),
+				customer_first_name: customer.first_name,
+				customer_last_name: customer.last_name,
+				customer_street: customer.street,
+				customer_street_number: customer.street_number,
+				customer_city: customer.city,
+				customer_zip_code: customer.zip_code,
+				customer_telephone: customer.telephone,
+				customer_email: email,
+				user_id: session.user.id,
+				note,
+				total_pieces: totalPieces,
+				total_price: totalPrice
+			};
+
 			const { data: order, error: orderError } = await supabase
 				.from("orders")
 				.insert(orderData)
@@ -99,7 +116,6 @@ export const actions: Actions = {
 			const orderItems = cartItems.flatMap((item) =>
 				item.variants.map((variant) => ({
 					order_id: order.id,
-					menu_id: item.id,
 					variant_id: variant.variantId,
 					price: item.price,
 					quantity: variant.quantity
