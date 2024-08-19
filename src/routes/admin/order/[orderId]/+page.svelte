@@ -30,7 +30,7 @@
 	let selectedPaymentMethod: string = order?.pay_method;
 	let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
 	let selectedOrderState: string = order?.state;
-	let orderStateOptions = ["Přijata", "Expedována", "Vyfakturována"];
+	let orderStateOptions = ["Nová", "Vyřuzuje se", "Expedovaná", "Fakturovaná"];
 	let selectedCurrency: string = order?.currency;
 	let currencyOptions = ["CZK", "EUR", "USD"];
 	let selectedShippingMethod: string = order?.shipping_method;
@@ -74,7 +74,7 @@
 				.update(update)
 				.eq("id", orderId)
 				.select(
-					"id, updated_at, order_number, state, customer_first_name, customer_last_name, customer_street, customer_street_number, customer_city, customer_zip_code, customer_telephone, customer_email, pay_state, delivery_first_name, delivery_last_name, delivery_street_number, delivery_street, delivery_telephone, delivery_zip_code, delivery_city, currency, note"
+					"*"
 				);
 
 			if (error) {
@@ -82,7 +82,7 @@
 				throw error;
 			} else {
 				console.log("Order saved successfully!");
-				updateMessage = "Order saved successfully!";
+				updateMessage = "Objednávka úspěšně uložena !";
 			}
 		} catch (error) {
 			if (error instanceof Error) {

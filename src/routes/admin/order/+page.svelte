@@ -5,9 +5,15 @@
 	import {
 		createSvelteTable,
 		flexRender,
-		getCoreRowModel
+		getCoreRowModel,
+		getSortedRowModel
 	} from "@tanstack/svelte-table";
-	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import type {
+		ColumnDef,
+		OnChangeFn,
+		SortingState,
+		TableOptions,
+	} from "@tanstack/svelte-table";
 
 	export let data;
 
@@ -35,6 +41,23 @@
 	} = data);
 
 	let selectedOrder = null;
+
+	let sorting: SortingState = [];
+
+	const setSorting: OnChangeFn<SortingState> = (updater) => {
+		if (updater instanceof Function) {
+			sorting = updater(sorting);
+		} else {
+			sorting = updater;
+		}
+		options.update((old) => ({
+			...old,
+			state: {
+				...old.state,
+				sorting
+			}
+		}));
+	};
 
 	function editOrder(id) {
 		selectedOrder = id;
@@ -133,7 +156,12 @@
 	const options = writable<TableOptions<(typeof orders)[0]>>({
 		data: orders,
 		columns,
-		getCoreRowModel: getCoreRowModel()
+		state: {
+			sorting
+		},
+		onSortingChange: setSorting,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel()
 	});
 
 	visibleColumnsStore.subscribe((value) => {
@@ -160,6 +188,8 @@
 			goto(`?page=${currentPage + 1}`);
 		}
 	}
+
+
 </script>
 
 <svelte:head>
@@ -202,15 +232,18 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
-					class="w-full lg:w-1/6 xl:w-1/6 {column !==
-					columnOrder.filter((col) => $visibleColumnsStore[col]).pop()
-						? 'border-r-2'
-						: ''}">
-					{columnNames[column]}
+					class="w-full lg:w-1/6 xl:w-1/6 cursor-pointer select-none {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}"
+					on:click={$table.getColumn(column).getToggleSortingHandler()}
+				>
+					<div class="flex items-center">
+						{columnNames[column]}
+						{#if $table.getColumn(column).getIsSorted()}
+							<i class="ml-1 fas fa-sort-{$table.getColumn(column).getIsSorted() === 'desc' ? 'down' : 'up'}"></i>
+						{/if}
+					</div>
 				</div>
 			{/each}
 			<div class="flex justify-end w-full lg:w-1/6 xl:w-1/6">Editovat</div>
@@ -218,12 +251,12 @@
 
 		{#if orders && orders.length > 0}
 			{#each $table.getRowModel().rows as row}
-				<div
-					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div
 							class="w-full lg:w-1/6 xl:w-1/6 truncate-cell"
-							title={cell.getValue() ?? ""}>
+							title={cell.getValue() ?? ""}
+						>
 							{cell.column.id === "date"
 								? formatDateToCzech(cell.getValue())
 								: cell.getValue() ?? ""}
@@ -231,10 +264,11 @@
 					{/each}
 					<div class="w-full lg:w-1/6 xl:w-1/6">
 						<a
-							href="/admin/order/{row.original.id}"
-							data-sveltekit-preload-data
-							class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline">
-							Upravit
+						href="/admin/order/{row.original.id}"
+						data-sveltekit-preload-data
+						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
+						>
+						Upravit
 						</a>
 					</div>
 				</div>
