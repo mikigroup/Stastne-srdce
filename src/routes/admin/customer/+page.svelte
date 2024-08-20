@@ -109,6 +109,7 @@
 		columns,
 		getCoreRowModel: getCoreRowModel()
 	});
+
 	$: visibleColumnsStore.subscribe((value) => {
 		options.update((options) => ({
 			...options,

@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { onMount } from "svelte";
 	import { writable } from "svelte/store";
 	import {
 		createSvelteTable,
 		flexRender,
-		getCoreRowModel,
-		getSortedRowModel
+		getCoreRowModel
 	} from "@tanstack/svelte-table";
-	import type {
-		ColumnDef,
-		OnChangeFn,
-		SortingState,
-		TableOptions,
-	} from "@tanstack/svelte-table";
+	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
 
 	export let data;
 
@@ -146,47 +139,46 @@
 
 		const { data, error } = await supabase
 			.from("profiles")
-			.update({ table_settings_orders: orderedSettings })
+			.update({ table_settings_orders: $visibleColumnsStore })
 			.eq("id", session.user.id);
 
 		if (error) {
 			console.error("Chyba při ukládání nastavení filtrů:", error);
-		} else {
-			console.log("Nastavení filtrů úspěšně uloženo:", data);
 		}
 	}
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	const columns: ColumnDef<(typeof orders)[0]>[] = columnOrder
+	let searchQuery = "";
+
+	$: filteredOrders = orders?.filter((order) =>
+		Object.values(order).some((value) =>
+			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+		)
+	);
+
+	$: columns = columnOrder
 		.filter((key) => $visibleColumnsStore[key])
 		.map((key) => ({
 			accessorKey: key,
 			header: columnNames[key],
 			cell: ({ getValue }) => {
-				if (key === "date") {
+				if (key === "date" || key === "created_at" || key === "updated_at") {
 					return formatDateToCzech(getValue());
 				} else if (key === "pay_state") {
 					return formatPayState(getValue());
-				} else if (key === "created_at" || key === "updated_at") {
-					return formatDateToCzech(getValue());
 				}
 				return getValue();
 			}
 		}));
 
-	const options = writable<TableOptions<(typeof orders)[0]>>({
-		data: orders,
+	$: options = writable<TableOptions<(typeof customers)[0]>>({
+		data: filteredOrders,
 		columns,
-		state: {
-			sorting
-		},
-		onSortingChange: setSorting,
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel()
+		getCoreRowModel: getCoreRowModel()
 	});
 
-	visibleColumnsStore.subscribe((value) => {
+	$: visibleColumnsStore.subscribe((value) => {
 		options.update((options) => ({
 			...options,
 			columns: columns.filter((column) => value[column.accessorKey])
@@ -254,31 +246,29 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		<div
+			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
-					class="w-full lg:w-1/5 xl:w-1/5 cursor-pointer select-none {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}"
-					on:click={$table.getColumn(column).getToggleSortingHandler()}
-				>
-					<div class="flex items-center">
-						{columnNames[column]}
-						{#if $table.getColumn(column).getIsSorted()}
-							<i class="ml-1 fas fa-sort-{$table.getColumn(column).getIsSorted() === 'desc' ? 'down' : 'up'}"></i>
-						{/if}
-					</div>
+					class="w-full {column === 'email'
+						? 'md:w-1/3'
+						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
+					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+						? 'border-r-2'
+						: ''}">
+					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full lg:w-1/5 xl:w-1/5">Editovat</div>
+			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
+				Editovat
+			</div>
 		</div>
 
-		{#if orders && orders.length > 0}
+		{#if filteredOrders && filteredOrders.length > 0}
 			{#each $table.getRowModel().rows as row}
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
-						<div
-							class="w-full lg:w-1/5 xl:w-1/5 truncate-cell"
-							title={cell.getValue() ?? ""}
-						>
+						<div class="w-full lg:w-1/6 xl:w-1/6 truncate-cell" title={cell.getValue() ?? ""}>
 							{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
 								{formatDateToCzech(cell.getValue())}
 							{:else if cell.column.id === "pay_state"}
@@ -288,7 +278,7 @@
 							{/if}
 						</div>
 					{/each}
-					<div class="w-full lg:w-1/5 xl:w-1/5">
+					<div class="w-full lg:w-1/6 xl:w-1/6">
 						<a
 							href="/admin/order/{row.original.id}"
 							data-sveltekit-preload-data
