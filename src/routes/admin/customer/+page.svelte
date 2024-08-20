@@ -56,10 +56,13 @@
 	const visibleColumnsStore = writable(visibleColumns);
 
 	function toggleColumn(column) {
-		visibleColumnsStore.update((cols) => ({
-			...cols,
-			[column]: !cols[column]
-		}));
+		visibleColumnsStore.update((cols) => {
+			const newCols = { ...cols, [column]: !cols[column] };
+			return columnOrder.reduce((obj, col) => {
+				obj[col] = newCols[col] ?? true;
+				return obj;
+			}, {});
+		});
 	}
 
 	async function saveTableSettings() {
@@ -68,19 +71,9 @@
 			return;
 		}
 
-		const updatedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = $visibleColumnsStore[column];
-			return obj;
-		}, {});
-
-		const orderedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = updatedSettings[column];
-			return obj;
-		}, {});
-
 		const { data, error } = await supabase
 			.from("profiles")
-			.update({ table_settings_customers: orderedSettings })
+			.update({ table_settings_customers: $visibleColumnsStore })
 			.eq("id", session.user.id);
 
 		if (error) {

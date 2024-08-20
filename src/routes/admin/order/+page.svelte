@@ -79,15 +79,35 @@
 	}
 
 	const columnNames = {
-		order_number: "Objednávka",
+		id: "ID",
+		created_at: "Vytvořeno",
+		updated_at: "Aktualizováno",
+		state: "Stav",
 		date: "Datum",
-		customer_email: "E-mail",
 		customer_first_name: "Jméno",
 		customer_last_name: "Příjmení",
-		state: "Stav",
+		customer_street: "Ulice",
+		customer_street_number: "Číslo popisné",
+		customer_city: "Město",
+		customer_zip_code: "PSČ",
+		customer_telephone: "Telefon",
+		customer_email: "Email",
+		delivery_street: "Ulice doručení",
+		delivery_street_number: "Číslo doručení",
+		delivery_zip_code: "PSČ doručení",
+		delivery_first_name: "Jméno",
+		delivery_last_name: "Příjmení",
+		delivery_telephone: "Telefon",
+		pay_state: "Stav platby",
+		delivery_city: "Město",
+		currency: "Měna",
+		order_number: "Číslo objednávky",
+		user_id: "ID uživatele",
 		shipping_method: "Způsob dopravy",
-		pay_method: "Platební metoda",
-		pay_state: "Stav platby"
+		pay_method: "Způsob platby",
+		note: "Poznámka",
+		total_pieces: "Kusů celkem",
+		total_price: "Cena celkem"
 	};
 
 	const columnOrder = Object.keys(columnNames);
@@ -148,6 +168,8 @@
 					return formatDateToCzech(getValue());
 				} else if (key === "pay_state") {
 					return formatPayState(getValue());
+				} else if (key === "created_at" || key === "updated_at") {
+					return formatDateToCzech(getValue());
 				}
 				return getValue();
 			}
@@ -174,7 +196,7 @@
 	$: table = createSvelteTable(options);
 
 	function formatPayState(pay_state: boolean) {
-		return pay_state ? "Ano" : "Ne";
+		return pay_state ? "Zaplaceno" : "Nezaplaceno";
 	}
 
 	function previousPage() {
@@ -235,7 +257,7 @@
 		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
-					class="w-full lg:w-1/6 xl:w-1/6 cursor-pointer select-none {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}"
+					class="w-full lg:w-1/5 xl:w-1/5 cursor-pointer select-none {column !== columnOrder.filter((col) => $visibleColumnsStore[col]).pop() ? 'border-r-2' : ''}"
 					on:click={$table.getColumn(column).getToggleSortingHandler()}
 				>
 					<div class="flex items-center">
@@ -246,7 +268,7 @@
 					</div>
 				</div>
 			{/each}
-			<div class="flex justify-end w-full lg:w-1/6 xl:w-1/6">Editovat</div>
+			<div class="flex justify-end w-full lg:w-1/5 xl:w-1/5">Editovat</div>
 		</div>
 
 		{#if orders && orders.length > 0}
@@ -254,21 +276,25 @@
 				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div
-							class="w-full lg:w-1/6 xl:w-1/6 truncate-cell"
+							class="w-full lg:w-1/5 xl:w-1/5 truncate-cell"
 							title={cell.getValue() ?? ""}
 						>
-							{cell.column.id === "date"
-								? formatDateToCzech(cell.getValue())
-								: cell.getValue() ?? ""}
+							{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
+								{formatDateToCzech(cell.getValue())}
+							{:else if cell.column.id === "pay_state"}
+								{formatPayState(cell.getValue())}
+							{:else}
+								{cell.getValue() ?? ""}
+							{/if}
 						</div>
 					{/each}
-					<div class="w-full lg:w-1/6 xl:w-1/6">
+					<div class="w-full lg:w-1/5 xl:w-1/5">
 						<a
-						href="/admin/order/{row.original.id}"
-						data-sveltekit-preload-data
-						class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
+							href="/admin/order/{row.original.id}"
+							data-sveltekit-preload-data
+							class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
 						>
-						Upravit
+							Upravit
 						</a>
 					</div>
 				</div>
@@ -301,10 +327,10 @@
 </div>
 
 <style>
-	/*    .truncate-cell {
-        max-width: 300px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }*/
+    /*    .truncate-cell {
+					max-width: 300px;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+			}*/
 </style>
