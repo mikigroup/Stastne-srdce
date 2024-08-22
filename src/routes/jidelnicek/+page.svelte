@@ -2,88 +2,103 @@
 	import CartItemsStore from "../Stores/stores";
 	import { page } from "$app/stores";
 	import { totalPiecesStore } from "../Stores/totalPiecesStore";
+	import { onMount, tick  } from 'svelte';
 
-	export let totalPieces: number;
-	export let data;
-	let { menus } = data;
-	$: ({ menus } = data);
-	console.log("HAHA", data.menus);
-	$: totalPieces = $totalPiecesStore;
-
-	let selectedTab = "";
-	const selectTab = (tabName) => {
-		selectedTab = tabName;
-	};
-
-	const currentDate = new Date();
-	const dateRanges = [
-		[0, 10],
-		[10, 20],
-		[20, 30],
-		[30, 42]
-	];
-
-	const dates = dateRanges.map(([start, end]) => {
-		const startDate = new Date();
-		startDate.setDate(startDate.getDate() + start);
-
-		const endDate = new Date();
-		endDate.setDate(endDate.getDate() + end);
-
-		return { startDate, endDate };
-	});
-	function skocNaPrvek() {
-		let skocPrvek = document.getElementById("cilovyPrvek");
-		skocPrvek.scrollIntoView({ behavior: "smooth" });
+	interface MenuVariant {
+		id: string;
+		variant_number: string;
+		description: string;
 	}
 
-	const loadZalozka = (index) => {
-		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
-			data.menus = response;
-			skocNaPrvek();
-		});
+	interface Menu {
+		id: string;
+		date: string;
+		soup: string;
+		price: number;
+		active: boolean;
+		notes: string | null;
+		type: string | null;
+		nutri: string | null;
+		alergens: any;
+		variants: MenuVariant[];
+	}
 
-		selectedTab = `${index + 1}. týden`;
+	export let data: {
+		menus: Menu[];
+		weeks: Menu[][];
+		startDate: string;
+		endDate: string;
 	};
 
-	function addToCart(menu, variantId) {
+	let { weeks, startDate } = data;
+	$: ({ weeks, startDate } = data);
+
+	let totalPieces: number;
+	$: totalPieces = $totalPiecesStore;
+
+	let selectedTab = "1. týden";
+	let currentWeekMenus: Menu[] = [];
+
+	async function selectTab(tabName: string) {
+		selectedTab = tabName;
+		const weekIndex = parseInt(tabName.split('.')[0]) - 1;
+		currentWeekMenus = weeks[weekIndex] || [];
+		// Počkáme na aktualizaci DOM
+		await tick();
+		skocNaPrvek();
+	}
+
+	function skocNaPrvek() {
+		let skocPrvek = document.getElementById("cilovyPrvek");
+		skocPrvek?.scrollIntoView({ behavior: "smooth" });
+	}
+
+	function formatDate(dateString: string): string {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('cs-CZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+	}
+
+	onMount(async () => {
+		await selectTab("1. týden");
+	});
+
+	function addToCart(menu: Menu, variantId: string) {
 		CartItemsStore.update((currentCartItems) => {
 			const existingMenuIndex = currentCartItems.findIndex(
 				(item) => item.id === menu.id && item.date === menu.date
 			);
 
 			if (existingMenuIndex !== -1) {
-				const existingVariantIndex = currentCartItems[
-					existingMenuIndex
-					].variants.findIndex((item) => item.variantId === variantId);
+				const existingVariantIndex = currentCartItems[existingMenuIndex].variants.findIndex(
+					(item) => item.variantId === variantId
+				);
 
 				if (existingVariantIndex !== -1) {
-					currentCartItems[existingMenuIndex].variants[existingVariantIndex]
-						.quantity++;
+					currentCartItems[existingMenuIndex].variants[existingVariantIndex].quantity++;
 				} else {
-					const selectedVariant = menu.variants.find(
-						(variant) => variant.id === variantId
-					);
-					currentCartItems[existingMenuIndex].variants.push({
-						variantId: selectedVariant.id,
-						quantity: 1,
-						value: selectedVariant.description
-					});
-				}
-			} else {
-				const selectedVariant = menu.variants.find(
-					(variant) => variant.id === variantId
-				);
-				currentCartItems.push({
-					...menu,
-					variants: [
-						{
+					const selectedVariant = menu.variants.find((variant) => variant.id === variantId);
+					if (selectedVariant) {
+						currentCartItems[existingMenuIndex].variants.push({
 							variantId: selectedVariant.id,
 							quantity: 1,
 							value: selectedVariant.description
-						}
-					]
-				});
+						});
+					}
+				}
+			} else {
+				const selectedVariant = menu.variants.find((variant) => variant.id === variantId);
+				if (selectedVariant) {
+					currentCartItems.push({
+						...menu,
+						variants: [
+							{
+								variantId: selectedVariant.id,
+								quantity: 1,
+								value: selectedVariant.description
+							}
+						]
+					});
+				}
 			}
 
 			return currentCartItems;
@@ -136,16 +151,12 @@
 					<div class="tab-pane fade show active" id="" role="tabpanel">
 						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
 							<div class="mb-5">
-								{#if data.menus && data.menus.length}
-									{#each data.menus as menu}
+								{#if currentWeekMenus.length > 0}
+									{#each currentWeekMenus as menu (menu.id)}
 										<div class="p-2 my-3 border rounded-lg bg-stone-100">
 											<div class="py-1 bg-green-800 border rounded-lg shadow-md sm:py-3">
 												<p class="pl-3 text-2xl font-bold tracking-tight text-gray-200 dark:text-white">
-													{new Date(menu.date).toLocaleDateString("cs-CZ", {
-														weekday: "long",
-														month: "long",
-														day: "numeric"
-													})}
+													{formatDate(menu.date)}
 												</p>
 											</div>
 											<div class="my-3 border rounded-lg shadow-md md:p-8">
@@ -175,7 +186,7 @@
 																					focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																					active:bg-green-800 active:shadow-lg active:text-white transition
 																					duration-150 ease-in-out">
-																				{#if !$page.data.session && data.menus && data.menus.length}
+																				{#if !$page.data.session}
 																					<div class="flex justify-end m-3 text-base">
 																						<a href="/login">Přihlaš se</a>
 																					</div>
@@ -198,72 +209,32 @@
 													</div>
 												</span>
 											</div>
-											<div></div>
-											<hr class="px-5" />
 										</div>
 									{/each}
 								{:else}
-									<p>Žádný jídelníček nenalezen</p>
+									<p>Žádný jídelníček nenalezen pro tento týden</p>
 								{/if}
 							</div>
-							<div class="grid border-2 rounded-lg justify-items-end btn-group" role="group" />
-							<hr />
 						</div>
 					</div>
 					<div>
 						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
-							<button
-								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === "1. týden"
-										? "border-green-600"
-										: "border-transparent hover:border-green-600"
-								}`}
-								on:click={async () => {
-									loadZalozka(0);
-									skocNaPrvek();
-								}}>
-								1. týden
-							</button>
-							<button
-								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === "2. týden"
-										? "border-green-600"
-										: "border-transparent hover:border-green-600"
-								}`}
-								on:click={() => {
-									loadZalozka(1);
-								}}>
-								2. týden
-							</button>
-							<button
-								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === "3. týden"
-										? "border-green-600"
-										: "border-transparent hover:border-green-600"
-								}`}
-								on:click={() => {
-									loadZalozka(2);
-								}}>
-								3. týden
-							</button>
-							<button
-								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === "4. týden"
-										? "border-green-600"
-										: "border-transparent hover:border-green-600"
-								}`}
-								on:click={() => {
-									loadZalozka(3);
-								}}>
-								4. týden
-							</button>
+							{#each weeks as _, index}
+								<button
+									class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
+										selectedTab === `${index + 1}. týden`
+											? "border-green-600"
+											: "border-transparent hover:border-green-600"
+									}`}
+									on:click={() => selectTab(`${index + 1}. týden`)}>
+									{index + 1}. týden
+								</button>
+							{/each}
 						</div>
 
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
-								on:click={() => {
-									skocNaPrvek();
-								}}
+								on:click={skocNaPrvek}
 								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900">
 								<p>Skoč nahoru</p>
 							</button>
