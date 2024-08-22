@@ -92,27 +92,29 @@
 			</h1>
 			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
 				<p class="mt-3 text-center">
-					<strong>Cena obědů je 110,- Kč vč DPH, menuboxu 10,- kč vč DPH.</strong>
+					<strong>Od 1.9.2024 přistupujeme ke zvýšení ceny obědů na 128,- Kč včetně DPH. Nadále budeme
+						usilovat o co nejlepší kvalitu, chuť obědů a organizaci dovozu obědů k Vám.</strong>
 					<br />
-					<span class="text-red-500"><strong>POZOR Změna čísla účtu!</strong></span>
 					<br />
-					<strong>
-						Platbu můžete provést přes účet <span class="text-red-500">131-2288130267/0100</span>. Platba v hotovosti je
-					stále možná a vítána.</strong> Pokud potřebujete fakturu, dejte vědět.
+					<strong>Děkujeme všem za důvěru a pochopení.</strong>
+						<br />
+						<br />
+				</p>
+				<hr class="devider_dashed">
+				<p class="mt-5 text-center text-lg">
+					<strong>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
+					131-2288130267/0100.</strong> Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					Poslední roky ve <span class="text-red-500">Šťastném srdci</span> funguje Pořadník zájemců. V případě, že se chcete stát strávníky
-					kuchyně, prosíme o kontakt na tel. <strong>724 448 377</strong> a pokud nezvedáme, zašlete
-					sms, případně na email <strong>stastnesrdcekk@seznam.cz</strong>. Napíšeme nebo zavoláme
-					zpět a domluvíme se. Vždy prosím zvažte, zda bude strava ze Šťastného srdce pro Vás
-					přínosem.
-					<br />
-					Na každého nového strávníka se těšíme a máme radost, pokud zůstane mezi našimi věrnými. 
+					V případě, že se chcete stát našimi strávníky, prosíme, kontaktujte nás na
+					tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte, pošlete SMS nebo nás
+					kontaktujte na emailu <strong class="underline">stastnesrdcekk@seznam.cz</strong> a my se Vám co nejdříve
+					ozveme. Na každého nového strávníka se těšíme.
 					<br />
 					<br />
-					<strong>Všem strávníkům děkujeme za přízeň a těm novým: "Vydržte s námi :) !".</strong>
+					<strong>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
 				</p>
 				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
@@ -339,4 +341,8 @@
 	main {
 		scroll-behavior: smooth;
 	}
+
+  .devider_dashed {
+      border-top: 2px dashed;
+  }
 </style>
