@@ -72,34 +72,16 @@
 	}
 
 	const columnNames = {
-		created_at: "Vytvořeno",
-		updated_at: "Aktualizováno",
 		date: "Datum",
 		order_number: "Objednávka",
 		state: "Stav",
 		customer_first_name: "Jméno",
 		customer_last_name: "Příjmení",
-		customer_street: "Ulice",
-		customer_street_number: "Číslo",
-		customer_city: "Město",
-		customer_zip_code: "PSČ",
-		customer_telephone: "Telefon",
 		customer_email: "Email",
-		delivery_street: "Ulice",
-		delivery_street_number: "Číslo",
-		delivery_zip_code: "PSČ",
-		delivery_first_name: "Jméno",
-		delivery_last_name: "Příjmení",
-		delivery_telephone: "Telefon",
 		pay_state: "Stav platby",
-		delivery_city: "Město",
 		currency: "Měna",
-		user_id: "ID uživatele",
-		shipping_method: "Způsob dopravy",
 		pay_method: "Způsob platby",
 		note: "Poznámka",
-		total_pieces: "Kusů celkem",
-		total_price: "Cena celkem"
 	};
 
 	const columnOrder = Object.keys(columnNames);
@@ -148,6 +130,8 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
+	let filterDate = "";
+	let filterActive = "";
 	let searchQuery = "";
 
 	$: filteredOrders = orders?.filter((order) =>
@@ -216,6 +200,27 @@
 					Vytvořit objednávku
 				</button>
 			</div>
+			<div>
+				<input type="date" bind:value={filterDate} class="btn btn-outline" />
+			</div>
+			<div>
+				<select
+					bind:value={filterActive}
+					class="select select-bordered w-full max-w-xs border-black">
+					<option value="">Všechny aktivity</option>
+					<option value="true">Aktivní</option>
+					<option value="false">Neaktivní</option>
+				</select>
+			</div>
+			<div>
+				<input
+					type="text"
+					placeholder="Hledat..."
+					class="input input-bordered input-md w-full max-w-xs border-black"
+					bind:value={searchQuery} />
+			</div>
+
+
 		</div>
 	</div>
 </section>

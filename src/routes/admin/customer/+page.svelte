@@ -33,7 +33,7 @@
 	} = data);
 
 	const columnNames = {
-		created_at: "Datum vytvoření",
+		created_at: "Registrace",
 		first_name: "Jméno",
 		last_name: "Příjmení",
 		email: "E-mail",

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { createEventDispatcher } from "svelte";
+	import { fade, fly } from "svelte/transition";
 	import { goto } from "$app/navigation";
 
 	export let data;
@@ -9,7 +8,7 @@
 
 	let loading = false;
 	let date: string = "";
-	let order_number: number = 0;	
+	let order_number: number = 0;
 	let customer_first_name: string = "";
 	let customer_last_name: string = "";
 	let customer_street: string = "";
@@ -94,7 +93,7 @@
 				customer_city,
 				customer_zip_code,
 				customer_telephone,
-				customer_email,				
+				customer_email,
 				pay_state: isPaid,
 				delivery_first_name,
 				delivery_last_name,
@@ -127,314 +126,304 @@
 <svelte:head>
 	<title>LEO - Nová objednávka</title>
 </svelte:head>
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg">
-	<div class="flex justify-between">
-		<div>
-			<button
-				value={loading ? "Tvořím..." : "Vytvořeno"}
-				disabled={loading}
-				type="submit"
-				on:click={back}
-				class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-				>Zpět</button>
-		</div>
-		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
-				<button
-					value={loading ? "Tvořím..." : "Vytvořeno"}
-					disabled={loading}
-					type="submit"
-					on:click={createOrder}
-					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					>Vytvoř</button>
-			</div>
-		</div>
-	</div>
-	<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
-	<div class="antialiased bg-white sans-serif">
-		<div class="md:py-6 md:px-4">
-			<div class="flex justify-between">
-				<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-					Objednávka
-				</h2>
-				<div />
-			</div>
 
-			<div class="justify-between mb-8 md:flex">
-				<div class="md:md:w-2/4">
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Číslo</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none"
-								type="text"
-								placeholder=""
-								readonly
-								bind:value={order_number} />
-						</div>
-					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Datum</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								placeholder="DD-MM-YYYY"
-								autocomplete="off"
-								bind:value={formattedDate}
-								on:input={handleDateInput}
-								class:invalid={!isValidDate} />
-						</div>
-					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Stav</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-2">
-							<!-- <input class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white" type="text" placeholder="" autocomplete="off" readonly /> -->
-							<select
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={selectedOrderState}>
-								<!-- on:change={updateOrder} -->
-								{#each orderStateOptions as category}
-									<option value={category}>
-										{category}
-									</option>
-								{/each}
-							</select>
-						</div>
-					</div>
-				</div>
-				<div class="md:md:w-2/4">
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Způsob platby</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<select
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={selectedPaymentMethod}>
-								{#each paymentMethodOptions as category}
-									<option value={category}>
-										{category}
-									</option>
-								{/each}
-							</select>
-						</div>
-					</div>
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Měna</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<select
-								name=""
-								id=""
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={selectedCurrency}>
-								{#each currencyOptions as category}
-									<option value={category}>
-										{category}
-									</option>
-								{/each}
-							</select>
-						</div>
-					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Doprava</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<select
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								id=""
-								bind:value={selectedShippingMethod}>
-								{#each shippingMethodOptions as category}
-									<option value={category}>
-										{category}
-									</option>
-								{/each}
-							</select>
-						</div>
-					</div>
-				</div>
-
-				<div class="md:w-2/4">
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>Uhrazeno</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-2">
-							<select
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								bind:value={isPaid}>
-								<option value={false}>Ne</option>
-								<option value={true}>Ano</option>
-							</select>
-						</div>
-					</div>
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>?</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								id="datepicker1"
-								placeholder=""
-								autocomplete="off"
-								readonly />
-						</div>
-					</div>
-
-					<div class="items-center mb-2 md:mb-1 md:flex">
-						<label
-							class="block w-full text-sm font-bold tracking-wide text-gray-800 uppercase md:w-32"
-							>?</label>
-						<span class="hidden inline-block mr-4 md:block">:</span>
-						<div class="flex-1">
-							<input
-								class="w-full px-4 py-2 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none md:w-48 focus:outline-none focus:bg-white"
-								type="text"
-								placeholder=""
-								autocomplete="off"
-								readonly />
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="mb-8 md:flex md:flex-wrap md:justify-between">
-				<div class="w-full mb-2 md:w-1/3 md:mb-0">
-					<label
-						class="block mb-1 text-sm font-bold tracking-wide text-gray-800 uppercase"
-						>Fakturační adresa</label>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={customer_first_name}
-						placeholder="Jméno" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={customer_last_name}
-						placeholder="Příjmení" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={customer_street}
-						placeholder="Ulice" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={customer_street_number}
-						placeholder="Číslo" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						bind:value={customer_city}
-						placeholder="Město" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:otline-none focus:bg-white"
-						type="text"
-						bind:value={customer_zip_code}
-						placeholder="PSČ" />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:otline-none focus:bg-white"
-						type="text"
-						bind:value={customer_telephone}
-						placeholder="Telefon" />
-				</div>
-				<div class="w-full md:w-1/3">
-					<label
-						class="block mb-1 text-sm font-bold tracking-wide text-gray-800 uppercase"
-						>Dodací adresa</label>
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Jméno"
-						bind:value={delivery_first_name} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Příjmení"
-						bind:value={delivery_last_name} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Ulice"
-						bind:value={delivery_street} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Číslo"
-						bind:value={delivery_street_number} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Město"
-						bind:value={delivery_city} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="PSČ"
-						bind:value={delivery_zip_code} />
-					<input
-						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
-						type="text"
-						placeholder="Telefon"
-						bind:value={delivery_telephone} />
+<div
+	class="relative p-5 overflow-x-auto shadow-lg sm:rounded-lg border"
+	in:fly={{ y: 50, duration: 500 }}>
+	<section>
+		<div class="flex justify-between items-center mb-4">
+			<button on:click={back} class="btn btn-outline">Zpět</button>
+			<div class="flex flex-col gap-2 md:flex-row">
+				<div>
+					<button
+						value={loading ? "Tvořím..." : "Vytvořeno"}
+						disabled={loading}
+						type="submit"
+						on:click={createOrder}
+						class="btn btn-outline">
+						Vytvoř
+					</button>
 				</div>
 			</div>
 		</div>
+	</section>
 
-		<button
-			class="px-4 py-2 mt-6 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded shadow-sm hover:bg-gray-100">
-			Připojit dokument
-		</button>
+	<div class="divider"></div>
 
-		<div class="w-full py-2 mt-5 ml-auto sm:md:w-2/4 lg:w-1/4">
-			<div class="flex justify-between mb-3">
-				<div class="flex-1 text-right text-gray-800">Celkový součet</div>
-				<div class="text-right md:w-40">
-					<div class="font-medium text-gray-800" />
-				</div>
-			</div>
-			<div class="flex justify-between mb-4">
-				<div class="flex-1 text-sm text-right text-gray-600">
-					Včetně daně (21%)
-				</div>
-				<div class="text-right md:w-40">
-					<div class="text-sm text-gray-600" />
-				</div>
-			</div>
-			<div class="py-2 border-t border-b">
-				<div class="flex justify-between">
-					<div class="flex-1 text-xl text-right text-gray-600">1 ,-</div>
-					<div class="text-right md:w-40">
-						<div class="text-xl font-bold text-gray-800" />
+	<section>
+		<div class="bg-base-100">
+			<div class="py-6 px-4">
+				<h2 class="text-2xl font-bold mb-6">Objednávka</h2>
+
+				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+					<!--Základní údaje-->
+					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
+						<div
+							class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+							<input type="checkbox" checked="checked" />
+							<div class="collapse-title text-xl font-medium">
+								Základní údaje
+							</div>
+							<div class="collapse-content">
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Číslo</span>
+									</label>
+									<input
+										type="text"
+										placeholder=""
+										readonly
+										class="input input-bordered w-full"
+										bind:value={order_number} />
+								</div>
+
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Datum</span>
+									</label>
+									<input
+										type="text"
+										placeholder="DD-MM-YYYY"
+										autocomplete="off"
+										class="input input-bordered w-full"
+										class:input-error={!isValidDate}
+										bind:value={formattedDate}
+										on:input={handleDateInput} />
+								</div>
+
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Stav</span>
+									</label>
+									<select
+										class="select select-bordered w-full"
+										bind:value={selectedOrderState}>
+										{#each orderStateOptions as state}
+											<option value={state}>
+												{state}
+											</option>
+										{/each}
+									</select>
+								</div>
+								<div class="collapse">
+									<input type="checkbox" />
+									<div class="collapse-title text-lg font-medium">
+										Platební údaje
+									</div>
+									<div class="collapse-content">
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Způsob platby</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedPaymentMethod}>
+												{#each paymentMethodOptions as method}
+													<option value={method}>
+														{method}
+													</option>
+												{/each}
+											</select>
+										</div>
+
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Měna</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedCurrency}>
+												{#each currencyOptions as currency}
+													<option value={currency}>
+														{currency}
+													</option>
+												{/each}
+											</select>
+										</div>
+
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Doprava</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={selectedShippingMethod}>
+												{#each shippingMethodOptions as method}
+													<option value={method}>
+														{method}
+													</option>
+												{/each}
+											</select>
+										</div>
+
+										<div class="form-control w-full mb-2">
+											<label class="label">
+												<span class="label-text">Stav platby</span>
+											</label>
+											<select
+												class="select select-bordered w-full"
+												bind:value={isPaid}>
+												<option value={false}>Neuhrazena</option>
+												<option value={true}>Uhrazena</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!--Fakturační-->
+					<div in:fly={{ x: -50, duration: 500, delay: 600 }}>
+						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+							<input type="checkbox" checked="checked" />
+							<div class="collapse-title text-xl font-medium">
+								Fakturační údaje
+							</div>
+							<div class="collapse-content">
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">E-mail</span>
+									</label>
+									<input
+										type="text"
+										placeholder="E-mail"
+										class="input input-bordered w-full"
+										bind:value={customer_email} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Jméno</span>
+									</label>
+									<input
+										type="text"
+										placeholder="Jméno"
+										class="input input-bordered w-full"
+										bind:value={customer_first_name} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<label class="label">
+										<span class="label-text">Příjmení</span>
+									</label>
+									<input
+										type="text"
+										placeholder="Příjmení"
+										class="input input-bordered w-full"
+										bind:value={customer_last_name} />
+								</div>
+								<div class="collapse">
+									<input type="checkbox" />
+									<div class="collapse-title text-lg font-medium">
+										Další fakturační údaje
+									</div>
+									<div class="collapse-content">
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Ulice"
+												class="input input-bordered w-full"
+												bind:value={customer_street} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Číslo"
+												class="input input-bordered w-full"
+												bind:value={customer_street_number} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Město"
+												class="input input-bordered w-full"
+												bind:value={customer_city} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="PSČ"
+												class="input input-bordered w-full"
+												bind:value={customer_zip_code} />
+										</div>
+										<div class="form-control w-full mb-2">
+											<input
+												type="text"
+												placeholder="Telefon"
+												class="input input-bordered w-full"
+												bind:value={customer_telephone} />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!--Dodací adresa-->
+					<div in:fly={{ x: 50, duration: 500, delay: 800 }}>
+						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+							<input type="checkbox" />
+							<div class="collapse-title text-xl font-medium">
+								Dodací údaje
+							</div>
+							<div class="collapse-content">
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Jméno"
+										class="input input-bordered w-full"
+										bind:value={delivery_first_name} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Příjmení"
+										class="input input-bordered w-full"
+										bind:value={delivery_last_name} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Ulice"
+										class="input input-bordered w-full"
+										bind:value={delivery_street} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Číslo"
+										class="input input-bordered w-full"
+										bind:value={delivery_street_number} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Město"
+										class="input input-bordered w-full"
+										bind:value={delivery_city} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="PSČ"
+										class="input input-bordered w-full"
+										bind:value={delivery_zip_code} />
+								</div>
+								<div class="form-control w-full mb-2">
+									<input
+										type="text"
+										placeholder="Telefon"
+										class="input input-bordered w-full"
+										bind:value={delivery_telephone} />
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</section>
 </div>
 
 <style>
