@@ -76,7 +76,7 @@
 										</svg>
 									</span>
 									<span class="ml-4 text-base font-medium leading-6 text-gray-600">
-										Cena 110,-
+										Cena 128,-
 									</span>
 								</div>
 							</li>

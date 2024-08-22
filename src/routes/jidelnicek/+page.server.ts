@@ -23,6 +23,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
         )
       `
 			)
+			.eq("active", true)
 			.order("date", { ascending: true });
 
 		if (menusError) {
