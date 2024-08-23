@@ -44,7 +44,7 @@
 
 	<Footer />
 
-	<style lang="postcss">
+	<style lang="scss">
 		.textmenu {
 			font-size: 1em;
 		}
