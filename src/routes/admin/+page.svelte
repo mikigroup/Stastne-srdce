@@ -1,3 +1,9 @@
+<script lang="ts">
+	import { Line } from 'svelte-chartjs'
+</script>
+
+<!--viz. https://github.com/SauravKanchan/svelte-chartjs  <Line data={...} />-->
+
 
 <div class="flex justify-center">
 
