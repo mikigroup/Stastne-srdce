@@ -10,19 +10,41 @@ export const load: PageServerLoad = async ({
 		throw redirect(303, "/");
 	}
 
-	const { data: profile, error } = await supabase
+	const { data: profile, error: profileError } = await supabase
 		.from("customers")
 		.select("*")
 		.eq("id", session.user.id)
 		.single();
 
-	if (error) {
-		console.error("Error fetching profile:", error);
-	} else {
-		// console.log("TEST:", profile);
+	if (profileError) {
+		console.error("Error fetching profile:", profileError);
 	}
 
-	return { session, profile };
+	const { data: orders, error: ordersError } = await supabase
+		.from("orders")
+		.select(
+			`
+      *,
+      order_items (
+        *,
+        variant_id (
+          *
+        )  
+      )
+    `
+		)
+		.eq("user_id", session.user.id)
+		.order("created_at", { ascending: false });
+
+	if (ordersError) {
+		console.error("Error fetching orders:", ordersError);
+	}
+
+	return {
+		session,
+		profile,
+		orders
+	};
 };
 
 export const actions: Actions = {

@@ -6,50 +6,31 @@
 
 	export let data;
 	export let form;
-	let { session, supabase, profile } = data;
-	$: ({ session, supabase, profile } = data);
+	let { session, supabase, profile, orders } = data;
+	$: ({ session, supabase, profile, orders } = data);
 	// console.log(data)
 	// console.log(data.session)
+	console.log("Obj:", orders)
 
-	let uniqueOrders: any[];
-	let orders: any[];
-	let itemsOrder: any[];
-	let visible_jiri: boolean[];
 	let visible: boolean = false;
+	let expandedOrders: { [key: string]: boolean } = {};
 
 	const toggleVisible = () => {
 		visible = !visible;
 	};
-
-	// orders.forEach((order, index) => (visible[index] = false))
-
-	async function loadOrders(email: string) {
-		try {
-			let orders = await client.fetch(
-				`*[_type == "order" && email == "${email}"] { orderNumber, itemsOrder, timestamp, _id }`
-			);
-			// Ensure the function still returns the fetched data
-			return orders;
-		} catch (error) {
-			console.error("Failed to fetch orders:", error);
-			throw error; // re-throw the error so it can be caught and handled by the calling function
-		}
+	
+	function toggleOrderDetails(orderId: string) {
+		expandedOrders[orderId] = !expandedOrders[orderId];
 	}
 
-	onMount(async () => {
-		const xemail = session.user.email;
-		if (!xemail) {
-			console.error("Email není definován");
-			return;
-		}
-		try {
-			orders = await loadOrders(xemail);
-			visible_jiri = new Array(orders.length).fill(false);
-			//console.log(`Fetched orders: ${JSON.stringify(orders)}`);
-		} catch (error) {
-			console.error(`Error fetching orders: ${error}`);
-		}
-	});
+
+	function formatDate(dateString: string): string {
+		return new Date(dateString).toLocaleDateString('cs-CZ', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
+	}
 
 	let profileForm: HTMLFormElement;
 	let loading = false;
@@ -308,61 +289,40 @@
 		</form>
 	</div>
 	<!-- Orders -->
-	<div
-		class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1
-			class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+	<div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Objednávky
 		</h1>
-		<div class="max-w-4xl p-5 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
-			<div class="px-5 border-2 rounded-md bg-slate-50">
-				{#if orders && orders.length > 0}
-					<ul>
-						{#each orders as order, index (order._id)}
-							<li class="text-lg transition duration-300 ease-in-out">
-								<br />
-								<div
-									class="p-5 text-center bg-white border-2 rounded-md hover:bg-slate-300"
-									on:click={() => (visible_jiri[index] = !visible_jiri[index])}>
-									Objednávka: <span class="font-semibold"
-										>{order.orderNumber}</span>
-									<br />
-									Datum: {new Date(order.timestamp).toLocaleDateString(
-										"cs-CZ",
-										{
-											weekday: "short",
-											month: "long",
-											day: "numeric"
-										}
-									)}
-								</div>
-								{#if visible_jiri[index]}
-									<div
-										class="p-5 border-2 rounded-md"
-										in:fade|global={{ duration: 500 }}
-										out:fade={{ duration: 200 }}>
-										<ul>
-											<br />
-											{#each order.itemsOrder as item, i (i)}
-												<li>{item}</li>
-												{#if i % 4 === 3 && i !== order.itemsOrder.length - 1}
-													<br />
-													<hr />
-													<br />
-												{/if}
-											{/each}
-										</ul>
-									</div>
-								{/if}
-								<br />
-								<hr />
-							</li>
-						{/each}
-					</ul>
-				{:else}
-					<p>Žádné objednávky</p>
-				{/if}
-			</div>
-		</div>
+		<div>
+		{#if !orders || orders.length === 0}
+			<p>Žádné objednávky</p>
+		{:else}
+			<ul class="space-y-4">
+				{#each orders as order}
+					<li class="border p-4 rounded-lg">
+						<button
+							class="w-full text-left font-semibold"
+							on:click={() => toggleOrderDetails(order.id)}
+						>
+							Objednávka č. {order.order_number} - {formatDate(order.created_at)}
+						</button>
+						{#if expandedOrders[order.id]}
+							<div class="mt-2 pl-4">
+								<p><strong>Celková cena:</strong> {order.total_price} {order.currency}</p>
+								<p><strong>Stav:</strong> {order.state}</p>
+								<h3 class="font-semibold mt-2">Položky:</h3>
+								<ul class="list-disc pl-4">
+									{#each order.order_items as item}
+										<li>
+											{item.variant_id.description} - Množství: {item.quantity}
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</div>
 </section>
