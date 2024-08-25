@@ -24,21 +24,44 @@ export const load: PageServerLoad = async ({
 		.from("orders")
 		.select(
 			`
-    *,
-    order_items (
       *,
-      variant: menu_variants (
-        *,
-        menu: menus (*)
+      order_items: order_items (
+        id,
+        price,
+        quantity,
+        variant: menu_variants (
+          id,
+          variant_number,
+          description,
+          menu: menus (
+            id,
+            date,
+            soup
+          )
+        )
       )
-    )
-  `
+    `
 		)
 		.eq("user_id", session.user.id)
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
 		console.error("Error fetching orders:", ordersError);
+	} else {
+		// Group order items by menu date
+		orders.forEach((order) => {
+			const groupedItems = {};
+			order.order_items.forEach((item) => {
+				const date = item.variant.menu.date;
+				if (!groupedItems[date]) {
+					groupedItems[date] = [];
+				}
+				groupedItems[date].push(item);
+			});
+			order.grouped_items = Object.entries(groupedItems).map(
+				([date, items]) => ({ date, items })
+			);
+		});
 	}
 
 	return {
