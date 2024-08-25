@@ -290,39 +290,45 @@
 	</div>
 	<!-- Orders -->
 	<div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
-			Objednávky
-		</h1>
-		<div>
-		{#if !orders || orders.length === 0}
-			<p>Žádné objednávky</p>
-		{:else}
-			<ul class="space-y-4">
-				{#each orders as order}
-					<li class="border p-4 rounded-lg">
-						<button
-							class="w-full text-left font-semibold"
-							on:click={() => toggleOrderDetails(order.id)}
-						>
-							Objednávka č. {order.order_number} - {formatDate(order.created_at)}
-						</button>
-						{#if expandedOrders[order.id]}
-							<div class="mt-2 pl-4">
-								<p><strong>Celková cena:</strong> {order.total_price} {order.currency}</p>
-								<p><strong>Stav:</strong> {order.state}</p>
-								<h3 class="font-semibold mt-2">Položky:</h3>
-								<ul class="list-disc pl-4">
-									{#each order.order_items as item}
-										<li>
-											{item.variant_id.description} - Množství: {item.quantity}
-										</li>
-									{/each}
-								</ul>
-							</div>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+	<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+		Objednávky
+	</h1>
+	<div>
+	{#if !orders || orders.length === 0}
+		<p>Žádné objednávky</p>
+	{:else}
+		<ul class="space-y-4">
+			{#each orders as order}
+				<li class="border p-4 rounded-lg">
+					<button
+						class="w-full text-left font-semibold"
+						on:click={() => toggleOrderDetails(order.id)}
+					>
+						Objednávka č. {order.order_number} - {formatDate(order.created_at)}
+					</button>
+					{#if expandedOrders[order.id]}
+						<div class="mt-2 pl-4">
+							<p><strong>Celková cena:</strong> {order.total_price} {order.currency}</p>
+							<p><strong>Stav:</strong> {order.state}</p>
+							<h3 class="font-semibold mt-2">Položky:</h3>
+							<ul class="list-disc pl-4">
+								{#each order.order_items as item}
+									<li>
+										<strong>Menu ze dne:</strong> {formatDate(item.variant.menu.date)}<br>
+										<strong>Varianta:</strong> {item.variant.variant_number} - {item.variant.description}<br>
+										<strong>Polévka:</strong> {item.variant.menu.soup}<br>
+										<strong>Cena:</strong> {item.price}<br>
+										<strong>Množství:</strong> {item.quantity}
+									</li>
+  br
+								{/each}
+							</ul>
+						</div>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 	</div>
+</div>
 </section>

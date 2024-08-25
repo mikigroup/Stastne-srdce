@@ -24,14 +24,15 @@ export const load: PageServerLoad = async ({
 		.from("orders")
 		.select(
 			`
+    *,
+    order_items (
       *,
-      order_items (
+      variant: menu_variants (
         *,
-        variant_id (
-          *
-        )  
+        menu: menus (*)
       )
-    `
+    )
+  `
 		)
 		.eq("user_id", session.user.id)
 		.order("created_at", { ascending: false });
