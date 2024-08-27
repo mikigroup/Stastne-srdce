@@ -14,14 +14,19 @@
 
 	let visible: boolean = false;
 	let expandedOrders: { [key: string]: boolean } = {};
+	let selectedOrderId: string | null = null;
 
 	const toggleVisible = () => {
 		visible = !visible;
 	};
 
 	function toggleOrderDetails(orderId: string) {
+		if (selectedOrderId === orderId) {
+			selectedOrderId = null;
+		} else {
+			selectedOrderId = orderId;
+		}
 		expandedOrders[orderId] = !expandedOrders[orderId];
-		expandedOrders = expandedOrders; // Trigger reactivity
 	}
 
 	function formatDate(dateString: string): string {
@@ -289,50 +294,67 @@
 		</form>
 	</div>
 	<!-- Orders -->
-	<div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+	<div
+		class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+		<h1
+			class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Objednávky
 		</h1>
 		<div>
-		{#if !orders || orders.length === 0}
-			<p>Žádné objednávky</p>
-		{:else}
-			<ul class="space-y-4">
-				{#each orders as order}
-					<li class="border p-4 rounded-lg">
-						<button
-							class="w-full text-left font-semibold"
-							on:click={() => toggleOrderDetails(order.id)}
-						>
-							Objednávka č. {order.order_number} - {formatDate(order.created_at)}
-						</button>
-						{#if expandedOrders[order.id]}
-							<div class="mt-2 pl-4" transition:fade>
-								<p><strong>Celková cena:</strong> {order.total_price} {order.currency}</p>
-								<p><strong>Stav:</strong> {order.state}</p>
-								<br />
-								<h3 class="font-semibold mt-2">Položky:</h3>
-								<br />
-								{#each order.grouped_items as group}
-									<div class="mb-4 border p-5 rounded-xl">
-										<h4 class="font-semibold">Menu ze dne: {formatDate(group.date)}</h4>
-										<p><strong>Polévka:</strong> {group.items[0].variant.menu.soup}</p>
-										<ul class="list-disc pl-4">
-											{#each group.items as item}
-
-													<strong>Varianta:</strong> {item.variant.variant_number} - {item.variant.description}<br>
-													<strong>Cena:</strong> {item.price}<br>
-													<strong>Množství:</strong> {item.quantity}
-<br /><br />
-											{/each}
-		</div>
-								{/each}
-							</div>
-						{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+			{#if !orders || orders.length === 0}
+				<p>Žádné objednávky</p>
+			{:else}
+				<ul class="space-y-4">
+					{#each orders as order}
+						<li class="border p-4 rounded-lg odd:bg-gray-200 even:bg-gray-100">
+							<button
+								class="w-full text-left transition-all duration-300 ease-in-out"
+								class:underline={selectedOrderId === order.id}
+								class:text-xl={selectedOrderId === order.id}
+              	on:click={() => toggleOrderDetails(order.id)}>
+								Objednávka <strong>{order.order_number}</strong> zde dne {formatDate(
+									order.created_at
+								)}
+							</button>
+							{#if expandedOrders[order.id]}
+									<div class="border p-5 rounded-xl bg-white">
+										<p>
+											<strong>Celková cena:</strong>
+											{order.total_price}
+											{order.currency}
+										</p>
+										<p><strong>Stav:</strong> {order.state}</p>
+									</div>
+									<h3 class="mt-2">Položky:</h3>
+									{#each order.grouped_items as group}
+										<div class="mb-4 border p-5 rounded-xl bg-white">
+											<h4 class="font-semibold underline">
+												Menu ze dne: {formatDate(group.date)}
+											</h4>
+											<p class="py-2">
+												<strong>Polévka:</strong>
+												{group.items[0].variant.menu.soup}
+											</p>
+											<ul class="list-disc pl-4">
+												{#each group.items as item}
+													<strong>Varianta:</strong>
+													{item.variant.variant_number} - {item.variant
+														.description}<br />
+													<strong>Cena:</strong>
+													{item.price}<br />
+													<strong>Množství:</strong>
+													{item.quantity}
+													<br />		<br />
+												{/each}
+											</ul>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	</div>
 </section>
