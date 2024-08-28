@@ -2,7 +2,7 @@
 	import CartItemsStore from "../Stores/stores";
 	import { page } from "$app/stores";
 	import { totalPiecesStore } from "../Stores/totalPiecesStore";
-	import { onMount, tick  } from 'svelte';
+	import { onMount, tick  } from "svelte";
 
 	interface MenuVariant {
 		id: string;
@@ -193,7 +193,7 @@
 																				{:else}
 																					<div class="flex justify-end">
 																						<p class="text-base">
-																							{menu.price} Kč
+																							{variant.price} Kč
 																						</p>
 																					</div>
 																					<div class="flex justify-end text-sm uppercase">

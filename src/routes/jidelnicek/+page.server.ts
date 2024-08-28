@@ -41,8 +41,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				`
           id,
           date,
-          soup,
-          price,
+          soup,          
           active,
           notes,
           type,
@@ -51,7 +50,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
           variants:menu_variants(
             id,
             variant_number,
-            description
+            description,
+            price
           )
         `
 			)
