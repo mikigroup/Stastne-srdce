@@ -1,23 +1,27 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
+	import MenuItemDetail from "../MenuItemDetail.svelte";
+	import type { MenuItem } from "../MenuItemDetail.svelte";
 
 	export let data;
-	let { session, supabase, menu, variants  } = data;
-	$: ({ session, supabase, menu, variants  } = data);
+	let { session, supabase, menu, variants } = data;
+	$: ({ session, supabase, menu, variants } = data);
+
 	let loading = false;
-	let date: string = menu?.date ?? "";
-	let soup: string = menu?.soup ?? "";
-	let price: number = menu?.price ?? 0;
-	let active: boolean = menu?.active;
-	let notes: string = menu?.notes ?? "";
-	let type: string = menu?.type ?? "";
-	let nutri: string = menu?.nutri ?? "";
-	let menuId: string = menu?.id;
-	let formattedDate = date ? formatSupabaseDate(date) : "";
-
-
 	let updateMessage = "";
+
+	let menuItem: MenuItem = {
+		id: menu.id,
+		date: menu.date,
+		soup: menu.soup,
+		price: menu.price,
+		active: menu.active,
+		notes: menu.notes,
+		type: menu.type,
+		nutri: menu.nutri,
+		variants: variants
+	};
 
 	async function updateMenu() {
 		try {
@@ -25,38 +29,17 @@
 
 			const update = {
 				updated_at: new Date().toISOString(),
-				soup,
-				price,
-				active,
-				notes,
-				type,
-				nutri
+				...menuItem,
+				variants: undefined // Remove variants from the main menu update
 			};
 
 			console.log("Menu update data:", update);
-			console.log("Menu ID:", menuId);
-
-			const { data: existingVariants, error: variantsError } = await supabase
-				.from("menu_variants")
-				.select("*")
-				.eq("menu_id", menuId);
-
-			if (variantsError) {
-				console.error("Error fetching menu variants:", variantsError);
-				throw variantsError;
-			}
-
-			const updatedVariants = existingVariants.map((variant) => ({
-				id: variant.id, // Include the variant ID for updating
-				menu_id: menuId,
-				variant_number: variant.variant_number,
-				description: variants[variant.variant_number],
-			}));
+			console.log("Menu ID:", menuItem.id);
 
 			const { data: updatedMenu, error: menuError } = await supabase
 				.from("menus")
 				.update(update)
-				.eq("id", menuId)
+				.eq("id", menuItem.id)
 				.single();
 
 			if (menuError) {
@@ -64,13 +47,19 @@
 				throw menuError;
 			}
 
+			const updatedVariants = Object.entries(menuItem.variants).map(([variantNumber, description]) => ({
+				menu_id: menuItem.id,
+				variant_number: parseInt(variantNumber),
+				description,
+			}));
+
 			const { data: updatedVariantsData, error: updateVariantsError } = await supabase
 				.from("menu_variants")
 				.upsert(updatedVariants)
-				.eq("id", updatedVariants.map((variant) => variant.id)); // Use variant IDs for upsert
+				.eq("menu_id", menuItem.id);
 
 			if (updateVariantsError) {
-				console.error("Chyba při úpravě menu::", updateVariantsError);
+				console.error("Chyba při úpravě variant menu:", updateVariantsError);
 				throw updateVariantsError;
 			}
 
@@ -93,19 +82,19 @@
 			const { error: variantError } = await supabase
 				.from("menu_variants")
 				.delete()
-				.eq("menu_id", menuId);
+				.eq("menu_id", menuItem.id);
 
 			if (variantError) throw variantError;
 
 			const { error: menuError } = await supabase
 				.from("menus")
 				.delete()
-				.eq("id", menuId);
+				.eq("id", menuItem.id);
 
 			if (menuError) throw menuError;
 
 			console.log("Menu a varianty úspěšně smazány!");
-			await goto("/menu", { replaceState: true });
+			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
 				console.error("Chyba při mazání menu:", error);
@@ -116,47 +105,12 @@
 		}
 	}
 
-	// Datum
-	let isValidDate: boolean = true;
-	let isEditingDate = false;
-
-	function handleDateInput(event) {
-		const enteredDate = event.target.value;
-		const isValid = validateDate(enteredDate);
-
-		if (isValid) {
-			date = formatDateForSupabase(enteredDate);
-			isValidDate = true;
-		} else {
-			isValidDate = false;
-		}
-		isEditingDate = true;
-	}
-
-	// Datum - Validace
-	function validateDate(inputDate: string): boolean {
-		const datePattern = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
-		return datePattern.test(inputDate);
-	}
-
-	function formatDateForSupabase(inputDate: string): string {
-		const [day, month, year] = inputDate.split("-");
-		return `${year}-${month}-${day}`;
-	}
-
-	function formatSupabaseDate(inputDate: string) {
-		if (!inputDate) return "";
-		const [year, month, day] = inputDate.split("-");
-		return `${day.padStart(2, "0")}-${month.padStart(2, "0")}-${year}`;
-	}
-
 	async function back() {
 		await goto("/admin/menu");
 	}
 
-	let showAdvanced = false;
-	function toggleAdvanced() {
-		showAdvanced = !showAdvanced;
+	function handleMenuItemUpdate(updatedItem: MenuItem) {
+		menuItem = updatedItem;
 	}
 </script>
 
@@ -166,155 +120,39 @@
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
-			<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-				{updateMessage}
+			<div class="alert alert-success shadow-lg" transition:fade>
+				<div>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+					<span>{updateMessage}</span>
+				</div>
 			</div>
 		{/if}
 		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
-				<button
-					value={loading ? "Nahrává se..." : "Změněno"}
-					disabled={loading}
-					type="submit"
-					on:click={updateMenu}
-					class="btn btn-outline">
-					Upravit
-				</button>
-			</div>
-			<div>
-				<!--<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>-->
-			</div>
+			<button
+				value={loading ? "Nahrává se..." : "Upravit"}
+				disabled={loading}
+				type="submit"
+				on:click={updateMenu}
+				class="btn btn-outline">
+				Upravit
+			</button>
+			<button
+				class="btn btn-outline btn-error"
+				value={loading ? "Maže se..." : "Smazat"}
+				disabled={loading}
+				type="submit"
+				on:click={deleteMenu}>
+				Smazat
+			</button>
 		</div>
 	</div>
 	<div class="divider"></div>
 
 	<div class="bg-base-100">
 		<div class="py-6 px-4">
-			<h2 class="text-2xl font-bold mb-6">Menu</h2>
+			<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 
-			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Datum</span>
-						</label>
-						<input
-							type="text"
-							placeholder="DD-MM-YYYY"
-							autocomplete="off"
-							class="input input-bordered w-full"
-							class:input-error={!isValidDate}
-							bind:value={formattedDate}
-							on:input={handleDateInput} />
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Cena</span>
-						</label>
-						<input
-							type="number"
-							placeholder=""
-							autocomplete="off"
-							class="input input-bordered w-full"
-							bind:value={price}
-							min="0"
-						/>
-					</div>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Aktivní</span>
-						</label>
-						<select class="select select-bordered w-full" bind:value={active}>
-							<option value={false}>NE</option>
-							<option value={true}>Ano</option>
-						</select>
-					</div>
-				</div>
-
-				<div in:fly={{ x: 50, duration: 500, delay: 400 }}>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Polévka</span>
-						</label>
-						<input
-							type="text"
-							placeholder=""
-							autocomplete="off"
-							class="input input-bordered w-full"
-							bind:value={soup} />
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Hlavní chod</span>
-						</label>
-						<div class="grid grid-rows-3 gap-2">
-							<textarea
-								class="textarea textarea-bordered text-md"
-								rows="4"
-								bind:value={variants[1]}></textarea>
-							<textarea
-								class="textarea textarea-bordered"
-								rows="4"
-								bind:value={variants[2]}></textarea>
-							<textarea
-								class="textarea textarea-bordered"
-								rows="4"
-								bind:value={variants[3]}></textarea>
-						</div>
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Poznámky</span>
-						</label>
-						<textarea class="textarea textarea-bordered" bind:value={notes}
-						></textarea>
-					</div>
-				</div>
-			</div>
-
-			<div class="text-center">
-				<button class="btn btn-link" on:click={toggleAdvanced}>
-					{#if showAdvanced}
-						Skrýt pokročilé
-					{:else}
-						Zobrazit pokročilé
-					{/if}
-				</button>
-			</div>
-
-			{#if showAdvanced}
-				<div class="mt-8" transition:fade>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Nutriční info</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered w-full"
-							bind:value={nutri} />
-					</div>
-				</div>
-				<div class="form-control w-full mb-2">
-					<label class="label">
-						<span class="label-text">Typ</span>
-					</label>
-					<input
-						type="text"
-						placeholder=""
-						autocomplete="off"
-						class="input input-bordered w-full"
-						bind:value={type} />
-				</div>
-			{/if}
+			<MenuItemDetail item={menuItem} onUpdate={handleMenuItemUpdate} />
 		</div>
 	</div>
 </div>
-
-<style>
-		textarea{
-				font-size: 1em;
-		}
-</style>

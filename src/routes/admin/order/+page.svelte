@@ -196,7 +196,7 @@
 	<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row">
 			<div>
-				<button on:click={newOrderPage} class="btn btn-outline">
+				<button on:click={newOrderPage} class="btn btn-outline" disabled>
 					Vytvořit objednávku
 				</button>
 			</div>

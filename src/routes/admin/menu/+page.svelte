@@ -39,6 +39,12 @@
 		console.log("Selected Menu ID:", selectedMenu);
 	}
 
+	function checkVariantsMatch(menu, query) {
+		return menu.variants.some(variant =>
+			variant.description.toLowerCase().includes(query.toLowerCase())
+		);
+	}
+
 	function newMenuPage() {
 		goto("/admin/menu/newmenu");
 	}
@@ -121,11 +127,11 @@
 				? menu.active === (filterActive === "true")
 				: searchQuery
 					? Object.values(menu).some((value) =>
-							value
-								?.toString()
-								.toLowerCase()
-								.includes(searchQuery.toLowerCase())
-						)
+					value
+						?.toString()
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase())
+				) || checkVariantsMatch(menu, searchQuery)
 					: true
 	);
 

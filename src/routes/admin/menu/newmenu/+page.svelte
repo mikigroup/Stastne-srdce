@@ -1,44 +1,37 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly } from "svelte/transition";
+	import MenuItemDetail from "../MenuItemDetail.svelte";
+	import type { MenuItem } from "../MenuItemDetail.svelte";
 
 	export let data;
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 	let loading = false;
-	let date: string = "";
-	let soup: string = "";
-	let price: number = 0;
-	let variants: any = {
-		1: "",
-		2: "",
-		3: ""
+	let menuItem: MenuItem = {
+		date: "",
+		soup: "",
+		price: 0,
+		active: false,
+		notes: "",
+		type: "",
+		nutri: "",
+		variants: {
+			1: "",
+			2: "",
+			3: ""
+		}
 	};
-	let active: boolean = false;
-	let notes: string = "";
-	let type: string = "";
-	let nutri: string = "";
 	let menuId: string = "";
-	let formattedDate = "";
 
 	let updateMessage = "";
 	async function createMenu() {
 		try {
 			loading = true;
 
-			const menuData = {
-				date: date ? new Date(date).toISOString() : null,
-				soup,
-				price,
-				active,
-				notes,
-				type,
-				nutri
-			};
-
 			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
-				.insert(menuData)
+				.insert(menuItem)
 				.select()
 				.single();
 
@@ -46,7 +39,7 @@
 
 			menuId = createdMenu.id;
 
-			for (const [variantNumber, description] of Object.entries(variants)) {
+			for (const [variantNumber, description] of Object.entries(menuItem.variants)) {
 				const { error: variantError } = await supabase
 					.from("menu_variants")
 					.insert({
@@ -72,49 +65,15 @@
 		}
 	}
 
-
-
-	let isValidDate: boolean = true;
-	let isEditingDate = false;
-
-	function handleDateInput(event) {
-		const enteredDate = event.target.value;
-		const isValid = validateDate(enteredDate);
-
-		if (isValid) {
-			date = formatDateForSupabase(enteredDate);
-			isValidDate = true;
-		} else {
-			isValidDate = false;
-		}
-		isEditingDate = true;
-	}
-
-	function validateDate(inputDate: string): boolean {
-		const datePattern = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
-		return datePattern.test(inputDate);
-	}
-
-	function formatDateForSupabase(inputDate: string): string {
-		const [day, month, year] = inputDate.split("-");
-		return `${year}-${month}-${day}`;
-	}
-
-	function formatSupabaseDate(inputDate: string) {
-		if (!inputDate) return "";
-		const [year, month, day] = inputDate.split("-");
-		return `${day.padStart(2, "0")}-${month.padStart(2, "0")}-${year}`;
-	}
-
 	async function back() {
 		await goto("/admin/menu");
 	}
 
-	let showAdvanced = false;
-	function toggleAdvanced() {
-		showAdvanced = !showAdvanced;
+	function handleMenuItemUpdate(updatedItem: MenuItem) {
+		menuItem = updatedItem;
 	}
 </script>
+
 <div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
@@ -127,8 +86,7 @@
 			</div>
 		{/if}
 		<div class="flex gap-2">
-			<button value={loading ? "Nahrává se..." : "Upraveno"} disabled={loading} type="submit" on:click={createMenu} class="btn btn-outline">Vytvoř</button>
-			<!--<button class="btn btn-outline btn-error" value={loading ? "Nahrává se..." : "Update"} disabled={loading} type="submit" on:click={deleteMenu}>Smazat</button>-->
+			<button value={loading ? "Nahrává se..." : "Vytvořit"} disabled={loading} type="submit" on:click={createMenu} class="btn btn-outline">Vytvoř</button>
 		</div>
 	</div>
 	<div class="divider"></div>
@@ -136,90 +94,7 @@
 		<div class="py-6 px-4">
 			<h2 class="text-2xl font-bold mb-6">Menu</h2>
 
-			<div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div in:fly="{{ x: -50, duration: 500, delay: 200 }}">
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Datum</span>
-						</label>
-						<input type="text" placeholder="DD-MM-YYYY" autocomplete="off" class="input input-bordered w-full" class:input-error={!isValidDate} bind:value={formattedDate} on:input={handleDateInput} />
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Cena</span>
-						</label>
-						<input type="number" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={price} />
-					</div>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Aktivní</span>
-						</label>
-						<select class="select select-bordered w-full" bind:value={active}>
-							<option value={false}>NE</option>
-							<option value={true}>Ano</option>
-						</select>
-					</div>
-				</div>
-
-
-				<div in:fly="{{ x: 50, duration: 500, delay: 400 }}">
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Polévka</span>
-						</label>
-						<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={soup} />
-					</div>
-
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Hlavní chod</span>
-						</label>
-						<div class="grid grid-rows-3 gap-2">
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[1]}></textarea>
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[2]}></textarea>
-							<textarea class="textarea textarea-bordered" rows="4" bind:value={variants[3]}></textarea>
-						</div>
-					</div>
-
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Poznámky</span>
-						</label>
-						<textarea class="textarea textarea-bordered" bind:value={notes}></textarea>
-					</div>
-				</div>
-			</div>
-
-			<div class="text-center">
-				<button class="btn btn-link" on:click={toggleAdvanced}>
-					{#if showAdvanced}
-						Skrýt pokročilé
-					{:else}
-						Zobrazit pokročilé
-					{/if}
-				</button>
-			</div>
-
-			{#if showAdvanced}
-				<div class="mt-8" transition:fade>
-					<div class="form-control w-full mb-2">
-						<label class="label">
-							<span class="label-text">Nutriční info</span>
-						</label>
-						<input type="text" class="input input-bordered w-full" bind:value={nutri} />
-					</div>
-				</div>
-				<div class="form-control w-full mb-2">
-					<label class="label">
-						<span class="label-text">Typ</span>
-					</label>
-					<input type="text" placeholder="" autocomplete="off" class="input input-bordered w-full" bind:value={type} />
-				</div>
-			{/if}
+			<MenuItemDetail item={menuItem} onUpdate={handleMenuItemUpdate} />
 		</div>
 	</div>
 </div>
