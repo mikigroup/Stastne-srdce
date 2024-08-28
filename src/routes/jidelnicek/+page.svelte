@@ -2,7 +2,7 @@
 	import CartItemsStore from "../Stores/stores";
 	import { page } from "$app/stores";
 	import { totalPiecesStore } from "../Stores/totalPiecesStore";
-	import { onMount, tick  } from "svelte";
+	import { onMount  } from "svelte";
 
 	interface MenuVariant {
 		id: string;
@@ -30,7 +30,7 @@
 		startDate: string;
 		endDate: string;
 	};
-console.log(data)
+
 	let { weeks, startDate } = data;
 	$: ({ weeks, startDate } = data);
 
@@ -40,19 +40,27 @@ console.log(data)
 	let selectedTab = "1. týden";
 	let currentWeekMenus: Menu[] = [];
 
+	let scrollDiv: HTMLElement;
+
+	/*function scrollToContent()
+	document.getElementById("scrollDiv").scrollIntoView();{
+		scrollDiv.scrollIntoView({ behavior: 'smooth' });
+	}*/
+
 	async function selectTab(tabName: string) {
 		selectedTab = tabName;
 		const weekIndex = parseInt(tabName.split('.')[0]) - 1;
 		currentWeekMenus = weeks[weekIndex] || [];
-		// Počkáme na aktualizaci DOM
-		await tick();
-		skocNaPrvek();
 	}
 
+
+/*
 	function skocNaPrvek() {
 		let skocPrvek = document.getElementById("cilovyPrvek");
 		skocPrvek?.scrollIntoView({ behavior: "smooth" });
 	}
+*/
+
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -152,7 +160,22 @@ console.log(data)
 			<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">
 				<div class="pb-10" id="tabs-tabContent">
 					<div class="tab-pane fade show active" id="" role="tabpanel">
-						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
+						<div>
+							<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
+								{#each weeks as _, index}
+									<button
+										class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
+										selectedTab === `${index + 1}. týden`
+											? "border-green-600"
+											: "border-transparent hover:border-green-600"
+									}`}
+										on:click={() => selectTab(`${index + 1}. týden`)}>
+										{index + 1}. týden
+									</button>
+								{/each}
+							</div>
+						</div>
+						<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50" id="scrollDiv">
 							<div class="mb-5">
 								{#if currentWeekMenus.length > 0}
 									{#each currentWeekMenus as menu (menu.id)}
@@ -220,30 +243,11 @@ console.log(data)
 							</div>
 						</div>
 					</div>
-					<div>
-						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
-							{#each weeks as _, index}
-								<button
-									class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-										selectedTab === `${index + 1}. týden`
-											? "border-green-600"
-											: "border-transparent hover:border-green-600"
-									}`}
-									on:click={() => selectTab(`${index + 1}. týden`)}>
-									{index + 1}. týden
-								</button>
-							{/each}
-						</div>
 
-						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
-							<button
-								on:click={skocNaPrvek}
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900">
-								<p>Skoč nahoru</p>
-							</button>
-						</div>
-					</div>
 				</div>
+			</div>
+			<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
+					<a class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900" href="#scrollDiv">Skoč nahoru</a>
 			</div>
 			{#if totalPieces > 0 && $page.data.session}
 				<div class="flex text-md justify-center">
