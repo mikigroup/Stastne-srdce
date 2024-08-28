@@ -185,10 +185,14 @@
 									</div>
 									<hr />
 									<div class="m-5">
-									{#each cartItem.variants as variant, index}
-										<span class="mr-2">{index + 1}. 	{truncateText(variant.value, 50)}</span>
-										<br />
-									{/each}
+										{#each cartItem.variants as variant, index}
+											<div class="flex justify-between items-center mb-2">
+												<span class="mr-2">{index + 1}. {truncateText(variant.value, 50)}</span>
+												<button class="hover:animate-spin" on:click|preventDefault={() => removeItem(cartItem.id, variant.value)}>
+													X
+												</button>
+											</div>
+										{/each}
 									</div>
 									<div class="mt-5 font-light text-center">
 										<p><strong>Počet</strong></p>
@@ -213,8 +217,7 @@
 									</div>
 									<hr />
 									<div class="font-light text-center">
-										<button class="hover:animate-spin" on:click|preventDefault={() =>
-                        removeItem(cartItem.id, variant.value)}>
+										<button class="hover:animate-spin" on:click|preventDefault={() => removeItem(cartItem.id, cartItem.variants[0].value)}>
 											X
 										</button>
 									</div>
@@ -266,10 +269,11 @@
 									<div class="col-span-3 pl-5">
 										<p>{truncateText(cartItem.soup, 30)}</p>
 									</div>
-									<div class="col-span-5 font-light border-x-2 pl-5">
+									<div class="col-span-5 font-light border-x-2 pl-5 m-3">
 										{#each cartItem.variants as variant, index}
-											<span class="mr-2">{index + 1}. {truncateText(variant.value, 50)}</span>
-											<br />
+											<div class="flex justify-between items-center mb-2">
+												<span class="mr-2">{index + 1}. {truncateText(variant.value, 50)}</span>
+											</div>
 										{/each}
 									</div>
 									<div class="col-span-1 text-center h-full flex flex-col items-center justify-center">
@@ -282,6 +286,9 @@
 													bind:value={variant.quantity}
 													on:change={updateCartItems}
 													class="w-16 text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
+												<button class="hover:animate-spin" on:click|preventDefault={() => removeItem(cartItem.id, variant.value)}>
+													X
+												</button>
 											</div>
 										{/each}
 									</div>

@@ -153,7 +153,7 @@
 							{#if visible}
 								<div><p class="w-24 cursor-pointer">Méně</p></div>
 							{:else}
-								<div><p class="w-24 cursor-pointer">Více</p></div>
+								<div><p class="w-36 cursor-pointer lg:tooltip" data-tip="Klikni pro více informací">Více informací</p></div>
 							{/if}
 						</div>
 						{#if visible}

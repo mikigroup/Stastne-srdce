@@ -6,7 +6,7 @@
 	$: if (dialog && showModal) dialog.showModal();
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <dialog class="w-full lg:w-1/2 xl:1/3"
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
