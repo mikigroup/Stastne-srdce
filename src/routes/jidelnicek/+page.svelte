@@ -8,6 +8,7 @@
 		id: string;
 		variant_number: string;
 		description: string;
+		price: number;
 	}
 
 	interface Menu {
@@ -81,7 +82,8 @@
 						currentCartItems[existingMenuIndex].variants.push({
 							variantId: selectedVariant.id,
 							quantity: 1,
-							value: selectedVariant.description
+							value: selectedVariant.description,
+							price: selectedVariant.price
 						});
 					}
 				}
@@ -94,7 +96,8 @@
 							{
 								variantId: selectedVariant.id,
 								quantity: 1,
-								value: selectedVariant.description
+								value: selectedVariant.description,
+								price: selectedVariant.price
 							}
 						]
 					});

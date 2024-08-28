@@ -16,8 +16,17 @@
 	let cartItems: any = [];
 
 	$: totalPrice = $CartItemsStore.reduce((sum, item) => {
+		if (!item || !item.variants || !Array.isArray(item.variants)) {
+			console.error('Invalid item structure:', item);
+			return sum;
+		}
 		const itemTotalPrice = item.variants.reduce((itemSum, variant) => {
-			return itemSum + item.price * variant.quantity;
+			if (!variant || typeof variant.quantity !== 'number') {
+				console.error('Invalid variant structure:', variant);
+				return itemSum;
+			}
+			const price = typeof item.price === 'number' ? item.price : 0;
+			return itemSum + price * variant.quantity;
 		}, 0);
 		return sum + itemTotalPrice;
 	}, 0);
@@ -132,6 +141,7 @@
 		return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 	}
 
+	$: console.log('CartItemsStore:', $CartItemsStore);
 </script>
 
 <svelte:head>
@@ -176,7 +186,7 @@
 									<hr />
 									<div class="m-5">
 									{#each cartItem.variants as variant, index}
-										<span class="mr-2">{index + 1}.{truncateText(variant.value, 50)}</span>
+										<span class="mr-2">{index + 1}. 	{truncateText(variant.value, 50)}</span>
 										<br />
 									{/each}
 									</div>
@@ -258,7 +268,7 @@
 									</div>
 									<div class="col-span-5 font-light border-x-2 pl-5">
 										{#each cartItem.variants as variant, index}
-											<span class="mr-2">{index + 1}.{truncateText(variant.value, 30)}</span>
+											<span class="mr-2">{index + 1}. {truncateText(variant.value, 50)}</span>
 											<br />
 										{/each}
 									</div>
