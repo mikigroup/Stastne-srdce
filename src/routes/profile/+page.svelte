@@ -349,7 +349,8 @@
 											</ul>
 										</div>
 									{/each}
-								</div>
+								
+
 							{/if}
 						</li>
 					{/each}
