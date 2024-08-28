@@ -8,7 +8,7 @@
 					target="_blank"
 					href="https://www.mikigroup.cz/"
 				><i class="fa fa-regular fa-hand-spock" /> Mikigroup™ </a>
-				- core0.9
+				- core0.9a
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">

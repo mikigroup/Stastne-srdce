@@ -30,7 +30,7 @@
 		startDate: string;
 		endDate: string;
 	};
-
+console.log(data)
 	let { weeks, startDate } = data;
 	$: ({ weeks, startDate } = data);
 

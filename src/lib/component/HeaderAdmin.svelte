@@ -23,7 +23,7 @@
 			console.error("Error fetching profile:", error);
 			return null;
 		}
-	};
+	}
 
 	let loading = false;
 	const weekdays = [
@@ -108,12 +108,13 @@
 				<ul
 					tabindex="0"
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+					<li><a href="/">Šťastné srdce</a></li>
+
 					<li><a href="/admin">Domů</a></li>
 					<li><a href="/admin/customer">Zákazníci</a></li>
 					<!-- <li><a href="/item">Produkty</a></li> -->
 					<li><a href="/admin/order">Objednávky</a></li>
 					<li><a href="/admin/menu">Menu</a></li>
-
 				</ul>
 			</div>
 			<p class="text-xl">Malý LEO</p>
@@ -130,9 +131,8 @@
 						<p>...</p>
 					{:then profile}
 						{#if profile}
-							<p>Vítej, {profile.username}!</p><span class="pr-2">&nbsp;</span><Icon
-								src={FaceSmile}
-								size="26" />
+							<p>Vítej, {profile.username}!</p>
+							<span class="pr-2">&nbsp;</span><Icon src={FaceSmile} size="26" />
 						{:else}
 							<p>Profil nenalezen.</p>
 						{/if}
@@ -207,18 +207,20 @@
 					</div>
 				</div>
 			{:else}
-			<button><a
-					href="/admin/signin"
-					class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
-					>Přihlásit</a></button>
-				<button><a
-					href="/admin/signup"
-					class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
-					>Registrovat</a></button>
+				<button
+					><a
+						href="/admin/signin"
+						class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
+						>Přihlásit</a
+					></button>
+				<button
+					><a
+						href="/admin/signup"
+						class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
+						>Registrovat</a
+					></button>
 			{/if}
 		</div>
 	</div>
-	<hr class="mx-2">
+	<hr class="mx-2" />
 </nav>
-
-
