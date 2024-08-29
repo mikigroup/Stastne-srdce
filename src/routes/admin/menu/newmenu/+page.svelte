@@ -37,14 +37,15 @@
 		notes: "",
 		type: "",
 		nutri: "",
-		alergens: [], // Změněno z 'alergen' na 'alergens'
-		ingredients: [], // Změněno z 'ingredient' na 'ingredients'
+		selectedAlergens: "",
+		selectedIngredients: "",
 		variants: {
-			1: { description: "", price: 0, alergens: [], ingredients: [] },
-			2: { description: "", price: 0, alergens: [], ingredients: [] },
-			3: { description: "", price: 0, alergens: [], ingredients: [] }
+			1: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" },
+			2: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" },
+			3: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" }
 		}
 	};
+
 
 	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
 	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
@@ -91,8 +92,8 @@
 				notes: menuItem.notes || null,
 				type: menuItem.type || null,
 				nutri: menuItem.nutri || null,
-				alergens: menuItem.alergens || null,
-				ingredients: menuItem.ingredients || null
+				alergen: menuItem.selectedAlergens || null,
+				ingredient: menuItem.selectedIngredients || null
 			};
 
 			const { data: createdMenu, error } = await supabase
@@ -112,8 +113,8 @@
 						variant_number: variantNumber,
 						description: variant.description,
 						price: variant.price || null,
-						alergens: variant.alergens || null,
-						ingredients: variant.ingredients || null
+						alergen: variant.selectedAlergens || null,
+						ingredient: variant.selectedIngredients || null
 					};
 
 					const { error: variantError } = await supabase
