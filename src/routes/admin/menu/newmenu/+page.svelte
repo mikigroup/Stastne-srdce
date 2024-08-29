@@ -16,14 +16,14 @@
 		notes: string;
 		type: string;
 		nutri: string;
-		alergen: string[];
-		ingredient: string[];
+		alergens: string[]; // Změněno z 'alergen' na 'alergens'
+		ingredients: string[]; // Změněno z 'ingredient' na 'ingredients'
 		variants: {
 			[key: string]: {
 				description: string;
 				price: number;
-				alergen: string[];
-				ingredient: string[];
+				alergens: string[]; // Změněno z 'alergen' na 'alergens'
+				ingredients: string[]; // Změněno z 'ingredient' na 'ingredients'
 			}
 		};
 	};
@@ -37,22 +37,25 @@
 		notes: "",
 		type: "",
 		nutri: "",
-		alergen: [],
-		ingredient: [],
+		alergens: [], // Změněno z 'alergen' na 'alergens'
+		ingredients: [], // Změněno z 'ingredient' na 'ingredients'
 		variants: {
-			1: { description: "", price: 0, alergen: [], ingredient: [] },
-			2: { description: "", price: 0, alergen: [], ingredient: [] },
-			3: { description: "", price: 0, alergen: [], ingredient: [] }
+			1: { description: "", price: 0, alergens: [], ingredients: [] },
+			2: { description: "", price: 0, alergens: [], ingredients: [] },
+			3: { description: "", price: 0, alergens: [], ingredients: [] }
 		}
 	};
 
 	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
 	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
 
-	let menuId: string = "";
-
 	let updateMessage = "";
 	let errorMessage = "";
+
+	// Reaktivní blok pro sledování změn v menuItem
+	$: {
+		console.log("menuItem updated", menuItem);
+	}
 
 	async function checkDateExists(date: string) {
 		const { data, error } = await supabase
@@ -79,6 +82,8 @@
 				throw new Error("Datum je povinné");
 			}
 
+			console.log("Creating menu with data:", menuItem);
+
 			const menuData = {
 				date: new Date(menuItem.date).toISOString().split('T')[0],
 				soup: menuItem.soup || null,
@@ -86,8 +91,8 @@
 				notes: menuItem.notes || null,
 				type: menuItem.type || null,
 				nutri: menuItem.nutri || null,
-				alergen: menuItem.alergen || null,
-				ingredient: menuItem.ingredient || null
+				alergens: menuItem.alergens || null,
+				ingredients: menuItem.ingredients || null
 			};
 
 			const { data: createdMenu, error } = await supabase
@@ -98,7 +103,7 @@
 
 			if (error) throw error;
 
-			console.log("Vytvořené menu:", createdMenu);
+			console.log("Created menu:", createdMenu);
 
 			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
 				if (variant.description) {
@@ -107,8 +112,8 @@
 						variant_number: variantNumber,
 						description: variant.description,
 						price: variant.price || null,
-						alergen: variant.alergen || null,
-						ingredient: variant.ingredient || null
+						alergens: variant.alergens || null,
+						ingredients: variant.ingredients || null
 					};
 
 					const { error: variantError } = await supabase
@@ -116,7 +121,7 @@
 						.insert([variantData]);
 
 					if (variantError) {
-						console.error(`Chyba při vytváření varianty ${variantNumber}:`, variantError);
+						console.error(`Error creating variant ${variantNumber}:`, variantError);
 					}
 				}
 			}
@@ -125,7 +130,7 @@
 			await replaceState({}, "/admin/menu");
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Chyba při vytváření menu:", error);
+				console.error("Error creating menu:", error);
 				errorMessage = error.message;
 			} else {
 				errorMessage = "Nastala neočekávaná chyba";
@@ -140,7 +145,8 @@
 	}
 
 	function handleMenuItemUpdate(updatedItem: MenuItem) {
-		menuItem = updatedItem;
+		console.log("Updating menuItem", updatedItem);
+		menuItem = { ...updatedItem };
 	}
 </script>
 
@@ -168,18 +174,20 @@
 		<div class="py-6 px-4 colorMenuBg rounded-xl">
 			<h2 class="text-2xl font-bold mb-6 colorMenuBg">Menu</h2>
 
-			<MenuItemDetail
-				item={menuItem}
-				onUpdate={handleMenuItemUpdate}
-				{commonAlergens}
-				{commonIngredients}
-			/>
+			{#key menuItem.date}
+				<MenuItemDetail
+					item={menuItem}
+					onUpdate={handleMenuItemUpdate}
+					{commonAlergens}
+					{commonIngredients}
+				/>
+			{/key}
 		</div>
 	</div>
 </div>
 
 <style>
-    .colorMenuBg{
+    .colorMenuBg {
         background-color: #929da5;
     }
 </style>

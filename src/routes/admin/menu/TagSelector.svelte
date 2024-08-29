@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from "svelte";
 
 	export let selectedTags: string[] = [];
 	export let availableTags: string[] = [];
 
 	const dispatch = createEventDispatcher<{update: string[]}>();
 
-	let inputValue = '';
+	let inputValue = "";
 	let filteredTags: string[] = [];
 
 	$: {
@@ -19,18 +19,18 @@
 	function addTag(tag: string) {
 		if (!selectedTags.includes(tag)) {
 			selectedTags = [...selectedTags, tag];
-			dispatch('update', selectedTags);
+			dispatch("update", selectedTags);
 		}
-		inputValue = '';
+		inputValue = "";
 	}
 
 	function removeTag(tag: string) {
 		selectedTags = selectedTags.filter(t => t !== tag);
-		dispatch('update', selectedTags);
+		dispatch("update", selectedTags);
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && inputValue) {
+		if (event.key === "Enter" && inputValue) {
 			event.preventDefault();
 			if (filteredTags.length > 0) {
 				addTag(filteredTags[0]);
