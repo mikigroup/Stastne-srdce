@@ -1,59 +1,73 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+
 	export let selectedTags: string[] = [];
 	export let availableTags: string[] = [];
-	export let onUpdate: (tags: string[]) => void;
 
-	let newTag = '';
+	const dispatch = createEventDispatcher<{update: string[]}>();
 
-	function addTag() {
-		if (newTag && !selectedTags.includes(newTag)) {
-			selectedTags = [...selectedTags, newTag];
-			onUpdate(selectedTags);
-			newTag = '';
+	let inputValue = '';
+	let filteredTags: string[] = [];
+
+	$: {
+		filteredTags = availableTags.filter(tag =>
+			tag.toLowerCase().includes(inputValue.toLowerCase()) &&
+			!selectedTags.includes(tag)
+		);
+	}
+
+	function addTag(tag: string) {
+		if (!selectedTags.includes(tag)) {
+			selectedTags = [...selectedTags, tag];
+			dispatch('update', selectedTags);
 		}
+		inputValue = '';
 	}
 
 	function removeTag(tag: string) {
 		selectedTags = selectedTags.filter(t => t !== tag);
-		onUpdate(selectedTags);
+		dispatch('update', selectedTags);
 	}
 
-	function selectExistingTag(tag: string) {
-		if (!selectedTags.includes(tag)) {
-			selectedTags = [...selectedTags, tag];
-			onUpdate(selectedTags);
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && inputValue) {
+			event.preventDefault();
+			if (filteredTags.length > 0) {
+				addTag(filteredTags[0]);
+			} else if (!selectedTags.includes(inputValue)) {
+				addTag(inputValue);
+			}
 		}
 	}
 </script>
 
 <div class="tag-selector">
 	<div class="selected-tags">
-		{#each selectedTags as tag}
-      <span class="tag">
-        {tag}
-				<button on:click={() => removeTag(tag)} class="remove-tag">×</button>
-      </span>
+		{#each selectedTags as tag (tag)}
+            <span class="tag">
+                {tag}
+							<button on:click={() => removeTag(tag)}>&times;</button>
+            </span>
 		{/each}
 	</div>
-	<div class="tag-input">
-		<input
-			bind:value={newTag}
-			on:keydown={(e) => e.key === 'Enter' && addTag()}
-			placeholder="Přidat nový tag"
-			class="input input-bordered"
-		/>
-		<button on:click={addTag} class="btn">Přidat</button>
-	</div>
-	<div class="available-tags">
-		{#each availableTags.filter(tag => !selectedTags.includes(tag)) as tag}
-			<button on:click={() => selectExistingTag(tag)} class="btn btn-sm">{tag}</button>
-		{/each}
-	</div>
+	<input
+		type="text"
+		bind:value={inputValue}
+		on:keydown={handleKeydown}
+		placeholder="Přidat tag..."
+	/>
+	{#if inputValue && filteredTags.length > 0}
+		<ul class="tag-suggestions">
+			{#each filteredTags as tag (tag)}
+				<li on:click={() => addTag(tag)}>{tag}</li>
+			{/each}
+		</ul>
+	{/if}
 </div>
 
 <style>
     .tag-selector {
-        margin-bottom: 1rem;
+        /* Add your styles here */
     }
     .selected-tags {
         display: flex;
@@ -62,27 +76,31 @@
         margin-bottom: 0.5rem;
     }
     .tag {
-        background-color: #e2e8f0;
+        background-color: #e0e0e0;
         padding: 0.25rem 0.5rem;
         border-radius: 0.25rem;
-        display: inline-flex;
+        display: flex;
         align-items: center;
     }
-    .remove-tag {
+    .tag button {
         margin-left: 0.25rem;
-        cursor: pointer;
         border: none;
         background: none;
-        font-size: 1.25rem;
+        cursor: pointer;
     }
-    .tag-input {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
+    .tag-suggestions {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
     }
-    .available-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+    .tag-suggestions li {
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+    .tag-suggestions li:hover {
+        background-color: #f0f0f0;
     }
 </style>
