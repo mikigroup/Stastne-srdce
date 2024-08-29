@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
-	import type { MenuItem } from "../MenuItemDetail.svelte";
+	import type MenuItem  from "../MenuItemDetail.svelte";
 
 	export let data;
 	let { session, supabase, menu, variants } = data;
