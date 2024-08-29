@@ -172,9 +172,8 @@
 	</div>
 	<div class="divider"></div>
 	<div class="bg-base-100">
-		<div class="py-6 px-4 colorMenuBg rounded-xl">
-			<h2 class="text-2xl font-bold mb-6 colorMenuBg">Menu</h2>
-
+		<div class="p-10 colorMenuBg rounded-xl">
+			<h1 class="text-3xl mb-6 colorMenuBg underline">Menu</h1>
 			{#key menuItem.date}
 				<MenuItemDetail
 					item={menuItem}

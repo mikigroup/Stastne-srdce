@@ -76,7 +76,7 @@
 	}
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 menuWrap mt-10">
 	<div>
 		<div class="form-control w-full mb-2">
 			<label class="label">
@@ -239,3 +239,8 @@
 			on:input={updateItem} />
 	</div>
 </div>
+<style>
+.menuWrap span {
+	font-size: 1.1em;
+}
+</style>
