@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({
 	params
 }) => {
 	const id = params.menuId;
+
 	try {
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
@@ -33,20 +34,48 @@ export const load: PageServerLoad = async ({
 			map[variant.variant_number] = {
 				id: variant.id,
 				description: variant.description,
-				price: variant.price,
-				alergen: variant.alergen ? variant.alergen.split(",") : [],
-				ingredient: variant.ingredient ? variant.ingredient.split(",") : []
+				price: variant.price
 			};
+			return map;
+		}, {});
+
+		// Načtení názvů alergenů
+		const { data: allergens, error: allergensError } = await supabase
+			.from("allergens")
+			.select("id, name");
+
+		if (allergensError) {
+			console.error("Error fetching allergens:", allergensError);
+			throw error(500, "Failed to fetch allergens");
+		}
+
+		const allergenNames = allergens.reduce((map, allergen) => {
+			map[allergen.id] = allergen.name;
+			return map;
+		}, {});
+
+		// Načtení názvů ingrediencí
+		const { data: ingredients, error: ingredientsError } = await supabase
+			.from("ingredients")
+			.select("id, name");
+
+		if (ingredientsError) {
+			console.error("Error fetching ingredients:", ingredientsError);
+			throw error(500, "Failed to fetch ingredients");
+		}
+
+		const ingredientNames = ingredients.reduce((map, ingredient) => {
+			map[ingredient.id] = ingredient.name;
 			return map;
 		}, {});
 
 		return {
 			menu: {
 				...menu,
-				alergen: menu.alergen ? menu.alergen.split(",") : [],
-				ingredient: menu.ingredient ? menu.ingredient.split(",") : [],
 				variants: variantsMap
-			}
+			},
+			allergenNames,
+			ingredientNames
 		};
 	} catch (err) {
 		if (err instanceof Error) {

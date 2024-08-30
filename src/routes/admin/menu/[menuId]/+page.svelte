@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
-	import type { MenuItem } from "../MenuItemDetail.svelte";
+	import type MenuItem from "../MenuItemDetail.svelte";
 
 	export let data;
 	let { session, supabase, menu, variants } = data;
@@ -21,21 +21,14 @@
 		notes: menu.notes,
 		type: menu.type,
 		nutri: menu.nutri,
-		alergen: menu.alergen?.split(",") || [],
-		ingredient: menu.ingredient?.split(",") || [],
 		variants: Object.entries(variants || {}).reduce((acc, [key, value]) => {
 			acc[key] = {
 				description: value.description || '',
-				price: value.price || 0,
-				alergen: value.alergen?.split(",") || [],
-				ingredient: value.ingredient?.split(",") || []
+				price: value.price || 0
 			};
 			return acc;
 		}, {})
 	};
-
-	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
-	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
 
 	async function updateMenu() {
 		try {
@@ -52,9 +45,7 @@
 				active: menuItem.active,
 				notes: menuItem.notes,
 				type: menuItem.type,
-				nutri: menuItem.nutri,
-				alergen: menuItem.alergen.join(","),
-				ingredient: menuItem.ingredient.join(",")
+				nutri: menuItem.nutri
 			};
 
 			const { error: menuError } = await supabase
@@ -66,14 +57,12 @@
 
 			// Aktualizace variant
 			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
-				if (variant.description || variant.price || variant.alergen.length || variant.ingredient.length) {
+				if (variant.description || variant.price) {
 					const variantData = {
 						menu_id: menuItem.id,
 						variant_number: variantNumber,
 						description: variant.description,
-						price: variant.price,
-						alergen: variant.alergen.join(','),
-						ingredient: variant.ingredient.join(',')
+						price: variant.price
 					};
 
 					const { error: upsertError } = await supabase
@@ -97,9 +86,7 @@
 			const variantsToDelete = existingVariants.filter(
 				v => !menuItem.variants[v.variant_number] ||
 					(!menuItem.variants[v.variant_number].description &&
-						!menuItem.variants[v.variant_number].price &&
-						!menuItem.variants[v.variant_number].alergen.length &&
-						!menuItem.variants[v.variant_number].ingredient.length)
+						!menuItem.variants[v.variant_number].price)
 			);
 
 			if (variantsToDelete.length > 0) {
@@ -191,8 +178,8 @@
 		<MenuItemDetail
 			item={menuItem}
 			onUpdate={handleMenuItemUpdate}
-			{commonAlergens}
-			{commonIngredients}
+			allergenNames={data.allergenNames}
+			ingredientNames={data.ingredientNames}
 		/>
 	</div>
 </div>

@@ -10,14 +10,15 @@
 		notes: string;
 		type: string;
 		nutri: string;
-		alergen: string[];
-		ingredient: string[];
+		alergens: number[];
+		ingredients: number[];
 		variants: {
 			[key: string]: {
+				id: string;
 				description: string;
 				price: number;
-				alergen: string[];
-				ingredient: string[];
+				alergens: number[];
+				ingredients: number[];
 			} | undefined;
 		};
 	}
@@ -56,39 +57,39 @@
 		onUpdate(item);
 	}
 
-	function updateAlergens(alergens: string[]) {
-		item.alergen = alergens;
+	function updateAlergens(alergens: number[]) {
+		item.alergens = alergens;
 		updateItem();
 	}
 
-	function updateIngredients(ingredients: string[]) {
-		item.ingredient = ingredients;
+	function updateIngredients(ingredients: number[]) {
+		item.ingredients = ingredients;
 		updateItem();
 	}
 
-	function updateVariantAlergens(variantNumber: string, alergens: string[]) {
+	function updateVariantAlergens(variantNumber: string, alergens: number[]) {
 		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
 		}
-		item.variants[variantNumber]!.alergen = alergens;
+		item.variants[variantNumber]!.alergens = alergens;
 		updateItem();
 	}
 
-	function updateVariantIngredients(variantNumber: string, ingredients: string[]) {
+	function updateVariantIngredients(variantNumber: string, ingredients: number[]) {
 		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
 		}
-		item.variants[variantNumber]!.ingredient = ingredients;
+		item.variants[variantNumber]!.ingredients = ingredients;
 		updateItem();
 	}
 
 	function getVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string]) {
-		return item.variants[variantNumber] ? item.variants[variantNumber][property] : '';
+		return item.variants[variantNumber] ? item.variants[variantNumber][property] : undefined;
 	}
 
 	function setVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string], value: any) {
 		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
 		}
 		item.variants[variantNumber][property] = value;
 		updateItem();
@@ -178,13 +179,13 @@
 			<div class="grid grid-rows-3 gap-2">
 				{#each ['1', '2', '3'] as variantNumber}
 					<div class="variant-container mb-10 border rounded-xl">
-                <textarea
-									class="textarea textarea-bordered w-full"
-									placeholder={`Menu ${variantNumber}`}
-									rows="4"
-									bind:value={item.variants[variantNumber].description}
-									on:input={(e) => setVariantProperty(variantNumber, 'description', e.target.value)}
-								></textarea>
+      <textarea
+				class="textarea textarea-bordered w-full"
+				placeholder={`Menu ${variantNumber}`}
+				rows="4"
+				value={getVariantProperty(variantNumber, 'description') || ''}
+				on:input={(e) => setVariantProperty(variantNumber, 'description', e.target.value)}
+			></textarea>
 						<div class="mt-2">
 							<label class="label">
 								<span class="label-text">Cena varianty</span>
@@ -192,7 +193,7 @@
 							<input
 								type="number"
 								class="input input-bordered w-full"
-								bind:value={item.variants[variantNumber].price}
+								value={getVariantProperty(variantNumber, 'price') || 0}
 								on:input={(e) => setVariantProperty(variantNumber, 'price', parseFloat(e.target.value))}
 							/>
 						</div>
@@ -203,7 +204,7 @@
 									<span class="label-text">Alergeny varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={item.variants[variantNumber]?.alergen || []}
+									selectedTags={getVariantProperty(variantNumber, 'alergens') || []}
 									availableTags={commonAlergens}
 									onUpdate={(alergens) => updateVariantAlergens(variantNumber, alergens)}
 								/>
@@ -213,7 +214,7 @@
 									<span class="label-text">Ingredience varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={item.variants[variantNumber]?.ingredient || []}
+									selectedTags={getVariantProperty(variantNumber, 'ingredients') || []}
 									availableTags={commonIngredients}
 									onUpdate={(ingredients) => updateVariantIngredients(variantNumber, ingredients)}
 								/>
