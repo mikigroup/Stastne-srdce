@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
+	import OrderItemDetail from "../OrderItemDetail.svelte";
 
 	export let data;
 	let { session, supabase, order } = data;
@@ -8,37 +9,17 @@
 
 	let loading = false;
 	let date: string = order?.date ?? "";
-	let order_number: number = order?.order_number ?? "";
-	let state: string = order?.state ?? "";
-	let customer_first_name: string = order?.customer_first_name ?? "";
-	let customer_last_name: string = order?.customer_last_name ?? "";
-	let customer_street: string = order?.customer_street ?? "";
-	let customer_street_number: string = order?.customer_street_number ?? "";
-	let customer_city: string = order?.customer_city ?? "";
-	let customer_zip_code: string = order?.customer_zip_code ?? "";
-	let customer_email: string = order?.customer_email ?? "";
-	let customer_telephone: string = order?.customer_telephone ?? "";
-	let delivery_first_name: string = order?.delivery_first_name ?? "";
-	let delivery_last_name: string = order?.delivery_last_name ?? "";
-	let delivery_street_number: string = order?.delivery_street_number ?? "";
-	let delivery_street: string = order?.delivery_street ?? "";
-	let delivery_telephone: string = order?.delivery_telephone ?? "";
-	let delivery_zip_code: string = order?.delivery_zip_code ?? "";
-	let delivery_city: string = order?.delivery_city ?? "";
 	let orderId: string = order?.id;
 	let formattedDate = date ? formatSupabaseDate(date) : "";
 	let selectedPaymentMethod: string = order?.pay_method;
-	let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
 	let selectedOrderState: string = order?.state;
-	let orderStateOptions = ["Nová", "Vyřuzuje se", "Expedovaná", "Fakturovaná"];
 	let selectedCurrency: string = order?.currency;
-	let currencyOptions = ["CZK", "EUR", "USD"];
 	let selectedShippingMethod: string = order?.shipping_method;
-	let shippingMethodOptions = ["Osobní odběr", "Kurýr", "Česká pošta"];
 	let isPaid: boolean = order?.pay_state || false;
 	let note: string = order?.note ?? "";
 
 	let updateMessage = "";
+
 	async function updateOrder() {
 		try {
 			loading = true;
@@ -46,23 +27,8 @@
 			const update = {
 				updated_at: new Date().toISOString(),
 				date: date ? new Date(date).toISOString() : null,
-				customer_first_name,
-				customer_last_name,
-				customer_street,
-				customer_street_number,
-				customer_city,
-				customer_zip_code,
-				customer_telephone,
-				customer_email,
 				state: selectedOrderState,
 				pay_state: isPaid,
-				delivery_first_name,
-				delivery_last_name,
-				delivery_street_number,
-				delivery_street,
-				delivery_telephone,
-				delivery_zip_code,
-				delivery_city,
 				currency: selectedCurrency,
 				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
@@ -73,9 +39,7 @@
 				.from("orders")
 				.update(update)
 				.eq("id", orderId)
-				.select(
-					"*"
-				);
+				.select("*");
 
 			if (error) {
 				console.error("Error saving:", error);
@@ -117,30 +81,6 @@
 	}
 
 	let isValidDate: boolean = true;
-	let isEditingDate = false;
-
-	function handleDateInput(event) {
-		const enteredDate = event.target.value;
-		const isValid = validateDate(enteredDate);
-
-		if (isValid) {
-			date = formatDateForSupabase(enteredDate);
-			isValidDate = true;
-		} else {
-			isValidDate = false;
-		}
-		isEditingDate = true;
-	}
-
-	function validateDate(inputDate: string): boolean {
-		const datePattern = /^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/;
-		return datePattern.test(inputDate);
-	}
-
-	function formatDateForSupabase(inputDate: string): string {
-		const [day, month, year] = inputDate.split("-");
-		return `${year}-${month}-${day}`;
-	}
 
 	function formatSupabaseDate(inputDate: string) {
 		if (!inputDate) return "";
@@ -197,269 +137,17 @@
 				<h2 class="text-2xl font-bold mb-6">Objednávka</h2>
 
 				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-
-					<!--Základní údaje-->
-					<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-						<div
-							class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
-							<input type="checkbox" checked="checked" />
-							<div class="collapse-title text-xl font-medium">
-								Základní údaje
-							</div>
-							<div class="collapse-content">
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Číslo</span>
-									</label>
-									<input
-										type="text"
-										placeholder=""
-										readonly
-										class="input input-bordered w-full"
-										bind:value={order_number} />
-								</div>
-
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Datum</span>
-									</label>
-									<input
-										type="text"
-										placeholder="DD-MM-YYYY"
-										autocomplete="off"
-										class="input input-bordered w-full"
-										class:input-error={!isValidDate}
-										bind:value={formattedDate}
-										on:input={handleDateInput} />
-								</div>
-
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Stav</span>
-									</label>
-									<select
-										class="select select-bordered w-full"
-										bind:value={selectedOrderState}>
-										{#each orderStateOptions as state}
-											<option value={state}>
-												{state}
-											</option>
-										{/each}
-									</select>
-								</div>
-								<div class="collapse">
-									<input type="checkbox" />
-									<div class="collapse-title text-lg font-medium">
-										Platební údaje
-									</div>
-									<div class="collapse-content">
-										<div class="form-control w-full mb-2">
-											<label class="label">
-												<span class="label-text">Způsob platby</span>
-											</label>
-											<select
-												class="select select-bordered w-full"
-												bind:value={selectedPaymentMethod}>
-												{#each paymentMethodOptions as method}
-													<option value={method}>
-														{method}
-													</option>
-												{/each}
-											</select>
-										</div>
-
-										<div class="form-control w-full mb-2">
-											<label class="label">
-												<span class="label-text">Měna</span>
-											</label>
-											<select
-												class="select select-bordered w-full"
-												bind:value={selectedCurrency}>
-												{#each currencyOptions as currency}
-													<option value={currency}>
-														{currency}
-													</option>
-												{/each}
-											</select>
-										</div>
-
-										<div class="form-control w-full mb-2">
-											<label class="label">
-												<span class="label-text">Doprava</span>
-											</label>
-											<select
-												class="select select-bordered w-full"
-												bind:value={selectedShippingMethod}>
-												{#each shippingMethodOptions as method}
-													<option value={method}>
-														{method}
-													</option>
-												{/each}
-											</select>
-										</div>
-
-										<div class="form-control w-full mb-2">
-											<label class="label">
-												<span class="label-text">Stav platby</span>
-											</label>
-											<select
-												class="select select-bordered w-full"
-												bind:value={isPaid}>
-												<option value={false}>Neuhrazena</option>
-												<option value={true}>Uhrazena</option>
-											</select>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!--Fakturační-->
-					<div in:fly={{ x: -50, duration: 500, delay: 600 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
-							<input type="checkbox" checked="checked" />
-							<div class="collapse-title text-xl font-medium">
-								Fakturační údaje
-							</div>
-							<div class="collapse-content">
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">E-mail</span>
-									</label>
-									<input
-										type="text"
-										placeholder="E-mail"
-										class="input input-bordered w-full"
-										bind:value={customer_email} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Jméno</span>
-									</label>
-									<input
-										type="text"
-										placeholder="Jméno"
-										class="input input-bordered w-full"
-										bind:value={customer_first_name} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<label class="label">
-										<span class="label-text">Příjmení</span>
-									</label>
-									<input
-										type="text"
-										placeholder="Příjmení"
-										class="input input-bordered w-full"
-										bind:value={customer_last_name} />
-								</div>
-								<div class="collapse">
-									<input type="checkbox" />
-									<div class="collapse-title text-lg font-medium">
-										Další fakturační údaje
-									</div>
-									<div class="collapse-content">
-										<div class="form-control w-full mb-2">
-											<input
-												type="text"
-												placeholder="Ulice"
-												class="input input-bordered w-full"
-												bind:value={customer_street} />
-										</div>
-										<div class="form-control w-full mb-2">
-											<input
-												type="text"
-												placeholder="Číslo"
-												class="input input-bordered w-full"
-												bind:value={customer_street_number} />
-										</div>
-										<div class="form-control w-full mb-2">
-											<input
-												type="text"
-												placeholder="Město"
-												class="input input-bordered w-full"
-												bind:value={customer_city} />
-										</div>
-										<div class="form-control w-full mb-2">
-											<input
-												type="text"
-												placeholder="PSČ"
-												class="input input-bordered w-full"
-												bind:value={customer_zip_code} />
-										</div>
-										<div class="form-control w-full mb-2">
-											<input
-												type="text"
-												placeholder="Telefon"
-												class="input input-bordered w-full"
-												bind:value={customer_telephone} />
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!--Dodací adresa-->
-					<div in:fly={{ x: 50, duration: 500, delay: 800 }}>
-						<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
-							<input type="checkbox" />
-							<div class="collapse-title text-xl font-medium">
-								Dodací údaje
-							</div>
-							<div class="collapse-content">
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Jméno"
-										class="input input-bordered w-full"
-										bind:value={delivery_first_name} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Příjmení"
-										class="input input-bordered w-full"
-										bind:value={delivery_last_name} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Ulice"
-										class="input input-bordered w-full"
-										bind:value={delivery_street} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Číslo"
-										class="input input-bordered w-full"
-										bind:value={delivery_street_number} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Město"
-										class="input input-bordered w-full"
-										bind:value={delivery_city} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="PSČ"
-										class="input input-bordered w-full"
-										bind:value={delivery_zip_code} />
-								</div>
-								<div class="form-control w-full mb-2">
-									<input
-										type="text"
-										placeholder="Telefon"
-										class="input input-bordered w-full"
-										bind:value={delivery_telephone} />
-								</div>
-							</div>
-						</div>
-					</div>
+					<OrderItemDetail
+						{order}
+						{formattedDate}
+						date={order?.date}
+						isValidDate={isValidDate}
+						{selectedPaymentMethod}
+						{selectedOrderState}
+						{selectedCurrency}
+						{selectedShippingMethod}
+						{isPaid}
+					/>
 				</div>
 
 				<!--Položky:-->
@@ -514,5 +202,6 @@
 				</div>
 
 			</div>
+		</div>
 	</section>
 </div>
