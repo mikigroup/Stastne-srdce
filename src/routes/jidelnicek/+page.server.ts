@@ -16,8 +16,8 @@ interface Menu {
 	notes: string | null;
 	type: string | null;
 	nutri: string | null;
-	alergens: any;
-	variants: MenuVariant[];
+	alergen: string | null;
+	variant: MenuVariant[];
 }
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
@@ -46,7 +46,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
           notes,
           type,
           nutri,
-          alergens,
+          alergen,
           variants:menu_variants(
             id,
             variant_number,

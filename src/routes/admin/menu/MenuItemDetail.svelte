@@ -120,7 +120,7 @@
 				<span class="label-text">Alergeny</span>
 			</label>
 			<TagSelector
-				selectedTags={item.selectedAlergens.split(',')}
+				selectedTags={item.alergens || []}
 				availableTags={commonAlergens}
 				onUpdate={updateAlergens}
 			/>
@@ -131,7 +131,7 @@
 				<span class="label-text">Ingredience</span>
 			</label>
 			<TagSelector
-				selectedTags={item.selectedIngredients.split(',')}
+				selectedTags={item.ingredients || []}
 				availableTags={commonIngredients}
 				onUpdate={updateIngredients}
 			/>
@@ -182,9 +182,9 @@
 									<span class="label-text">Alergeny varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={variant.selectedIngredients.split(',')}
-									availableTags={commonIngredients}
-									onUpdate={(ingredients) => updateVariantIngredients(variantNumber, ingredients)}
+									selectedTags={variant.alergens || []}
+									availableTags={commonAlergens}
+									onUpdate={(alergens) => updateVariantAlergens(variantNumber, alergens)}
 								/>
 							</div>
 							<div class="mt-2 w-full">
@@ -192,9 +192,9 @@
 									<span class="label-text">Ingredience varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={item.selectedIngredients.split(',')}
+									selectedTags={variant.ingredients || []}
 									availableTags={commonIngredients}
-									onUpdate={updateIngredients}
+									onUpdate={(ingredients) => updateVariantIngredients(variantNumber, ingredients)}
 								/>
 							</div>
 						</div>

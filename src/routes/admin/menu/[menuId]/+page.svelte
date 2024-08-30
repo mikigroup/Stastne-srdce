@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
-	import type MenuItem  from "../MenuItemDetail.svelte";
+	import type MenuItem from "../MenuItemDetail.svelte";
 
 	export let data;
 	let { session, supabase, menu, variants } = data;
@@ -10,6 +10,7 @@
 
 	let loading = false;
 	let updateMessage = "";
+	let errorMessage = "";
 
 	let menuItem: MenuItem = {
 		id: menu.id,
@@ -20,56 +21,67 @@
 		notes: menu.notes,
 		type: menu.type,
 		nutri: menu.nutri,
-		variants: variants
+		alergens: menu.alergen?.split(",") || [],
+		ingredients: menu.ingredient?.split(",") || [],
+		variants: Object.entries(variants).reduce((acc, [key, value]) => {
+			acc[key] = {
+				description: value.description,
+				price: value.price,
+				alergens: value.alergen?.split(",") || [],
+				ingredients: value.ingredient?.split(",") || []
+			};
+			return acc;
+		}, {})
 	};
+
+	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
+	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
 
 	async function updateMenu() {
 		try {
 			loading = true;
+			errorMessage = "";
+			updateMessage = "";
 
 			const update = {
 				updated_at: new Date().toISOString(),
 				...menuItem,
+				alergen: menuItem.alergens.join(","),
+				ingredient: menuItem.ingredients.join(","),
 				variants: undefined // Remove variants from the main menu update
 			};
 
-			console.log("Menu update data:", update);
-			console.log("Menu ID:", menuItem.id);
-
-			const { data: updatedMenu, error: menuError } = await supabase
+			const { error: menuError } = await supabase
 				.from("menus")
 				.update(update)
-				.eq("id", menuItem.id)
-				.single();
+				.eq("id", menuItem.id);
 
 			if (menuError) {
-				console.error("Error updating menu:", menuError);
 				throw menuError;
 			}
 
-			const updatedVariants = Object.entries(menuItem.variants).map(([variantNumber, description]) => ({
+			const updatedVariants = Object.entries(menuItem.variants).map(([variantNumber, variant]) => ({
 				menu_id: menuItem.id,
 				variant_number: parseInt(variantNumber),
-				description,
+				description: variant.description,
+				price: variant.price,
+				alergen: variant.alergens.join(","),
+				ingredient: variant.ingredients.join(",")
 			}));
 
-			const { data: updatedVariantsData, error: updateVariantsError } = await supabase
+			const { error: updateVariantsError } = await supabase
 				.from("menu_variants")
-				.upsert(updatedVariants)
+				.upsert(updatedVariants, { onConflict: "variant_number" })
 				.eq("menu_id", menuItem.id);
 
 			if (updateVariantsError) {
-				console.error("Chyba při úpravě variant menu:", updateVariantsError);
 				throw updateVariantsError;
 			}
 
-			console.log("Menu upraveno!");
 			updateMessage = "Menu upraveno!";
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Error updating menu:", error);
-				alert(error.message);
-			}
+			console.error("Error updating menu:", error);
+			errorMessage = "Chyba při úpravě menu";
 		} finally {
 			loading = false;
 		}
@@ -93,13 +105,10 @@
 
 			if (menuError) throw menuError;
 
-			console.log("Menu a varianty úspěšně smazány!");
 			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Chyba při mazání menu:", error);
-				alert(error.message);
-			}
+			console.error("Error deleting menu:", error);
+			errorMessage = "Chyba při mazání menu";
 		} finally {
 			loading = false;
 		}
@@ -114,45 +123,44 @@
 	}
 </script>
 
-<div
-	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg"
-	in:fly={{ y: 50, duration: 500 }}>
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
-			<div class="alert alert-success shadow-lg" transition:fade>
-				<div>
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-					<span>{updateMessage}</span>
-				</div>
+			<div transition:fade class="bg-green-200 text-green-800 rounded p-2">
+				<span>{updateMessage}</span>
+			</div>
+		{/if}
+		{#if errorMessage}
+			<div transition:fade class="bg-red-200 text-red-800 rounded p-2">
+				<span>{errorMessage}</span>
 			</div>
 		{/if}
 		<div class="flex flex-col gap-2 md:flex-row">
 			<button
-				value={loading ? "Nahrává se..." : "Upravit"}
 				disabled={loading}
-				type="submit"
 				on:click={updateMenu}
 				class="btn btn-outline">
-				Upravit
+				{loading ? 'Ukládá se...' : 'Uložit změny'}
 			</button>
 			<button
 				class="btn btn-outline btn-error"
-				value={loading ? "Maže se..." : "Smazat"}
 				disabled={loading}
-				type="submit"
 				on:click={deleteMenu}>
-				Smazat
+				{loading ? 'Maže se...' : 'Smazat menu'}
 			</button>
 		</div>
 	</div>
 	<div class="divider"></div>
 
-	<div class="bg-base-100">
-		<div class="py-6 px-4">
-			<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
-
-			<MenuItemDetail item={menuItem} onUpdate={handleMenuItemUpdate} />
-		</div>
+	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
+		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
+		<MenuItemDetail
+			item={menuItem}
+			onUpdate={handleMenuItemUpdate}
+			{commonAlergens}
+			{commonIngredients}
+		/>
 	</div>
 </div>
+

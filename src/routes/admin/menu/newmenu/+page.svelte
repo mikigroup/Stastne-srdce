@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { replaceState } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 
@@ -16,14 +15,14 @@
 		notes: string;
 		type: string;
 		nutri: string;
-		alergens: string[]; // Změněno z 'alergen' na 'alergens'
-		ingredients: string[]; // Změněno z 'ingredient' na 'ingredients'
+		alergens: string[];
+		ingredients: string[];
 		variants: {
 			[key: string]: {
 				description: string;
 				price: number;
-				alergens: string[]; // Změněno z 'alergen' na 'alergens'
-				ingredients: string[]; // Změněno z 'ingredient' na 'ingredients'
+				alergens: string[];
+				ingredients: string[];
 			}
 		};
 	};
@@ -37,26 +36,20 @@
 		notes: "",
 		type: "",
 		nutri: "",
-		selectedAlergens: "",
-		selectedIngredients: "",
+		alergens: [],
+		ingredients: [],
 		variants: {
-			1: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" },
-			2: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" },
-			3: { description: "", price: 0, selectedAlergens: "", selectedIngredients: "" }
+			1: { description: "", price: 0, alergens: [], ingredients: [] },
+			2: { description: "", price: 0, alergens: [], ingredients: [] },
+			3: { description: "", price: 0, alergens: [], ingredients: [] }
 		}
 	};
-
 
 	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
 	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
 
 	let updateMessage = "";
 	let errorMessage = "";
-
-	// Reaktivní blok pro sledování změn v menuItem
-	$: {
-		console.log("menuItem updated", menuItem);
-	}
 
 	async function checkDateExists(date: string) {
 		const { data, error } = await supabase
@@ -80,61 +73,63 @@
 			updateMessage = "";
 
 			if (!menuItem.date) {
-				throw new Error("Datum je povinné");
+				errorMessage = "Datum je povinné";
+				return;
 			}
 
-			console.log("Creating menu with data:", menuItem);
+			const dateExists = await checkDateExists(menuItem.date);
+			if (dateExists) {
+				errorMessage = "Menu pro toto datum již existuje";
+				return;
+			}
 
 			const menuData = {
-				date: new Date(menuItem.date).toISOString().split('T')[0],
-				soup: menuItem.soup || null,
-				active: menuItem.active || false,
-				notes: menuItem.notes || null,
-				type: menuItem.type || null,
-				nutri: menuItem.nutri || null,
-				alergen: menuItem.selectedAlergens || null,
-				ingredient: menuItem.selectedIngredients || null
+				date: menuItem.date,
+				soup: menuItem.soup,
+				price: menuItem.price,
+				active: menuItem.active,
+				notes: menuItem.notes,
+				type: menuItem.type,
+				nutri: menuItem.nutri,
+				alergen: menuItem.alergens.join(","),
+				ingredient: menuItem.ingredients.join(",")
 			};
 
-			const { data: createdMenu, error } = await supabase
-				.from('menus')
+			const { data: createdMenu, error: menuError } = await supabase
+				.from("menus")
 				.insert([menuData])
 				.select()
 				.single();
 
-			if (error) throw error;
-
-			console.log("Created menu:", createdMenu);
+			if (menuError) throw menuError;
 
 			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
 				if (variant.description) {
 					const variantData = {
 						menu_id: createdMenu.id,
-						variant_number: variantNumber,
+						variant_number: parseInt(variantNumber),
 						description: variant.description,
-						price: variant.price || null,
-						alergen: variant.selectedAlergens || null,
-						ingredient: variant.selectedIngredients || null
+						price: variant.price,
+						alergen: variant.alergens.join(","),
+						ingredient: variant.ingredients.join(",")
 					};
 
 					const { error: variantError } = await supabase
-						.from('menu_variants')
+						.from("menu_variants")
 						.insert([variantData]);
 
 					if (variantError) {
-						console.error(`Error creating variant ${variantNumber}:`, variantError);
+						console.error(`Chyba při vytváření varianty ${variantNumber}:`, variantError);
 					}
 				}
 			}
 
 			updateMessage = "Menu a varianty úspěšně vytvořeny!";
-			await replaceState({}, "/admin/menu");
+			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
-				console.error("Error creating menu:", error);
-				errorMessage = error.message;
-			} else {
-				errorMessage = "Nastala neočekávaná chyba";
+				console.error("Chyba při vytváření menu:", error);
+				errorMessage = "Nastala chyba při vytváření menu";
 			}
 		} finally {
 			loading = false;
@@ -146,8 +141,7 @@
 	}
 
 	function handleMenuItemUpdate(updatedItem: MenuItem) {
-		console.log("Updating menuItem", updatedItem);
-		menuItem = { ...updatedItem };
+		menuItem = updatedItem;
 	}
 </script>
 
@@ -155,39 +149,31 @@
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
-			<div class="p-2 text-green-800 bg-green-200 rounded">
+			<div transition:fade class="bg-green-200 text-green-800 rounded p-2">
 				<span>{updateMessage}</span>
 			</div>
 		{/if}
 		{#if errorMessage}
-			<div class="p-2 text-red-800 bg-red-200 rounded">
+			<div transition:fade class="bg-red-200 text-red-800 rounded p-2">
 				<span>{errorMessage}</span>
 			</div>
 		{/if}
 		<div class="flex gap-2">
-			<button disabled={loading} type="submit" on:click={createMenu} class="btn btn-outline">
-				{loading ? "Nahrává se..." : "Vytvořit"}
+			<button disabled={loading} on:click={createMenu} class="btn btn-outline">
+				{loading ? "Vytváří se..." : "Vytvořit menu"}
 			</button>
 		</div>
 	</div>
+
 	<div class="divider"></div>
-	<div class="bg-base-100">
-		<div class="p-10 colorMenuBg rounded-xl">
-			<h1 class="text-3xl mb-6 colorMenuBg underline">Menu</h1>
-			{#key menuItem.date}
-				<MenuItemDetail
-					item={menuItem}
-					onUpdate={handleMenuItemUpdate}
-					{commonAlergens}
-					{commonIngredients}
-				/>
-			{/key}
-		</div>
+
+	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
+		<h2 class="text-2xl font-bold mb-6">Nové menu</h2>
+		<MenuItemDetail
+			item={menuItem}
+			onUpdate={handleMenuItemUpdate}
+			{commonAlergens}
+			{commonIngredients}
+		/>
 	</div>
 </div>
-
-<style>
-    .colorMenuBg {
-        background-color: #929da5;
-    }
-</style>
