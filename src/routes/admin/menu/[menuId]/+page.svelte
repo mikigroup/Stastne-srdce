@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
-	import type MenuItem from "../MenuItemDetail.svelte";
+	import type { MenuItem } from "../MenuItemDetail.svelte";
 
 	export let data;
 	let { session, supabase, menu, variants } = data;
@@ -21,14 +21,14 @@
 		notes: menu.notes,
 		type: menu.type,
 		nutri: menu.nutri,
-		alergens: menu.alergen?.split(",") || [],
-		ingredients: menu.ingredient?.split(",") || [],
-		variants: Object.entries(variants).reduce((acc, [key, value]) => {
+		alergen: menu.alergen?.split(",") || [],
+		ingredient: menu.ingredient?.split(",") || [],
+		variants: Object.entries(variants || {}).reduce((acc, [key, value]) => {
 			acc[key] = {
-				description: value.description,
-				price: value.price,
-				alergens: value.alergen?.split(",") || [],
-				ingredients: value.ingredient?.split(",") || []
+				description: value.description || '',
+				price: value.price || 0,
+				alergen: value.alergen?.split(",") || [],
+				ingredient: value.ingredient?.split(",") || []
 			};
 			return acc;
 		}, {})
@@ -43,39 +43,72 @@
 			errorMessage = "";
 			updateMessage = "";
 
-			const update = {
+			// Aktualizace hlavního menu
+			const menuUpdate = {
 				updated_at: new Date().toISOString(),
-				...menuItem,
-				alergen: menuItem.alergens.join(","),
-				ingredient: menuItem.ingredients.join(","),
-				variants: undefined // Remove variants from the main menu update
+				date: menuItem.date,
+				soup: menuItem.soup,
+				price: menuItem.price,
+				active: menuItem.active,
+				notes: menuItem.notes,
+				type: menuItem.type,
+				nutri: menuItem.nutri,
+				alergen: menuItem.alergen.join(","),
+				ingredient: menuItem.ingredient.join(",")
 			};
 
 			const { error: menuError } = await supabase
 				.from("menus")
-				.update(update)
+				.update(menuUpdate)
 				.eq("id", menuItem.id);
 
-			if (menuError) {
-				throw menuError;
+			if (menuError) throw menuError;
+
+			// Aktualizace variant
+			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
+				if (variant.description || variant.price || variant.alergen.length || variant.ingredient.length) {
+					const variantData = {
+						menu_id: menuItem.id,
+						variant_number: variantNumber,
+						description: variant.description,
+						price: variant.price,
+						alergen: variant.alergen.join(','),
+						ingredient: variant.ingredient.join(',')
+					};
+
+					const { error: upsertError } = await supabase
+						.from('menu_variants')
+						.upsert(variantData, {
+							onConflict: 'menu_id,variant_number'
+						});
+
+					if (upsertError) throw upsertError;
+				}
 			}
 
-			const updatedVariants = Object.entries(menuItem.variants).map(([variantNumber, variant]) => ({
-				menu_id: menuItem.id,
-				variant_number: parseInt(variantNumber),
-				description: variant.description,
-				price: variant.price,
-				alergen: variant.alergens.join(","),
-				ingredient: variant.ingredients.join(",")
-			}));
-
-			const { error: updateVariantsError } = await supabase
+			// Odstranění nepoužívaných variant
+			const { data: existingVariants, error: fetchError } = await supabase
 				.from("menu_variants")
-				.upsert(updatedVariants, { onConflict: "variant_number" })
+				.select("id, variant_number")
 				.eq("menu_id", menuItem.id);
 
-			if (updateVariantsError) {
-				throw updateVariantsError;
+			if (fetchError) throw fetchError;
+
+			const variantsToDelete = existingVariants.filter(
+				v => !menuItem.variants[v.variant_number] ||
+					(!menuItem.variants[v.variant_number].description &&
+						!menuItem.variants[v.variant_number].price &&
+						!menuItem.variants[v.variant_number].alergen.length &&
+						!menuItem.variants[v.variant_number].ingredient.length)
+			);
+
+			if (variantsToDelete.length > 0) {
+				const { error: deleteError } = await supabase
+					.from("menu_variants")
+					.delete()
+					.in("id", variantsToDelete.map(v => v.id));
+
+				if (deleteError) throw deleteError;
 			}
 
 			updateMessage = "Menu upraveno!";
@@ -163,4 +196,3 @@
 		/>
 	</div>
 </div>
-

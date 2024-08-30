@@ -6,7 +6,6 @@ export const load: PageServerLoad = async ({
 	params
 }) => {
 	const id = params.menuId;
-
 	try {
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
@@ -35,17 +34,20 @@ export const load: PageServerLoad = async ({
 				id: variant.id,
 				description: variant.description,
 				price: variant.price,
-				alergen: variant.alergen,
-				ingredient: variant.ingredient
+				alergen: variant.alergen ? variant.alergen.split(",") : [],
+				ingredient: variant.ingredient ? variant.ingredient.split(",") : []
 			};
 			return map;
 		}, {});
 
-		if (!menu) {
-			throw error(404, "Menu not found");
-		}
-
-		return { menu, variants: variantsMap };
+		return {
+			menu: {
+				...menu,
+				alergen: menu.alergen ? menu.alergen.split(",") : [],
+				ingredient: menu.ingredient ? menu.ingredient.split(",") : [],
+				variants: variantsMap
+			}
+		};
 	} catch (err) {
 		if (err instanceof Error) {
 			console.error("Unexpected error:", err);

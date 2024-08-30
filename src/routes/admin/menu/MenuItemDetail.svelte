@@ -2,6 +2,7 @@
 	import TagSelector from './TagSelector.svelte';
 
 	export interface MenuItem {
+		id: string;
 		date: string;
 		soup: string;
 		price: number;
@@ -9,15 +10,15 @@
 		notes: string;
 		type: string;
 		nutri: string;
-		alergens: string[];
-		ingredients: string[];
+		alergen: string[];
+		ingredient: string[];
 		variants: {
 			[key: string]: {
 				description: string;
 				price: number;
-				alergens: string[];
-				ingredients: string[];
-			};
+				alergen: string[];
+				ingredient: string[];
+			} | undefined;
 		};
 	}
 
@@ -56,22 +57,40 @@
 	}
 
 	function updateAlergens(alergens: string[]) {
-		item.alergens = alergens;
+		item.alergen = alergens;
 		updateItem();
 	}
 
 	function updateIngredients(ingredients: string[]) {
-		item.ingredients = ingredients;
+		item.ingredient = ingredients;
 		updateItem();
 	}
 
 	function updateVariantAlergens(variantNumber: string, alergens: string[]) {
-		item.variants[variantNumber].alergens = alergens;
+		if (!item.variants[variantNumber]) {
+			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+		}
+		item.variants[variantNumber]!.alergen = alergens;
 		updateItem();
 	}
 
 	function updateVariantIngredients(variantNumber: string, ingredients: string[]) {
-		item.variants[variantNumber].ingredients = ingredients;
+		if (!item.variants[variantNumber]) {
+			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+		}
+		item.variants[variantNumber]!.ingredient = ingredients;
+		updateItem();
+	}
+
+	function getVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string]) {
+		return item.variants[variantNumber] ? item.variants[variantNumber][property] : '';
+	}
+
+	function setVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string], value: any) {
+		if (!item.variants[variantNumber]) {
+			item.variants[variantNumber] = { description: '', price: 0, alergen: [], ingredient: [] };
+		}
+		item.variants[variantNumber][property] = value;
 		updateItem();
 	}
 </script>
@@ -120,7 +139,7 @@
 				<span class="label-text">Alergeny</span>
 			</label>
 			<TagSelector
-				selectedTags={item.alergens || []}
+				selectedTags={item.alergen}
 				availableTags={commonAlergens}
 				onUpdate={updateAlergens}
 			/>
@@ -131,7 +150,7 @@
 				<span class="label-text">Ingredience</span>
 			</label>
 			<TagSelector
-				selectedTags={item.ingredients || []}
+				selectedTags={item.ingredient}
 				availableTags={commonIngredients}
 				onUpdate={updateIngredients}
 			/>
@@ -157,14 +176,15 @@
 				<span class="label-text">Hlavní chod</span>
 			</label>
 			<div class="grid grid-rows-3 gap-2">
-				{#each Object.entries(item.variants) as [variantNumber, variant]}
+				{#each ['1', '2', '3'] as variantNumber}
 					<div class="variant-container mb-10 border rounded-xl">
-						<textarea
-							class="textarea textarea-bordered w-full"
-							placeholder={`Menu ${variantNumber}`}
-							rows="4"
-							bind:value={variant.description}
-							on:input={updateItem}></textarea>
+                <textarea
+									class="textarea textarea-bordered w-full"
+									placeholder={`Menu ${variantNumber}`}
+									rows="4"
+									bind:value={item.variants[variantNumber].description}
+									on:input={(e) => setVariantProperty(variantNumber, 'description', e.target.value)}
+								></textarea>
 						<div class="mt-2">
 							<label class="label">
 								<span class="label-text">Cena varianty</span>
@@ -172,8 +192,9 @@
 							<input
 								type="number"
 								class="input input-bordered w-full"
-								bind:value={variant.price}
-								on:input={updateItem} />
+								bind:value={item.variants[variantNumber].price}
+								on:input={(e) => setVariantProperty(variantNumber, 'price', parseFloat(e.target.value))}
+							/>
 						</div>
 
 						<div class="flex-row flex">
@@ -182,7 +203,7 @@
 									<span class="label-text">Alergeny varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={variant.alergens || []}
+									selectedTags={item.variants[variantNumber]?.alergen || []}
 									availableTags={commonAlergens}
 									onUpdate={(alergens) => updateVariantAlergens(variantNumber, alergens)}
 								/>
@@ -192,7 +213,7 @@
 									<span class="label-text">Ingredience varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={variant.ingredients || []}
+									selectedTags={item.variants[variantNumber]?.ingredient || []}
 									availableTags={commonIngredients}
 									onUpdate={(ingredients) => updateVariantIngredients(variantNumber, ingredients)}
 								/>
@@ -239,8 +260,9 @@
 			on:input={updateItem} />
 	</div>
 </div>
+
 <style>
-.menuWrap span {
-	font-size: 1.1em;
-}
+    .menuWrap span {
+        font-size: 1.1em;
+    }
 </style>
