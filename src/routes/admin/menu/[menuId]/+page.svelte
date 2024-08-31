@@ -2,105 +2,95 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
-	import type MenuItem from "../MenuItemDetail.svelte";
+	import type { PageData } from "./$types";
+	import type { Menu } from "$lib/types/menu";
+	import type { Database } from "$lib/database.types";
 
-	export let data;
-	let { session, supabase, menu, variants } = data;
-	$: ({ session, supabase, menu, variants } = data);
+	export let data: PageData;
+
+	let { supabase } = data;
+	$: ({ menu, allAllergens, allIngredients } = data);
 
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";
+	let editedMenu: Menu;
 
-	let menuItem: MenuItem = {
-		id: menu.id,
-		date: menu.date,
-		soup: menu.soup,
-		price: menu.price,
-		active: menu.active,
-		notes: menu.notes,
-		type: menu.type,
-		nutri: menu.nutri,
-		variants: Object.entries(variants || {}).reduce((acc, [key, value]) => {
-			acc[key] = {
-				description: value.description || '',
-				price: value.price || 0
-			};
-			return acc;
-		}, {})
-	};
+	function handleChange(event: CustomEvent<Menu>) {
+		editedMenu = event.detail;
+		console.log("Aktualizované menu:", editedMenu);
+	}
+
 
 	async function updateMenu() {
+		if (!editedMenu) return;
+
 		try {
 			loading = true;
 			errorMessage = "";
 			updateMessage = "";
 
+			console.log("Začátek aktualizace menu:", editedMenu);
+
 			// Aktualizace hlavního menu
-			const menuUpdate = {
-				updated_at: new Date().toISOString(),
-				date: menuItem.date,
-				soup: menuItem.soup,
-				price: menuItem.price,
-				active: menuItem.active,
-				notes: menuItem.notes,
-				type: menuItem.type,
-				nutri: menuItem.nutri
-			};
-
-			const { error: menuError } = await supabase
+			const { data: updatedMenuData, error: menuError } = await supabase
 				.from("menus")
-				.update(menuUpdate)
-				.eq("id", menuItem.id);
+				.update({
+					date: editedMenu.date,
+					soup: editedMenu.soup,
+					active: editedMenu.active,
+					notes: editedMenu.notes,
+					type: editedMenu.type,
+					nutri: editedMenu.nutri
+				})
+				.eq("id", editedMenu.id)
+				.select();
 
-			if (menuError) throw menuError;
+			if (menuError) {
+				throw menuError;
+			}
 
 			// Aktualizace variant
-			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
-				if (variant.description || variant.price) {
-					const variantData = {
-						menu_id: menuItem.id,
-						variant_number: variantNumber,
+			for (const variant of editedMenu.variants) {
+				const { error: variantError } = await supabase
+					.from('menu_variants')
+					.upsert({
+						menu_id: editedMenu.id,
+						id: variant.id,
+						variant_number: variant.variant_number,
 						description: variant.description,
 						price: variant.price
-					};
+					}, {
+						onConflict: 'id'
+					});
 
-					const { error: upsertError } = await supabase
-						.from('menu_variants')
-						.upsert(variantData, {
-							onConflict: 'menu_id,variant_number'
-						});
-
-					if (upsertError) throw upsertError;
+				if (variantError) {
+					throw variantError;
 				}
 			}
 
-			// Odstranění nepoužívaných variant
-			const { data: existingVariants, error: fetchError } = await supabase
-				.from("menu_variants")
-				.select("id, variant_number")
-				.eq("menu_id", menuItem.id);
+			// Aktualizace alergenů menu
+			await supabase.from('menu_allergens').delete().eq('menu_id', editedMenu.id);
+			for (const allergen of editedMenu.allergens) {
+				await supabase.from('menu_allergens').insert({
+					menu_id: editedMenu.id,
+					allergen_id: allergen.id
+				});
+			}
 
-			if (fetchError) throw fetchError;
-
-			const variantsToDelete = existingVariants.filter(
-				v => !menuItem.variants[v.variant_number] ||
-					(!menuItem.variants[v.variant_number].description &&
-						!menuItem.variants[v.variant_number].price)
-			);
-
-			if (variantsToDelete.length > 0) {
-				const { error: deleteError } = await supabase
-					.from("menu_variants")
-					.delete()
-					.in("id", variantsToDelete.map(v => v.id));
-
-				if (deleteError) throw deleteError;
+			// Aktualizace ingrediencí menu
+			await supabase.from('menu_ingredients').delete().eq('menu_id', editedMenu.id);
+			for (const ingredient of editedMenu.ingredients) {
+				await supabase.from('menu_ingredients').insert({
+					menu_id: editedMenu.id,
+					ingredient_id: ingredient.id
+				});
 			}
 
 			updateMessage = "Menu upraveno!";
+			menu = editedMenu; // Aktualizujte lokální menu po úspěšném uložení
 		} catch (error) {
-			console.error("Error updating menu:", error);
+			console.error("Chyba při aktualizaci menu:", error);
 			errorMessage = "Chyba při úpravě menu";
 		} finally {
 			loading = false;
@@ -114,14 +104,14 @@
 			const { error: variantError } = await supabase
 				.from("menu_variants")
 				.delete()
-				.eq("menu_id", menuItem.id);
+				.eq("menu_id", menu.id);
 
 			if (variantError) throw variantError;
 
 			const { error: menuError } = await supabase
 				.from("menus")
 				.delete()
-				.eq("id", menuItem.id);
+				.eq("id", menu.id);
 
 			if (menuError) throw menuError;
 
@@ -136,10 +126,6 @@
 
 	async function back() {
 		await goto("/admin/menu");
-	}
-
-	function handleMenuItemUpdate(updatedItem: MenuItem) {
-		menuItem = updatedItem;
 	}
 </script>
 
@@ -159,7 +145,7 @@
 		<div class="flex flex-col gap-2 md:flex-row">
 			<button
 				disabled={loading}
-				on:click={updateMenu}
+				on:click={() => updateMenu(menu)}
 				class="btn btn-outline">
 				{loading ? 'Ukládá se...' : 'Uložit změny'}
 			</button>
@@ -176,10 +162,17 @@
 	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
 		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 		<MenuItemDetail
-			item={menuItem}
-			onUpdate={handleMenuItemUpdate}
-			allergenNames={data.allergenNames}
-			ingredientNames={data.ingredientNames}
+			{menu}
+			{allAllergens}
+			{allIngredients}
+			on:change={handleChange}
 		/>
 	</div>
+	<p>Aktuální polévka: {menu.soup}</p>
 </div>
+
+<style>
+    .colorMenuBg {
+        background-color: #929da5;
+    }
+</style>

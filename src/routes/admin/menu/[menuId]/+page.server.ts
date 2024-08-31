@@ -1,87 +1,100 @@
-import { redirect, error } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import type { Database } from "$lib/database.types";
+
+type Menu = Database["public"]["Tables"]["menus"]["Row"] & {
+	variants: Database["public"]["Tables"]["menu_variants"]["Row"][];
+};
 
 export const load: PageServerLoad = async ({
-	locals: { supabase },
-	params
+	params,
+	locals: { supabase }
 }) => {
-	const id = params.menuId;
+	const { menuId } = params;
 
 	try {
+		// Načtení menu s variantami
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
-			.select("*")
-			.eq("id", id)
+			.select(
+				`
+        *,
+        variants:menu_variants(*)
+      `
+			)
+			.eq("id", menuId)
 			.single();
 
 		if (menuError) {
-			console.error("Error fetching menu:", menuError);
-			throw error(500, "Failed to fetch menu");
+			throw error(404, "Menu not found");
 		}
 
-		const { data: variants, error: variantsError } = await supabase
-			.from("menu_variants")
-			.select("*")
-			.eq("menu_id", id)
-			.order("variant_number", { ascending: true });
-
-		if (variantsError) {
-			console.error("Error fetching menu variants:", variantsError);
-			throw error(500, "Failed to fetch menu variants");
-		}
-
-		const variantsMap = variants.reduce((map, variant) => {
-			map[variant.variant_number] = {
-				id: variant.id,
-				description: variant.description,
-				price: variant.price
-			};
-			return map;
-		}, {});
-
-		// Načtení názvů alergenů
+		// Načtení všech alergenů
 		const { data: allergens, error: allergensError } = await supabase
 			.from("allergens")
-			.select("id, name");
+			.select("*");
 
 		if (allergensError) {
 			console.error("Error fetching allergens:", allergensError);
-			throw error(500, "Failed to fetch allergens");
+			throw error(500, "Failed to load allergens");
 		}
 
-		const allergenNames = allergens.reduce((map, allergen) => {
-			map[allergen.id] = allergen.name;
-			return map;
-		}, {});
-
-		// Načtení názvů ingrediencí
+		// Načtení všech ingrediencí
 		const { data: ingredients, error: ingredientsError } = await supabase
 			.from("ingredients")
-			.select("id, name");
+			.select("*");
 
 		if (ingredientsError) {
 			console.error("Error fetching ingredients:", ingredientsError);
-			throw error(500, "Failed to fetch ingredients");
+			throw error(500, "Failed to load ingredients");
 		}
 
-		const ingredientNames = ingredients.reduce((map, ingredient) => {
-			map[ingredient.id] = ingredient.name;
-			return map;
-		}, {});
+		// Načtení alergenů pro menu
+		const { data: menuAllergens, error: menuAllergensError } = await supabase
+			.from("menu_allergens")
+			.select("allergen_id")
+			.eq("menu_id", menuId);
+
+		if (menuAllergensError) {
+			console.error("Error fetching menu allergens:", menuAllergensError);
+			throw error(500, "Failed to load menu allergens");
+		}
+
+		// Načtení ingrediencí pro menu
+		const { data: menuIngredients, error: menuIngredientsError } =
+			await supabase
+				.from("menu_ingredients")
+				.select("ingredient_id")
+				.eq("menu_id", menuId);
+
+		if (menuIngredientsError) {
+			console.error("Error fetching menu ingredients:", menuIngredientsError);
+			throw error(500, "Failed to load menu ingredients");
+		}
+
+		// Přidání alergenů a ingrediencí k menu
+		const fullMenu: Menu = {
+			...menu,
+			allergens: menuAllergens.map((ma) =>
+				allergens.find((a) => a.id === ma.allergen_id)
+			),
+			ingredients: menuIngredients.map((mi) =>
+				ingredients.find((i) => i.id === mi.ingredient_id)
+			),
+			variants: menu.variants.map((variant: any) => ({
+				...variant,
+				allergens: [], // Zde byste měli načíst alergeny pro variantu
+				ingredients: [] // Zde byste měli načíst ingredience pro variantu
+			}))
+		};
 
 		return {
-			menu: {
-				...menu,
-				variants: variantsMap
-			},
-			allergenNames,
-			ingredientNames
+			menu: fullMenu,
+			allAllergens: allergens,
+			allIngredients: ingredients
 		};
 	} catch (err) {
-		if (err instanceof Error) {
-			console.error("Unexpected error:", err);
-			throw error(500, "Unexpected error occurred");
-		}
-		throw err;
+		console.error("Unexpected error:", err);
+		throw error(500, "An unexpected error occurred");
 	}
 };

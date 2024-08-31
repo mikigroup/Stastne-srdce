@@ -1,98 +1,35 @@
 <script lang="ts">
 	import TagSelector from './TagSelector.svelte';
+	import type { Menu } from '$lib/types/menu';
+	import type { Database } from '$lib/database.types';
+	import { createEventDispatcher } from 'svelte';
 
-	export interface MenuItem {
-		id: string;
-		date: string;
-		soup: string;
-		price: number;
-		active: boolean;
-		notes: string;
-		type: string;
-		nutri: string;
-		alergens: number[];
-		ingredients: number[];
-		variants: {
-			[key: string]: {
-				id: string;
-				description: string;
-				price: number;
-				alergens: number[];
-				ingredients: number[];
-			} | undefined;
-		};
+	export let menu: Menu;
+	export let allAllergens: Database['public']['Tables']['allergens']['Row'][];
+	export let allIngredients: Database['public']['Tables']['ingredients']['Row'][];
+
+	const dispatch = createEventDispatcher<{save: Menu}>();
+
+	let editedMenu: Menu = JSON.parse(JSON.stringify(menu));
+
+	function handleChange() {
+		dispatch('change', editedMenu);
 	}
 
-	export let item: MenuItem;
-	export let onUpdate: (updatedItem: MenuItem) => void;
-	export let commonAlergens: string[] = [
-		"lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"
-	];
-	export let commonIngredients: string[] = [
-		"maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"
-	];
-
-	let formattedDate = "";
-	let isValidDate = true;
-
-	$: {
-		if (item.date) {
-			formattedDate = formatSupabaseDate(item.date);
-		}
+	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
+		editedMenu.allergens = allergens;
 	}
 
-	function handleDateInput(event) {
-		const enteredDate = event.target.value;
-		item.date = enteredDate;
-		isValidDate = true;
-		onUpdate(item);
+	function updateIngredients(ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
+		editedMenu.ingredients = ingredients;
 	}
 
-	function formatSupabaseDate(inputDate: string) {
-		if (!inputDate) return "";
-		return inputDate.split("T")[0];
+	function updateVariantAllergens(variantIndex: number, allergens: Database['public']['Tables']['allergens']['Row'][]) {
+		editedMenu.variants[variantIndex].allergens = allergens;
 	}
 
-	function updateItem() {
-		onUpdate(item);
-	}
-
-	function updateAlergens(alergens: number[]) {
-		item.alergens = alergens;
-		updateItem();
-	}
-
-	function updateIngredients(ingredients: number[]) {
-		item.ingredients = ingredients;
-		updateItem();
-	}
-
-	function updateVariantAlergens(variantNumber: string, alergens: number[]) {
-		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
-		}
-		item.variants[variantNumber]!.alergens = alergens;
-		updateItem();
-	}
-
-	function updateVariantIngredients(variantNumber: string, ingredients: number[]) {
-		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
-		}
-		item.variants[variantNumber]!.ingredients = ingredients;
-		updateItem();
-	}
-
-	function getVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string]) {
-		return item.variants[variantNumber] ? item.variants[variantNumber][property] : undefined;
-	}
-
-	function setVariantProperty(variantNumber: string, property: keyof MenuItem['variants'][string], value: any) {
-		if (!item.variants[variantNumber]) {
-			item.variants[variantNumber] = { id: '', description: '', price: 0, alergens: [], ingredients: [] };
-		}
-		item.variants[variantNumber][property] = value;
-		updateItem();
+	function updateVariantIngredients(variantIndex: number, ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
+		editedMenu.variants[variantIndex].ingredients = ingredients;
 	}
 </script>
 
@@ -105,21 +42,13 @@
 			<input
 				type="date"
 				class="input input-bordered w-full"
-				bind:value={item.date}
-				on:input={handleDateInput} />
+				bind:value={editedMenu.date} on:change={handleChange}
+			/>
 		</div>
 
-		<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Cena</span>
-			</label>
-			<input
-				type="number"
-				placeholder=""
-				autocomplete="off"
-				class="input input-bordered w-full"
-				bind:value={item.price}
-				on:input={updateItem} />
+		<div>
+			<label for="soup">Polévka:</label>
+			<input id="soup" type="text" bind:value={editedMenu.soup} on:change={handleChange} />
 		</div>
 
 		<div class="form-control w-full mb-2">
@@ -128,8 +57,8 @@
 			</label>
 			<select
 				class="select select-bordered w-full"
-				bind:value={item.active}
-				on:change={updateItem}>
+				bind:value={editedMenu.active} on:change={handleChange}
+			>
 				<option value={false}>NE</option>
 				<option value={true}>Ano</option>
 			</select>
@@ -140,9 +69,9 @@
 				<span class="label-text">Alergeny</span>
 			</label>
 			<TagSelector
-				selectedTags={item.alergen}
-				availableTags={commonAlergens}
-				onUpdate={updateAlergens}
+				selectedTags={editedMenu.allergens}
+				availableTags={allAllergens}
+				onUpdate={updateAllergens} on:change={handleChange}
 			/>
 		</div>
 
@@ -151,9 +80,9 @@
 				<span class="label-text">Ingredience</span>
 			</label>
 			<TagSelector
-				selectedTags={item.ingredient}
-				availableTags={commonIngredients}
-				onUpdate={updateIngredients}
+				selectedTags={editedMenu.ingredients}
+				availableTags={allIngredients}
+				onUpdate={updateIngredients} on:change={handleChange}
 			/>
 		</div>
 	</div>
@@ -165,11 +94,9 @@
 			</label>
 			<input
 				type="text"
-				placeholder=""
-				autocomplete="off"
 				class="input input-bordered w-full"
-				bind:value={item.soup}
-				on:input={updateItem} />
+				bind:value={editedMenu.soup} on:change={handleChange}
+			/>
 		</div>
 
 		<div class="form-control w-full mb-2 border rounded-xl p-5 mt-5">
@@ -177,15 +104,14 @@
 				<span class="label-text">Hlavní chod</span>
 			</label>
 			<div class="grid grid-rows-3 gap-2">
-				{#each ['1', '2', '3'] as variantNumber}
+				{#each editedMenu.variants as variant, index}
 					<div class="variant-container mb-10 border rounded-xl">
-      <textarea
-				class="textarea textarea-bordered w-full"
-				placeholder={`Menu ${variantNumber}`}
-				rows="4"
-				value={getVariantProperty(variantNumber, 'description') || ''}
-				on:input={(e) => setVariantProperty(variantNumber, 'description', e.target.value)}
-			></textarea>
+                        <textarea
+													class="textarea textarea-bordered w-full"
+													placeholder={`Menu ${index + 1}`}
+													rows="4"
+													bind:value={variant.description}
+												></textarea>
 						<div class="mt-2">
 							<label class="label">
 								<span class="label-text">Cena varianty</span>
@@ -193,8 +119,7 @@
 							<input
 								type="number"
 								class="input input-bordered w-full"
-								value={getVariantProperty(variantNumber, 'price') || 0}
-								on:input={(e) => setVariantProperty(variantNumber, 'price', parseFloat(e.target.value))}
+								bind:value={variant.price}
 							/>
 						</div>
 
@@ -204,9 +129,9 @@
 									<span class="label-text">Alergeny varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={getVariantProperty(variantNumber, 'alergens') || []}
-									availableTags={commonAlergens}
-									onUpdate={(alergens) => updateVariantAlergens(variantNumber, alergens)}
+									selectedTags={variant.allergens}
+									availableTags={allAllergens}
+									onUpdate={(allergens) => updateVariantAllergens(index, allergens)}
 								/>
 							</div>
 							<div class="mt-2 w-full">
@@ -214,9 +139,9 @@
 									<span class="label-text">Ingredience varianty</span>
 								</label>
 								<TagSelector
-									selectedTags={getVariantProperty(variantNumber, 'ingredients') || []}
-									availableTags={commonIngredients}
-									onUpdate={(ingredients) => updateVariantIngredients(variantNumber, ingredients)}
+									selectedTags={variant.ingredients}
+									availableTags={allIngredients}
+									onUpdate={(ingredients) => updateVariantIngredients(index, ingredients)}
 								/>
 							</div>
 						</div>
@@ -232,8 +157,8 @@
 		</label>
 		<textarea
 			class="textarea textarea-bordered"
-			bind:value={item.notes}
-			on:input={updateItem}></textarea>
+			bind:value={editedMenu.notes}
+		></textarea>
 	</div>
 </div>
 
@@ -245,8 +170,8 @@
 		<input
 			type="text"
 			class="input input-bordered w-full"
-			bind:value={item.nutri}
-			on:input={updateItem} />
+			bind:value={editedMenu.nutri}
+		/>
 	</div>
 	<div class="form-control w-full mb-2">
 		<label class="label">
@@ -254,13 +179,13 @@
 		</label>
 		<input
 			type="text"
-			placeholder=""
-			autocomplete="off"
 			class="input input-bordered w-full"
-			bind:value={item.type}
-			on:input={updateItem} />
+			bind:value={editedMenu.type}
+		/>
 	</div>
 </div>
+
+<button class="btn btn-primary mt-4" on:click={handleSave}>Uložit změny</button>
 
 <style>
     .menuWrap span {
