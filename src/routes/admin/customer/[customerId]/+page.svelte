@@ -23,7 +23,6 @@
 	let company: string = customers?.company ?? "";
 	let website: string = customers?.website ?? "";
 	let username: string = customers?.username ?? "";
-	let user_role: string = customers?.user_role ?? "";
 	let customerId: string = customers?.id;
 
 	let updateMessage = "";
@@ -44,7 +43,6 @@
 				company,
 				website,
 				username,
-				user_role
 			};
 
 			console.log("Zákazník se ukládá s těmito daty:", update);

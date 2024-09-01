@@ -8,12 +8,14 @@
 	export let allAllergens: Database['public']['Tables']['allergens']['Row'][];
 	export let allIngredients: Database['public']['Tables']['ingredients']['Row'][];
 
-	const dispatch = createEventDispatcher<{save: Menu}>();
 
-	let editedMenu: Menu = JSON.parse(JSON.stringify(menu));
 
-	function handleChange() {
+	/*function handleChange() {
 		dispatch('change', editedMenu);
+	}*/
+
+/*	function handleSave() {
+		dispatch('save', editedMenu);
 	}
 
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
@@ -30,7 +32,7 @@
 
 	function updateVariantIngredients(variantIndex: number, ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
 		editedMenu.variants[variantIndex].ingredients = ingredients;
-	}
+	}*/
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 menuWrap mt-10">
@@ -42,13 +44,8 @@
 			<input
 				type="date"
 				class="input input-bordered w-full"
-				bind:value={editedMenu.date} on:change={handleChange}
-			/>
-		</div>
 
-		<div>
-			<label for="soup">Polévka:</label>
-			<input id="soup" type="text" bind:value={editedMenu.soup} on:change={handleChange} />
+			/>
 		</div>
 
 		<div class="form-control w-full mb-2">
@@ -57,7 +54,7 @@
 			</label>
 			<select
 				class="select select-bordered w-full"
-				bind:value={editedMenu.active} on:change={handleChange}
+
 			>
 				<option value={false}>NE</option>
 				<option value={true}>Ano</option>
@@ -69,9 +66,8 @@
 				<span class="label-text">Alergeny</span>
 			</label>
 			<TagSelector
-				selectedTags={editedMenu.allergens}
-				availableTags={allAllergens}
-				onUpdate={updateAllergens} on:change={handleChange}
+
+
 			/>
 		</div>
 
@@ -80,9 +76,7 @@
 				<span class="label-text">Ingredience</span>
 			</label>
 			<TagSelector
-				selectedTags={editedMenu.ingredients}
-				availableTags={allIngredients}
-				onUpdate={updateIngredients} on:change={handleChange}
+
 			/>
 		</div>
 	</div>
@@ -95,7 +89,7 @@
 			<input
 				type="text"
 				class="input input-bordered w-full"
-				bind:value={editedMenu.soup} on:change={handleChange}
+				bind:value={menu.soup}
 			/>
 		</div>
 
@@ -104,7 +98,7 @@
 				<span class="label-text">Hlavní chod</span>
 			</label>
 			<div class="grid grid-rows-3 gap-2">
-				{#each editedMenu.variants as variant, index}
+				{#each menu.variants as variant, index}
 					<div class="variant-container mb-10 border rounded-xl">
                         <textarea
 													class="textarea textarea-bordered w-full"
@@ -131,7 +125,7 @@
 								<TagSelector
 									selectedTags={variant.allergens}
 									availableTags={allAllergens}
-									onUpdate={(allergens) => updateVariantAllergens(index, allergens)}
+
 								/>
 							</div>
 							<div class="mt-2 w-full">
@@ -141,7 +135,7 @@
 								<TagSelector
 									selectedTags={variant.ingredients}
 									availableTags={allIngredients}
-									onUpdate={(ingredients) => updateVariantIngredients(index, ingredients)}
+
 								/>
 							</div>
 						</div>
@@ -157,7 +151,7 @@
 		</label>
 		<textarea
 			class="textarea textarea-bordered"
-			bind:value={editedMenu.notes}
+
 		></textarea>
 	</div>
 </div>
@@ -170,7 +164,7 @@
 		<input
 			type="text"
 			class="input input-bordered w-full"
-			bind:value={editedMenu.nutri}
+
 		/>
 	</div>
 	<div class="form-control w-full mb-2">
@@ -180,13 +174,10 @@
 		<input
 			type="text"
 			class="input input-bordered w-full"
-			bind:value={editedMenu.type}
+
 		/>
 	</div>
 </div>
-
-<button class="btn btn-primary mt-4" on:click={handleSave}>Uložit změny</button>
-
 <style>
     .menuWrap span {
         font-size: 1.1em;

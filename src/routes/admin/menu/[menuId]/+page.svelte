@@ -16,13 +16,18 @@
 	let errorMessage = "";
 	let editedMenu: Menu;
 
-	function handleChange(event: CustomEvent<Menu>) {
+	/*function handleChange(event: CustomEvent<Menu>) {
 		editedMenu = event.detail;
 		console.log("Aktualizované menu:", editedMenu);
+	}*/
+
+	function handleSave(event: CustomEvent<Menu>) {
+		editedMenu = event.detail;
+		updateMenu();
 	}
 
-
 	async function updateMenu() {
+		console.log("updateMenu called", editedMenu);
 		if (!editedMenu) return;
 
 		try {
@@ -46,11 +51,14 @@
 				.eq("id", editedMenu.id)
 				.select();
 
+			console.log("Hlavní menu aktualizováno:", updatedMenuData);
+
 			if (menuError) {
 				throw menuError;
 			}
 
-			// Aktualizace variant
+			console.log("Aktualizace variant");
+// Aktualizace variant
 			for (const variant of editedMenu.variants) {
 				const { error: variantError } = await supabase
 					.from('menu_variants')
@@ -88,6 +96,7 @@
 			}
 
 			updateMessage = "Menu upraveno!";
+			console.log("Menu upraveno!");
 			menu = editedMenu; // Aktualizujte lokální menu po úspěšném uložení
 		} catch (error) {
 			console.error("Chyba při aktualizaci menu:", error);
@@ -145,7 +154,7 @@
 		<div class="flex flex-col gap-2 md:flex-row">
 			<button
 				disabled={loading}
-				on:click={() => updateMenu(menu)}
+				on:click={updateMenu}
 				class="btn btn-outline">
 				{loading ? 'Ukládá se...' : 'Uložit změny'}
 			</button>
@@ -162,13 +171,12 @@
 	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
 		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 		<MenuItemDetail
-			{menu}
+			bind:menu={editedMenu}
 			{allAllergens}
 			{allIngredients}
-			on:change={handleChange}
+			on:change={handleSave}
 		/>
 	</div>
-	<p>Aktuální polévka: {menu.soup}</p>
 </div>
 
 <style>

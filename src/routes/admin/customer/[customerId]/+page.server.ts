@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({
       company,
       website,
       username,      
-      id
+      id      
     `
 		)
 		.eq("id", id)
