@@ -12,7 +12,6 @@ export default config;
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { PUBLIC_SENTRY_TOKEN } from "$env/static/private";
 
 export default defineConfig({
 	plugins: [
@@ -20,7 +19,7 @@ export default defineConfig({
 			sourceMapsUploadOptions: {
 				org: "stastnesrdce",
 				project: "javascript-svelte",
-				authToken: PUBLIC_SENTRY_TOKEN
+				authToken: process.env.SENTRY_AUTH_TOKEN
 			}
 		}),
 		sveltekit()

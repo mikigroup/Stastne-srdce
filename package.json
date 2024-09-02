@@ -40,7 +40,7 @@
 		"@sentry/profiling-node": "^8.7.0",
 		"@sentry/sveltekit": "^8.7.0",
 		"@supabase/ssr": "^0.3.0",
-		"@supabase/supabase-js": "^2.45.2",
+		"@supabase/supabase-js": "^2.45.3",
 		"@tanstack/svelte-table": "^8.19.3",
 		"@types/node": "^20.12.7",
 		"animate.css": "^4.1.1",

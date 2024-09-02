@@ -2,6 +2,8 @@ import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
+import { PRIVATE_seznam_key, PRIVATE_ServiceKey } from "$env/static/private";
+import { dev } from "$app/environment";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -9,13 +11,13 @@ const transporter = nodemailer.createTransport({
 	secure: true,
 	auth: {
 		user: "info@stastnesrdce.cz",
-		pass: "#QFUtwxDsQW5LEDT"
+		pass: PRIVATE_seznam_key
 	}
 });
 
 const supabaseAdmin = createClient(
 	"https://orgshebezwfizhmlmeum.supabase.co",
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY1ODYwMzM2MywiZXhwIjoxOTc0MTc5MzYzfQ.EyvC4bM8tO3JtdTBm5AEYXdOQQxn7v6_uKkqxu9xoDk"
+	PRIVATE_ServiceKey
 );
 
 async function sendCustomEmail(to: string, subject: string, body: string) {
@@ -39,6 +41,9 @@ export const actions: Actions = {
 	resetRequest: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
 		const email = formData.get("email") as string;
+		const redirectTo = dev
+			? "http://localhost:5173"
+			: "https://stastnesrdce.cz";
 
 		const { data: customer, error: customerError } = await supabase
 			.from("customers")
@@ -71,7 +76,7 @@ export const actions: Actions = {
           heslo by mělo mít alespoň 8 znaků, použijte kombinaci malých a velkých písmen, číslic a symbolů,
           nepoužívejte snadno odhadnutelná hesla jako "12345678" nebo "heslo".</p>
           </br>
-          <p><a href="{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
+          <p><a href="{{ .RedirectTo }}/auth/callback?token={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
           </br>
           <p>Pokud máte jakékoliv dotazy nebo potřebujete další pomoc, neváhejte se na nás obrátit.</p>
           </br>
@@ -109,7 +114,7 @@ export const actions: Actions = {
             heslo by mělo mít alespoň 8 znaků, použijte kombinaci malých a velkých písmen, číslic a symbolů,
             nepoužívejte snadno odhadnutelná hesla jako "12345678" nebo "heslo".</p>
             </br>
-            <p><a href="{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
+            <p><a href="{{ .RedirectTo }}/auth/callback?token={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
             </br>
             <p>Pokud máte jakékoliv dotazy nebo potřebujete další pomoc, neváhejte se na nás obrátit.</p>
             </br>
@@ -133,7 +138,7 @@ export const actions: Actions = {
 			type: "recovery",
 			email: email,
 			options: {
-				redirectTo: emailOptions.redirectTo
+				redirectTo: `${redirectTo}/auth/callback`
 			}
 		});
 
@@ -149,7 +154,7 @@ export const actions: Actions = {
 
 		const resetLink = data.properties.action_link;
 		const emailBody = emailOptions.emailBody.replace(
-			"{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery",
+			"{{ .RedirectTo }}/auth/callback?token={{ .TokenHash }}&type=recovery",
 			resetLink
 		);
 
