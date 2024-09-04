@@ -7,7 +7,6 @@ export const actions: Actions = {
 		const email = formData.get("email") as string;
 		const password = formData.get("password") as string;
 		const repassword = formData.get("repassword") as string;
-		const userRole = formData.get("user_role") as string;
 
 		if (password !== repassword) {
 			return fail(400, {
@@ -19,7 +18,7 @@ export const actions: Actions = {
 				password,
 				options: {
 					data: {
-						user_type: "customer"
+						user_role: "customer"
 					}
 				}
 			});
@@ -34,7 +33,7 @@ export const actions: Actions = {
 				console.log("Registrovaný uživatel:", user);
 				console.log(
 					"Registrovaný uživatel role:",
-					user?.user_metadata?.user_type
+					user?.user_metadata?.user_role
 				);
 
 				if (!user) {

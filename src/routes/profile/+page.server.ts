@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({
 	}
 
 	const { data: profile, error: profileError } = await supabase
-		.from("customers")
+		.from("profiles")
 		.select("*")
 		.eq("id", session.user.id)
 		.single();
@@ -99,7 +99,7 @@ export const actions: Actions = {
       username
     });
  */
-		const { error } = await supabase.from("customers").upsert({
+		const { error } = await supabase.from("profiles").upsert({
 			id: session?.user.id,
 			first_name,
 			last_name,
@@ -110,8 +110,7 @@ export const actions: Actions = {
 			ico,
 			dic,
 			company,
-			username,
-			updated_at: new Date()
+			username
 		});
 
 		if (error) {

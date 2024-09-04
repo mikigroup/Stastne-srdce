@@ -53,14 +53,10 @@
 		currentWeekMenus = weeks[weekIndex] || [];
 	}
 
-
-/*
-	function skocNaPrvek() {
-		let skocPrvek = document.getElementById("cilovyPrvek");
-		skocPrvek?.scrollIntoView({ behavior: "smooth" });
+	function skocNaPrvek(event:any) {
+		event.preventDefault();
+		document.getElementById("scrollDiv")?.scrollIntoView({ behavior: "smooth" });
 	}
-*/
-
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -247,7 +243,7 @@
 				</div>
 			</div>
 			<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
-					<a class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900" href="#scrollDiv">Skoč nahoru</a>
+					<a class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-800 rounded-lg shadow-md btn hover:bg-green-900" href="#scrollDiv" on:click={skocNaPrvek}>Skoč nahoru</a>
 			</div>
 			{#if totalPieces > 0 && $page.data.session}
 				<div class="flex text-md justify-center">
@@ -263,7 +259,7 @@
 </main>
 
 <style>
-    main {
+/*    . {
         scroll-behavior: smooth;
-    }
+    }*/
 </style>

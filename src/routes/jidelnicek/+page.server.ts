@@ -5,19 +5,18 @@ interface MenuVariant {
 	id: string;
 	variant_number: string;
 	description: string;
+	price: number | null;
 }
 
 interface Menu {
 	id: string;
-	date: string;
-	soup: string;
-	price: number;
-	active: boolean;
+	date: string | null;
+	soup: string | null;
+	active: boolean | null;
 	notes: string | null;
 	type: string | null;
 	nutri: string | null;
-	alergen: string | null;
-	variant: MenuVariant[];
+	variants: MenuVariant[];
 }
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
@@ -39,21 +38,20 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.from("menus")
 			.select(
 				`
-          id,
-          date,
-          soup,          
-          active,
-          notes,
-          type,
-          nutri,
-          alergen,
-          variants:menu_variants(
-            id,
-            variant_number,
-            description,
-            price
-          )
-        `
+    id,
+    date,
+    soup,
+    active,
+    notes,
+    type,
+    nutri,
+    variants:menu_variants(
+      id,
+      variant_number,
+      description,
+      price
+    )
+  `
 			)
 			.eq("active", true)
 			.gte("date", startDate.toISOString())
