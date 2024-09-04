@@ -18,6 +18,12 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 				{
 					global: {
 						fetch
+					},
+					cookies: {
+						get(key) {
+							const cookie = parse(document.cookie);
+							return cookie[key];
+						}
 					}
 				}
 			)
@@ -29,18 +35,13 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 						fetch
 					},
 					cookies: {
-						getAll() {
-							return data.cookies;
+						get() {
+							return JSON.stringify(data.session);
 						}
 					}
 				}
 			);
 
-	/**
-	 * It's fine to use `getSession` here, because on the client, `getSession` is
-	 * safe, and on the server, it reads `session` from the `LayoutData`, which
-	 * safely checked the session using `safeGetSession`.
-	 */
 	const {
 		data: { session }
 	} = await supabase.auth.getSession();

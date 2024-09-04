@@ -19,17 +19,17 @@ export const load = (async ({ url, locals: { safeGetSession } }) => {
 
 import type { LayoutServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
+import type { Actions } from "./$types";
 
-export const load: LayoutServerLoad = async ({
-	url,
-	locals: { user, session },
-	cookies
-}) => {
+export const load = (async ({ url, locals: { safeGetSession } }) => {
+	const { session, user } = await safeGetSession();
+
 	if (!user && url.pathname === "/kosik") {
 		throw redirect(302, "/");
 	}
+
 	return {
 		session,
-		cookies: cookies.getAll()
+		user
 	};
-};
+}) satisfies LayoutServerLoad;
