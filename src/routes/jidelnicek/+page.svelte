@@ -1,13 +1,13 @@
 <script>
-	import CartItemsStore from '../Stores/stores';
-	import client from '../../lib/sanityClient';
-	import { page } from '$app/stores';
+	import CartItemsStore from "../Stores/stores";
+	import client from "../../lib/sanityClient";
+	import { page } from "$app/stores";
 
-	let selectedTab = '';
+	let selectedTab = "";
 
 	const selectTab = (tabName) => {
 		selectedTab = tabName;
-	}
+	};
 
 	const currentDate = new Date();
 	const dateRanges = [
@@ -22,23 +22,23 @@
 		startDate.setDate(startDate.getDate() + start);
 
 		const endDate = new Date();
-		endDate.setDate(endDate.getDate() + end)
+		endDate.setDate(endDate.getDate() + end);
 
 		return { startDate, endDate };
 	});
 	function skocNaPrvek() {
-				let skocPrvek = document.getElementById('cilovyPrvek');
-				skocPrvek.scrollIntoView({ behavior: 'smooth' });
-			};
+		let skocPrvek = document.getElementById("cilovyPrvek");
+		skocPrvek.scrollIntoView({ behavior: "smooth" });
+	}
 
 	const loadZalozka = (index) => {
 		loadmenu(dates[index].startDate, dates[index].endDate).then((response) => {
 			data.menus = response;
 			skocNaPrvek();
-		})
+		});
 
 		selectedTab = `${index + 1}. týden`;
-	}
+	};
 
 	let lastRenderedDate = null;
 	export let data;
@@ -46,14 +46,14 @@
 	export async function loadmenu(from, to) {
 		return client.fetch(
 			`*[_type == "menu" && releaseDate > "${from.toISOString()}" && releaseDate < "${to.toISOString()}"] | order(releaseDate) { _id, title, _createdAt, _type, description, content, price, releaseDate, quantity }`
-		)
-	};
+		);
+	}
 
 	function addToCart(menu) {
 		CartItemsStore.update((currentCartItems) => {
 			const updatedCartItemIndex = currentCartItems.findIndex(
 				(cartItem) => cartItem._id === menu._id
-			)
+			);
 			if (updatedCartItemIndex === -1) {
 				return [
 					...currentCartItems,
@@ -61,12 +61,12 @@
 						...menu,
 						quantity: 1
 					}
-				]
+				];
 			} else {
-				currentCartItems[updatedCartItemIndex].quantity += 1
-				return currentCartItems
+				currentCartItems[updatedCartItemIndex].quantity += 1;
+				return currentCartItems;
 			}
-		})
+		});
 	}
 	/* let search = '';
 	$: searchMenu = menus.filter((menu) => {
@@ -75,7 +75,7 @@
 
 	$: totalPieces =
 		$CartItemsStore.length &&
-		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0)
+		$CartItemsStore.reduce((sum, cartItems) => sum + cartItems.quantity, 0);
 </script>
 
 <svelte:head>
@@ -84,37 +84,52 @@
 </svelte:head>
 <main>
 	<section class="">
-		<div class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+		<div
+			class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
 			<h1
-				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand"
-			>
+				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
 			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
 				<p class="mt-3 text-center">
-					<strong>Od 1.9.2024 přistupujeme ke zvýšení ceny obědů na 128,- Kč včetně DPH. Nadále budeme
-						usilovat o co nejlepší kvalitu, chuť obědů a organizaci dovozu obědů k Vám.</strong>
+					<strong
+						>Naši milí strávníci, všechny Vás srdečně zdravíme. Voláte nám ze
+						všech stran, zda jsme v pořádku. „ My jsme ty ohromné přívaly vody
+						ustáli.“ Doufáme, že Vy také. <br> Voda nám zatřásla životem, nastal čas
+						vykročit a pořádně se s překážkami poprat.<br> Od pondělí 23.9. začínáme
+						vařit, máme na dalších 14 dnů naplánovaný povodňový jídelníček s
+						jedním menu (i s variantou bez lepku a bez laktózy). Vzhledem ke
+						ztíženým hygienickým podmínkám, budeme používat jednorázové
+						menuboxy.<br> Většina z Vás měla jídlo předplaceno, jakmile se situace
+						trochu zklidní všem se ozvu a domluvíme se na vrácení peněz.
+						<br>Nesmírně se na Vás všechny těšíme a pevně věříme, že se setkáme.</strong>
+					<!--<strong>Od 1.9.2024 přistupujeme ke zvýšení ceny obědů na 128,- Kč včetně DPH. Nadále budeme
+						usilovat o co nejlepší kvalitu, chuť obědů a organizaci dovozu obědů k Vám.</strong>-->
 					<br />
 					<br />
-					<strong>Děkujeme všem za důvěru a pochopení.</strong>
-						<br />
-						<br />
+					<!--<strong>Děkujeme všem za důvěru a pochopení.</strong>-->
+					<br />
+					<br />
 				</p>
-				<hr class="devider_dashed">
+				<hr class="devider_dashed" />
 				<p class="mt-5 text-center text-lg">
-					<strong>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
-					131-2288130267/0100.</strong> Pokud potřebujete fakturu, dejte vědět.
+					<strong
+						>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
+						131-2288130267/0100.</strong>
+					Pokud potřebujete fakturu, dejte vědět.
 					<br />
 					<br />
 					<strong>Pro nové zájemce o naši stravu.</strong>
 					<br />
-					V případě, že se chcete stát našimi strávníky, prosíme, kontaktujte nás na
-					tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte, pošlete SMS nebo nás
-					kontaktujte na emailu <strong class="underline">stastnesrdcekk@seznam.cz</strong> a my se Vám co nejdříve
-					ozveme. Na každého nového strávníka se těšíme.
+					V případě, že se chcete stát našimi strávníky, prosíme, kontaktujte nás
+					na tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte,
+					pošlete SMS nebo nás kontaktujte na emailu
+					<strong class="underline">stastnesrdcekk@seznam.cz</strong>
+					a my se Vám co nejdříve ozveme. Na každého nového strávníka se těšíme.
 					<br />
 					<br />
-					<strong>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
+					<strong
+						>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
 				</p>
 				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
@@ -164,35 +179,42 @@
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													{#if new Date(menu.releaseDate).toDateString() !== lastRenderedDate}
 														<div
-															class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
-														>
+															class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 															<p
-																class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
-															>
-																{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																	weekday: 'long',
-																	month: 'long',
-																	day: 'numeric'
-																})}
+																class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+																{new Date(menu.releaseDate).toLocaleDateString(
+																	"cs-CZ",
+																	{
+																		weekday: "long",
+																		month: "long",
+																		day: "numeric"
+																	}
+																)}
 															</p>
 														</div>
 													{/if}
-													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+													<div
+														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p
+															class="pb-1 text-xl underline underline-offset-8">
+															{menu.title}
+														</p>
 														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">{menu.description}</p></span
-														>
+															><p class="pt-2 text-lg">
+																{menu.description}
+															</p></span>
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
-														<button class="text-sm" on:click={() => addToCart(menu)}>
+														<button
+															class="text-sm"
+															on:click={() => addToCart(menu)}>
 															<div
-																class="p-3 flex flex-col border rounded-lg shadow-md inline-block
+																class="p-3 flex flex-col border rounded-lg inline-block
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
-																duration-150 ease-in-out"
-															>
+																duration-150 ease-in-out">
 																<div class="flex justify-end">
 																	<p class="text-base">{menu.price} Kč</p>
 																</div>
@@ -209,23 +231,29 @@
 												<!-- // searchMenu -->
 												<div class="p-2 my-3 border rounded-lg bg-stone-100">
 													<div
-														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40"
-													>
+														class="py-1 bg-green-600 border rounded-lg shadow-md sm:py-3 shadow-green-700/40">
 														<p
-															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white"
-														>
-															{new Date(menu.releaseDate).toLocaleDateString('cs-CZ', {
-																weekday: 'long',
-																month: 'long',
-																day: 'numeric'
-															})}
+															class="pl-3 text-xl font-bold tracking-tight text-gray-200 dark:text-white">
+															{new Date(menu.releaseDate).toLocaleDateString(
+																"cs-CZ",
+																{
+																	weekday: "long",
+																	month: "long",
+																	day: "numeric"
+																}
+															)}
 														</p>
 													</div>
-													<div class="p-5 my-3 border rounded-lg shadow-md md:p-8">
-														<p class="pb-1 text-xl underline underline-offset-8">{menu.title}</p>
+													<div
+														class="p-5 my-3 border rounded-lg shadow-md md:p-8">
+														<p
+															class="pb-1 text-xl underline underline-offset-8">
+															{menu.title}
+														</p>
 														<span style="white-space: pre-line"
-															><p class="pt-2 text-lg">{menu.description}</p></span
-														>
+															><p class="pt-2 text-lg">
+																{menu.description}
+															</p></span>
 													</div>
 													<hr class="px-5" />
 													<div class="flex justify-end pt-2 basis-4">
@@ -235,9 +263,10 @@
 																px-6 py-2.5 shadow-md hover:bg-white hover:shadow-xl
 																focus:bg-green-700 focus:shadow-lg focus:outline-none focus:ring-0
 																active:bg-green-800 active:shadow-lg active:text-white transition
-																duration-150 ease-in-out"
-															>
-																<div class="flex justify-end m-3 text-base">Přihlaš se</div>
+																duration-150 ease-in-out">
+																<div class="flex justify-end m-3 text-base">
+																	Přihlaš se
+																</div>
 															</div>
 														</a>
 													</div>
@@ -248,60 +277,60 @@
 										{/if}
 									</div>
 								</div>
-								<div class="grid border-2 rounded-lg justify-items-end btn-group" role="group" />
+								<div
+									class="grid border-2 rounded-lg justify-items-end btn-group"
+									role="group" />
 							</div>
 							<hr />
 						</div>
 					</div>
 					<div>
-						<div class="flex items-center pl-0 mb-4 text-center border-b-0" id="tabs-tab">
+						<div
+							class="flex items-center pl-0 mb-4 text-center border-b-0"
+							id="tabs-tab">
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '1. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "1. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={async () => {
-									loadZalozka(0)
-									skocNaPrvek()
-								}}
-							>
+									loadZalozka(0);
+									skocNaPrvek();
+								}}>
 								1. týden
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '2. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "2. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(1)
-								}}
-							>
+									loadZalozka(1);
+								}}>
 								2. týden
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '3. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "3. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(2)									
-								}}
-							>
+									loadZalozka(2);
+								}}>
 								3. týden
 							</button>
 							<button
 								class={`w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg ${
-									selectedTab === '4. týden'
-										? 'border-green-600'
-										: 'border-transparent hover:border-green-600'
+									selectedTab === "4. týden"
+										? "border-green-600"
+										: "border-transparent hover:border-green-600"
 								}`}
 								on:click={() => {
-									loadZalozka(3)									
-								}}
-							>
+									loadZalozka(3);
+								}}>
 								4. týden
 							</button>
 						</div>
@@ -309,10 +338,9 @@
 						<div class="flex justify-end pt-10 pr-5 text-md active:text-lg">
 							<button
 								on:click={() => {
-									skocNaPrvek()
+									skocNaPrvek();
 								}}
-								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-							>
+								class="px-4 py-2 text-center text-white transition duration-200 ease-in bg-green-600 rounded-lg shadow-md btn btn-success hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2">
 								<p>Skoč nahoru</p>
 							</button>
 						</div>
@@ -342,7 +370,7 @@
 		scroll-behavior: smooth;
 	}
 
-  .devider_dashed {
-      border-top: 2px dashed;
-  }
+	.devider_dashed {
+		border-top: 2px dashed;
+	}
 </style>
