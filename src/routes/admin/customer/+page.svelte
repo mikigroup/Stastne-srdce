@@ -130,17 +130,41 @@
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
 	}
 
+	let isBackToTopVisible = false;
+
+	function scrollToTop() {
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth'
+		});
+	}
+
+	function handleScroll() {
+		isBackToTopVisible = window.pageYOffset > 200;
+	}
+
 	function previousPage() {
 		if (currentPage > 1) {
-			goto(`?page=${currentPage - 1}`);
+			goto(`?page=${currentPage - 1}`).then(() => {
+				scrollToTop();
+			});
 		}
 	}
 
 	function nextPage() {
 		if (currentPage < totalPages) {
-			goto(`?page=${currentPage + 1}`);
+			goto(`?page=${currentPage + 1}`).then(() => {
+				scrollToTop();
+			});
 		}
 	}
+
+	onMount(() => {
+		window.addEventListener('scroll', handleScroll);
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -253,15 +277,25 @@
 			class="join-item btn btn-outline"
 			on:click={previousPage}
 			disabled={currentPage === 1}>
-			Previous page
+			Předchozí stránka
 		</button>
 		<button
 			class="join-item btn btn-outline"
 			on:click={nextPage}
 			disabled={currentPage === totalPages}>
-			Next page
+			Další stránka
 		</button>
 	</div>
+
+	{#if isBackToTopVisible}
+		<button
+			class="fixed bottom-4 left-10 btn btn-circle btn-primary"
+			on:click={scrollToTop}>
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+			</svg>
+		</button>
+	{/if}
 </section>
 
 <style>

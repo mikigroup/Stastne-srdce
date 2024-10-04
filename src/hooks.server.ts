@@ -1,19 +1,8 @@
-import * as Sentry from "@sentry/sveltekit";
 import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
-import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
-
-Sentry.init({
-	dsn: "https://945c529c21324f78bf290bf4f0662070@o4504123775188992.ingest.us.sentry.io/4504124579184640",
-	tracesSampleRate: 1,
-	replaysSessionSampleRate: 0.1,
-	replaysOnErrorSampleRate: 1,
-	ignoreErrors: ["Http404", /^https?:\/\/localhost(:\d+)?\/?/],
-	denyUrls: [/^https?:\/\/localhost(:\d+)?\/?/]
-});
 
 const supabase: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PRIVATE_SBUrl, PRIVATE_SBKey, {
@@ -69,6 +58,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
 			throw redirect(303, "/admin");
 		}
 	}
+
 	// Root section logic
 	else {
 		if (!event.locals.session && event.url.pathname.startsWith("/private")) {
@@ -83,8 +73,4 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(
-	Sentry.sentryHandle(),
-	sequence(supabase, authGuard)
-);
-export const handleError = Sentry.handleErrorWithSentry();
+export const handle: Handle = sequence(supabase, authGuard);
