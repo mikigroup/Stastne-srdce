@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
 	import {
@@ -8,6 +7,9 @@
 		getCoreRowModel
 	} from "@tanstack/svelte-table";
 	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import { BarLoader } from 'svelte-loading-spinners';
+	import { navigating } from '$app/stores'
+	import { fade, fly } from 'svelte/transition';
 
 	export let data;
 
@@ -31,6 +33,8 @@
 		totalItems,
 		itemsOnCurrentPage
 	} = data);
+
+	let loading = false;
 
 	const columnNames = {
 		created_at: "Registrace",
@@ -130,41 +134,42 @@
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
 	}
 
-	let isBackToTopVisible = false;
+	let transitionKey = 0;
 
-	function scrollToTop() {
-		window.scrollTo({
-			top: 0,
-			behavior: 'smooth'
-		});
-	}
-
-	function handleScroll() {
-		isBackToTopVisible = window.pageYOffset > 200;
-	}
-
-	function previousPage() {
-		if (currentPage > 1) {
-			goto(`?page=${currentPage - 1}`).then(() => {
-				scrollToTop();
-			});
+	async function previousPage() {
+		try {
+			loading = true;
+			if (currentPage > 1) {
+				transitionKey++; // Inkrementujeme klíč pro novou animaci
+				await goto(`?page=${currentPage - 1}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání předchozí stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
-	function nextPage() {
-		if (currentPage < totalPages) {
-			goto(`?page=${currentPage + 1}`).then(() => {
-				scrollToTop();
-			});
+	async function nextPage() {
+		try {
+			loading = true;
+			if (currentPage < totalPages) {
+				transitionKey++; // Inkrementujeme klíč pro novou animaci
+				await goto(`?page=${currentPage + 1}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání další stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
-	onMount(() => {
+	/*	onMount(() => {
 		window.addEventListener('scroll', handleScroll);
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
 		};
-	});
+	});*/
 </script>
 
 <svelte:head>
@@ -191,8 +196,7 @@
 	</div>
 </section>
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-
-<section>
+<section id="page-top">
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Sloupce</button>
 		<ul
@@ -214,9 +218,16 @@
 </section>
 
 <section>
+	{#key transitionKey}
+		<div in:fade="{{ duration: 300 }}" out:fade="{{ duration: 300 }}">
 	<div class="flex flex-wrap">
 		<div
 			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+			{#if $navigating || loading}
+				<div transition:fade="{{ duration: 300 }}" class="loading-overlay">
+					<BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+				</div>
+			{/if}
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
 					class="w-full {column === 'email'
@@ -235,6 +246,7 @@
 		{#if filteredCustomers && filteredCustomers.length > 0}
 			{#each $table.getRowModel().rows as row}
 				<div
+					in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
 					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
 					{#each row.getVisibleCells() as cell}
 						<div
@@ -248,6 +260,7 @@
 							{:else}
 								{cell.getValue() ?? ""}
 							{/if}
+						</div>
 						</div>
 					{/each}
 					<div
@@ -265,6 +278,10 @@
 			<p>Žádní zákazníci</p>
 		{/if}
 	</div>
+		</div>
+	{/key}
+
+
 	<div
 		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet zákazníků: {totalItems}</p>
@@ -286,16 +303,6 @@
 			Další stránka
 		</button>
 	</div>
-
-	{#if isBackToTopVisible}
-		<button
-			class="fixed bottom-4 left-10 btn btn-circle btn-primary"
-			on:click={scrollToTop}>
-			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-			</svg>
-		</button>
-	{/if}
 </section>
 
 <style>
