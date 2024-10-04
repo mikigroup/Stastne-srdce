@@ -175,6 +175,7 @@
 <svelte:head>
 	<title>LEO - Zákazníci</title>
 </svelte:head>
+
 <section>
 	<div class="flex">
 		<div class="flex flex-col gap-2 md:flex-row items-center">
@@ -218,72 +219,70 @@
 </section>
 
 <section>
+	<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
+		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+			<div
+				class="w-full {column === 'email'
+					? 'md:w-1/3'
+					: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
+				columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+					? 'border-r-2'
+					: ''}">
+				{columnNames[column]}
+			</div>
+		{/each}
+		<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
+			Editovat
+		</div>
+	</div>
+
 	{#key transitionKey}
 		<div in:fade="{{ duration: 300 }}" out:fade="{{ duration: 300 }}">
-	<div class="flex flex-wrap">
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
 			{#if $navigating || loading}
 				<div transition:fade="{{ duration: 300 }}" class="loading-overlay">
-					<BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+					<BarLoader size="120" color="black" unit="px" duration="1s" />
 				</div>
-			{/if}
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div
-					class="w-full {column === 'email'
-						? 'md:w-1/3'
-						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
-					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-						? 'border-r-2'
-						: ''}">
-					{columnNames[column]}
-				</div>
-			{/each}
-			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
-				Editovat
-			</div>
-		</div>
-		{#if filteredCustomers && filteredCustomers.length > 0}
-			{#each $table.getRowModel().rows as row}
-				<div
-					in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
-					class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
-					{#each row.getVisibleCells() as cell}
+			{:else}
+				{#if filteredCustomers && filteredCustomers.length > 0}
+					{#each $table.getRowModel().rows as row, index}
 						<div
-							class="w-full truncate-cell flex items-center {cell.column.id ===
+							in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
+							class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+							{#each row.getVisibleCells() as cell}
+								<div
+									class="w-full truncate-cell flex items-center {cell.column.id ===
 							'email'
 								? 'md:w-1/3'
 								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
-							title={cell.getValue() ?? ""}>
-							{#if cell.column.id === "created_at"}
-								{formatDateToCzech(cell.getValue())}
-							{:else}
-								{cell.getValue() ?? ""}
-							{/if}
-						</div>
+									title={cell.getValue() ?? ""}>
+									{#if cell.column.id === "created_at"}
+										{formatDateToCzech(cell.getValue())}
+									{:else}
+										{cell.getValue() ?? ""}
+									{/if}
+								</div>
+							{/each}
+							<div
+								class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+								<a
+									href="/admin/customer/{row.original.id}"
+									data-sveltekit-preload-data
+									class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+									Upravit
+								</a>
+							</div>
 						</div>
 					{/each}
-					<div
-						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-						<a
-							href="/admin/customer/{row.original.id}"
-							data-sveltekit-preload-data
-							class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-							Upravit
-						</a>
-					</div>
-				</div>
-			{/each}
-		{:else}
-			<p>Žádní zákazníci</p>
-		{/if}
-	</div>
+				{:else}
+					<p>Žádní zákazníci</p>
+				{/if}
+			{/if}
 		</div>
 	{/key}
+</section>
 
-
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+<section>
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet zákazníků: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
 		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
@@ -304,6 +303,7 @@
 		</button>
 	</div>
 </section>
+
 
 <style>
 	/*    .truncate-cell {
