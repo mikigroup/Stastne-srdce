@@ -21,7 +21,8 @@
 		currentPage,
 		totalPages,
 		totalItems,
-		itemsOnCurrentPage
+		itemsOnCurrentPage,
+		searchQuery
 	} = data;
 	$: ({
 		supabase,
@@ -31,9 +32,11 @@
 		currentPage,
 		totalPages,
 		totalItems,
-		itemsOnCurrentPage
+		itemsOnCurrentPage,
+		searchQuery
 	} = data);
 
+	let searchTimeout: NodeJS.Timeout;
 	let loading = false;
 
 	const columnNames = {
@@ -87,7 +90,7 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	let searchQuery = "";
+	//let searchQuery = "";
 
 	$: filteredCustomers = customers?.filter((customer) =>
 		Object.values(customer).some((value) =>
@@ -170,6 +173,23 @@
 			window.removeEventListener('scroll', handleScroll);
 		};
 	});*/
+
+	function handleSearch() {
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			const url = new URL(window.location.href);
+			url.searchParams.set("search", searchQuery);
+			url.searchParams.set("page", "1");
+			goto(url.toString());
+		}, 300);
+	}
+
+/*	const debouncedSearch = debounce(async (query: string) => {
+		const url = new URL(window.location.href);
+		url.searchParams.set("search", query);
+		url.searchParams.set("page", "1");
+		await goto(url.toString(), { replaceState: true });
+	}, 300);*/
 </script>
 
 <svelte:head>
@@ -186,17 +206,45 @@
 					Vytvořit zákazníka
 				</button>
 			</div>
-			<div>
+			<div class="relative">
 				<input
 					type="text"
 					placeholder="Hledat..."
-					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchQuery} />
+					class="input input-bordered input-md w-full max-w-xs border-black pr-10"
+					bind:value={searchQuery}
+					on:input={handleSearch}
+				/>
 			</div>
+
 		</div>
 	</div>
 </section>
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+
+<section>
+
+
+	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+		<button
+			class="join-item btn btn-outline"
+			on:click={previousPage}
+			disabled={currentPage === 1}>
+			Předchozí stránka
+		</button>
+		<button
+			class="join-item btn btn-outline"
+			on:click={nextPage}
+			disabled={currentPage === totalPages}>
+			Další stránka
+		</button>
+	</div>
+
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet zákazníků: {totalItems}</p>
+		<p>Stránka {currentPage} z {totalPages}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+	</div>
+</section>
 <section id="page-top">
 	<div class="flex justify-end dropdown">
 		<button class="m-1 btn" tabindex="0">Sloupce</button>
@@ -281,28 +329,7 @@
 	{/key}
 </section>
 
-<section>
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet zákazníků: {totalItems}</p>
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
-	</div>
 
-	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
-		<button
-			class="join-item btn btn-outline"
-			on:click={previousPage}
-			disabled={currentPage === 1}>
-			Předchozí stránka
-		</button>
-		<button
-			class="join-item btn btn-outline"
-			on:click={nextPage}
-			disabled={currentPage === totalPages}>
-			Další stránka
-		</button>
-	</div>
-</section>
 
 
 <style>

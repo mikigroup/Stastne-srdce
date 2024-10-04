@@ -8,16 +8,31 @@ export const load: PageServerLoad = async ({
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const itemsPerPage = 20;
 	const start = (page - 1) * itemsPerPage;
+	const searchQuery = url.searchParams.get("search") || "";
+
+	let query = supabase
+		.from("customers")
+		.select("*", { count: "exact" })
+		.order("created_at", { ascending: false });
+
+	if (searchQuery) {
+		const searchConditions = [
+			`first_name.ilike.%${searchQuery}%`,
+			`last_name.ilike.%${searchQuery}%`,
+			`email.ilike.%${searchQuery}%`,
+			`telephone.ilike.%${searchQuery}%`,
+			`street.ilike.%${searchQuery}%`,
+			`city.ilike.%${searchQuery}%`,
+			`zip_code.ilike.%${searchQuery}%`
+		];
+		query = query.or(searchConditions.join(","));
+	}
 
 	const {
 		data: customers,
 		error,
 		count
-	} = await supabase
-		.from("customers")
-		.select("*", { count: "exact" })
-		.order("created_at", { ascending: false })
-		.range(start, start + itemsPerPage - 1);
+	} = await query.range(start, start + itemsPerPage - 1);
 
 	if (error) {
 		console.error("Error fetching customers:", error);
@@ -46,6 +61,7 @@ export const load: PageServerLoad = async ({
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	};
 };
