@@ -1,8 +1,9 @@
 <script>
-	import Editor from "cl-editor/src/Editor.svelte";
+	import Editor from 'cl-editor';
 
 	let html = '';
 	let editor;
+	let colors = ['#000000']
 </script>
 
 <svelte:head>
@@ -12,13 +13,13 @@
 
 <section>
 	<div class="container mx-auto px-4">
-		<h1 class="text-2xl font-bold mb-4">Cl Editor Example</h1>
-
-		<Editor {html} on:change={(evt)=>html = evt.detail}/>
-
-		<div class="mt-4">
+		<h1 class="text-2xl font-bold mb-4">CL Editor</h1>
+	<div class="max-w-md">
+		<Editor {html} {colors} on:change={(evt)=>html = evt.detail}/>
+	</div>
+		<div class="mt-10">
 			<h2 class="text-xl font-bold mb-2">Editor Content:</h2>
-			{@html html}
+			<div class="border-gray-400 border rounded-2xl p-5 max-w-md">{@html html}</div>
 		</div>
 	</div>
 </section>
