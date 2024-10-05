@@ -13,10 +13,10 @@
 	let html = "";
 	let editor;
 	let colors = ["#000000"];
-
 	let loading = false;
-
 	let title: string = "";
+
+	const actions = ['b', 'i', 'ul', 'ol', 'undo', 'redo', 'hr']
 
 	const handleSubmit: SubmitFunction = ({ formData }) => {
 		const submittedTitle = formData.get('title') as string;
@@ -56,11 +56,11 @@
 				/>
 			</div>
 			<div class="max-w-md">
-				<Editor {html} {colors} on:change={(evt)=>html = evt.detail} />
+				<Editor {html} {colors} {actions} on:change={(evt)=>html = evt.detail} />
 			</div>
 			<input type="hidden" name="text" bind:value={html} />
 			<div class="mt-10">
-				<h2 class="text-xl font-bold mb-2">Editor Content:</h2>
+				<h2 class="text-xl font-bold mb-2">Jak to bude vypadat:</h2>
 				<div class="border-gray-400 border rounded-2xl p-5 max-w-md">
 					{@html html}
 				</div>

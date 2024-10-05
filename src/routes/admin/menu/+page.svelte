@@ -218,6 +218,29 @@
 	</div>
 </div>
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+
+<div
+	class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+	<p>Celkový počet meníček: {totalItems}</p>
+	<p>Stránka {currentPage} z {totalPages}</p>
+	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
+</div>
+
+<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+	<button
+		class="join-item btn btn-outline"
+		on:click={previousPage}
+		disabled={currentPage === 1}>
+		Předchozí stránka
+	</button>
+	<button
+		class="join-item btn btn-outline"
+		on:click={nextPage}
+		disabled={currentPage === totalPages}>
+		Další stránka
+	</button>
+</div>
+
 <div class="flex justify-end dropdown">
 	<button class="m-1 btn" tabindex="0">Sloupce</button>
 	<ul
@@ -295,26 +318,5 @@
 		{:else}
 			<p>Žádná menu</p>
 		{/if}
-	</div>
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet meníček: {totalItems}</p>
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
-	</div>
-
-	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
-		<button
-			class="join-item btn btn-outline"
-			on:click={previousPage}
-			disabled={currentPage === 1}>
-			Předchozí stránka
-		</button>
-		<button
-			class="join-item btn btn-outline"
-			on:click={nextPage}
-			disabled={currentPage === totalPages}>
-			Další stránka
-		</button>
 	</div>
 </section>
