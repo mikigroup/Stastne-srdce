@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
-	import OrderItemDetail from "$lib/component/OrderItemDetail.svelte";
+	import OrderItemDetail from "../OrderItemDetail.svelte";
 
 	export let data;
 	let { session, supabase } = data;
