@@ -6,8 +6,8 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	let { session, profiles, rezcalendar } = data;
-	$: ({ session, profiles, rezcalendar } = data);
+	let { session, profiles } = data;
+	$: ({ session, profiles } = data);
 
 	let loading = false;
 
