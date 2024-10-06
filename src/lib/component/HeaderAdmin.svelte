@@ -87,8 +87,8 @@
 	}
 </script>
 
-<nav>
-	<div class="navbar !py-0 bg-blue-100">
+<nav class="m-2">
+	<div class="navbar border-cyan-500 border rounded-2xl !py-0 bg-sky-300">
 		<div class="navbar-start">
 			<div class="dropdown">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle">

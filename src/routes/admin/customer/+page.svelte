@@ -219,11 +219,10 @@
 		</div>
 	</div>
 </section>
+
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
-
-
 	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
 		<button
 			class="join-item btn btn-outline"

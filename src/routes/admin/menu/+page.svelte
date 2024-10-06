@@ -39,7 +39,7 @@
 	}
 
 	function checkVariantsMatch(menu, query) {
-		return menu.variants.some(variant =>
+		return menu.variants.some((variant) =>
 			variant.description.toLowerCase().includes(query.toLowerCase())
 		);
 	}
@@ -126,11 +126,11 @@
 				? menu.active === (filterActive === "true")
 				: searchQuery
 					? Object.values(menu).some((value) =>
-					value
-						?.toString()
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase())
-				) || checkVariantsMatch(menu, searchQuery)
+							value
+								?.toString()
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase())
+						) || checkVariantsMatch(menu, searchQuery)
 					: true
 	);
 
@@ -216,32 +216,34 @@
 		</div>
 	</div>
 </div>
+
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
-<div
-	class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-	<p>Celkový počet meníček: {totalItems}</p>
-	<p>Stránka {currentPage} z {totalPages}</p>
-	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
-</div>
-
-<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
-	<button
-		class="join-item btn btn-outline"
-		on:click={previousPage}
-		disabled={currentPage === 1}>
-		Předchozí stránka
-	</button>
-	<button
-		class="join-item btn btn-outline"
-		on:click={nextPage}
-		disabled={currentPage === totalPages}>
-		Další stránka
-	</button>
-</div>
+<section>
+	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+		<button
+			class="join-item btn btn-outline"
+			on:click={previousPage}
+			disabled={currentPage === 1}>
+			Předchozí stránka
+		</button>
+		<button
+			class="join-item btn btn-outline"
+			on:click={nextPage}
+			disabled={currentPage === totalPages}>
+			Další stránka
+		</button>
+	</div>
+	<div
+		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet meníček: {totalItems}</p>
+		<p>Stránka {currentPage} z {totalPages}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
+	</div>
+</section>
 
 <div class="flex justify-end dropdown">
-	<button class="m-1 btn" tabindex="0">Sloupce</button>
+	<button class="btn btn-outline" tabindex="0">Sloupce</button>
 	<ul
 		tabindex="0"
 		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -261,14 +263,16 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+		<div
+			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
 					class="w-full {column === 'variants' || column === 'soup'
-                ? 'md:w-1/4'
-                : 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-                ? 'border-r-2'
-                : ''}">
+						? 'md:w-1/4'
+						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
+					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+						? 'border-r-2'
+						: ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
@@ -278,12 +282,18 @@
 		</div>
 		{#if filteredMenus && filteredMenus.length > 0}
 			{#each $table.getRowModel().rows as row, index}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-300 row {index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}">
+				<div
+					class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
+						2 ===
+					0
+						? 'bg-gray-100'
+						: 'bg-gray-200'}">
 					{#each row.getVisibleCells() as cell}
 						<div
-							class="w-full truncate-cell flex items-center {cell.column.id === 'variants' || cell.column.id === 'soup'
-      ? 'md:w-1/4'
-      : 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+							class="w-full truncate-cell flex items-center {cell.column.id ===
+								'variants' || cell.column.id === 'soup'
+								? 'md:w-1/4'
+								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
 							title={cell.getValue() ?? ""}>
 							{#if cell.column.id === "variants"}
 								{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
@@ -304,11 +314,12 @@
 							{/if}
 						</div>
 					{/each}
-					<div class="w-full md:w-16 lg:w-16 xl:w-16 flex items-center justify-end">
+					<div
+						class="w-full md:w-16 lg:w-16 xl:w-16 flex items-center justify-end">
 						<a
 							href="/admin/menu/{row.original.id}"
 							data-sveltekit-preload-data
-							class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+							class="font-medium hover:underline">
 							Upravit
 						</a>
 					</div>
