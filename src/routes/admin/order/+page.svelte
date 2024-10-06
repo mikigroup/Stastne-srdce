@@ -81,7 +81,7 @@
 		pay_state: "Stav platby",
 		currency: "Měna",
 		pay_method: "Způsob platby",
-		note: "Poznámka",
+		note: "Poznámka"
 	};
 
 	const columnOrder = Object.keys(columnNames);
@@ -185,8 +185,6 @@
 			goto(`?page=${currentPage + 1}`);
 		}
 	}
-
-
 </script>
 
 <svelte:head>
@@ -219,8 +217,6 @@
 					class="input input-bordered input-md w-full max-w-xs border-black"
 					bind:value={searchQuery} />
 			</div>
-
-
 		</div>
 	</div>
 </section>
@@ -228,8 +224,33 @@
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
+	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+		<button
+			class="join-item btn btn-outline"
+			on:click={previousPage}
+			disabled={currentPage === 1}>
+			Předchozí stránka
+		</button>
+		<button
+			class="join-item btn btn-outline"
+			on:click={nextPage}
+			disabled={currentPage === totalPages}>
+			Další stránka
+		</button>
+	</div>
+
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet objednávek: {totalItems}</p>
+		<p>Stránka {currentPage} z {totalPages}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} objednávek</p>
+	</div>
+</section>
+
+
+
+<section>
 	<div class="flex justify-end dropdown">
-		<button class="m-1 btn" tabindex="0">Sloupce</button>
+		<button class="btn btn-outline" tabindex="0">Sloupce</button>
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -251,7 +272,7 @@
 <section>
 	<div class="flex flex-wrap">
 		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl">
+			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
 					class="w-full {column === 'email'
@@ -269,10 +290,17 @@
 		</div>
 
 		{#if filteredOrders && filteredOrders.length > 0}
-			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+			{#each $table.getRowModel().rows as row, index}
+				<div
+					class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
+						2 ===
+					0
+						? 'bg-gray-100'
+						: 'bg-gray-200'}">
 					{#each row.getVisibleCells() as cell}
-						<div class="w-full lg:w-1/6 xl:w-1/6 truncate-cell" title={cell.getValue() ?? ""}>
+						<div
+							class="w-full lg:w-1/6 xl:w-1/6 truncate-cell"
+							title={cell.getValue() ?? ""}>
 							{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
 								{formatDateToCzech(cell.getValue())}
 							{:else if cell.column.id === "pay_state"}
@@ -286,8 +314,7 @@
 						<a
 							href="/admin/order/{row.original.id}"
 							data-sveltekit-preload-data
-							class="flex justify-end font-medium text-blue-600 dark:text-blue-500 hover:underline"
-						>
+							class="font-medium hover:underline">
 							Upravit
 						</a>
 					</div>
@@ -299,29 +326,10 @@
 	</div>
 </section>
 
-<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-	<p>Celkový počet objednávek: {totalItems}</p>
-	<p>Stránka {currentPage} z {totalPages}</p>
-	<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} objednávek</p>
-</div>
 
-<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
-	<button
-		class="join-item btn btn-outline"
-		on:click={previousPage}
-		disabled={currentPage === 1}>
-		Předchozí stránka
-	</button>
-	<button
-		class="join-item btn btn-outline"
-		on:click={nextPage}
-		disabled={currentPage === totalPages}>
-		Další stránka
-	</button>
-</div>
 
 <style>
-    /*    .truncate-cell {
+	/*    .truncate-cell {
 					max-width: 300px;
 					white-space: nowrap;
 					overflow: hidden;

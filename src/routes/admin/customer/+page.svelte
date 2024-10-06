@@ -246,7 +246,7 @@
 </section>
 <section id="page-top">
 	<div class="flex justify-end dropdown">
-		<button class="m-1 btn" tabindex="0">Sloupce</button>
+		<button class="btn btn-outline" tabindex="0">Sloupce</button>
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
@@ -294,7 +294,11 @@
 					{#each $table.getRowModel().rows as row, index}
 						<div
 							in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
-							class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+							class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
+						2 ===
+					0
+						? 'bg-gray-100'
+						: 'bg-gray-200'}">
 							{#each row.getVisibleCells() as cell}
 								<div
 									class="w-full truncate-cell flex items-center {cell.column.id ===
@@ -314,7 +318,7 @@
 								<a
 									href="/admin/customer/{row.original.id}"
 									data-sveltekit-preload-data
-									class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+									class="font-medium hover:underline">
 									Upravit
 								</a>
 							</div>
