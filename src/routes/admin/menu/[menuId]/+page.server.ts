@@ -13,13 +13,17 @@ export const load: PageServerLoad = async ({
 	const { menuId } = params;
 
 	try {
-		// Načtení menu s variantami
+		// Načtení menu s variantami, alergeny a ingrediencemi
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
 				`
         *,
-        variants:menu_variants(*)
+        variants:menu_variants(
+          *,
+          allergens:variant_allergens(allergen_id(id, name)),
+          ingredients:variant_ingredients(ingredient_id(id, name))
+        )
       `
 			)
 			.eq("id", menuId)
@@ -80,14 +84,9 @@ export const load: PageServerLoad = async ({
 			),
 			ingredients: menuIngredients.map((mi) =>
 				ingredients.find((i) => i.id === mi.ingredient_id)
-			),
-			variants: menu.variants.map((variant: any) => ({
-				...variant,
-				allergens: [], // Zde byste měli načíst alergeny pro variantu
-				ingredients: [] // Zde byste měli načíst ingredience pro variantu
-			}))
+			)
 		};
-
+		//console.log(fullMenu);
 		return {
 			menu: fullMenu,
 			allAllergens: allergens,

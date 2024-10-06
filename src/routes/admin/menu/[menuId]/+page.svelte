@@ -7,63 +7,52 @@
 	import type { Database } from "$lib/database.types";
 
 	export let data: PageData;
+	let { session, supabase, menu, allAllergens, allIngredients } = data;
+	$: ({ session, supabase, menu, allAllergens, allIngredients } = data);
 
-	let { supabase } = data;
-	$: ({ menu, allAllergens, allIngredients } = data);
+	//console.log("Zde je page.svelte:", menu)
 
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";
-	let editedMenu: Menu;
 
 	/*function handleChange(event: CustomEvent<Menu>) {
 		editedMenu = event.detail;
 		console.log("Aktualizované menu:", editedMenu);
 	}*/
 
-	function handleSave(event: CustomEvent<Menu>) {
-		editedMenu = event.detail;
-		updateMenu();
-	}
-
 	async function updateMenu() {
-		console.log("updateMenu called", editedMenu);
-		if (!editedMenu) return;
-
 		try {
 			loading = true;
 			errorMessage = "";
 			updateMessage = "";
 
-			console.log("Začátek aktualizace menu:", editedMenu);
+			console.log("Začátek aktualizace menu:", menu);
 
 			// Aktualizace hlavního menu
 			const { data: updatedMenuData, error: menuError } = await supabase
 				.from("menus")
 				.update({
-					date: editedMenu.date,
-					soup: editedMenu.soup,
-					active: editedMenu.active,
-					notes: editedMenu.notes,
-					type: editedMenu.type,
-					nutri: editedMenu.nutri
+					date: menu.date,
+					soup: menu.soup,
+					active: menu.active,
+					notes: menu.notes,
+					type: menu.type,
+					nutri: menu.nutri
 				})
-				.eq("id", editedMenu.id)
+				.eq("id", menu.id)
 				.select();
+
+			if (menuError) throw menuError;
 
 			console.log("Hlavní menu aktualizováno:", updatedMenuData);
 
-			if (menuError) {
-				throw menuError;
-			}
-
-			console.log("Aktualizace variant");
-// Aktualizace variant
-			for (const variant of editedMenu.variants) {
+			// Aktualizace variant
+			for (const variant of menu.variants) {
 				const { error: variantError } = await supabase
 					.from('menu_variants')
 					.upsert({
-						menu_id: editedMenu.id,
+						menu_id: menu.id,
 						id: variant.id,
 						variant_number: variant.variant_number,
 						description: variant.description,
@@ -72,32 +61,28 @@
 						onConflict: 'id'
 					});
 
-				if (variantError) {
-					throw variantError;
-				}
+				if (variantError) throw variantError;
 			}
 
 			// Aktualizace alergenů menu
-			await supabase.from('menu_allergens').delete().eq('menu_id', editedMenu.id);
-			for (const allergen of editedMenu.allergens) {
+			await supabase.from('menu_allergens').delete().eq('menu_id', menu.id);
+			for (const allergen of menu.allergens) {
 				await supabase.from('menu_allergens').insert({
-					menu_id: editedMenu.id,
+					menu_id: menu.id,
 					allergen_id: allergen.id
 				});
 			}
 
 			// Aktualizace ingrediencí menu
-			await supabase.from('menu_ingredients').delete().eq('menu_id', editedMenu.id);
-			for (const ingredient of editedMenu.ingredients) {
+			await supabase.from('menu_ingredients').delete().eq('menu_id', menu.id);
+			for (const ingredient of menu.ingredients) {
 				await supabase.from('menu_ingredients').insert({
-					menu_id: editedMenu.id,
+					menu_id: menu.id,
 					ingredient_id: ingredient.id
 				});
 			}
 
 			updateMessage = "Menu upraveno!";
-			console.log("Menu upraveno!");
-			menu = editedMenu; // Aktualizujte lokální menu po úspěšném uložení
 		} catch (error) {
 			console.error("Chyba při aktualizaci menu:", error);
 			errorMessage = "Chyba při úpravě menu";
@@ -171,10 +156,9 @@
 	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
 		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 		<MenuItemDetail
-			bind:menu={editedMenu}
+			bind:menu
 			{allAllergens}
 			{allIngredients}
-			on:change={handleSave}
 		/>
 	</div>
 </div>

@@ -2,22 +2,15 @@
 	import TagSelector from './TagSelector.svelte';
 	import type { Menu } from '$lib/types/menu';
 	import type { Database } from '$lib/database.types';
-	import { createEventDispatcher } from 'svelte';
 
 	export let menu: Menu;
 	export let allAllergens: Database['public']['Tables']['allergens']['Row'][];
 	export let allIngredients: Database['public']['Tables']['ingredients']['Row'][];
 
 
+	// console.log("Komponenta:", menu)
 
-	/*function handleChange() {
-		dispatch('change', editedMenu);
-	}*/
-
-/*	function handleSave() {
-		dispatch('save', editedMenu);
-	}
-
+/*
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
 		editedMenu.allergens = allergens;
 	}
@@ -44,7 +37,7 @@
 			<input
 				type="date"
 				class="input input-bordered w-full"
-
+				bind:value={menu.date}
 			/>
 		</div>
 
@@ -54,7 +47,7 @@
 			</label>
 			<select
 				class="select select-bordered w-full"
-
+				bind:value={menu.active}
 			>
 				<option value={false}>NE</option>
 				<option value={true}>Ano</option>
@@ -66,8 +59,9 @@
 				<span class="label-text">Alergeny</span>
 			</label>
 			<TagSelector
-
-
+				selectedTags={menu.allergens}
+				availableTags={allAllergens}
+				onUpdate={(allergens) => menu.allergens = allergens}
 			/>
 		</div>
 
@@ -76,7 +70,9 @@
 				<span class="label-text">Ingredience</span>
 			</label>
 			<TagSelector
-
+				selectedTags={menu.ingredients}
+				availableTags={allIngredients}
+				onUpdate={(ingredients) => menu.ingredients = ingredients}
 			/>
 		</div>
 	</div>
