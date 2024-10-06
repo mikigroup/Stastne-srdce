@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
 	import {
@@ -278,8 +277,8 @@
 			</div>
 		</div>
 		{#if filteredMenus && filteredMenus.length > 0}
-			{#each $table.getRowModel().rows as row}
-				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-100">
+			{#each $table.getRowModel().rows as row, index}
+				<div class="w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl hover:bg-slate-300 row {index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}">
 					{#each row.getVisibleCells() as cell}
 						<div
 							class="w-full truncate-cell flex items-center {cell.column.id === 'variants' || cell.column.id === 'soup'

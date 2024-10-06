@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({
 	}
 
 	const page = parseInt(url.searchParams.get("page") || "1");
-	const itemsPerPage = 20;
+	const itemsPerPage = 10;
 	const start = (page - 1) * itemsPerPage;
 
 	const {
