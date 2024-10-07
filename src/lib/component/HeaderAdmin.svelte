@@ -112,9 +112,9 @@
 
 					<li><a href="/admin">Nástěnka</a></li>
 					<li><a href="/admin/customer">Zákazníci</a></li>
-					<!-- <li><a href="/item">Produkty</a></li> -->
 					<li><a href="/admin/order">Objednávky</a></li>
 					<li><a href="/admin/menu">Menu</a></li>
+					<li><a href="/admin/text">Texty</a></li>
 				</ul>
 			</div>
 			<p class="text-xl">Malý LEO</p>
