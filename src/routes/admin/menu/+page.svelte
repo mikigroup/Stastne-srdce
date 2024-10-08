@@ -181,7 +181,7 @@
 		}
 	}
 
-	console.log(menus);
+	// console.log(menus);
 </script>
 
 <svelte:head>
