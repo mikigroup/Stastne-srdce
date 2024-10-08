@@ -3,15 +3,17 @@ import type { Actions, PageServerLoad } from "./$types";
 
 export type Text = {
 	id: number;
-	title: string;
-	text: string;
-	updated_at: string;
-	user_id: string;
+	created_at: string;
+	updated_at: string | null;
+	text: string | null;
+	title: string | null;
+	page: string | null;
 };
 
 export type LoadData = {
 	session: any;
 	texts: Text[];
+	pages: string[]; // Unikátní stránky
 };
 
 export const load: PageServerLoad = async ({
@@ -21,13 +23,18 @@ export const load: PageServerLoad = async ({
 
 	if (error) {
 		console.error("Chyba při načítání textů:", error);
-		// Zde můžete rozhodnout, jak naložit s chybou. Například:
-		// throw error;
-		// nebo
-		// return { session, texts: [] };
 	}
 
-	return { session, texts: texts || [] };
+	// Získání unikátních stránek z textů
+	const pages = [
+		...new Set(texts?.map((text) => text.page).filter(Boolean) || [])
+	];
+
+	return {
+		session,
+		texts: texts || [],
+		pages
+	};
 };
 
 export const actions: Actions = {
@@ -41,12 +48,17 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const title = formData.get("title") as string;
 		const text = formData.get("text") as string;
+		const page = formData.get("page") as string;
 
-		if (!title || !text) {
+		if (!title || !text || !page) {
 			return fail(400, {
-				message: { success: false, display: "Název a text jsou povinné" },
+				message: {
+					success: false,
+					display: "Název, text a stránka jsou povinné"
+				},
 				title,
-				text
+				text,
+				page
 			});
 		}
 
@@ -54,8 +66,8 @@ export const actions: Actions = {
 			const { error } = await supabase.from("texts").insert({
 				title,
 				text,
+				page,
 				updated_at: new Date().toISOString()
-				// user_id: session.user.id // Přidáno pro identifikaci uživatele
 			});
 
 			if (error) throw error;
@@ -66,7 +78,8 @@ export const actions: Actions = {
 			return fail(500, {
 				message: { success: false, display: "Chyba při přidávání textu" },
 				title,
-				text
+				text,
+				page
 			});
 		}
 	}

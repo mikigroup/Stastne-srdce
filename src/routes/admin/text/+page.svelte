@@ -8,8 +8,8 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	let { session, texts } = data;
-	$: ({ session, texts } = data);
+	let { session, texts, pages } = data;
+	$: ({ session, texts, pages } = data);
 
 	let html = "";
 	let Editor: any;
@@ -18,8 +18,13 @@
 	let title: string = "";
 	let selectedTextId: number | null = null;
 	let existingContent: string = "";
+	let selectedPage: string | null = null;
 
-	const actions = ["b", "i", "ul", "ol", "undo", "redo", "hr"]
+	const actions = ["p", "h1", "h2", "hr", "b", "i", "ul", "ol", "undo", "redo",  ];
+
+	$: filteredTexts = selectedPage
+		? texts.filter(text => text.page === selectedPage)
+		: [];
 
 	onMount(async () => {
 		if (browser) {
@@ -31,9 +36,10 @@
 	function loadText(textId: number) {
 		const text = texts.find((t) => t.id === textId);
 		if (text) {
-			title = text.title;
-			html = text.text;
-			existingContent = text.text;
+			title = text.title || "";
+			html = text.text || "";
+			existingContent = text.text || "";
+			selectedPage = text.page || null;
 		}
 	}
 
@@ -44,12 +50,18 @@
 		selectedTextId = null;
 	}
 
+	function handlePageChange() {
+		selectedTextId = null;
+		newText();
+	}
+
 	const handleSubmit: SubmitFunction = ({ formData }) => {
 		const submittedTitle = formData.get("title") as string;
 		const submittedText = formData.get("text") as string;
+		const submittedPage = formData.get("page") as string;
 
-		if (!submittedTitle || !submittedText) {
-			alert("Název a text jsou povinné");
+		if (!submittedTitle || !submittedText || !submittedPage) {
+			alert("Název, text a stránka jsou povinné");
 			return;
 		}
 
@@ -66,22 +78,40 @@
 	<meta name="description" content="" />
 </svelte:head>
 
-<section class="mx-auto container flex">
-	<form method="POST" action="?/update" use:enhance={handleSubmit}>
-		<div class="container mx-auto px-4">
-			<h1 class="text-2xl mb-4">Editor - Info koutek</h1>
-
+<section class="flex justify-center container">
+	<form method="POST" action="?/update" use:enhance={handleSubmit} class="">
+		<div class="">
+			<h1 class="text-2xl mb-4">Editor textů</h1>
 			<div class="mb-4">
-				<label for="text-select">Vybrat existující text:</label>
-				<select id="text-select" class="border-black rounded-lg border p-2" bind:value={selectedTextId} on:change={() => loadText(selectedTextId)}>
-					<option value={null}>-- Vyberte text --</option>
-					{#each texts as text}
+				<select
+					id="page-select"
+					name="page"
+					class="mr-5 border-black rounded-lg border p-2"
+					bind:value={selectedPage}
+					on:change={handlePageChange}
+					required
+				>
+					<option value="">Vyberte stránku</option>
+					{#each pages as page}
+						<option value={page}>{page}</option>
+					{/each}
+				</select>
+			</div>
+			<div class="mb-4">
+				<select
+					id="text-select"
+					class="mr-5 border-black rounded-lg border p-2"
+					bind:value={selectedTextId}
+					on:change={() => loadText(selectedTextId)}
+					disabled={!selectedPage}
+				>
+					<option value={null}>Vyberte text</option>
+					{#each filteredTexts as text}
 						<option value={text.id}>{text.title}</option>
 					{/each}
 				</select>
 				<button type="button" class="btn btn-outline" on:click={newText}>Nový text</button>
 			</div>
-
 			<div class="py-5">
 				<label for="title">Nadpis</label><br />
 				<input
@@ -94,7 +124,7 @@
 				/>
 			</div>
 
-			<div class="max-w-md">
+			<div class="w-full">
 				{#if browser && Editor}
 					<Editor bind:html={html} {colors} {actions} on:change={(evt) => (html = evt.detail)} />
 				{/if}
@@ -104,19 +134,14 @@
 
 			<div class="mt-10">
 				<h2 class="text-xl font-bold mb-2">Existující obsah:</h2>
-				<div class="border-gray-400 border rounded-2xl p-5 max-w-md">{@html existingContent}</div>
+				<div class="border-gray-400 border rounded-2xl p-5 w-full">{@html existingContent}</div>
 			</div>
-
-			<!--<div class="mt-10">
-				<h2 class="text-xl font-bold mb-2">Jak to bude vypadat:</h2>
-				<div class="border-gray-400 border rounded-2xl p-5 max-w-md">{@html html}</div>
-			</div>-->
 		</div>
 
 		<button
-			disabled={loading || !title || !html}
+			disabled={loading || !title || !html || !selectedPage}
 			type="submit"
-			class="btn btn-outline"
+			class="btn btn-outline mt-4"
 		>
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>

@@ -134,8 +134,8 @@
 					<br />
 					<br />
 				</p>
-				<hr class="devider_dashed">
-				<p class="mt-5 text-center text-lg">
+				<hr class="">
+				<p class="mt-5 text-center">
 					<strong>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
 						131-2288130267/0100.</strong> Pokud potřebujete fakturu, dejte vědět.
 					<br />
