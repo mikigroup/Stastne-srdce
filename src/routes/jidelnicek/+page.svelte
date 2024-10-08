@@ -29,16 +29,18 @@
 		weeks: Menu[][];
 		startDate: string;
 		endDate: string;
+		texts: Text[];
 	};
 
-	let { weeks, startDate } = data;
-	$: ({ weeks, startDate } = data);
+	let { weeks, startDate, texts } = data;
+	$: ({ weeks, startDate, texts } = data);
 
 	let totalPieces: number;
 	$: totalPieces = $totalPiecesStore;
 
 	let selectedTab = "1. týden";
 	let currentWeekMenus: Menu[] = [];
+	let menuText = texts || "";
 
 	let scrollDiv: HTMLElement;
 
@@ -124,8 +126,8 @@
 			<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
-			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
-				<p class="mt-3 text-center">
+			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg mb-3">
+		<!--		<p class=" text-center">
 					<strong>Od 1.9.2024 přistupujeme ke zvýšení ceny obědů na 128,- Kč včetně DPH. Nadále budeme
 						usilovat o co nejlepší kvalitu, chuť obědů a organizaci dovozu obědů k Vám.</strong>
 					<br />
@@ -135,7 +137,8 @@
 					<br />
 				</p>
 				<hr class="">
-				<p class="mt-5 text-center">
+				<br />
+				<p class="text-center">
 					<strong>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
 						131-2288130267/0100.</strong> Pokud potřebujete fakturu, dejte vědět.
 					<br />
@@ -150,7 +153,9 @@
 					<br />
 					<strong>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
 				</p>
-				<br id="cilovyPrvek" />
+				<br id="cilovyPrvek" />-->
+
+				{@html menuText}
 			</div>
 
 			<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">

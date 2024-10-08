@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount } from "svelte";
 	import { enhance } from "$app/forms";
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import type { ActionData, PageData } from "./$types";
-	import { browser } from '$app/environment';
+	import { browser } from "$app/environment";
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -20,7 +20,7 @@
 	let existingContent: string = "";
 	let selectedPage: string | null = null;
 
-	const actions = ["p", "h1", "h2", "hr", "b", "i", "ul", "ol", "undo", "redo",  ];
+	const actions = ["p", "hr", "b", "i", "undo", "redo", "left", "right", "center", "justify",  ];
 
 	$: filteredTexts = selectedPage
 		? texts.filter(text => text.page === selectedPage)
@@ -28,7 +28,7 @@
 
 	onMount(async () => {
 		if (browser) {
-			const module = await import('cl-editor');
+			const module = await import("cl-editor");
 			Editor = module.default;
 		}
 	});

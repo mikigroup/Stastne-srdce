@@ -19,6 +19,13 @@ interface Menu {
 	variants: MenuVariant[];
 }
 
+interface Text {
+	id: number;
+	title: string | null;
+	text: string | null;
+	page: string | null;
+}
+
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
 		const now = new Date();
@@ -34,38 +41,50 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const endDate = new Date(startDate);
 		endDate.setDate(endDate.getDate() + 27); // 4 týdny od startDate (28 dní - 1)
 
-		const { data: menus, error: menusError } = await supabase
-			.from("menus")
-			.select(
-				`
-    id,
-    date,
-    soup,
-    active,
-    notes,
-    type,
-    nutri,
-    variants:menu_variants(
-      id,
-      variant_number,
-      description,
-      price
-    )
-  `
-			)
-			.eq("active", true)
-			.gte("date", startDate.toISOString())
-			.lte("date", endDate.toISOString())
-			.order("date", { ascending: true });
+		const [menusResult, textsResult] = await Promise.all([
+			supabase
+				.from("menus")
+				.select(
+					`
+          id,
+          date,
+          soup,
+          active,
+          notes,
+          type,
+          nutri,
+          variants:menu_variants(
+            id,
+            variant_number,
+            description,
+            price
+          )
+        `
+				)
+				.eq("active", true)
+				.gte("date", startDate.toISOString())
+				.lte("date", endDate.toISOString())
+				.order("date", { ascending: true }),
 
-		if (menusError) {
-			console.error("Error fetching menus:", menusError);
+			supabase.from("texts").select("*").eq("page", "jidelnicek").single()
+		]);
+
+		if (menusResult.error) {
+			console.error("Error fetching menus:", menusResult.error);
 			throw error(500, "Nepodařilo se načíst menu");
 		}
 
+		if (textsResult.error) {
+			console.error("Error fetching texts:", textsResult.error);
+			throw error(500, "Nepodařilo se načíst texty");
+		}
+
+		const menus = menusResult.data as Menu[];
+		const texts = textsResult.data as Text[];
+
 		// Rozdělení menu do týdnů
 		const weeks: Menu[][] = [[], [], [], []];
-		(menus as Menu[]).forEach((menu) => {
+		menus.forEach((menu) => {
 			const menuDate = new Date(menu.date);
 			const weekIndex = Math.floor(
 				(menuDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
@@ -76,10 +95,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		});
 
 		return {
-			menus: menus as Menu[],
+			menus,
 			weeks,
 			startDate: startDate.toISOString(),
-			endDate: endDate.toISOString()
+			endDate: endDate.toISOString(),
+			texts: texts || ""
 		};
 	} catch (err) {
 		console.error("Error in load function:", err);
