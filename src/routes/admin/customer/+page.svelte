@@ -37,10 +37,10 @@
 		searchQuery
 	} = data);
 
-		let loading = false;
+	let loading = false;
 	let searchInput = searchQuery;
 
-	const columnNames = {
+	const columnNames: Record<string, string> = {
 		created_at: "Registrace",
 		first_name: "Jméno",
 		last_name: "Příjmení",
@@ -52,18 +52,18 @@
 		zip_code: "PSČ"
 	};
 
-	const columnOrder = Object.keys(columnNames);
+	const columnOrder: string[] = Object.keys(columnNames);
 
-	let visibleColumns =
+	let visibleColumns: Record<string, boolean> =
 		profileTableSettings?.table_settings_customers ??
-		columnOrder.reduce((obj, column ) => {
+		columnOrder.reduce((obj, column) => {
 			obj[column] = true;
 			return obj;
 		}, {});
 
-	const visibleColumnsStore = writable(visibleColumns);
+	const visibleColumnsStore = writable<Record<string, boolean>>(visibleColumns);
 
-	function toggleColumn(column) {
+	function toggleColumn(column: string) {
 		visibleColumnsStore.update((cols) => {
 			const newCols = { ...cols, [column]: !cols[column] };
 			return columnOrder.reduce((obj, col) => {
@@ -91,8 +91,6 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	//let searchQuery = "";
-
 	$: filteredCustomers = customers?.filter((customer) =>
 		Object.values(customer).some((value) =>
 			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
@@ -106,9 +104,9 @@
 			header: columnNames[key],
 			cell: ({ getValue }) => {
 				if (key === "created_at") {
-					return formatDateToCzech(getValue());
+					return formatDateToCzech(getValue<string>());
 				}
-				return getValue();
+				return getValue<string>();
 			}
 		}));
 
@@ -127,7 +125,7 @@
 
 	$: table = createSvelteTable(options);
 
-	function formatDateToCzech(date) {
+	function formatDateToCzech(date: string) {
 		if (!date) return ""; //
 		const dateObj = new Date(date);
 		const day = dateObj.getDate().toString().padStart(2, "0");
@@ -138,7 +136,7 @@
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
 	}
 
-	let transitionKey = 0;
+	let transitionKey: number = 0;
 
 	async function previousPage() {
 		try {
@@ -168,15 +166,6 @@
 		}
 	}
 
-	/*	onMount(() => {
-		window.addEventListener('scroll', handleScroll);
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-		};
-	});*/
-
-
-
 	async function handleSearch() {
 		loading = true;
 		try {
@@ -187,25 +176,6 @@
 			loading = false;
 		}
 	}
-
-/*
-	function handleSearch() {
-		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(() => {
-			const url = new URL(window.location.href);
-			url.searchParams.set("search", searchQuery);
-			url.searchParams.set("page", "1");
-			goto(url.toString());
-		}, 300);
-	}
-*/
-
-/*	const debouncedSearch = debounce(async (query: string) => {
-		const url = new URL(window.location.href);
-		url.searchParams.set("search", query);
-		url.searchParams.set("page", "1");
-		await goto(url.toString(), { replaceState: true });
-	}, 300);*/
 </script>
 
 <svelte:head>
