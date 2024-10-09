@@ -34,8 +34,14 @@
 	} = data);
 
 	let selectedOrder = null;
+	let loading = false;
+	let filterDate = "";
+	let filterActive = "";
+	let searchQuery = "";
+	let searchInput = searchQuery;
 
-	let sorting: SortingState = [];
+
+	/*let sorting: SortingState = [];
 
 	const setSorting: OnChangeFn<SortingState> = (updater) => {
 		if (updater instanceof Function) {
@@ -55,7 +61,7 @@
 	function editOrder(id) {
 		selectedOrder = id;
 		console.log("Selected Order number:", selectedOrder);
-	}
+	}*/
 
 	function newOrderPage() {
 		goto("/admin/order/neworder");
@@ -130,9 +136,7 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	let filterDate = "";
-	let filterActive = "";
-	let searchQuery = "";
+
 
 	$: filteredOrders = orders?.filter((order) =>
 		Object.values(order).some((value) =>
@@ -185,6 +189,17 @@
 			goto(`?page=${currentPage + 1}`);
 		}
 	}
+
+	async function handleSearch() {
+		loading = true;
+		try {
+			await goto(`?search=${searchInput}&page=1`);
+		} catch (error) {
+			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -210,12 +225,20 @@
 					<option value="false">Neaktivní</option>
 				</select>
 			</div>
-			<div>
+			<div class="flex gap-2">
 				<input
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchQuery} />
+					bind:value={searchInput}
+				/>
+				<button
+					class="btn btn-outline"
+					on:click={handleSearch}
+					disabled={loading}
+				>
+					{loading ? 'Vyhledávám...' : 'Vyhledat'}
+				</button>
 			</div>
 		</div>
 	</div>

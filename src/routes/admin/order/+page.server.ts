@@ -6,18 +6,32 @@ export const load: PageServerLoad = async ({
 	url
 }) => {
 	const page = parseInt(url.searchParams.get("page") || "1");
-	const itemsPerPage = 20; // Můžete upravit podle potřeby
+	const itemsPerPage = 20;
 	const start = (page - 1) * itemsPerPage;
+	const searchQuery = url.searchParams.get("search") || "";
+
+	let query = supabase
+		.from("orders")
+		.select("*", { count: "exact" })
+		.order("date", { ascending: false });
+
+	if (searchQuery) {
+		const parsedSearchQuery = parseInt(searchQuery, 10);
+		query = query.or(
+			`customer_first_name.ilike.%${searchQuery}%,` +
+				`customer_last_name.ilike.%${searchQuery}%,` +
+				`customer_email.ilike.%${searchQuery}%`
+		);
+		if (!isNaN(parsedSearchQuery)) {
+			query = query.or(`order_number.eq.${parsedSearchQuery}`);
+		}
+	}
 
 	const {
 		data: orders,
 		error,
 		count
-	} = await supabase
-		.from("orders")
-		.select("*", { count: "exact" })
-		.order("date", { ascending: false })
-		.range(start, start + itemsPerPage - 1);
+	} = await query.range(start, start + itemsPerPage - 1);
 
 	if (error) {
 		console.error("Error fetching orders:", error);
@@ -46,6 +60,7 @@ export const load: PageServerLoad = async ({
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	};
 };
