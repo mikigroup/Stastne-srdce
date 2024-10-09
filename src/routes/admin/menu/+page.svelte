@@ -7,6 +7,9 @@
 		getCoreRowModel
 	} from "@tanstack/svelte-table";
 	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import { BarLoader } from 'svelte-loading-spinners';
+	import { navigating } from '$app/stores'
+	import { fade, fly } from 'svelte/transition';
 
 	export let data;
 
@@ -19,7 +22,8 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	} = data;
 	$: ({
 		session,
@@ -30,29 +34,22 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	} = data);
 
-	function editMenu(id: any) {
-		selectedMenu = id;
-		console.log("Selected Menu ID:", selectedMenu);
-	}
-
-	function checkVariantsMatch(menu, query) {
-		return menu.variants.some((variant) =>
-			variant.description.toLowerCase().includes(query.toLowerCase())
-		);
-	}
+	let loading = false;
+	let searchInput = searchQuery;
 
 	function newMenuPage() {
 		goto("/admin/menu/newmenu");
 	}
 
 	function formatDateToCzech(date: any) {
-		if (!date) return ""; // Return empty string if date is null or undefined
+		if (!date) return "";
 		const parts = date.split("-");
 		if (parts.length !== 3) {
-			return date; // Return the original date if it"s not in the expected format
+			return date;
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
@@ -61,15 +58,15 @@
 	const columnNames: Record<string, string> = {
 		date: "Datum",
 		soup: "Polévka",
-		price: "Cena",
 		variants: "Varianty",
 		active: "Aktivní",
 		notes: "Poznámky",
 		type: "Typ",
-		nutri: "Nutriční informace"
+		nutri: "Nutriční informace",
+		edit: "Editovat"
 	};
 
-	const columnOrder = Object.keys(columnNames);
+	const columnOrder = ["date", "soup", "variants", "active", "notes", "type", "nutri", "edit"];
 
 	let visibleColumns =
 		profileTableSettings?.table_settings_menus ??
@@ -103,7 +100,7 @@
 			return obj;
 		}, {});
 
-		const { data, error } = await supabase
+		const { error } = await supabase
 			.from("profiles")
 			.update({ table_settings_menus: orderedSettings })
 			.eq("id", session.user.id);
@@ -115,23 +112,15 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
-	let filterDate = "";
-	let filterActive = "";
-	let searchQuery = "";
-
 	$: filteredMenus = menus?.filter((menu) =>
-		filterDate
-			? menu.date === filterDate
-			: filterActive
-				? menu.active === (filterActive === "true")
-				: searchQuery
-					? Object.values(menu).some((value) =>
-							value
-								?.toString()
-								.toLowerCase()
-								.includes(searchQuery.toLowerCase())
-						) || checkVariantsMatch(menu, searchQuery)
-					: true
+		searchQuery
+			? Object.values(menu).some((value) =>
+				value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+			) ||
+			menu.variants.some((variant) =>
+				variant.description.toLowerCase().includes(searchQuery.toLowerCase())
+			)
+			: true
 	);
 
 	$: columns = columnOrder
@@ -139,16 +128,18 @@
 		.map((key) => ({
 			accessorKey: key,
 			header: columnNames[key],
-			cell: ({ getValue }) => {
+			cell: ({ getValue, row }) => {
 				const value = getValue();
 				if (key === "date") {
 					return formatDateToCzech(value);
 				} else if (key === "variants") {
 					return Object.entries(value)
-						.map(([k, v], i) => `${i + 1}. ${v}`)
+						.map(([k, v], i) => `${i + 1}. ${v.description}`)
 						.join("<br>");
 				} else if (key === "active") {
 					return value ? "ANO" : "NE";
+				} else if (key === "edit") {
+					return `<a href="/admin/menu/${row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">Upravit</a>`;
 				}
 				return value;
 			}
@@ -169,50 +160,72 @@
 
 	$: table = createSvelteTable(options);
 
-	function previousPage() {
-		if (currentPage > 1) {
-			goto(`?page=${currentPage - 1}`);
+	let transitionKey = 0;
+
+	async function previousPage() {
+		try {
+			loading = true;
+			if (currentPage > 1) {
+				transitionKey++;
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání předchozí stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
-	function nextPage() {
-		if (currentPage < totalPages) {
-			goto(`?page=${currentPage + 1}`);
+	async function nextPage() {
+		try {
+			loading = true;
+			if (currentPage < totalPages) {
+				transitionKey++;
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání další stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
-	// console.log(menus);
+	async function handleSearch() {
+		loading = true;
+		try {
+			await goto(`?search=${searchInput}&page=1`);
+		} catch (error) {
+			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>LEO - Menu</title>
 </svelte:head>
-<div class="flex justify-between">
-	<div class="flex flex-col gap-2 md:flex-row">
-		<div>
-			<button on:click={newMenuPage} class="btn btn-outline">
-				Vytvořit menu
-			</button>
-		</div>
 
-		<div>
-			<input type="date" bind:value={filterDate} class="btn btn-outline" />
-		</div>
-		<div>
-			<select
-				bind:value={filterActive}
-				class="select select-bordered w-full max-w-xs border-black">
-				<option value="">Všechny aktivity</option>
-				<option value="true">Aktivní</option>
-				<option value="false">Neaktivní</option>
-			</select>
-		</div>
-		<div>
+<div class="flex justify-between">
+	<div class="flex flex-col gap-2 md:flex-row items-center">
+		<button on:click={newMenuPage} class="btn btn-outline">
+			Vytvořit menu
+		</button>
+
+		<div class="flex gap-2">
 			<input
 				type="text"
 				placeholder="Hledat..."
 				class="input input-bordered input-md w-full max-w-xs border-black"
-				bind:value={searchQuery} />
+				bind:value={searchInput}
+			/>
+			<button
+				class="btn btn-outline"
+				on:click={handleSearch}
+				disabled={loading}
+			>
+				{loading ? 'Vyhledávám...' : 'Vyhledat'}
+			</button>
 		</div>
 	</div>
 </div>
@@ -234,11 +247,10 @@
 			Další stránka
 		</button>
 	</div>
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet meníček: {totalItems}</p>
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+		<p>Celkový počet menu: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems}</p>
+		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} menu</p>
 	</div>
 </section>
 
@@ -263,16 +275,15 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
+		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
 					class="w-full {column === 'variants' || column === 'soup'
-						? 'md:w-1/4'
-						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
-					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-						? 'border-r-2'
-						: ''}">
+            ? 'md:w-1/4'
+            : 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index >
+          columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
+            ? 'border-r-2'
+            : ''}">
 					{columnNames[column]}
 				</div>
 			{/each}
@@ -280,53 +291,69 @@
 				Editovat
 			</div>
 		</div>
-		{#if filteredMenus && filteredMenus.length > 0}
-			{#each $table.getRowModel().rows as row, index}
-				<div
-					class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
-						2 ===
-					0
-						? 'bg-gray-100'
-						: 'bg-gray-200'}">
-					{#each row.getVisibleCells() as cell}
-						<div
-							class="w-full truncate-cell flex items-center {cell.column.id ===
-								'variants' || cell.column.id === 'soup'
-								? 'md:w-1/4'
-								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
-							title={cell.getValue() ?? ""}>
-							{#if cell.column.id === "variants"}
-								{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
-									<ol class="list-decimal pl-4">
-										{#each cell.getValue() as variant}
-											<li>{variant.description}</li>
-										{/each}
-									</ol>
-								{:else}
-									<span class="text-gray-400">Žádné varianty</span>
-								{/if}
-							{:else if cell.column.id === "active"}
-								{cell.getValue() ? "Ano" : "Ne"}
-							{:else if cell.column.id === "date"}
-								{formatDateToCzech(cell.getValue())}
-							{:else}
-								{cell.getValue() ?? ""}
-							{/if}
-						</div>
-					{/each}
-					<div
-						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-						<a
-							href="/admin/menu/{row.original.id}"
-							data-sveltekit-preload-data
-							class="font-medium hover:underline">
-							Upravit
-						</a>
+
+		{#key transitionKey}
+			<div in:fade="{{ duration: 300 }}" out:fade="{{ duration: 300 }}">
+				{#if $navigating || loading}
+					<div transition:fade="{{ duration: 300 }}" class="loading-overlay">
+						<BarLoader size="120" color="black" unit="px" duration="1s" />
 					</div>
-				</div>
-			{/each}
-		{:else}
-			<p>Žádná menu</p>
-		{/if}
+				{:else}
+					{#if filteredMenus && filteredMenus.length > 0}
+						{#each $table.getRowModel().rows as row, index}
+							<div
+								in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
+								class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
+                  2 ===
+                0
+                  ? 'bg-gray-100'
+                  : 'bg-gray-200'}">
+								{#each row.getVisibleCells() as cell}
+									<div
+										class="w-full truncate-cell flex items-center {cell.column.id ===
+                      'variants' || cell.column.id === 'soup'
+                      ? 'md:w-1/4'
+                      : cell.column.id === 'edit'
+                        ? 'md:w-1/6 lg:w-1/6 xl:w-1/6 justify-end'
+                        : 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+										title={cell.getValue() ?? ""}>
+										{#if cell.column.id === "variants"}
+											{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
+												<ol class="list-decimal pl-4">
+													{#each cell.getValue() as variant}
+														<li>{variant.description}</li>
+													{/each}
+												</ol>
+											{:else}
+												<span class="text-gray-400">Žádné varianty</span>
+											{/if}
+										{:else if cell.column.id === "active"}
+											{cell.getValue() ? "Ano" : "Ne"}
+										{:else if cell.column.id === "date"}
+											{formatDateToCzech(cell.getValue())}
+										{:else if cell.column.id === "edit"}
+											{@html cell.getValue()}
+										{:else}
+											{cell.getValue() ?? ""}
+										{/if}
+									</div>
+								{/each}
+								<div
+									class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+									<a
+										href="/admin/menu/{row.original.id}"
+										data-sveltekit-preload-data
+										class="font-medium hover:underline">
+										Upravit
+									</a>
+								</div>
+							</div>
+						{/each}
+					{:else}
+						<p>Žádná menu</p>
+					{/if}
+				{/if}
+			</div>
+		{/key}
 	</div>
 </section>

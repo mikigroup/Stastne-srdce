@@ -12,12 +12,9 @@ export const load: PageServerLoad = async ({
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const itemsPerPage = 10;
 	const start = (page - 1) * itemsPerPage;
+	const searchQuery = url.searchParams.get("search") || "";
 
-	const {
-		data: menus,
-		error,
-		count
-	} = await supabase
+	let query = supabase
 		.from("menus")
 		.select(
 			`
@@ -26,8 +23,20 @@ export const load: PageServerLoad = async ({
     `,
 			{ count: "exact" }
 		)
-		.order("date", { ascending: false })
-		.range(start, start + itemsPerPage - 1);
+		.order("date", { ascending: false });
+
+	if (searchQuery) {
+		query = query.or(
+			`soup.ilike.%${searchQuery}%,` +
+				`variants.description.ilike.%${searchQuery}%`
+		);
+	}
+
+	const {
+		data: menus,
+		error,
+		count
+	} = await query.range(start, start + itemsPerPage - 1);
 
 	if (error) {
 		console.error("Error fetching menus:", error);
@@ -56,20 +65,7 @@ export const load: PageServerLoad = async ({
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	};
 };
-
-// Zde můžete přidat další serverové akce, pokud jsou potřeba
-// Například:
-
-/*
-export const actions = {
-  updateMenu: async ({ request, locals: { supabase, session } }) => {
-    // Implementace aktualizace menu
-  },
-  deleteMenu: async ({ request, locals: { supabase, session } }) => {
-    // Implementace smazání menu
-  }
-};
-*/
