@@ -310,7 +310,7 @@
 							{/if}
 						</div>
 					{/each}
-					<div class="w-full lg:w-1/6 xl:w-1/6">
+					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
 						<a
 							href="/admin/order/{row.original.id}"
 							data-sveltekit-preload-data

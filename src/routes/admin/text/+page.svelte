@@ -16,14 +16,25 @@
 	let colors = ["#000000"];
 	let loading = false;
 	let title: string = "";
-	let selectedTextId: number | null = null;
+	let selectedTextId: number;
 	let existingContent: string = "";
 	let selectedPage: string | null = null;
 
-	const actions = ["p", "hr", "b", "i", "undo", "redo", "left", "right", "center", "justify",  ];
+	const actions = [
+		"p",
+		"hr",
+		"b",
+		"i",
+		"undo",
+		"redo",
+		"left",
+		"right",
+		"center",
+		"justify"
+	];
 
 	$: filteredTexts = selectedPage
-		? texts.filter(text => text.page === selectedPage)
+		? texts.filter((text) => text.page === selectedPage)
 		: [];
 
 	onMount(async () => {
@@ -47,11 +58,11 @@
 		title = "";
 		html = "";
 		existingContent = "";
-		selectedTextId = null;
+		selectedTextId = 0;
 	}
 
 	function handlePageChange() {
-		selectedTextId = null;
+		selectedTextId = 0;
 		newText();
 	}
 
@@ -79,79 +90,89 @@
 </svelte:head>
 
 <section class="flex justify-center container">
-	<form method="POST" action="?/update" use:enhance={handleSubmit} class="">
-		<div class="">
-			<h1 class="text-2xl mb-4">Editor textů</h1>
-			<div class="mb-4">
-				<select
-					id="page-select"
-					name="page"
-					class="mr-5 border-black rounded-lg border p-2"
-					bind:value={selectedPage}
-					on:change={handlePageChange}
-					required
-				>
-					<option value="">Vyberte stránku</option>
-					{#each pages as page}
-						<option value={page}>{page}</option>
-					{/each}
-				</select>
-			</div>
-			<div class="mb-4">
-				<select
-					id="text-select"
-					class="mr-5 border-black rounded-lg border p-2"
-					bind:value={selectedTextId}
-					on:change={() => loadText(selectedTextId)}
-					disabled={!selectedPage}
-				>
-					<option value={null}>Vyberte text</option>
-					{#each filteredTexts as text}
-						<option value={text.id}>{text.title}</option>
-					{/each}
-				</select>
-				<button type="button" class="btn btn-outline" on:click={newText}>Nový text</button>
-			</div>
-			<div class="py-5">
-				<label for="title">Nadpis</label><br />
-				<input
-					class="border-black rounded-lg border p-2"
-					id="title"
-					name="title"
-					type="text"
-					bind:value={title}
-					required
-				/>
-			</div>
+	<div class="w-full">
+		<form method="POST" action="?/update" use:enhance={handleSubmit} class="">
+			<div class="">
+				<h1 class="text-2xl mb-4">Editor textů</h1>
+				<div class="mb-4">
+					<select
+						id="page-select"
+						name="page"
+						class="mr-5 border-black rounded-lg border p-2"
+						bind:value={selectedPage}
+						on:change={handlePageChange}
+						required>
+						<option value="">Vyberte stránku</option>
+						{#each pages as page}
+							<option value={page}>{page}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="mb-4">
+					<select
+						id="text-select"
+						class="mr-5 border-black rounded-lg border p-2"
+						bind:value={selectedTextId}
+						on:change={() => loadText(selectedTextId)}
+						disabled={!selectedPage}>
+						<option value={null}>Vyberte text</option>
+						{#each filteredTexts as text}
+							<option value={text.id}>{text.title}</option>
+						{/each}
+					</select>
+					<button type="button" class="btn btn-outline" on:click={newText}
+						>Nový text</button>
+				</div>
 
-			<div class="w-full">
-				{#if browser && Editor}
-					<Editor bind:html={html} {colors} {actions} on:change={(evt) => (html = evt.detail)} />
+				{#if selectedPage !== "jidelnicek"}
+					<div class="py-5">
+						<label for="title">Nadpis</label><br />
+						<input
+							class="border-black rounded-lg border p-2"
+							id="title"
+							name="title"
+							type="text"
+							bind:value={title}
+							required />
+					</div>
 				{/if}
+
+				<div class="">
+					{#if browser && Editor}
+						<Editor
+							bind:html
+							{colors}
+							{actions}
+							on:change={(evt) => (html = evt.detail)} />
+					{/if}
+				</div>
+
+				<input type="hidden" name="text" bind:value={html} />
+
+				<div class="mt-10">
+					<h2 class="text-xl font-bold mb-2">Existující obsah:</h2>
+					<div class="border-gray-400 border rounded-2xl p-5 w-full">
+						{@html existingContent}
+					</div>
+				</div>
 			</div>
 
-			<input type="hidden" name="text" bind:value={html} />
+			<button
+				disabled={loading || !title || !html || !selectedPage}
+				type="submit"
+				class="btn btn-outline mt-4">
+				{loading ? "Ukládá se..." : "Potvrdit změnu"}
+			</button>
 
-			<div class="mt-10">
-				<h2 class="text-xl font-bold mb-2">Existující obsah:</h2>
-				<div class="border-gray-400 border rounded-2xl p-5 w-full">{@html existingContent}</div>
-			</div>
-		</div>
-
-		<button
-			disabled={loading || !title || !html || !selectedPage}
-			type="submit"
-			class="btn btn-outline mt-4"
-		>
-			{loading ? "Ukládá se..." : "Potvrdit změnu"}
-		</button>
-
-		{#if form?.message}
-			<div class="flex w-full p-2 my-4 border rounded-lg">
-				<p class:success={form.message.success} class:error={!form.message.success}>
-					{form.message.display}
-				</p>
-			</div>
-		{/if}
-	</form>
+			{#if form?.message}
+				<div class="flex w-full p-2 my-4 border rounded-lg">
+					<p
+						class:success={form.message.success}
+						class:error={!form.message.success}>
+						{form.message.display}
+					</p>
+				</div>
+			{/if}
+		</form>
+	</div>
 </section>

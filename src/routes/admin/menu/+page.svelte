@@ -276,7 +276,7 @@
 					{columnNames[column]}
 				</div>
 			{/each}
-			<div class="flex justify-end w-full md:w-16 lg:w-16 xl:w-16">
+			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
 				Editovat
 			</div>
 		</div>
@@ -315,7 +315,7 @@
 						</div>
 					{/each}
 					<div
-						class="w-full md:w-16 lg:w-16 xl:w-16 flex items-center justify-end">
+						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
 						<a
 							href="/admin/menu/{row.original.id}"
 							data-sveltekit-preload-data

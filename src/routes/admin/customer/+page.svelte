@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
+	import { page } from "\$app/stores";
 	import {
 		createSvelteTable,
 		flexRender,
@@ -36,8 +37,8 @@
 		searchQuery
 	} = data);
 
-	let searchTimeout: NodeJS.Timeout;
-	let loading = false;
+		let loading = false;
+	let searchInput = searchQuery;
 
 	const columnNames = {
 		created_at: "Registrace",
@@ -174,6 +175,20 @@
 		};
 	});*/
 
+
+
+	async function handleSearch() {
+		loading = true;
+		try {
+			await goto(`?search=${searchInput}&page=1`);
+		} catch (error) {
+			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+/*
 	function handleSearch() {
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(() => {
@@ -183,6 +198,7 @@
 			goto(url.toString());
 		}, 300);
 	}
+*/
 
 /*	const debouncedSearch = debounce(async (query: string) => {
 		const url = new URL(window.location.href);
@@ -206,16 +222,21 @@
 					Vytvořit zákazníka
 				</button>
 			</div>
-			<div class="relative">
+			<div class="flex gap-4">
 				<input
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black pr-10"
-					bind:value={searchQuery}
-					on:input={handleSearch}
+					bind:value={searchInput}
 				/>
+				<button
+					class="btn btn-outline"
+					on:click={handleSearch}
+					disabled={loading}
+				>
+					{loading ? 'Vyhledávám...' : 'Vyhledat'}
+				</button>
 			</div>
-
 		</div>
 	</div>
 </section>

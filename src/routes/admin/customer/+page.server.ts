@@ -16,16 +16,15 @@ export const load: PageServerLoad = async ({
 		.order("created_at", { ascending: false });
 
 	if (searchQuery) {
-		const searchConditions = [
-			`first_name.ilike.%${searchQuery}%`,
-			`last_name.ilike.%${searchQuery}%`,
-			`email.ilike.%${searchQuery}%`,
-			`telephone.ilike.%${searchQuery}%`,
-			`street.ilike.%${searchQuery}%`,
-			`city.ilike.%${searchQuery}%`,
-			`zip_code.ilike.%${searchQuery}%`
-		];
-		query = query.or(searchConditions.join(","));
+		query = query.or(
+			`first_name.ilike.%${searchQuery}%,` +
+				`last_name.ilike.%${searchQuery}%,` +
+				`email.ilike.%${searchQuery}%,` +
+				`telephone.ilike.%${searchQuery}%,` +
+				`street.ilike.%${searchQuery}%,` +
+				`city.ilike.%${searchQuery}%,` +
+				`zip_code.ilike.%${searchQuery}%`
+		);
 	}
 
 	const {
