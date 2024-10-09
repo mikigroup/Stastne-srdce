@@ -56,7 +56,7 @@
 
 	let visibleColumns =
 		profileTableSettings?.table_settings_customers ??
-		columnOrder.reduce((obj, column) => {
+		columnOrder.reduce((obj, column ) => {
 			obj[column] = true;
 			return obj;
 		}, {});
