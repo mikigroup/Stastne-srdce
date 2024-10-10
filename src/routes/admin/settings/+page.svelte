@@ -24,7 +24,7 @@
 		};
 	};
 </script>
-<div class="form-widget">
+<div class="form-widget w-1/2 mx-auto border-gray-400 border p-5 rounded-lg">
 	<h1
 		class="mt-10 mb-10 text-4xl font-extrabold leading-none tracking-tight text-center text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
 		Nastavení
@@ -56,7 +56,7 @@
 				<input
 					type="text"
 					id="first_name"
-					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					class="input input-bordered w-full max-w-xs"
 					placeholder="Franta"
 					value={form?.firstName ?? first_name}
 					name="first_name" />
@@ -69,7 +69,7 @@
 				<input
 					type="text"
 					id="last_name"
-					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					class="input input-bordered w-full max-w-xs"
 					placeholder="Omáčka"
 					value={form?.lastName ?? last_name}
 					name="last_name" />
@@ -82,7 +82,7 @@
 				<input
 					type="text"
 					id="telephone"
-					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					class="input input-bordered w-full max-w-xs"
 					placeholder="+420 123 456 789"
 					value={form?.telephone ?? telephone}
 					name="telephone" />
@@ -95,16 +95,17 @@
 				<input
 					type="text"
 					id="username"
-					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					class="input input-bordered w-full max-w-xs"
 					value={form?.username ?? username}
 					name="username"
 					placeholder="z mládí?" />
 			</div>
 		</div>
+		<hr class="my-10" />
 		<button
 			disabled={loading}
 			type="submit"
-			class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center my-10"
+			class="w-full btn btn-outline btn-success"
 			>
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>
@@ -114,7 +115,6 @@
 			</div>
 		{/if}
 	</form>
-	<hr class="my-10" />
 	<!-- <div class="flex justify-center">
 <Rezervace {rezcalendar} />
 </div> -->
