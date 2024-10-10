@@ -222,5 +222,4 @@
 			{/if}
 		</div>
 	</div>
-	<hr class="mx-2" />
 </nav>

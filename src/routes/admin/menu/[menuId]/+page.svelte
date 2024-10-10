@@ -153,7 +153,7 @@
 	</div>
 	<div class="divider"></div>
 
-	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
+	<div class="bg-base-100 rounded-xl p-4 md:p-10 bg-neutral-200">
 		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 		<MenuItemDetail
 			bind:menu
@@ -164,7 +164,4 @@
 </div>
 
 <style>
-    .colorMenuBg {
-        background-color: #929da5;
-    }
 </style>

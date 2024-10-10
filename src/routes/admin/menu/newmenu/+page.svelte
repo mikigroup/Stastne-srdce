@@ -137,7 +137,7 @@
 
 	<div class="divider"></div>
 
-	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
+	<div class="rounded-xl p-4 md:p-10 bg-neutral-200 ">
 		<h2 class="text-2xl font-bold mb-6">Nové menu</h2>
 		<MenuItemDetail
 			bind:menu={newMenu}
@@ -148,7 +148,4 @@
 </div>
 
 <style>
-    .colorMenuBg {
-        background-color: #929da5;
-    }
 </style>

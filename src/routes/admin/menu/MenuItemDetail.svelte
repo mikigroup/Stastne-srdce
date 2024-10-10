@@ -89,13 +89,13 @@
 			/>
 		</div>
 
-		<div class="form-control w-full mb-2 border rounded-xl p-5 mt-5">
+		<div class="form-control w-full mb-2 border rounded-xl mt-5">
 			<label class="label">
 				<span class="label-text">Hlavní chod</span>
 			</label>
 			<div class="grid grid-rows-3 gap-2">
 				{#each menu.variants as variant, index}
-					<div class="variant-container mb-10 border rounded-xl">
+					<div class="variant-container mb-10 border rounded-xl p-5 border-gray-400 bg-neutral-100">
                         <textarea
 													class="textarea textarea-bordered w-full"
 													placeholder={`Menu ${index + 1}`}
@@ -131,7 +131,6 @@
 								<TagSelector
 									selectedTags={variant.ingredients}
 									availableTags={allIngredients}
-
 								/>
 							</div>
 						</div>
@@ -175,7 +174,8 @@
 	</div>
 </div>
 <style>
-    .menuWrap span {
-        font-size: 1.1em;
-    }
+    input {
+				border: solid 1px;
+				border-radius: 20px;
+		}
 </style>
