@@ -2,69 +2,34 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
+	import type { PageData } from "./$types";
+	import type { Menu } from "$lib/types/menu";
+	import type { Database } from "$lib/database.types";
 
-	export let data;
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
-
-	type MenuItem = {
-		date: string;
-		soup: string;
-		price: number;
-		active: boolean;
-		notes: string;
-		type: string;
-		nutri: string;
-		alergens: string[];
-		ingredients: string[];
-		variants: {
-			[key: string]: {
-				description: string;
-				price: number;
-				alergens: string[];
-				ingredients: string[];
-			}
-		};
-	};
+	export let data: PageData;
+	let { session, supabase, allAllergens, allIngredients } = data;
+	$: ({ session, supabase, allAllergens, allIngredients } = data);
 
 	let loading = false;
-	let menuItem: MenuItem = {
+	let updateMessage = "";
+	let errorMessage = "";
+
+	let newMenu: Menu = {
+		id: "",
 		date: "",
 		soup: "",
-		price: 0,
 		active: false,
 		notes: "",
 		type: "",
 		nutri: "",
-		alergens: [],
+		allergens: [],
 		ingredients: [],
-		variants: {
-			1: { description: "", price: 0, alergens: [], ingredients: [] },
-			2: { description: "", price: 0, alergens: [], ingredients: [] },
-			3: { description: "", price: 0, alergens: [], ingredients: [] }
-		}
+		variants: [
+			{ id: "", description: "", price: 0, allergens: [], ingredients: [] },
+			{ id: "", description: "", price: 0, allergens: [], ingredients: [] },
+			{ id: "", description: "", price: 0, allergens: [], ingredients: [] }
+		]
 	};
-
-	const commonAlergens = ["lepek", "mléko", "vejce", "ořechy", "sója", "ryby", "korýši", "celer", "hořčice", "sezam"];
-	const commonIngredients = ["maso", "zelenina", "ovoce", "těstoviny", "rýže", "brambory", "luštěniny", "sýr", "máslo", "olej"];
-
-	let updateMessage = "";
-	let errorMessage = "";
-
-	async function checkDateExists(date: string) {
-		const { data, error } = await supabase
-			.from("menus")
-			.select("id")
-			.eq("date", date)
-			.maybeSingle();
-
-		if (error) {
-			console.error("Error checking date:", error);
-			throw error;
-		}
-
-		return !!data;
-	}
 
 	async function createMenu() {
 		try {
@@ -72,65 +37,74 @@
 			errorMessage = "";
 			updateMessage = "";
 
-			if (!menuItem.date) {
+			if (!newMenu.date) {
 				errorMessage = "Datum je povinné";
 				return;
 			}
 
-			const dateExists = await checkDateExists(menuItem.date);
-			if (dateExists) {
+			const { data: existingMenu, error: checkError } = await supabase
+				.from("menus")
+				.select("id")
+				.eq("date", newMenu.date)
+				.maybeSingle();
+
+			if (checkError) throw checkError;
+
+			if (existingMenu) {
 				errorMessage = "Menu pro toto datum již existuje";
 				return;
 			}
 
-			const menuData = {
-				date: menuItem.date,
-				soup: menuItem.soup,
-				price: menuItem.price,
-				active: menuItem.active,
-				notes: menuItem.notes,
-				type: menuItem.type,
-				nutri: menuItem.nutri,
-				alergen: menuItem.alergens.join(","),
-				ingredient: menuItem.ingredients.join(",")
-			};
-
 			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
-				.insert([menuData])
+				.insert([{
+					date: newMenu.date,
+					soup: newMenu.soup,
+					active: newMenu.active,
+					notes: newMenu.notes,
+					type: newMenu.type,
+					nutri: newMenu.nutri
+				}])
 				.select()
 				.single();
 
 			if (menuError) throw menuError;
 
-			for (const [variantNumber, variant] of Object.entries(menuItem.variants)) {
+			for (const variant of newMenu.variants) {
 				if (variant.description) {
-					const variantData = {
-						menu_id: createdMenu.id,
-						variant_number: parseInt(variantNumber),
-						description: variant.description,
-						price: variant.price,
-						alergen: variant.alergens.join(","),
-						ingredient: variant.ingredients.join(",")
-					};
-
 					const { error: variantError } = await supabase
 						.from("menu_variants")
-						.insert([variantData]);
+						.insert([{
+							menu_id: createdMenu.id,
+							description: variant.description,
+							price: variant.price
+						}]);
 
-					if (variantError) {
-						console.error(`Chyba při vytváření varianty ${variantNumber}:`, variantError);
-					}
+					if (variantError) throw variantError;
 				}
 			}
 
-			updateMessage = "Menu a varianty úspěšně vytvořeny!";
+			// Vložení alergenů
+			for (const allergen of newMenu.allergens) {
+				await supabase.from('menu_allergens').insert({
+					menu_id: createdMenu.id,
+					allergen_id: allergen.id
+				});
+			}
+
+			// Vložení ingrediencí
+			for (const ingredient of newMenu.ingredients) {
+				await supabase.from('menu_ingredients').insert({
+					menu_id: createdMenu.id,
+					ingredient_id: ingredient.id
+				});
+			}
+
+			updateMessage = "Nové menu úspěšně vytvořeno!";
 			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Chyba při vytváření menu:", error);
-				errorMessage = "Nastala chyba při vytváření menu";
-			}
+			console.error("Chyba při vytváření menu:", error);
+			errorMessage = "Nastala chyba při vytváření menu";
 		} finally {
 			loading = false;
 		}
@@ -138,10 +112,6 @@
 
 	async function back() {
 		await goto("/admin/menu");
-	}
-
-	function handleMenuItemUpdate(updatedItem: MenuItem) {
-		menuItem = updatedItem;
 	}
 </script>
 
@@ -170,10 +140,15 @@
 	<div class="bg-base-100 rounded-xl p-4 md:p-10 colorMenuBg">
 		<h2 class="text-2xl font-bold mb-6">Nové menu</h2>
 		<MenuItemDetail
-			item={menuItem}
-			onUpdate={handleMenuItemUpdate}
-			{commonAlergens}
-			{commonIngredients}
+			bind:menu={newMenu}
+			{allAllergens}
+			{allIngredients}
 		/>
 	</div>
 </div>
+
+<style>
+    .colorMenuBg {
+        background-color: #929da5;
+    }
+</style>
