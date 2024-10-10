@@ -37,7 +37,9 @@
 		<div class="" />
 	{/if}
 
+	<main>
 	<slot class="mt-10 container mx-auto" />
+	</main>
 
 	<GDPR cookieName="gdpr" />
 	<!-- <GdprBanner bind:this={gdprBanner} cookieName="props.beyonk_gdpr" {...props} on:analytics={initAnalytics} /> -->

@@ -8,16 +8,22 @@ export type Text = {
 	text: string | null;
 	title: string | null;
 	page: string | null;
+	position: string | null;
+};
+
+type OccupiedPosition = {
+	position: string;
+	id: number;
 };
 
 export type LoadData = {
-	session: any;
 	texts: Text[];
-	pages: string[]; // Unikátní stránky
+	pages: string[];
+	occupiedPositions: OccupiedPosition[];
 };
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, session }
+	locals: { supabase }
 }): Promise<LoadData> => {
 	const { data: texts, error } = await supabase.from("texts").select("*");
 
@@ -25,15 +31,19 @@ export const load: PageServerLoad = async ({
 		console.error("Chyba při načítání textů:", error);
 	}
 
-	// Získání unikátních stránek z textů
 	const pages = [
 		...new Set(texts?.map((text) => text.page).filter(Boolean) || [])
 	];
 
+	const occupiedPositions: OccupiedPosition[] =
+		texts
+			?.filter((text) => text.page === "hlavni" && text.position)
+			.map((text) => ({ position: text.position!, id: text.id })) || [];
+
 	return {
-		session,
 		texts: texts || [],
-		pages
+		pages,
+		occupiedPositions
 	};
 };
 
@@ -49,37 +59,65 @@ export const actions: Actions = {
 		const title = formData.get("title") as string;
 		const text = formData.get("text") as string;
 		const page = formData.get("page") as string;
+		const position = formData.get("position") as string;
+		const id = formData.get("id") as string;
 
-		if (!title || !text || !page) {
+		if (!text || !page) {
 			return fail(400, {
 				message: {
 					success: false,
-					display: "Název, text a stránka jsou povinné"
+					display: "Text a stránka jsou povinné"
 				},
 				title,
 				text,
-				page
+				page,
+				position
 			});
 		}
 
 		try {
-			const { error } = await supabase.from("texts").insert({
+			const updateData = {
+				text,
+				page,
+				position,
+				title,
+				updated_at: new Date().toISOString()
+			};
+
+			// Přidáme title pouze pokud není prázdný
+			if (title) {
+				updateData.title = title;
+			}
+
+			if (id && id !== "0" && id !== "") {
+				// Aktualizace existujícího textu
+				const { error } = await supabase
+					.from("texts")
+					.update(updateData)
+					.eq("id", id);
+
+				if (error) throw error;
+
+				return { message: { success: true, display: "Text uložen" } };
+			} else {
+				// Vytvoření nového textu
+				const { error } = await supabase.from("texts").insert(updateData);
+
+				if (error) throw error;
+
+				return { message: { success: true, display: "Text přidán" } };
+			}
+		} catch (error) {
+			console.error("Chyba při aktualizaci/přidávání textu:", error);
+			return fail(500, {
+				message: {
+					success: false,
+					display: "Chyba při aktualizaci/přidávání textu"
+				},
 				title,
 				text,
 				page,
-				updated_at: new Date().toISOString()
-			});
-
-			if (error) throw error;
-
-			return { message: { success: true, display: "Text přidán" } };
-		} catch (error) {
-			console.error("Chyba při přidávání textu:", error);
-			return fail(500, {
-				message: { success: false, display: "Chyba při přidávání textu" },
-				title,
-				text,
-				page
+				position
 			});
 		}
 	}

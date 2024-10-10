@@ -66,7 +66,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				.lte("date", endDate.toISOString())
 				.order("date", { ascending: true }),
 
-			supabase.from("texts").select("*").eq("page", "jidelnicek").single()
+			supabase.from("texts").select("*").eq("page", "jidelnicek")
 		]);
 
 		if (menusResult.error) {
@@ -85,12 +85,18 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Rozdělení menu do týdnů
 		const weeks: Menu[][] = [[], [], [], []];
 		menus.forEach((menu) => {
-			const menuDate = new Date(menu.date);
-			const weekIndex = Math.floor(
-				(menuDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
-			);
-			if (weekIndex >= 0 && weekIndex < 4) {
-				weeks[weekIndex].push(menu);
+			if (menu.date) {
+				// Přidáme kontrolu, zda menu.date není null
+				const menuDate = new Date(menu.date);
+				const weekIndex = Math.floor(
+					(menuDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
+				);
+				if (weekIndex >= 0 && weekIndex < 4) {
+					weeks[weekIndex].push(menu);
+				}
+			} else {
+				console.warn(`Menu s id ${menu.id} nemá nastavené datum.`);
+				// Zde můžete přidat další logiku pro zpracování menu bez data, pokud je to potřeba
 			}
 		});
 
@@ -99,7 +105,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			weeks,
 			startDate: startDate.toISOString(),
 			endDate: endDate.toISOString(),
-			texts: texts || ""
+			texts: texts.length > 0 ? texts[0] : null
 		};
 	} catch (err) {
 		console.error("Error in load function:", err);

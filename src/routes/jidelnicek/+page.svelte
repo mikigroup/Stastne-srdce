@@ -29,7 +29,7 @@
 		weeks: Menu[][];
 		startDate: string;
 		endDate: string;
-		texts: Text[];
+		texts: { text: string; title: string } | null;
 	};
 
 	let { weeks, startDate, texts } = data;
@@ -40,9 +40,16 @@
 
 	let selectedTab = "1. týden";
 	let currentWeekMenus: Menu[] = [];
-	let menuText = texts || "";
-
+	let menuText = "";
 	let scrollDiv: HTMLElement;
+
+	$: {
+		if (texts && typeof texts.text === 'string') {
+			menuText = texts.text;
+		} else {
+			menuText = "Žádný text pro jídelníček není k dispozici.";
+		}
+	}
 
 	/*function scrollToContent()
 	document.getElementById("scrollDiv").scrollIntoView();{

@@ -1,11 +1,18 @@
-<script>
+<script lang="ts">
+
+	export let data;
+	let { texts } = data;
+	$: ({ texts } = data);
+
+	console.log(texts)
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Úvod</title>
 	<meta name="description" content="Úvod" />
 </svelte:head>
-<main>
+
+
 	<section>
 		<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">			
 			<div class="">				
@@ -191,7 +198,6 @@
 			</div>
 		</div>
 	</section>
-</main>
 
 <style lang="postcss">
 	.floating-img {
