@@ -8,8 +8,8 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	let { session, texts, occupiedPositions  } = data;
-	$: ({ session, texts, occupiedPositions  } = data);
+	let { texts, occupiedPositions  } = data;
+	$: ({ texts, occupiedPositions  } = data);
 
 	let html = "";
 	let Editor: any;
