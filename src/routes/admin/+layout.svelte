@@ -2,7 +2,7 @@
 </script>
 
 <main class="">
-	<div class="container mx-auto relative px-5 shadow-md sm:rounded-lg py-10 bg-zinc-100 mt-5 font-sans">
+	<div class="container mx-auto px-5 shadow-md sm:rounded-lg py-10  mt-5 font-sans border-zinc-200 border">
 	<slot></slot>
 	</div>
 </main>

@@ -24,9 +24,10 @@
 		};
 	};
 </script>
-<div class="form-widget w-1/2 mx-auto border-gray-400 border p-5 rounded-lg">
+
+<div class="form-widget xl:w-1/2 mx-auto border-gray-400 border p-5 rounded-lg bg-zinc-100">
 	<h1
-		class="mt-10 mb-10 text-4xl font-extrabold leading-none tracking-tight text-center text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+		class="mt-10 mb-10 text-4xl font-extrabold leading-none text-center md:text-5xl lg:text-6xl">
 		Nastavení
 	</h1>
 	<form

@@ -40,6 +40,9 @@ export const load: PageServerLoad = async ({
     console.error("Error fetching profiles or rezcalendar:", profilesError || rezcalendarError);
     throw profilesError || rezcalendarError;
   }*/
+	if (!profiles) {
+		throw new Error("Profil nenalezen.");
+	}
 
 	return { session, profiles };
 };
