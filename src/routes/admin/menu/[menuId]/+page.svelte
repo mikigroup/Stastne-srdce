@@ -95,20 +95,12 @@
 		try {
 			loading = true;
 
-			const { error: variantError } = await supabase
-				.from("menu_variants")
-				.delete()
-				.eq("menu_id", menu.id);
+			const { data, error } = await supabase
+				.rpc('delete_menu', { p_menu_id: menu.id });
 
-			if (variantError) throw variantError;
+			if (error) throw error;
 
-			const { error: menuError } = await supabase
-				.from("menus")
-				.delete()
-				.eq("id", menu.id);
-
-			if (menuError) throw menuError;
-
+			updateMessage = "Menu bylo úspěšně smazáno";
 			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
 			console.error("Error deleting menu:", error);
