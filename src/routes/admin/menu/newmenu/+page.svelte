@@ -6,6 +6,9 @@
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/database.types";
 
+
+
+
 	export let data: PageData;
 	let { session, supabase, allAllergens, allIngredients } = data;
 	$: ({ session, supabase, allAllergens, allIngredients } = data);
@@ -42,62 +45,72 @@
 				return;
 			}
 
-			const { data: existingMenu, error: checkError } = await supabase
-				.from("menus")
-				.select("id")
-				.eq("date", newMenu.date)
-				.maybeSingle();
-
-			if (checkError) throw checkError;
-
-			if (existingMenu) {
-				errorMessage = "Menu pro toto datum již existuje";
-				return;
-			}
-
+			// 1. Vytvořit základní menu
 			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
-				.insert([{
-					date: newMenu.date,
-					soup: newMenu.soup,
-					active: newMenu.active,
-					notes: newMenu.notes,
-					type: newMenu.type,
-					nutri: newMenu.nutri
-				}])
+				.insert({ date: newMenu.date })
 				.select()
 				.single();
 
 			if (menuError) throw menuError;
 
-			for (const variant of newMenu.variants) {
-				if (variant.description) {
-					const { error: variantError } = await supabase
-						.from("menu_variants")
-						.insert([{
-							menu_id: createdMenu.id,
-							description: variant.description,
-							price: variant.price
-						}]);
+			// 2. Vytvořit verzi menu
+			const { data: menuVersion, error: versionError } = await supabase
+				.from("menu_versions")
+				.insert({
+					menu_id: createdMenu.id,
+					date: newMenu.date,
+					soup: newMenu.soup,
+					active: newMenu.active,
+					notes: newMenu.notes,
+					type: newMenu.type,
+					nutri: newMenu.nutri,
+					valid_from: new Date().toISOString()
+				})
+				.select()
+				.single();
 
-					if (variantError) throw variantError;
+			if (versionError) throw versionError;
+
+			// 3. Přidat varianty
+			if (newMenu.variants && newMenu.variants.length > 0) {
+				const { error: variantsError } = await supabase
+					.from("menu_variants")
+					.insert(newMenu.variants.map((v, index) => ({
+						menu_id: createdMenu.id,  // Toto je povinné
+						menu_version_id: menuVersion.id,  // Toto je volitelné, ale přidáme ho
+						variant_number: (index + 1).toString(),  // Přidáme číslo varianty
+						description: v.description,
+						price: v.price
+					})));
+				if (variantsError) {
+					console.error("Chyba při vkládání variant:", variantsError);
+					throw variantsError;
 				}
 			}
 
-			// Vložení alergenů
-			for (const allergen of newMenu.allergens) {
-				await supabase.from('menu_allergens').insert({
-					menu_id: createdMenu.id,
-					allergen_id: allergen.id
-				});
+			// 4. Přidat alergeny
+			if (newMenu.allergens && newMenu.allergens.length > 0) {
+				const { error: allergensError } = await supabase
+					.from("menu_allergens")
+					.insert(newMenu.allergens.map(a => ({
+						menu_id: createdMenu.id,
+						allergen_id: a.id
+					})));
+
+				if (allergensError) throw allergensError;
 			}
 
-			// Vložení ingrediencí
-			for (const ingredient of newMenu.ingredients) {
-				await supabase.from('menu_ingredients').insert({
-					menu_id: createdMenu.id,
-					ingredient_id: ingredient.id
-				});
+			// 5. Přidat ingredience
+			if (newMenu.ingredients && newMenu.ingredients.length > 0) {
+				const { error: ingredientsError } = await supabase
+					.from("menu_ingredients")
+					.insert(newMenu.ingredients.map(i => ({
+						menu_id: createdMenu.id,
+						ingredient_id: i.id
+					})));
+
+				if (ingredientsError) throw ingredientsError;
 			}
 
 			updateMessage = "Nové menu úspěšně vytvořeno!";
