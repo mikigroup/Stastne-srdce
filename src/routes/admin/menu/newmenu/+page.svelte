@@ -48,48 +48,33 @@
 			// 1. Vytvořit základní menu
 			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
-				.insert({ date: newMenu.date })
-				.select()
-				.single();
-
-			if (menuError) throw menuError;
-
-			// 2. Vytvořit verzi menu
-			const { data: menuVersion, error: versionError } = await supabase
-				.from("menu_versions")
 				.insert({
-					menu_id: createdMenu.id,
 					date: newMenu.date,
 					soup: newMenu.soup,
 					active: newMenu.active,
 					notes: newMenu.notes,
 					type: newMenu.type,
-					nutri: newMenu.nutri,
-					valid_from: new Date().toISOString()
+					nutri: newMenu.nutri
 				})
 				.select()
 				.single();
 
-			if (versionError) throw versionError;
+			if (menuError) throw menuError;
 
-			// 3. Přidat varianty
+			// 2. Přidat varianty
 			if (newMenu.variants && newMenu.variants.length > 0) {
 				const { error: variantsError } = await supabase
 					.from("menu_variants")
 					.insert(newMenu.variants.map((v, index) => ({
-						menu_id: createdMenu.id,  // Toto je povinné
-						menu_version_id: menuVersion.id,  // Toto je volitelné, ale přidáme ho
-						variant_number: (index + 1).toString(),  // Přidáme číslo varianty
+						menu_id: createdMenu.id,
+						variant_number: (index + 1).toString(),
 						description: v.description,
 						price: v.price
 					})));
-				if (variantsError) {
-					console.error("Chyba při vkládání variant:", variantsError);
-					throw variantsError;
-				}
+				if (variantsError) throw variantsError;
 			}
 
-			// 4. Přidat alergeny
+			// 3. Přidat alergeny
 			if (newMenu.allergens && newMenu.allergens.length > 0) {
 				const { error: allergensError } = await supabase
 					.from("menu_allergens")
@@ -101,7 +86,7 @@
 				if (allergensError) throw allergensError;
 			}
 
-			// 5. Přidat ingredience
+			// 4. Přidat ingredience
 			if (newMenu.ingredients && newMenu.ingredients.length > 0) {
 				const { error: ingredientsError } = await supabase
 					.from("menu_ingredients")

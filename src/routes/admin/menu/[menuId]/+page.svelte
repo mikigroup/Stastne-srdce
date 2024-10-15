@@ -91,7 +91,7 @@
 		}
 	}
 
-	async function deleteMenu() {
+/*	async function deleteMenu() {
 		try {
 			loading = true;
 
@@ -105,6 +105,25 @@
 		} catch (error) {
 			console.error("Error deleting menu:", error);
 			errorMessage = "Chyba při mazání menu";
+		} finally {
+			loading = false;
+		}
+	}*/
+
+	async function softDeleteMenu() {
+		try {
+			loading = true;
+
+			const { data, error } = await supabase
+				.rpc('soft_delete_menu', { p_menu_id: menu.id });
+
+			if (error) throw error;
+
+			updateMessage = "Menu bylo úspěšně označeno jako smazané";
+			await goto("/admin/menu", { replaceState: true });
+		} catch (error) {
+			console.error("Error soft-deleting menu:", error);
+			errorMessage = "Chyba při označování menu jako smazané";
 		} finally {
 			loading = false;
 		}
@@ -138,14 +157,14 @@
 			<button
 				class="btn btn-outline btn-error"
 				disabled={loading}
-				on:click={deleteMenu}>
+				on:click={softDeleteMenu}>
 				{loading ? 'Maže se...' : 'Smazat menu'}
 			</button>
 		</div>
 	</div>
 	<div class="divider"></div>
 
-	<div class="bg-base-100 rounded-xl p-4 md:p-10 bg-neutral-200">
+	<div class="rounded-xl p-4 md:p-10 bg-neutral-200">
 		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
 		<MenuItemDetail
 			bind:menu

@@ -23,7 +23,8 @@ export const load: PageServerLoad = async ({
     `,
 			{ count: "exact" }
 		)
-		.order("date", { ascending: false });
+		.order("date", { ascending: false })
+		.eq("deleted", false);
 
 	if (searchQuery) {
 		query = query.or(
