@@ -1,31 +1,31 @@
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
 
-	export let selectedTags: string[] = [];
-	export let availableTags: string[] = [];
+	export let selectedTags: any[] = [];
+	export let availableTags: any[] = [];
 
-	const dispatch = createEventDispatcher<{update: string[]}>();
+	const dispatch = createEventDispatcher();
 
 	let inputValue = "";
-	let filteredTags: string[] = [];
+	let filteredTags: any[] = [];
 
 	$: {
 		filteredTags = availableTags.filter(tag =>
-			tag.toLowerCase().includes(inputValue.toLowerCase()) &&
-			!selectedTags.includes(tag)
+			tag.name.toLowerCase().includes(inputValue.toLowerCase()) &&
+			!selectedTags.some(selected => selected.id === tag.id)
 		);
 	}
 
-	function addTag(tag: string) {
-		if (!selectedTags.includes(tag)) {
+	function addTag(tag: any) {
+		if (!selectedTags.some(selected => selected.id === tag.id)) {
 			selectedTags = [...selectedTags, tag];
 			dispatch("update", selectedTags);
 		}
 		inputValue = "";
 	}
 
-	function removeTag(tag: string) {
-		selectedTags = selectedTags.filter(t => t !== tag);
+	function removeTag(tag: any) {
+		selectedTags = selectedTags.filter(t => t.id !== tag.id);
 		dispatch("update", selectedTags);
 	}
 
@@ -34,8 +34,6 @@
 			event.preventDefault();
 			if (filteredTags.length > 0) {
 				addTag(filteredTags[0]);
-			} else if (!selectedTags.includes(inputValue)) {
-				addTag(inputValue);
 			}
 		}
 	}
@@ -43,11 +41,11 @@
 
 <div class="tag-selector">
 	<div class="selected-tags">
-		{#each selectedTags as tag (tag)}
-            <span class="tag">
-                {tag}
-							<button on:click={() => removeTag(tag)}>&times;</button>
-            </span>
+		{#each selectedTags as tag (tag.id)}
+      <span class="tag">
+        {tag.name}
+				<button on:click={() => removeTag(tag)}>&times;</button>
+      </span>
 		{/each}
 	</div>
 	<input
@@ -58,8 +56,8 @@
 	/>
 	{#if inputValue && filteredTags.length > 0}
 		<ul class="tag-suggestions">
-			{#each filteredTags as tag (tag)}
-				<li on:click={() => addTag(tag)}>{tag}</li>
+			{#each filteredTags as tag (tag.id)}
+				<li on:click={() => addTag(tag)}>{tag.name}</li>
 			{/each}
 		</ul>
 	{/if}

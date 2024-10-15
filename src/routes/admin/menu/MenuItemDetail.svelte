@@ -10,6 +10,14 @@
 
 	// console.log("Komponenta:", menu)
 
+	function updateAllergens(selectedAllergens) {
+		menu.allergens = selectedAllergens;
+	}
+
+	function updateIngredients(selectedIngredients) {
+		menu.ingredients = selectedIngredients;
+	}
+
 /*
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
 		editedMenu.allergens = allergens;
@@ -61,7 +69,7 @@
 			<TagSelector
 				selectedTags={menu.allergens}
 				availableTags={allAllergens}
-				onUpdate={(allergens) => menu.allergens = allergens}
+				onUpdate={updateAllergens}
 			/>
 		</div>
 
@@ -72,7 +80,7 @@
 			<TagSelector
 				selectedTags={menu.ingredients}
 				availableTags={allIngredients}
-				onUpdate={(ingredients) => menu.ingredients = ingredients}
+				onUpdate={updateIngredients}
 			/>
 		</div>
 	</div>

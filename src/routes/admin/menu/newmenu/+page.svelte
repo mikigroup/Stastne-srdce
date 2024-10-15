@@ -10,8 +10,10 @@
 
 
 	export let data: PageData;
-	let { session, supabase, allAllergens, allIngredients } = data;
-	$: ({ session, supabase, allAllergens, allIngredients } = data);
+	let { supabase, allAllergens, allIngredients } = data;
+	$: ({ supabase, allAllergens, allIngredients } = data);
+
+	console.log(allAllergens)
 
 	let loading = false;
 	let updateMessage = "";
