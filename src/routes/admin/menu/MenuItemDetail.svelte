@@ -12,10 +12,13 @@
 
 	$: {
 		dispatch('update', menu);
+		console.log("Dispatching update with menu:", menu);
 	}
 
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
+		console.log("function updateAllergens:", allergens);
 		menu.allergens = allergens;
+		console.log("menu.allergens after update:", menu.allergens);
 	}
 
 	function updateIngredients(ingredients: Database['public']['Tables']['ingredients']['Row'][]) {

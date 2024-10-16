@@ -85,7 +85,7 @@
 				if (allergensError) throw allergensError;
 			}
 
-			// 4. Přidat ingredience
+// 4. Přidat ingredience
 			if (newMenu.ingredients && newMenu.ingredients.length > 0) {
 				const { error: ingredientsError } = await supabase
 					.from("menu_ingredients")
@@ -112,11 +112,13 @@
 	}
 
 	function handleUpdate(event: CustomEvent<Menu>) {
+		console.log("handleUpdate called with:", event.detail);
 		newMenu = event.detail;
+		console.log("newMenu after update:", newMenu);
 	}
 </script>
 
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200" in:fly="{{ y: 50, duration: 500 }}">
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}

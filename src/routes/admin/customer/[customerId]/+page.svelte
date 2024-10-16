@@ -106,7 +106,7 @@
 	<title>LEO - Zákazník</title>
 </svelte:head>
 
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg">
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200">
 		<div class="antialiased bg-white sans-serif">
 			<div class="md:py-6 md:px-4">
 				<div class="flex justify-between">

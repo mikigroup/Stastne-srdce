@@ -66,6 +66,7 @@
 
 			// Aktualizace alergenů menu
 			await supabase.from('menu_allergens').delete().eq('menu_id', menu.id);
+			console.log("Alergeny k uložení:", menu.allergens);
 			for (const allergen of menu.allergens) {
 				await supabase.from('menu_allergens').insert({
 					menu_id: menu.id,
@@ -75,6 +76,7 @@
 
 			// Aktualizace ingrediencí menu
 			await supabase.from('menu_ingredients').delete().eq('menu_id', menu.id);
+			console.log("Ingredience k uložení:", menu.ingredients);
 			for (const ingredient of menu.ingredients) {
 				await supabase.from('menu_ingredients').insert({
 					menu_id: menu.id,
@@ -132,9 +134,15 @@
 	async function back() {
 		await goto("/admin/menu");
 	}
+
+	function handleUpdate(event: CustomEvent<Menu>) {
+		console.log("handleUpdate called with:", event.detail);
+		menu = event.detail;
+		console.log("newMenu after update:", menu);
+	}
 </script>
 
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
+<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200" in:fly="{{ y: 50, duration: 500 }}">
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
@@ -170,6 +178,7 @@
 			bind:menu
 			{allAllergens}
 			{allIngredients}
+			on:update={handleUpdate}
 		/>
 	</div>
 </div>

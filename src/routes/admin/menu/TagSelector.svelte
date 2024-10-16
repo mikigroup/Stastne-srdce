@@ -18,8 +18,10 @@
 	}
 
 	function addTag(tag: (typeof availableTags)[number]) {
+		console.log("addTag called with:", tag);
 		if (!selectedTags.some(selected => selected.id === tag.id)) {
 			selectedTags = [...selectedTags, tag];
+			console.log("selectedTags after adding:", selectedTags);
 			dispatch("update", selectedTags);
 		}
 		inputValue = "";
