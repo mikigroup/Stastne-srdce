@@ -2,38 +2,33 @@
 	import TagSelector from './TagSelector.svelte';
 	import type { Menu } from '$lib/types/menu';
 	import type { Database } from '$lib/database.types';
+	import { createEventDispatcher } from 'svelte';
 
 	export let menu: Menu;
 	export let allAllergens: Database['public']['Tables']['allergens']['Row'][];
 	export let allIngredients: Database['public']['Tables']['ingredients']['Row'][];
 
+	const dispatch = createEventDispatcher<{update: Menu}>();
 
-	// console.log("Komponenta:", menu)
-
-	function updateAllergens(selectedAllergens) {
-		menu.allergens = selectedAllergens;
+	$: {
+		dispatch('update', menu);
 	}
 
-	function updateIngredients(selectedIngredients) {
-		menu.ingredients = selectedIngredients;
-	}
-
-/*
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
-		editedMenu.allergens = allergens;
+		menu.allergens = allergens;
 	}
 
 	function updateIngredients(ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
-		editedMenu.ingredients = ingredients;
+		menu.ingredients = ingredients;
 	}
 
 	function updateVariantAllergens(variantIndex: number, allergens: Database['public']['Tables']['allergens']['Row'][]) {
-		editedMenu.variants[variantIndex].allergens = allergens;
+		menu.variants[variantIndex].allergens = allergens;
 	}
 
 	function updateVariantIngredients(variantIndex: number, ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
-		editedMenu.variants[variantIndex].ingredients = ingredients;
-	}*/
+		menu.variants[variantIndex].ingredients = ingredients;
+	}
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 menuWrap mt-10">
@@ -120,7 +115,6 @@
 								bind:value={variant.price}
 							/>
 						</div>
-
 						<div class="flex-row flex">
 							<div class="mt-2 w-full">
 								<label class="label">
@@ -129,17 +123,18 @@
 								<TagSelector
 									selectedTags={variant.allergens}
 									availableTags={allAllergens}
-
+									onUpdate={(allergens) => updateVariantAllergens(index, allergens)}
 								/>
 							</div>
 							<div class="mt-2 w-full">
 								<label class="label">
 									<span class="label-text">Ingredience varianty</span>
 								</label>
-								<TagSelector
+								<!--<TagSelector
 									selectedTags={variant.ingredients}
 									availableTags={allIngredients}
-								/>
+									onUpdate={(ingredients) => updateVariantIngredients(index, ingredients)}
+								/>-->
 							</div>
 						</div>
 					</div>

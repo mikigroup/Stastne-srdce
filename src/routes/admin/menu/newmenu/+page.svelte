@@ -6,9 +6,6 @@
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/database.types";
 
-
-
-
 	export let data: PageData;
 	let { supabase, allAllergens, allIngredients } = data;
 	$: ({ supabase, allAllergens, allIngredients } = data);
@@ -113,6 +110,10 @@
 	async function back() {
 		await goto("/admin/menu");
 	}
+
+	function handleUpdate(event: CustomEvent<Menu>) {
+		newMenu = event.detail;
+	}
 </script>
 
 <div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg" in:fly="{{ y: 50, duration: 500 }}">
@@ -143,6 +144,7 @@
 			bind:menu={newMenu}
 			{allAllergens}
 			{allIngredients}
+			on:update={handleUpdate}
 		/>
 	</div>
 </div>

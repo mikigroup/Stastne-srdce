@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
+	import type { Database } from '$lib/database.types';
 
-	export let selectedTags: any[] = [];
-	export let availableTags: any[] = [];
+	export let selectedTags: Database['public']['Tables']['allergens']['Row'][] | Database['public']['Tables']['ingredients']['Row'][] = [];
+	export let availableTags: Database['public']['Tables']['allergens']['Row'][] | Database['public']['Tables']['ingredients']['Row'][] = [];
 
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{update: typeof selectedTags}>();
 
 	let inputValue = "";
-	let filteredTags: any[] = [];
+	let filteredTags: typeof availableTags = [];
 
 	$: {
 		filteredTags = availableTags.filter(tag =>
@@ -16,7 +17,7 @@
 		);
 	}
 
-	function addTag(tag: any) {
+	function addTag(tag: (typeof availableTags)[number]) {
 		if (!selectedTags.some(selected => selected.id === tag.id)) {
 			selectedTags = [...selectedTags, tag];
 			dispatch("update", selectedTags);
@@ -24,7 +25,7 @@
 		inputValue = "";
 	}
 
-	function removeTag(tag: any) {
+	function removeTag(tag: (typeof selectedTags)[number]) {
 		selectedTags = selectedTags.filter(t => t.id !== tag.id);
 		dispatch("update", selectedTags);
 	}
