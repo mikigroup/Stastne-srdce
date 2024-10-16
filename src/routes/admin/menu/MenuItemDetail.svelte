@@ -16,13 +16,17 @@
 	}
 
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
-		console.log("function updateAllergens:", allergens);
-		menu.allergens = allergens;
-		console.log("menu.allergens after update:", menu.allergens);
+		console.log("function updateAllergens called with:", allergens);
+		menu = { ...menu, allergens };  // Create a new object to trigger reactivity
+		console.log("menu after allergens update:", menu);
+		dispatch('update', menu);  // Dispatch immediately after update
 	}
 
 	function updateIngredients(ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
-		menu.ingredients = ingredients;
+		console.log("function updateIngredients called with:", ingredients);
+		menu = { ...menu, ingredients };  // Create a new object to trigger reactivity
+		console.log("menu after ingredients update:", menu);
+		dispatch('update', menu);  // Dispatch immediately after update
 	}
 
 	function updateVariantAllergens(variantIndex: number, allergens: Database['public']['Tables']['allergens']['Row'][]) {
@@ -67,7 +71,7 @@
 			<TagSelector
 				selectedTags={menu.allergens}
 				availableTags={allAllergens}
-				onUpdate={updateAllergens}
+				on:update={updateAllergens}
 			/>
 		</div>
 
@@ -78,7 +82,7 @@
 			<TagSelector
 				selectedTags={menu.ingredients}
 				availableTags={allIngredients}
-				onUpdate={updateIngredients}
+				on:update={updateIngredients}
 			/>
 		</div>
 	</div>
@@ -126,7 +130,7 @@
 								<TagSelector
 									selectedTags={variant.allergens}
 									availableTags={allAllergens}
-									onUpdate={(allergens) => updateVariantAllergens(index, allergens)}
+									on:update={(allergens) => updateVariantAllergens(index, allergens)}
 								/>
 							</div>
 							<div class="mt-2 w-full">
