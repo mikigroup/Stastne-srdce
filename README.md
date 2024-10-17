@@ -794,79 +794,79 @@ Web application for food management and ordering.
 
 #### 5.8 Správa textového obsahu (/admin/text)
 - Editor textového obsahu:
-  * Možnost vytváření a editace textů pro různé stránky webu
-  * Podpora pro formátovaný text s využitím WYSIWYG editoru (cl-editor)
-  * Správa textů pro různé sekce webu (hlavní stránka, jídelníček)
+  - Možnost vytváření a editace textů pro různé stránky webu
+  - Podpora pro formátovaný text s využitím WYSIWYG editoru (cl-editor)
+  - Správa textů pro různé sekce webu (hlavní stránka, jídelníček)
 - Dynamické načítání komponent:
-  * Asynchronní import editoru na klientské straně pro optimalizaci výkonu
+  - Asynchronní import editoru na klientské straně pro optimalizaci výkonu
 - Správa pozic textů:
-  * Možnost umístění textů na specifické pozice na hlavní stránce (levá, střed, pravá)
-  * Kontrola obsazenosti pozic a prevence konfliktů
+  - Možnost umístění textů na specifické pozice na hlavní stránce (levá, střed, pravá)
+  - Kontrola obsazenosti pozic a prevence konfliktů
 - Validace formuláře:
-  * Kontrola povinných polí před odesláním
-  * Specifická validace pro různé typy stránek (např. povinný nadpis pro hlavní stránku)
+  - Kontrola povinných polí před odesláním
+  - Specifická validace pro různé typy stránek (např. povinný nadpis pro hlavní stránku)
 - Integrace s Supabase:
-  * Načítání existujících textů z databáze
-  * Ukládání nových a aktualizace existujících textů
+  - Načítání existujících textů z databáze
+  - Ukládání nových a aktualizace existujících textů
 - Uživatelské rozhraní:
-  * Responsivní design s využitím Tailwind CSS a DaisyUI
-  * Dynamické zobrazování formulářových polí podle vybrané stránky
-  * Přepínání mezi existujícími texty a vytvářením nových
+  - Responsivní design s využitím Tailwind CSS a DaisyUI
+  - Dynamické zobrazování formulářových polí podle vybrané stránky
+  - Přepínání mezi existujícími texty a vytvářením nových
 - Stavová logika:
-  * Správa stavu načítání během ukládání textů
-  * Reaktivní aktualizace UI při změnách dat
+  - Správa stavu načítání během ukládání textů
+  - Reaktivní aktualizace UI při změnách dat
 - Ošetření chyb:
-  * Zobrazení chybových zpráv při neúspěšném uložení
-  * Logování chyb na straně serveru
+  - Zobrazení chybových zpráv při neúspěšném uložení
+  - Logování chyb na straně serveru
 - Typová bezpečnost:
-  * Využití TypeScript pro definici typů (Text, OccupiedPosition, LoadData)
+  - Využití TypeScript pro definici typů (Text, OccupiedPosition, LoadData)
 - Server-side zpracování:
-  * Validace a zpracování dat na straně serveru
-  * Ochrana proti neautorizovanému přístupu
+  - Validace a zpracování dat na straně serveru
+  - Ochrana proti neautorizovanému přístupu
 - Flexibilita:
-  * Možnost snadného přidání nových typů stránek nebo pozic
-  * Struktura umožňující rozšíření funkcionality editoru
+  - Možnost snadného přidání nových typů stránek nebo pozic
+  - Struktura umožňující rozšíření funkcionality editoru
 - Optimalizace výkonu:
-  * Využití SvelteKit actions pro efektivní zpracování formulářů
-  * Podmíněné renderování komponent
+  - Využití SvelteKit actions pro efektivní zpracování formulářů
+  - Podmíněné renderování komponent
 
 #### 5.8 Text content management (/admin/text)
 - Text content editor:
-  * Option to create and edit texts for various website pages
-  * Support for formatted text using WYSIWYG editor (cl-editor)
-  * Management of texts for different website sections (main page, menu)
+  - Option to create and edit texts for various website pages
+  - Support for formatted text using WYSIWYG editor (cl-editor)
+  - Management of texts for different website sections (main page, menu)
 - Dynamic component loading:
-  * Asynchronous import of editor on client side for performance optimization
+  - Asynchronous import of editor on client side for performance optimization
 - Text position management:
-  * Option to place texts in specific positions on main page (left, center, right)
-  * Checking position occupancy and preventing conflicts
+  - Option to place texts in specific positions on main page (left, center, right)
+  - Checking position occupancy and preventing conflicts
 - Form validation:
-  * Checking required fields before submission
-  * Specific validation for different page types (e.g. required title for main page)
+  - Checking required fields before submission
+  - Specific validation for different page types (e.g. required title for main page)
 - Supabase integration:
-  * Loading existing texts from database
-  * Saving new and updating existing texts
+  - Loading existing texts from database
+  - Saving new and updating existing texts
 - User interface:
-  * Responsive design using Tailwind CSS and DaisyUI
-  * Dynamic display of form fields based on selected page
-  * Switching between existing texts and creating new ones
+  - Responsive design using Tailwind CSS and DaisyUI
+  - Dynamic display of form fields based on selected page
+  - Switching between existing texts and creating new ones
 - State logic:
-  * Managing loading state during text saving
-  * Reactive UI updates when data changes
+  - Managing loading state during text saving
+  - Reactive UI updates when data changes
 - Error handling:
-  * Displaying error messages on unsuccessful save
-  * Logging errors on server side
+  - Displaying error messages on unsuccessful save
+  - Logging errors on server side
 - Type safety:
-  * Use of TypeScript for type definition (Text, OccupiedPosition, LoadData)
+  - Use of TypeScript for type definition (Text, OccupiedPosition, LoadData)
 - Server-side processing:
-  * Validation and processing of data on server side
-  * Protection against unauthorized access
+  - Validation and processing of data on server side
+  - Protection against unauthorized access
 - Flexibility:
-  * Possibility of easy addition of new page types or positions
-  * Structure allowing extension of editor functionality
+  - Possibility of easy addition of new page types or positions
+  - Structure allowing extension of editor functionality
 - Performance optimization:
-  * Use of SvelteKit actions for efficient form processing
-  * Conditional rendering of components
+  - Use of SvelteKit actions for efficient form processing
+  - Conditional rendering of components
 
 
 ### 6. Profil uživatele (/profile)
