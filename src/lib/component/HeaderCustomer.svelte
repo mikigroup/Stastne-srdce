@@ -2,7 +2,7 @@
 import { page } from "$app/stores";
 import { goto, invalidate } from "$app/navigation";
 import { readable } from "svelte/store";
-import { totalPiecesStore } from "../../routes/Stores/totalPiecesStore.js";
+import { totalPiecesStore } from "$lib/stores/totalPiecesStore";
 import { onMount } from "svelte";
 import { slide } from "svelte/transition";
 

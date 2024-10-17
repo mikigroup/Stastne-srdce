@@ -1,5 +1,4 @@
 import { writable } from "svelte/store";
-import { browser } from "$app/environment";
 
 let initialStoreValue;
 if (typeof localStorage == "undefined") {

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import CartItemsStore from "../Stores/stores";
+	import CartItemsStore from "$lib/stores/stores";
 	import { page } from "$app/stores";
-	import { totalPiecesStore } from "../Stores/totalPiecesStore";
+	import { totalPiecesStore } from "$lib/stores/totalPiecesStore";
 	import { onMount  } from "svelte";
 
 	interface MenuVariant {
