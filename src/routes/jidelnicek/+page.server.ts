@@ -85,8 +85,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Rozdělení menu do týdnů
 		const weeks: Menu[][] = [[], [], [], []];
 		menus.forEach((menu) => {
+			// Přidáme kontrolu, zda menu.date není null
 			if (menu.date) {
-				// Přidáme kontrolu, zda menu.date není null
 				const menuDate = new Date(menu.date);
 				const weekIndex = Math.floor(
 					(menuDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
