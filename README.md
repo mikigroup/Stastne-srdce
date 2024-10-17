@@ -269,7 +269,6 @@ Web application for food management and ordering.
   - Možnost úpravy údajů a nastavení oprávnění
 
 ### 5. Administrative interface (/admin)
-
 - Secure access only for authorized users
 - Menu management (/admin/menu)
   - CRUD operations for menu items
