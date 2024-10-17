@@ -4,17 +4,21 @@
 	import type { Database } from '$lib/database.types';
 	import { createEventDispatcher } from 'svelte';
 
+	// Component props
 	export let menu: Menu;
 	export let allAllergens: Database['public']['Tables']['allergens']['Row'][];
 	export let allIngredients: Database['public']['Tables']['ingredients']['Row'][];
 
+	// Create event dispatcher for menu updates
 	const dispatch = createEventDispatcher<{update: Menu}>();
 
+	// Reactive statement to dispatch update event whenever menu changes
 	$: {
 		dispatch('update', menu);
 		console.log("Dispatching update with menu:", menu);
 	}
 
+	// Update allergens for the main menu
 	function updateAllergens(allergens: Database['public']['Tables']['allergens']['Row'][]) {
 		console.log("function updateAllergens called with:", allergens);
 		menu = { ...menu, allergens };  // Create a new object to trigger reactivity
@@ -22,6 +26,7 @@
 		dispatch('update', menu);  // Dispatch immediately after update
 	}
 
+	// Update ingredients for the main menu
 	function updateIngredients(ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
 		console.log("function updateIngredients called with:", ingredients);
 		menu = { ...menu, ingredients };  // Create a new object to trigger reactivity
@@ -29,10 +34,12 @@
 		dispatch('update', menu);  // Dispatch immediately after update
 	}
 
+	// Update allergens for a specific menu variant
 	function updateVariantAllergens(variantIndex: number, allergens: Database['public']['Tables']['allergens']['Row'][]) {
 		menu.variants[variantIndex].allergens = allergens;
 	}
 
+	// Update ingredients for a specific menu variant
 	function updateVariantIngredients(variantIndex: number, ingredients: Database['public']['Tables']['ingredients']['Row'][]) {
 		menu.variants[variantIndex].ingredients = ingredients;
 	}
