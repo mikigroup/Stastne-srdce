@@ -4,7 +4,6 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
 
 	export let data: PageData;
 	let { supabase, allAllergens, allIngredients } = data;
@@ -16,6 +15,7 @@
 	let updateMessage = "";
 	let errorMessage = "";
 
+	// Initialize new menu object with default values
 	let newMenu: Menu = {
 		id: "",
 		date: "",
@@ -39,14 +39,15 @@
 			errorMessage = "";
 			updateMessage = "";
 
-			console.log("Začátek vytváření menu. Obsah newMenu:", JSON.stringify(newMenu, null, 2));
+			console.log("Starting menu creation. newMenu content:", JSON.stringify(newMenu, null, 2));
 
+			// Check if date is provided (required field)
 			if (!newMenu.date) {
 				errorMessage = "Datum je povinné";
 				return;
 			}
 
-			// 1. Vytvořit základní menu
+			// 1. Create basic menu
 			const { data: createdMenu, error: menuError } = await supabase
 				.from("menus")
 				.insert({
@@ -63,74 +64,79 @@
 
 			if (menuError) throw menuError;
 
-			console.log("Základní menu vytvořeno:", JSON.stringify(createdMenu, null, 2));
+			console.log("Basic menu created:", JSON.stringify(createdMenu, null, 2));
 
-			// 2. Přidat varianty
+			// 2. Add variants
 			if (newMenu.variants && newMenu.variants.length > 0) {
-				console.log("Přidávání variant:", JSON.stringify(newMenu.variants, null, 2));
+				console.log("Adding variants:", JSON.stringify(newMenu.variants, null, 2));
 				const { data: createdVariants, error: variantsError } = await supabase
 					.from("menu_variants")
 					.insert(newMenu.variants.map((v, index) => ({
+						// Map each variant to a new object with the required structure
 						menu_id: createdMenu.id,
-						variant_number: (index + 1).toString(),
+						variant_number: (index + 1).toString(), // Convert index to string for variant number
 						description: v.description,
 						price: v.price
 					})))
 					.select();
 
 				if (variantsError) throw variantsError;
-				console.log("Varianty úspěšně přidány:", JSON.stringify(createdVariants, null, 2));
+				console.log("Variants successfully added:", JSON.stringify(createdVariants, null, 2));
 			}
 
-			// 3. Přidat alergeny
+			// 3. Add allergens
 			if (newMenu.allergens && newMenu.allergens.length > 0) {
-				console.log("Přidávání alergenů:", JSON.stringify(newMenu.allergens, null, 2));
+				console.log("Adding allergens:", JSON.stringify(newMenu.allergens, null, 2));
 				const { data: createdAllergens, error: allergensError } = await supabase
 					.from("menu_allergens")
 					.insert(newMenu.allergens.map(a => ({
+						// Map each allergen to a new object linking it to the menu
 						menu_id: createdMenu.id,
 						allergen_id: a.id
 					})))
 					.select();
 
 				if (allergensError) throw allergensError;
-				console.log("Alergeny úspěšně přidány:", JSON.stringify(createdAllergens, null, 2));
+				console.log("Allergens successfully added:", JSON.stringify(createdAllergens, null, 2));
 			} else {
-				console.log("Žádné alergeny k přidání.");
+				console.log("No allergens to add.");
 			}
 
-			// 4. Přidat ingredience
+			// 4. Add ingredients
 			if (newMenu.ingredients && newMenu.ingredients.length > 0) {
-				console.log("Přidávání ingrediencí:", JSON.stringify(newMenu.ingredients, null, 2));
+				console.log("Adding ingredients:", JSON.stringify(newMenu.ingredients, null, 2));
 				const { data: createdIngredients, error: ingredientsError } = await supabase
 					.from("menu_ingredients")
 					.insert(newMenu.ingredients.map(i => ({
+						// Map each ingredient to a new object linking it to the menu
 						menu_id: createdMenu.id,
 						ingredient_id: i.id
 					})))
 					.select();
 
 				if (ingredientsError) throw ingredientsError;
-				console.log("Ingredience úspěšně přidány:", JSON.stringify(createdIngredients, null, 2));
+				console.log("Ingredients successfully added:", JSON.stringify(createdIngredients, null, 2));
 			} else {
-				console.log("Žádné ingredience k přidání.");
+				console.log("No ingredients to add.");
 			}
 
 			updateMessage = "Nové menu úspěšně vytvořeno!";
-			console.log("Menu úspěšně vytvořeno. Přesměrování na /admin/menu");
+			console.log("Menu successfully created. Redirecting to /admin/menu");
 			await goto("/admin/menu", { replaceState: true });
 		} catch (error) {
-			console.error("Chyba při vytváření menu:", error);
+			console.error("Error creating menu:", error);
 			errorMessage = "Nastala chyba při vytváření menu";
 		} finally {
 			loading = false;
 		}
 	}
 
+	// Navigate back to menu list
 	async function back() {
 		await goto("/admin/menu");
 	}
 
+	// Handle update events from MenuItemDetail component
 	function handleUpdate(event: CustomEvent<Menu>) {
 		console.log("handleUpdate called with:", JSON.stringify(event.detail, null, 2));
 		newMenu = event.detail;

@@ -13,6 +13,7 @@
 
 	export let data;
 
+	// Destructure and reactive reassign data properties
 	let {
 		session,
 		supabase,
@@ -41,20 +42,23 @@
 	let loading = false;
 	let searchInput = searchQuery;
 
+	// Navigate to new menu page
 	function newMenuPage() {
 		goto("/admin/menu/newmenu");
 	}
 
+	// Format date to Czech format (DD.MM.YYYY)
 	function formatDateToCzech(date: any) {
-		if (!date) return "";
+		if (!date) return ""; // Return empty string if date is null or undefined
 		const parts = date.split("-");
 		if (parts.length !== 3) {
-			return date;
+			return date; // Return original date if it's not in the expected format
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
 	}
 
+	// Define column names and order
 	const columnNames: Record<string, string> = {
 		date: "Datum",
 		soup: "Polévka",
@@ -68,6 +72,7 @@
 
 	const columnOrder = ["date", "soup", "variants", "active", "notes", "type", "nutri", "edit"];
 
+	// Initialize visible columns based on profile settings or default to all columns
 	let visibleColumns =
 		profileTableSettings?.table_settings_menus ??
 		columnOrder.reduce((obj, column) => {
@@ -77,6 +82,7 @@
 
 	const visibleColumnsStore = writable(visibleColumns);
 
+	// Toggle column visibility
 	function toggleColumn(column) {
 		visibleColumnsStore.update((cols) => ({
 			...cols,
@@ -84,10 +90,11 @@
 		}));
 	}
 
+	// Save table settings to user profile
 	async function saveTableSettings() {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
-			return;
+			return; // Exit if user is not logged in
 		}
 
 		const updatedSettings = columnOrder.reduce((obj, column) => {
@@ -112,17 +119,21 @@
 
 	visibleColumnsStore.subscribe(saveTableSettings);
 
+	// Filter menus based on search query
 	$: filteredMenus = menus?.filter((menu) =>
 		searchQuery
 			? Object.values(menu).some((value) =>
+				// Check if any menu property includes the search query
 				value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
 			) ||
 			menu.variants.some((variant) =>
+				// Check if any variant description includes the search query
 				variant.description.toLowerCase().includes(searchQuery.toLowerCase())
 			)
-			: true
+			: true // If no search query, return all menus
 	);
 
+	// Define table columns
 	$: columns = columnOrder
 		.filter((key) => $visibleColumnsStore[key])
 		.map((key) => ({
@@ -145,12 +156,14 @@
 			}
 		}));
 
+	// Create table options
 	$: options = writable<TableOptions<(typeof menus)[0]>>({
 		data: filteredMenus,
 		columns,
 		getCoreRowModel: getCoreRowModel()
 	});
 
+	// Update table when visible columns change
 	$: visibleColumnsStore.subscribe((value) => {
 		options.update((options) => ({
 			...options,
@@ -158,14 +171,16 @@
 		}));
 	});
 
+	// Create Svelte table
 	$: table = createSvelteTable(options);
 
 	let transitionKey = 0;
 
+	// Navigate to previous page
 	async function previousPage() {
 		try {
 			loading = true;
-			if (currentPage > 1) {
+			if (currentPage > 1) { // Check if we're not on the first page
 				transitionKey++;
 				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
 			}
@@ -176,10 +191,11 @@
 		}
 	}
 
+	// Navigate to next page
 	async function nextPage() {
 		try {
 			loading = true;
-			if (currentPage < totalPages) {
+			if (currentPage < totalPages) { // Check if we're not on the last page
 				transitionKey++;
 				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
 			}
@@ -190,6 +206,7 @@
 		}
 	}
 
+	// Handle search
 	async function handleSearch() {
 		loading = true;
 		try {
