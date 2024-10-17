@@ -4,9 +4,7 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
 
-	// Export data from the page
 	export let data: PageData;
 	let { supabase, allAllergens, allIngredients } = data;
 	$: ({ supabase, allAllergens, allIngredients } = data);
