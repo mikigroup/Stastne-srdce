@@ -187,6 +187,164 @@ Web application for food management and ordering.
 
 Tato sekce poskytuje komplexní nástroje pro správu zákazníků v admin rozhraní, s důrazem na uživatelskou přívětivost, výkon a bezpečnost. Implementace zahrnuje pokročilé funkce vyhledávání, stránkování a přizpůsobení, což umožňuje efektivní správu i velkého počtu zákazníků.
 
+#### 5.2 Správa menu (/admin/menu)
+- Správa menu:
+  * Zobrazení seznamu menu s možností stránkování
+  * Vyhledávání menu podle polévky a variant
+  * Řazení menu podle data (od nejnovějších)
+  * Možnost vytvoření nového menu
+  * Editace existujících menu
+
+- Paginace:
+  * Implementace stránkování pro efektivní zobrazení velkého množství dat
+  * Nastavitelný počet položek na stránku (aktuálně 10)
+
+- Vyhledávání:
+  * Komplexní vyhledávání v polích polévky a variant menu
+  * Case-insensitive vyhledávání s použitím ILIKE
+
+- Integrace s Supabase:
+  * Využití Supabase pro dotazování a filtrování dat
+  * Efektivní použití range pro stránkování
+
+- Uživatelské nastavení:
+  * Ukládání nastavení tabulky pro každého uživatele
+  * Možnost přizpůsobení zobrazení sloupců
+
+- Detailní zobrazení menu:
+  * Komponenta MenuItemDetail pro zobrazení a editaci detailů menu
+  * Možnost přidávání a odebírání alergenů a ingrediencí
+  * Správa variant menu s možností editace ceny a popisu
+
+- Tag Selector:
+  * Vlastní komponenta pro výběr tagů (alergenů a ingrediencí)
+  * Dynamické filtrování dostupných tagů při psaní
+  * Možnost přidávání a odebírání tagů
+
+- Responzivní design:
+  * Přizpůsobení layoutu pro mobilní i desktopová zařízení
+
+- Optimalizace výkonu:
+  * Lazy loading komponent
+  * Efektivní aktualizace UI při změnách dat
+
+- Bezpečnost:
+  * Kontrola přihlášení uživatele před načtením dat
+  * Filtrování smazaných menu (soft delete)
+
+- Ošetření chyb:
+  * Logování chyb při načítání dat
+  * Uživatelsky přívětivé chybové zprávy
+
+- Flexibilita:
+  * Možnost snadného rozšíření o další funkce správy menu
+  * Struktura kódu umožňující snadnou údržbu a rozšiřitelnost
+
+Tato sekce poskytuje komplexní nástroje pro správu menu v admin rozhraní, s důrazem na uživatelskou přívětivost, výkon a flexibilitu. Implementace zahrnuje pokročilé funkce vyhledávání, stránkování, a detailní správu menu včetně alergenů a ingrediencí.
+
+#### 5.3 Vytváření nového menu (/admin/menu/newmenu)
+- Vytváření nového menu:
+  * Formulář pro vytvoření nového menu s detailními informacemi
+  * Možnost přidání polévky, hlavních chodů (variant), alergenů a ingrediencí
+  * Nastavení data a aktivního stavu menu
+
+- Komponenta MenuItemDetail:
+  * Znovupoužitelná komponenta pro zobrazení a editaci detailů menu
+  * Podpora pro přidávání a odebírání alergenů a ingrediencí
+  * Správa variant menu s možností editace ceny a popisu
+
+- Integrace s Supabase:
+  * Asynchronní operace pro vytvoření nového menu v databázi
+  * Vkládání souvisejících dat (varianty, alergeny, ingredience) v rámci jedné transakce
+
+- Validace vstupů:
+  * Kontrola povinných polí (např. datum)
+  * Ošetření chybových stavů při vytváření menu
+
+- Uživatelské rozhraní:
+  * Responsivní design s využitím Tailwind CSS
+  * Animace pro plynulé přechody a lepší UX (fly, fade)
+  * Tlačítka pro navigaci zpět a vytvoření menu
+
+- Stavová logika:
+  * Správa stavu načítání během vytváření menu
+  * Zobrazení úspěšných a chybových zpráv
+
+- TypeScript integrace:
+  * Využití typů pro zajištění typové bezpečnosti (Menu, PageData)
+
+- Načítání předem definovaných dat:
+  * Načtení seznamu všech alergenů a ingrediencí pro výběr
+
+- Flexibilita:
+  * Možnost snadného rozšíření o další pole nebo funkcionality
+  * Struktura umožňující jednoduché přidání dalších variant menu
+
+- Výkonová optimalizace:
+  * Efektivní načítání dat z Supabase
+  * Použití reactive statements pro optimalizaci aktualizací UI
+
+- Logování:
+  * Detailní konzolové logování pro snadné debugování
+
+- Bezpečnost:
+  * Ošetření vstupů před odesláním do databáze
+  * Kontrola přístupu k API endpointům (implementováno v server.ts)
+
+Tato sekce poskytuje komplexní řešení pro vytváření nových menu položek v admin rozhraní. Nabízí uživatelsky přívětivé rozhraní s pokročilými funkcemi pro správu detailů menu, včetně alergenů a ingrediencí, s důrazem na flexibilitu, výkon a bezpečnost.
+
+#### 5.4 Editace existujícího menu (/admin/menu/[menuId])
+- Editace existujícího menu:
+  * Načítání detailů konkrétního menu včetně variant, alergenů a ingrediencí
+  * Možnost úpravy všech aspektů menu (datum, polévka, varianty, alergeny, ingredience atd.)
+  * Implementace "soft delete" pro označení menu jako smazané bez fyzického odstranění z databáze
+
+- Komplexní datové operace:
+  * Načítání souvisejících dat (varianty, alergeny, ingredience) v jednom dotazu
+  * Efektivní aktualizace všech součástí menu včetně souvisejících tabulek
+
+- Komponenta MenuItemDetail:
+  * Znovupoužitelná komponenta pro zobrazení a editaci detailů menu
+  * Podpora pro dynamické přidávání a odebírání alergenů a ingrediencí
+
+- Integrace s Supabase:
+  * Využití komplexních dotazů pro efektivní načítání dat
+  * Implementace RPC volání pro operace soft delete
+
+- Ošetření chyb:
+  * Detailní logování chyb při načítání a ukládání dat
+  * Uživatelsky přívětivé zobrazení chybových zpráv
+
+- Uživatelské rozhraní:
+  * Responsivní design s využitím Tailwind CSS
+  * Animace pro plynulé přechody (fly, fade)
+  * Potvrzovací zprávy pro úspěšné operace
+
+- Typová bezpečnost:
+  * Využití TypeScript pro definici typů (Menu, Database)
+  * Zajištění typové konzistence napříč komponentami
+
+- Optimalizace výkonu:
+  * Efektivní načítání dat v jednom dotazu
+  * Použití reactive statements pro optimalizaci re-renderování
+
+- Navigace:
+  * Možnost návratu na seznam menu
+  * Přesměrování po úspěšném smazání menu
+
+- Flexibilita:
+  * Snadné rozšíření o další funkcionality díky modulární struktuře
+  * Možnost přidání dalších polí nebo vztahů k menu
+
+- Bezpečnost:
+  * Ověření existence menu před načtením detailů
+  * Kontrola přístupu k API endpointům (implementováno v server.ts)
+
+- Verzování menu:
+  * Příprava pro možné budoucí implementace verzování menu (menu_versions tabulka)
+
+Tato sekce poskytuje komplexní řešení pro správu jednotlivých menu položek v admin rozhraní. Nabízí pokročilé možnosti editace s důrazem na uživatelskou přívětivost, výkon a integritu dat. Implementace zahrnuje sofistikované operace s databází a flexibilní UI komponenty pro efektivní správu menu.
+
 ### 6. Profil uživatele (/profile)
 - Autentizace a autorizace:
   - Kontrola přihlášení uživatele před načtením stránky
