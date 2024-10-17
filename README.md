@@ -345,6 +345,164 @@ Tato sekce poskytuje komplexní řešení pro vytváření nových menu položek
 
 Tato sekce poskytuje komplexní řešení pro správu jednotlivých menu položek v admin rozhraní. Nabízí pokročilé možnosti editace s důrazem na uživatelskou přívětivost, výkon a integritu dat. Implementace zahrnuje sofistikované operace s databází a flexibilní UI komponenty pro efektivní správu menu.
 
+#### 5.5 Správa objednávek (/admin/order)
+- Správa objednávek:
+  * Zobrazení seznamu objednávek s možností stránkování
+  * Vyhledávání objednávek podle jména zákazníka, emailu a čísla objednávky
+  * Řazení objednávek podle data (od nejnovějších)
+
+- Paginace:
+  * Implementace stránkování pro efektivní zobrazení velkého množství dat
+  * Nastavitelný počet položek na stránku (aktuálně 20)
+
+- Vyhledávání:
+  * Komplexní vyhledávání napříč několika poli objednávky
+  * Podpora pro vyhledávání podle čísla objednávky
+
+- Integrace s Supabase:
+  * Využití Supabase pro dotazování a filtrování dat
+  * Efektivní použití range pro stránkování
+
+- Uživatelské nastavení:
+  * Ukládání nastavení tabulky pro každého uživatele
+  * Možnost přizpůsobení zobrazení sloupců
+
+- Detailní zobrazení objednávky:
+  * Komponenta OrderItemDetail pro zobrazení a editaci detailů objednávky
+  * Správa základních údajů, platebních údajů, fakturačních a dodacích adres
+
+- Formátování dat:
+  * Převod datumů do českého formátu
+  * Formátování stavu platby
+
+- Responzivní design:
+  * Přizpůsobení layoutu pro mobilní i desktopová zařízení
+
+- Flexibilní filtrování:
+  * Možnost filtrování podle data a stavu objednávky
+
+- Optimalizace výkonu:
+  * Lazy loading komponent
+  * Efektivní aktualizace UI při změnách dat
+
+- Bezpečnost:
+  * Kontrola přihlášení uživatele před načtením dat
+  * Ošetření vstupů pro vyhledávání
+
+- Ošetření chyb:
+  * Logování chyb při načítání dat
+  * Propagace chyb pro další zpracování
+
+- Statistiky:
+  * Zobrazení celkového počtu objednávek
+  * Informace o aktuální stránce a celkovém počtu stránek
+
+- Flexibilita:
+  * Připraveno pro budoucí rozšíření (např. vytváření nových objednávek)
+  * Snadná úprava a přidávání nových funkcí
+
+Tato sekce poskytuje komplexní nástroje pro správu objednávek v admin rozhraní, s důrazem na uživatelskou přívětivost, výkon a flexibilitu. Implementace zahrnuje pokročilé funkce vyhledávání, stránkování a detailní správu objednávek, což umožňuje efektivní práci i s velkým počtem objednávek.
+
+#### 5.6 Vytváření nové objednávky (/admin/order/neworder)
+- Vytváření nové objednávky:
+  * Formulář pro vytvoření nové objednávky s detailními informacemi
+  * Možnost zadání základních údajů o objednávce (datum, měna, způsob dopravy, platební metoda, stav objednávky)
+
+- Komponenta OrderItemDetail:
+  * Znovupoužitelná komponenta pro zobrazení a editaci detailů objednávky
+  * Podpora pro zadávání fakturačních a dodacích údajů
+
+- Integrace s Supabase:
+  * Asynchronní operace pro vytvoření nové objednávky v databázi
+  * Automatické přiřazení uživatele k objednávce
+
+- Uživatelské rozhraní:
+  * Responsivní design s využitím Tailwind CSS a DaisyUI
+  * Animace pro plynulé přechody (fly)
+  * Tlačítka pro navigaci zpět a vytvoření objednávky
+
+- Stavová logika:
+  * Správa stavu načítání během vytváření objednávky
+  * Validace vstupních dat (např. kontrola platnosti data)
+
+- Formátování dat:
+  * Převod datumů do formátu vhodného pro Supabase
+
+- Flexibilní nastavení:
+  * Předefinované možnosti pro způsob platby, stav objednávky, měnu a způsob dopravy
+  * Snadné rozšíření o další možnosti
+
+- Navigace:
+  * Možnost návratu na seznam objednávek
+  * Přesměrování po úspěšném vytvoření objednávky
+
+- Typová bezpečnost:
+  * Využití TypeScript pro definici typů a lepší kontrolu chyb
+
+- Optimalizace výkonu:
+  * Lazy loading komponenty OrderItemDetail
+
+- Bezpečnost:
+  * Ověření přihlášení uživatele před vytvořením objednávky
+  * Automatické přiřazení ID přihlášeného uživatele k objednávce
+
+- Logování:
+  * Konzolové logování pro snadné debugování
+
+Tato sekce poskytuje uživatelsky přívětivé rozhraní pro vytváření nových objednávek v admin systému. Nabízí flexibilní možnosti nastavení objednávky s důrazem na jednoduchost použití a integraci s backendovým systémem. Implementace zahrnuje validaci vstupů, správu stavů a efektivní ukládání dat do databáze Supabase.
+
+#### 5.7 Editace existující objednávky (/admin/order/[orderId])
+- Editace existující objednávky:
+  * Načítání detailů konkrétní objednávky včetně souvisejících položek
+  * Možnost úpravy všech aspektů objednávky (datum, stav, platební údaje, dodací údaje atd.)
+  * Zobrazení položek objednávky s detaily o variantách a menu
+
+- Komplexní datové operace:
+  * Načítání souvisejících dat (order_items, variant_id, menu_id) v jednom dotazu
+  * Efektivní aktualizace všech součástí objednávky
+
+- Komponenta OrderItemDetail:
+  * Znovupoužitelná komponenta pro zobrazení a editaci detailů objednávky
+  * Podpora pro editaci fakturačních a dodacích údajů
+
+- Integrace s Supabase:
+  * Využití komplexních dotazů pro efektivní načítání dat
+  * Aktualizace objednávky v databázi
+
+- Ošetření chyb:
+  * Detailní logování chyb při načítání a ukládání dat
+  * Uživatelsky přívětivé zobrazení chybových zpráv
+
+- Uživatelské rozhraní:
+  * Responsivní design s využitím Tailwind CSS a DaisyUI
+  * Animace pro plynulé přechody (fly, fade)
+  * Potvrzovací zprávy pro úspěšné operace
+
+- Manipulace s datumy:
+  * Formátování datumů pro zobrazení a ukládání
+  * Validace vstupních datumů
+
+- Kalkulace součtů:
+  * Výpočet celkové ceny a množství položek v objednávce
+
+- Navigace:
+  * Možnost návratu na seznam objednávek
+  * Přesměrování po úspěšném smazání objednávky
+
+- Bezpečnost:
+  * Ověření existence objednávky před načtením detailů
+  * Kontrola přístupu k API endpointům (implementováno v server.ts)
+
+- Flexibilita:
+  * Možnost snadného rozšíření o další funkcionality (např. přidávání/odebírání položek)
+  * Struktura umožňující jednoduché přidání dalších polí nebo vztahů
+
+- Optimalizace výkonu:
+  * Efektivní načítání dat v jednom dotazu
+  * Použití reaktivních proměnných pro optimalizaci re-renderování
+
+Tato sekce poskytuje komplexní řešení pro správu jednotlivých objednávek v admin rozhraní. Nabízí pokročilé možnosti editace s důrazem na uživatelskou přívětivost, výkon a integritu dat. Implementace zahrnuje sofistikované operace s databází a flexibilní UI komponenty pro efektivní správu objednávek.
+
 ### 6. Profil uživatele (/profile)
 - Autentizace a autorizace:
   - Kontrola přihlášení uživatele před načtením stránky
