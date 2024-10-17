@@ -40,7 +40,11 @@
 	let searchInput = searchQuery;
 
 	function newOrderPage() {
-		goto("/admin/order/neworder");
+		const route = {
+			NEW_ORDER: "/admin/order/neworder"
+		} as const;
+
+		goto(route.NEW_ORDER);
 	}
 
 	function formatDateToCzech(date) {

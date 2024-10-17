@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { readonly, writable } from "svelte/store";
 
 let initialStoreValue;
 if (typeof localStorage == "undefined") {
@@ -15,5 +15,8 @@ CartItemsStore.subscribe((value) => {
 		localStorage.setItem("cart", JSON.stringify(value));
 	}
 });
+
+const adminPageData = "/admin";
+const adminPage = readonly(adminPageData);
 
 export default CartItemsStore;
