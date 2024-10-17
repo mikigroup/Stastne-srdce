@@ -22,46 +22,22 @@
 		itemsPerPage
 	} = data;
 	$: ({
-		session,
-		supabase,
-		orders,
-		profileTableSettings,
-		currentPage,
-		totalPages,
-		totalItems,
-		itemsOnCurrentPage,
-		itemsPerPage
-	} = data);
+			session,
+			supabase,
+			orders,
+			profileTableSettings,
+			currentPage,
+			totalPages,
+			totalItems,
+			itemsOnCurrentPage,
+			itemsPerPage
+		} = data);
 
-	let selectedOrder = null;
 	let loading = false;
 	let filterDate = "";
 	let filterActive = "";
 	let searchQuery = "";
 	let searchInput = searchQuery;
-
-
-	/*let sorting: SortingState = [];
-
-	const setSorting: OnChangeFn<SortingState> = (updater) => {
-		if (updater instanceof Function) {
-			sorting = updater(sorting);
-		} else {
-			sorting = updater;
-		}
-		options.update((old) => ({
-			...old,
-			state: {
-				...old.state,
-				sorting
-			}
-		}));
-	};
-
-	function editOrder(id) {
-		selectedOrder = id;
-		console.log("Selected Order number:", selectedOrder);
-	}*/
 
 	function newOrderPage() {
 		goto("/admin/order/neworder");
@@ -88,7 +64,7 @@
 		currency: "Měna",
 		pay_method: "Způsob platby",
 		note: "Poznámka"
-	};
+	} as const;
 
 	const columnOrder = Object.keys(columnNames);
 

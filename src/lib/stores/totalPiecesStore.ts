@@ -1,13 +1,13 @@
 import { derived } from "svelte/store";
-import CartItemsStore from "./stores";
+import CartItemsStore from "$lib/stores/stores.js";
 
 export const totalPiecesStore = derived(CartItemsStore, ($CartItemsStore) => {
-	return $CartItemsStore.reduce((sum, item) => {
+	return $CartItemsStore.reduce((sum: any, item: any) => {
 		if (item.variants) {
 			return (
 				sum +
 				item.variants.reduce(
-					(variantSum, variant) => variantSum + variant.quantity,
+					(variantSum: any, variant: any) => variantSum + variant.quantity,
 					0
 				)
 			);
