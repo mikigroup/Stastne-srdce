@@ -21,7 +21,7 @@
 		itemsOnCurrentPage,
 		itemsPerPage
 	} = data;
-	/*	$: ({
+	$: ({
 			session,
 			supabase,
 			orders,
@@ -31,7 +31,7 @@
 			totalItems,
 			itemsOnCurrentPage,
 			itemsPerPage
-		} = data);*/
+		} = data);
 
 	let loading = false;
 	let filterDate = "";
