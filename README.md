@@ -135,6 +135,57 @@ Web application for food management and ordering.
 - Správa zákazníků (/admin/customer)
   - Seznam registrovaných zákazníků
   - Možnost úpravy údajů a nastavení oprávnění
+ 
+#### 5.1 Správa zákazníků (/admin/customer)
+- Správa zákazníků:
+  * Zobrazení seznamu zákazníků s možností stránkování
+  * Vyhledávání zákazníků podle různých kritérií (jméno, příjmení, email, telefon, adresa)
+  * Řazení zákazníků podle data registrace (od nejnovějších)
+
+- Paginace:
+  * Implementace stránkování pro efektivní zobrazení velkého množství dat
+  * Nastavitelný počet položek na stránku (aktuálně 20)
+
+- Vyhledávání:
+  * Komplexní vyhledávání napříč několika poli zákazníka
+  * Case-insensitive vyhledávání s použitím ILIKE
+
+- Integrace s Supabase:
+  * Využití Supabase pro dotazování a filtrování dat
+  * Efektivní použití range pro stránkování
+
+- Uživatelské nastavení:
+  * Ukládání nastavení tabulky pro každého uživatele
+  * Možnost přizpůsobení zobrazení sloupců
+
+- Statistiky:
+  * Zobrazení celkového počtu zákazníků
+  * Informace o aktuální stránce a celkovém počtu stránek
+
+- Ošetření chyb:
+  * Logování chyb při načítání dat
+  * Propagace chyb pro další zpracování
+
+- Detaily zákazníka:
+  * Možnost zobrazení a editace detailů jednotlivých zákazníků
+  * Načítání kompletních informací o zákazníkovi
+
+- Vytvoření nového zákazníka:
+  * Samostatná sekce pro přidání nového zákazníka
+
+- Bezpečnost:
+  * Kontrola přihlášení uživatele před načtením dat
+  * Omezení přístupu k citlivým datům
+
+- Výkon:
+  * Optimalizované dotazy pro rychlé načítání dat
+  * Použití count pro efektivní získání celkového počtu záznamů
+
+- Flexibilita:
+  * Možnost snadného rozšíření o další funkce správy zákazníků
+  * Struktura kódu umožňující snadnou údržbu a rozšiřitelnost
+
+Tato sekce poskytuje komplexní nástroje pro správu zákazníků v admin rozhraní, s důrazem na uživatelskou přívětivost, výkon a bezpečnost. Implementace zahrnuje pokročilé funkce vyhledávání, stránkování a přizpůsobení, což umožňuje efektivní správu i velkého počtu zákazníků.
 
 ### 6. Profil uživatele (/profile)
 - Autentizace a autorizace:
@@ -255,7 +306,7 @@ Web application for food management and ordering.
   - Kontrola minimální délky hesla na straně klienta
   - Další validace na straně serveru
 
-  ### 9. Obnovení zapomenutého hesla (/forgot)
+### 9. Obnovení zapomenutého hesla (/forgot)
 - Funkce obnovení hesla:
   - Formulář pro zadání emailu uživatele
   - Integrace s Supabase pro generování odkazu pro reset hesla
@@ -291,6 +342,68 @@ Web application for food management and ordering.
   - Možnost snadného přizpůsobení emailových šablon
 - Výkon:
   - Asynchronní zpracování požadavků pro lepší odezvu aplikace
+ 
+### 10. Zpracování autentizačních callbacků (/auth/callback)
+- Zpracování autentizačních callbacků:
+  - Handling různých typů autentizačních callbacků (signup, recovery, OTP verifikace)
+  - Podpora pro OAuth flows (např. přihlášení přes Google)
+- Bezpečnost:
+  - Zpracování a verifikace token_hash pro zabezpečení autentizačního procesu
+  - Využití code verifier pro PKCE (Proof Key for Code Exchange) v OAuth flow
+  - Bezpečné přesměrování po úspěšné nebo neúspěšné autentizaci
+- Integrace s Supabase:
+  - Využití Supabase auth metod pro verifikaci OTP a výměnu kódu za session
+  - Handling různých autentizačních scénářů podporovaných Supabase
+- Flexibilní přesměrování:
+  - Dynamické generování URL pro přesměrování na základě typu autentizace a výsledku
+  - Podpora pro custom "next" URL parametr pro flexibilní workflow
+- Ošetření chyb:
+  - Detekce a zpracování chyb během autentizačního procesu
+  - Přesměrování na chybovou stránku s relevantními informacemi
+- Podpora pro různé autentizační toky:
+  - Zpracování signup, account recovery a OTP verifikace
+  - Rozšiřitelnost pro další autentizační metody
+- Debugování a logování:
+  - Rozsáhlé logování pro snadné debugování v development prostředí
+  - Logování klíčových informací jako full URL, cookies, code verifier atd.
+- Kompatibilita s SvelteKit:
+  - Implementováno jako SvelteKit RequestHandler
+  - Využití SvelteKit `redirect` funkce pro efektivní přesměrování
+- Čistý kód a modularita:
+  - Rozdělení logiky pro různé autentizační scénáře
+  - Použití TypeScript pro lepší typovou bezpečnost
+- Flexibilita a rozšiřitelnost:
+  - Snadné přidání nových autentizačních metod nebo úprava existujících
+  - Možnost customizace chybových zpráv a přesměrování
+
+### 11. Potvrzení emailu a OTP verifikace (/auth/confirm)
+- Zpracování potvrzovacích emailů a One-Time Password (OTP) verifikace:
+  - Podpora pro různé typy EmailOtpType definované Supabase
+- Bezpečnost:
+  - Využití token_hash pro bezpečnou verifikaci
+  - Odstranění citlivých parametrů z URL po zpracování
+- Flexibilní přesměrování:
+  - Podpora pro custom "next" URL parametr
+  - Dynamické generování URL pro přesměrování po úspěšné verifikaci
+- Integrace s Supabase:
+  - Využití Supabase auth.verifyOtp metody pro ověření token_hash
+- Ošetření chyb:
+  - Implicitní handling chyb při verifikaci
+  - Přesměrování na profilovou stránku v případě chyby nebo chybějících parametrů
+- Čistý kód:
+  - Stručná a efektivní implementace
+  - Využití TypeScript pro lepší typovou bezpečnost
+- Kompatibilita s SvelteKit:
+  - Implementováno jako SvelteKit RequestHandler
+  - Využití SvelteKit `redirect` funkce pro efektivní přesměrování
+- Flexibilita:
+  - Snadné rozšíření pro handling dalších scénářů nebo typů verifikace
+- Uživatelský tok:
+  - Po úspěšné verifikaci je uživatel přesměrován na požadovanou stránku
+  - V případě chyby nebo neúplných dat je uživatel přesměrován na profilovou stránku
+- Modularita:
+  - Oddělený handler pro potvrzení emailu a OTP verifikaci
+  - Možnost snadné integrace do větší autentizační struktury
 
 ## 🔧 Společné prvky
 
@@ -313,3 +426,4 @@ Vítáme příspěvky! Pokud máte nápady na vylepšení nebo jste našli chybu
 ## 📚 Další informace
 
 Table UI interface for items pages: https://tanstack.com/table/latest
+https://github.com/zernonia/supabase-schema
