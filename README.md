@@ -176,9 +176,84 @@ Web application for food management and ordering.
   - Přehledné zobrazení historie objednávek s možností zobrazení detailů
 
 ### 7. Přihlášení a registrace (/login, /signup)
-- Implementace autentizace pomocí Supabase
-- Ověření emailu při registraci
-- Možnost resetování hesla
+- Registrace uživatele:
+  - Formulář pro vytvoření nového účtu s polemi pro email a heslo
+  - Validace shody hesla a jeho potvrzení
+  - Integrace s Supabase pro registraci nového uživatele
+- Sociální přihlášení:
+  - Možnost registrace pomocí Google účtu
+  - Implementace OAuth flow pro Google
+- Bezpečnost:
+  - Minimální délka hesla (6 znaků)
+  - Hashování hesla před uložením do databáze (zajištěno Supabase)
+  - Použití HTTPS pro zabezpečený přenos dat
+- Uživatelské rozhraní:
+  - Responsivní design s využitím Tailwind CSS
+  - Vizuální feedback pro uživatele (ikony, stínování)
+  - Indikace načítání během procesu registrace
+- Zpracování formuláře:
+  - Využití SvelteKit actions pro zpracování formuláře na serveru
+  - Ochrana proti CSRF útokům
+- Ošetření chyb:
+  - Zobrazení chybových hlášek při neúspěšné registraci
+  - Ošetření případu, kdy je email již registrován
+- Potvrzení emailu:
+  - Odeslání potvrzovacího emailu po úspěšné registraci
+  - Informace pro uživatele o nutnosti potvrdit email
+- Uživatelské role:
+  - Přiřazení výchozí role "customer" novému uživateli
+- Navigace:
+  - Odkaz na přihlašovací stránku pro existující uživatele
+- SEO optimalizace:
+  - Nastavení title a meta description pro stránku
+- Přístupnost:
+  - Použití sémantických HTML elementů
+  - Jasné popisky pro vstupní pole
+- Integrace s backend službami:
+  - Využití Supabase pro autentizaci a správu uživatelů
+- Validace vstupu:
+  - Kontrola formátu emailu pomocí HTML5 pattern atributu
+  - Serverová validace shody hesel
+- Logování:
+  - Konzolové logování pro debugování (může být odstraněno v produkci)
+
+### 8. Resetování hesla (/reset)
+- Změna hesla:
+  - Formulář pro zadání nového hesla
+  - Validace shody nového hesla a jeho potvrzení
+  - Integrace s Supabase pro aktualizaci hesla uživatele
+- Bezpečnost:
+  - Minimální délka hesla (6 znaků)
+  - Kontrola, zda nové heslo není stejné jako staré
+  - Použití HTTPS pro zabezpečený přenos dat
+- Uživatelské rozhraní:
+  - Responsivní design s využitím Tailwind CSS
+  - Vizuální feedback pro uživatele (ikona zámku, stínování)
+  - Tlačítko pro odeslání formuláře s indikací načítání
+- Zpracování formuláře:
+  - Využití SvelteKit actions pro zpracování formuláře na serveru
+  - Ochrana proti CSRF útokům
+- Ošetření chyb:
+  - Detailní zpracování různých chybových stavů (neplatné heslo, stejné heslo, chybný požadavek)
+  - Uživatelsky přívětivé chybové zprávy
+- Stavová logika:
+  - Indikace načítání během změny hesla
+  - Zobrazení úspěšné/neúspěšné změny hesla
+- Navigace:
+  - Možnost přesměrování po úspěšné změně hesla (připraveno, ale zakomentováno)
+- SEO optimalizace:
+  - Nastavení title a meta description pro stránku
+- Přístupnost:
+  - Použití sémantických HTML elementů
+  - Jasné popisky pro vstupní pole
+- Výkon:
+  - Minimální použití externích závislostí
+  - Efektivní aktualizace DOM při změnách stavu
+- Integrace s backend službami:
+  - Využití Supabase pro autentizaci a správu uživatelů
+- Validace vstupu:
+  - Kontrola minimální délky hesla na straně klienta
+  - Další validace na straně serveru
 
 ## 🔧 Společné prvky
 
