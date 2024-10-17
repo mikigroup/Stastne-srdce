@@ -715,7 +715,6 @@ Web application for food management and ordering.
   - Automatic assignment of logged-in user ID to the order
 
 #### 5.7 Editace existující objednávky (/admin/order/[orderId])
-
 - Editace existující objednávky:
   - Načítání detailů konkrétní objednávky včetně souvisejících položek
   - Možnost úpravy všech aspektů objednávky (datum, stav, platební údaje, dodací údaje atd.)
@@ -755,7 +754,6 @@ Web application for food management and ordering.
   - Použití reaktivních proměnných pro optimalizaci re-renderování
 
 #### 5.7 Editing existing order (/admin/order/[orderId])
-
 - Editing existing order:
   - Loading details of specific order including related items
   - Option to edit all aspects of the order (date, status, payment details, delivery details etc.)
@@ -795,7 +793,6 @@ Web application for food management and ordering.
   - Use of reactive variables to optimize re-rendering
 
 #### 5.8 Správa textového obsahu (/admin/text)
-
 - Editor textového obsahu:
   * Možnost vytváření a editace textů pro různé stránky webu
   * Podpora pro formátovaný text s využitím WYSIWYG editoru (cl-editor)
@@ -834,7 +831,6 @@ Web application for food management and ordering.
   * Podmíněné renderování komponent
 
 #### 5.8 Text content management (/admin/text)
-
 - Text content editor:
   * Option to create and edit texts for various website pages
   * Support for formatted text using WYSIWYG editor (cl-editor)
@@ -922,6 +918,55 @@ Web application for food management and ordering.
   - Formátování dat (např. datum objednávky) pro lepší čitelnost
   - Přehledné zobrazení historie objednávek s možností zobrazení detailů
 
+### 6. User Profile (/profile)
+- Authentication and Authorization:
+  - Checking user login before loading the page
+  - Redirecting to the main page if the user is not logged in
+    
+- Profile Display and Editing:
+  - Loading user profile from Supabase database
+  - Form for editing personal data (name, surname, phone, address, etc.)
+  - Option for expanded display of additional information (Company ID, VAT ID, company name)
+    
+- Order Display:
+  - Loading user orders from Supabase database
+  - Sorting orders from newest
+  - Detailed display of order items including menu and variants
+    
+- Interactive UI:
+  - Option to expand/collapse order details
+  - Animations for UI element interactions
+  - Responsive design for various screen sizes
+    
+- Form Processing:
+  - Using SvelteKit actions for form processing
+  - Protection against CSRF attacks
+  - Server-side validation of input data
+    
+- State Logic:
+  - Using Svelte stores for form state management
+  - Reactive UI updates when data changes
+    
+- Performance Optimization:
+  - Lazy loading of components
+  - Efficient DOM updates when data changes
+    
+- Error Handling:
+  - Logging errors when loading data from database
+  - Displaying error messages to user on unsuccessful profile update
+    
+- Data Structure:
+  - Complex database queries to retrieve related data (orders, order items, menu)
+  - Processing and structuring data for efficient display (e.g., grouping order items by date)
+    
+- Security:
+  - Using prepared statements for database queries
+  - Verifying user identity before making changes to the profile
+    
+- UX Improvements:
+  - Formatting data (e.g., order date) for better readability
+  - Clear display of order history with option to view details
+
 ### 7. Přihlášení a registrace (/login, /signup)
 - Registrace uživatele:
   - Formulář pro vytvoření nového účtu s polemi pro email a heslo
@@ -964,6 +1009,48 @@ Web application for food management and ordering.
 - Logování:
   - Konzolové logování pro debugování (může být odstraněno v produkci)
 
+### 7. Login and Registration (/login, /signup)
+- User Registration:
+  - Form for creating a new account with fields for email and password
+  - Validation of password match and confirmation
+  - Integration with Supabase for new user registration
+- Social Login:
+  - Option to register using Google account
+  - Implementation of OAuth flow for Google
+- Security:
+  - Minimum password length (6 characters)
+  - Password hashing before storing in database (handled by Supabase)
+  - Use of HTTPS for secure data transfer
+- User Interface:
+  - Responsive design using Tailwind CSS
+  - Visual feedback for users (icons, shading)
+  - Loading indication during registration process
+- Form Processing:
+  - Use of SvelteKit actions for server-side form processing
+  - Protection against CSRF attacks
+- Error Handling:
+  - Display of error messages on unsuccessful registration
+  - Handling cases where email is already registered
+- Email Confirmation:
+  - Sending confirmation email after successful registration
+  - Information for users about the need to confirm email
+- User Roles:
+  - Assigning default "customer" role to new user
+- Navigation:
+  - Link to login page for existing users
+- SEO Optimization:
+  - Setting title and meta description for the page
+- Accessibility:
+  - Use of semantic HTML elements
+  - Clear labels for input fields
+- Backend Service Integration:
+  - Use of Supabase for authentication and user management
+- Input Validation:
+  - Checking email format using HTML5 pattern attribute
+  - Server-side validation of password match
+- Logging:
+  - Console logging for debugging (can be removed in production)
+
 ### 8. Resetování hesla (/reset)
 - Změna hesla:
   - Formulář pro zadání nového hesla
@@ -1002,6 +1089,44 @@ Web application for food management and ordering.
   - Kontrola minimální délky hesla na straně klienta
   - Další validace na straně serveru
 
+### 8. Password Reset (/reset)
+- Password Change:
+  - Form for entering new password
+  - Validation of new password match and confirmation
+  - Integration with Supabase for updating user's password
+- Security:
+  - Minimum password length (6 characters)
+  - Check if new password is not the same as the old one
+  - Use of HTTPS for secure data transfer
+- User Interface:
+  - Responsive design using Tailwind CSS
+  - Visual feedback for users (lock icon, shading)
+  - Submit button with loading indication
+- Form Processing:
+  - Use of SvelteKit actions for server-side form processing
+  - Protection against CSRF attacks
+- Error Handling:
+  - Detailed processing of various error states (invalid password, same password, invalid request)
+  - User-friendly error messages
+- State Logic:
+  - Loading indication during password change
+  - Display of successful/unsuccessful password change
+- Navigation:
+  - Option for redirection after successful password change (prepared but commented out)
+- SEO Optimization:
+  - Setting title and meta description for the page
+- Accessibility:
+  - Use of semantic HTML elements
+  - Clear labels for input fields
+- Performance:
+  - Minimal use of external dependencies
+  - Efficient DOM updates on state changes
+- Backend Service Integration:
+  - Use of Supabase for authentication and user management
+- Input Validation:
+  - Client-side check for minimum password length
+  - Additional server-side validation
+
 ### 9. Obnovení zapomenutého hesla (/forgot)
 - Funkce obnovení hesla:
   - Formulář pro zadání emailu uživatele
@@ -1038,6 +1163,43 @@ Web application for food management and ordering.
   - Možnost snadného přizpůsobení emailových šablon
 - Výkon:
   - Asynchronní zpracování požadavků pro lepší odezvu aplikace
+
+### 9. Forgotten Password Recovery (/forgot)
+- Password Recovery Function:
+  - Form for entering user's email
+  - Integration with Supabase for generating password reset link
+  - Distinction between customers and profiles when processing reset request
+- Security:
+  - Use of Supabase Admin client for generating secure password reset links
+  - Verification of user existence before sending password reset email
+  - Use of HTTPS for secure data transfer
+- Email Service:
+  - Use of Nodemailer for sending emails
+  - SMTP configuration for Seznam.cz service
+  - Customized email templates for customers and profiles
+- User Interface:
+  - Responsive design using Tailwind CSS
+  - Simple and clear form for email input
+  - Visual feedback for users (icon, shading)
+- Form Processing:
+  - Use of SvelteKit actions for server-side form processing
+  - Protection against CSRF attacks
+- Error Handling:
+  - Detailed processing of various error states
+  - User-friendly error messages
+- Security Recommendations:
+  - Instructions for creating a strong password in reset email
+- Logging:
+  - Console logging for debugging (can be removed in production)
+- SEO Optimization:
+  - Setting title and meta description for the page
+- Accessibility:
+  - Use of semantic HTML elements
+  - Clear labels for input fields
+- Flexibility:
+  - Easy customization of email templates
+- Performance:
+  - Asynchronous request processing for better application response
  
 ### 10. Zpracování autentizačních callbacků (/auth/callback)
 - Zpracování autentizačních callbacků:
@@ -1072,6 +1234,39 @@ Web application for food management and ordering.
   - Snadné přidání nových autentizačních metod nebo úprava existujících
   - Možnost customizace chybových zpráv a přesměrování
 
+### 10. Processing Authentication Callbacks (/auth/callback)
+- Processing Authentication Callbacks:
+  - Handling various types of authentication callbacks (signup, recovery, OTP verification)
+  - Support for OAuth flows (e.g., Google login)
+- Security:
+  - Processing and verification of token_hash to secure the authentication process
+  - Use of code verifier for PKCE (Proof Key for Code Exchange) in OAuth flow
+  - Secure redirection after successful or unsuccessful authentication
+- Supabase Integration:
+  - Use of Supabase auth methods for OTP verification and code exchange for session
+  - Handling various authentication scenarios supported by Supabase
+- Flexible Redirection:
+  - Dynamic generation of URLs for redirection based on authentication type and result
+  - Support for custom "next" URL parameter for flexible workflow
+- Error Handling:
+  - Detection and processing of errors during the authentication process
+  - Redirection to error page with relevant information
+- Support for Various Authentication Flows:
+  - Processing of signup, account recovery, and OTP verification
+  - Extensibility for additional authentication methods
+- Debugging and Logging:
+  - Extensive logging for easy debugging in development environment
+  - Logging of key information such as full URL, cookies, code verifier, etc.
+- Compatibility with SvelteKit:
+  - Implemented as SvelteKit RequestHandler
+  - Use of SvelteKit `redirect` function for efficient redirection
+- Clean Code and Modularity:
+  - Separation of logic for different authentication scenarios
+  - Use of TypeScript for better type safety
+- Flexibility and Extensibility:
+  - Easy addition of new authentication methods or modification of existing ones
+  - Possibility to customize error messages and redirections
+
 ### 11. Potvrzení emailu a OTP verifikace (/auth/confirm)
 - Zpracování potvrzovacích emailů a One-Time Password (OTP) verifikace:
   - Podpora pro různé typy EmailOtpType definované Supabase
@@ -1101,8 +1296,36 @@ Web application for food management and ordering.
   - Oddělený handler pro potvrzení emailu a OTP verifikaci
   - Možnost snadné integrace do větší autentizační struktury
 
-## 🔧 Společné prvky
+### 11. Email Confirmation and OTP Verification (/auth/confirm)
+- Processing of Confirmation Emails and One-Time Password (OTP) Verification:
+  - Support for various EmailOtpType types defined by Supabase
+- Security:
+  - Use of token_hash for secure verification
+  - Removal of sensitive parameters from URL after processing
+- Flexible Redirection:
+  - Support for custom "next" URL parameter
+  - Dynamic generation of URL for redirection after successful verification
+- Supabase Integration:
+  - Use of Supabase auth.verifyOtp method for token_hash verification
+- Error Handling:
+  - Implicit error handling during verification
+  - Redirection to profile page in case of error or missing parameters
+- Clean Code:
+  - Concise and efficient implementation
+  - Use of TypeScript for better type safety
+- Compatibility with SvelteKit:
+  - Implemented as SvelteKit RequestHandler
+  - Use of SvelteKit `redirect` function for efficient redirection
+- Flexibility:
+  - Easy extension for handling additional scenarios or verification types
+- User Flow:
+  - User is redirected to the requested page after successful verification
+  - In case of error or incomplete data, user is redirected to the profile page
+- Modularity:
+  - Separate handler for email confirmation and OTP verification
+  - Possibility of easy integration into larger authentication structure
 
+## 🔧 Společné prvky
 - Konzistentní navigace s responzivním menu
 - Footer s důležitými odkazy a informacemi
 - Optimalizace pro výkon a SEO
@@ -1111,16 +1334,28 @@ Web application for food management and ordering.
 
 Projekt využívá pokročilé funkce SvelteKitu jako server-side rendering, API routes pro backend logiku a layout systém pro konzistentní strukturu stránek.
 
-## 📫 Kontakt
+## 🔧 Common Elements
+- Consistent navigation with responsive menu
+- Footer with important links and information
+- Optimization for performance and SEO
+- State management implementation using SvelteKit stores
+- Type-safe code thanks to TypeScript
 
+The project utilizes advanced SvelteKit features such as server-side rendering, API routes for backend logic, and a layout system for consistent page structure.
+
+## 📫 Kontakt
 Pro více informací o projektu mě kontaktujte na info@malyleo.cz.
 
-## 🤝 Přispívání
+## 📫 Contact
+For more information about the project, contact me at info@malyleo.cz.
 
+## 🤝 Přispívání
 Vítáme příspěvky! Pokud máte nápady na vylepšení nebo jste našli chybu, neváhejte otevřít issue nebo pull request.
 
-## 📚 Další informace
+## 🤝 Contributing
+Contributions are welcome! If you have ideas for improvements or have found a bug, don't hesitate to open an issue or pull request.
 
+## 📚 Další informace - Additional Information
 - Table UI interface for items pages: https://tanstack.com/table/latest
 - Google reCAPTCHA: https://www.google.com/recaptcha/about/
 - Nodemailer: https://nodemailer.com/
@@ -1130,3 +1365,4 @@ Vítáme příspěvky! Pokud máte nápady na vylepšení nebo jste našli chybu
 - PKCE (Proof Key for Code Exchange): https://oauth.net/2/pkce/
 - One-Time Password (OTP): https://en.wikipedia.org/wiki/One-time_password
 - cl-editor (WYSIWYG): https://github.com/ckeditor/ckeditor5
+- 
