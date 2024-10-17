@@ -255,6 +255,43 @@ Web application for food management and ordering.
   - Kontrola minimální délky hesla na straně klienta
   - Další validace na straně serveru
 
+  ### 9. Obnovení zapomenutého hesla (/forgot)
+- Funkce obnovení hesla:
+  - Formulář pro zadání emailu uživatele
+  - Integrace s Supabase pro generování odkazu pro reset hesla
+  - Rozlišení mezi zákazníky a profily při zpracování žádosti o reset
+- Bezpečnost:
+  - Použití Supabase Admin klienta pro generování bezpečných odkazů pro reset hesla
+  - Ověření existence uživatele před odesláním emailu pro reset hesla
+  - Použití HTTPS pro zabezpečený přenos dat
+- Emailová služba:
+  - Využití Nodemailer pro odesílání emailů
+  - Konfigurace SMTP pro službu Seznam.cz
+  - Přizpůsobené emailové šablony pro zákazníky a profily
+- Uživatelské rozhraní:
+  - Responsivní design s využitím Tailwind CSS
+  - Jednoduchý a přehledný formulář pro zadání emailu
+  - Vizuální feedback pro uživatele (ikona, stínování)
+- Zpracování formuláře:
+  - Využití SvelteKit actions pro zpracování formuláře na serveru
+  - Ochrana proti CSRF útokům
+- Ošetření chyb:
+  - Detailní zpracování různých chybových stavů
+  - Uživatelsky přívětivé chybové zprávy
+- Bezpečnostní doporučení:
+  - Instrukce pro vytvoření silného hesla v emailu pro reset
+- Logování:
+  - Konzolové logování pro debugování (může být odstraněno v produkci)
+- SEO optimalizace:
+  - Nastavení title a meta description pro stránku
+- Přístupnost:
+  - Použití sémantických HTML elementů
+  - Jasné popisky pro vstupní pole
+- Flexibilita:
+  - Možnost snadného přizpůsobení emailových šablon
+- Výkon:
+  - Asynchronní zpracování požadavků pro lepší odezvu aplikace
+
 ## 🔧 Společné prvky
 
 - Konzistentní navigace s responzivním menu
