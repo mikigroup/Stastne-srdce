@@ -1,5 +1,3 @@
-// src/lib/stores.ts
-
 import { readable, writable } from "svelte/store";
 
 let initialStoreValue;

@@ -1,10 +1,10 @@
 <script>
 import { page } from "$app/stores";
-import { goto, invalidate } from "$app/navigation";
+import {totalPiecesStore} from "$lib/stores/totalPiecesStore";
+import { goto } from "$app/navigation";
 import { readable } from "svelte/store";
-import { totalPiecesStore } from "$lib/stores/totalPiecesStore";
-import { onMount } from "svelte";
 import { slide } from "svelte/transition";
+
 
 export let data;
 let { supabase, session, user } = data;
@@ -95,14 +95,6 @@ $: totalPieces = $totalPiecesStore;
 
 			<div class="flex items-center justify-self-end">
 				{#if $page.data.session}
-					<!-- <div class="">
-					<p class="font-semibold">Ahoj {usertest}</p>
-				</div> -->
-
-					<!-- 	<a activeClass={$page.url.pathname === "/orders"} href="/orders">
-						<Button outline color="green" pill={true}>Objednávky</Button>
-					</a> -->
-
 					<!-- pravá část menu -->
 					<div
 						class="relative items-center hidden grid-cols-2 ml-auto lg:grid md:flex">
