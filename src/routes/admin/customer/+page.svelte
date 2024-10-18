@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
-	import { page } from "\$app/stores";
 	import {
 		createSvelteTable,
-		flexRender,
 		getCoreRowModel
 	} from "@tanstack/svelte-table";
-	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import type { TableOptions } from "@tanstack/svelte-table";
 	import { BarLoader } from 'svelte-loading-spinners';
 	import { navigating } from '$app/stores'
 	import { fade, fly } from 'svelte/transition';
@@ -37,9 +35,11 @@
 		searchQuery
 	} = data);
 
+	// State variablesWu
 	let loading = false;
 	let searchInput = searchQuery;
 
+	// Column definitions
 	const columnNames: Record<string, string> = {
 		created_at: "Registrace",
 		first_name: "Jméno",
@@ -54,6 +54,7 @@
 
 	const columnOrder: string[] = Object.keys(columnNames);
 
+	// Visible columns management
 	let visibleColumns: Record<string, boolean> =
 		profileTableSettings?.table_settings_customers ??
 		columnOrder.reduce((obj, column) => {
@@ -63,6 +64,7 @@
 
 	const visibleColumnsStore = writable<Record<string, boolean>>(visibleColumns);
 
+	// Column visibility toggle
 	function toggleColumn(column: string) {
 		visibleColumnsStore.update((cols) => {
 			const newCols = { ...cols, [column]: !cols[column] };
@@ -73,6 +75,7 @@
 		});
 	}
 
+	// Save table settings to DB profile setting of logged in user
 	async function saveTableSettings() {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
@@ -88,15 +91,18 @@
 			console.error("Chyba při ukládání nastavení filtrů:", error);
 		}
 	}
-
+	// Subscribe to changes and save settings
 	visibleColumnsStore.subscribe(saveTableSettings);
 
+
+	// Filter customers based on search
 	$: filteredCustomers = customers?.filter((customer) =>
 		Object.values(customer).some((value) =>
 			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
 		)
 	);
 
+	// Define table columns
 	$: columns = columnOrder
 		.filter((key) => $visibleColumnsStore[key])
 		.map((key) => ({
@@ -110,6 +116,7 @@
 			}
 		}));
 
+	// Create table options
 	$: options = writable<TableOptions<(typeof customers)[0]>>({
 		data: filteredCustomers,
 		columns,
@@ -123,8 +130,10 @@
 		}));
 	});
 
+	// Create table instance
 	$: table = createSvelteTable(options);
 
+	// Helper function: Format date to Czech format
 	function formatDateToCzech(date: string) {
 		if (!date) return ""; //
 		const dateObj = new Date(date);
@@ -138,6 +147,7 @@
 
 	let transitionKey: number = 0;
 
+	// Navigation functions
 	async function previousPage() {
 		try {
 			loading = true;
@@ -166,6 +176,7 @@
 		}
 	}
 
+	// Search function
 	async function handleSearch() {
 		loading = true;
 		try {

@@ -17,14 +17,17 @@ export const load: PageServerLoad = async ({
 
 	if (searchQuery) {
 		const parsedSearchQuery = parseInt(searchQuery, 10);
-		query = query.or(
-			`customer_first_name.ilike.%${searchQuery}%,` +
-				`customer_last_name.ilike.%${searchQuery}%,` +
-				`customer_email.ilike.%${searchQuery}%`
-		);
+		const searchConditions = [
+			`customer_first_name.ilike.%${searchQuery}%`,
+			`customer_last_name.ilike.%${searchQuery}%`,
+			`customer_email.ilike.%${searchQuery}%`
+		];
+
 		if (!isNaN(parsedSearchQuery)) {
-			query = query.or(`order_number.eq.${parsedSearchQuery}`);
+			searchConditions.push(`order_number.eq.${parsedSearchQuery}`);
 		}
+
+		query = query.or(searchConditions.join(","));
 	}
 
 	const {

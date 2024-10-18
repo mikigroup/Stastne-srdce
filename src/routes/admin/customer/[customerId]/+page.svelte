@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { createEventDispatcher } from "svelte";
 	import { goto } from "$app/navigation";
-	import { fade, fly } from "svelte/transition";
+	import { fly } from "svelte/transition";
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
-	let { session, supabase, customers } = data;
-	$: ({ session, supabase, customers } = data);
+	let {  supabase, customers } = data;
+	$: ({  supabase, customers } = data);
 	console.log("customersId:", customers);
 
+	// State variables
 	let loading = false;
+	let updateMessage = "";
+
+	// Customer data fields
 	let first_name: string = customers?.first_name ?? "";
 	let last_name: string = customers?.last_name ?? "";
 	let telephone: string = customers?.telephone ?? "";
@@ -25,7 +28,7 @@
 	let username: string = customers?.username ?? "";
 	let customerId: string = customers?.id;
 
-	let updateMessage = "";
+	// Update customer data in Supabase
 	async function updateCustomer() {
 		try {
 			loading = true;
@@ -70,10 +73,12 @@
 		}
 	}
 
+	// Navigate back to customer list
 	async function back() {
-		goto("/admin/customer");
+		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
 
+	// Delete customer from Supabase
 	async function deleteCustomer() {
 		try {
 			loading = true;

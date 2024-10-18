@@ -1,12 +1,12 @@
-import { redirect, error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase },
 	params
 }) => {
+	// Extract customerId from route parameters
 	const id = params.customerId;
-
+	// Query Supabase for customer data
 	const { data: customers, error } = await supabase
 		.from("customers")
 		.select(
@@ -29,11 +29,10 @@ export const load: PageServerLoad = async ({
 		)
 		.eq("id", id)
 		.single();
-
 	if (error) {
 		console.error("Error fetching customers:", error);
 		throw error;
 	}
-
+	// Return the fetched customer data
 	return { customers };
 };

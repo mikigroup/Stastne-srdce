@@ -16,15 +16,17 @@ export const load: PageServerLoad = async ({
 		.order("created_at", { ascending: false });
 
 	if (searchQuery) {
-		query = query.or(
-			`first_name.ilike.%${searchQuery}%,` +
-				`last_name.ilike.%${searchQuery}%,` +
-				`email.ilike.%${searchQuery}%,` +
-				`telephone.ilike.%${searchQuery}%,` +
-				`street.ilike.%${searchQuery}%,` +
-				`city.ilike.%${searchQuery}%,` +
-				`zip_code.ilike.%${searchQuery}%`
-		);
+		const searchConditions = [
+			"first_name",
+			"last_name",
+			"email",
+			"telephone",
+			"street",
+			"city",
+			"zip_code"
+		].map((field) => `${field}.ilike.%${searchQuery}%`);
+
+		query = query.or(searchConditions.join(","));
 	}
 
 	const {
@@ -45,7 +47,7 @@ export const load: PageServerLoad = async ({
 	const { data: profileTableSettings, error: profileError } = await supabase
 		.from("profiles")
 		.select("table_settings_customers")
-		.eq("id", session?.user.id)
+		.eq("id", session?.user?.id)
 		.single();
 
 	if (profileError) {

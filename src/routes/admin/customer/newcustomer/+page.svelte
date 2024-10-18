@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
 	import { goto } from "$app/navigation";
 
 	export let data;

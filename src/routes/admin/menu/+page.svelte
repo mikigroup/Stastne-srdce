@@ -3,13 +3,13 @@
 	import { writable } from "svelte/store";
 	import {
 		createSvelteTable,
-		flexRender,
 		getCoreRowModel
 	} from "@tanstack/svelte-table";
-	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import type { TableOptions } from "@tanstack/svelte-table";
 	import { BarLoader } from 'svelte-loading-spinners';
 	import { navigating } from '$app/stores'
 	import { fade, fly } from 'svelte/transition';
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 
@@ -44,7 +44,7 @@
 
 	// Navigate to new menu page
 	function newMenuPage() {
-		goto("/admin/menu/newmenu");
+		goto($ROUTES.ADMIN.MENU.NEW);
 	}
 
 	// Format date to Czech format (DD.MM.YYYY)
