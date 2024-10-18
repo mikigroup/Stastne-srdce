@@ -1,4 +1,5 @@
 <script>
+	import { ROUTES } from '$lib/stores/store';
 </script>
 
 <main class="">

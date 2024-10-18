@@ -19,6 +19,10 @@ declare global {
 			// interface PageState {}
 			// interface Platform {}
 		}
+		/*interface ImportMetaEnv {
+			VITE_BASE_URL: string;
+			VITE_APP_NAME: string;
+		}*/
 	}
 }
 

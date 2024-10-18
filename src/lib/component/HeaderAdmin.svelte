@@ -2,6 +2,7 @@
 	import { page } from "$app/stores";
 	import { readable } from "svelte/store";
 	import { Icon, FaceSmile } from "svelte-hero-icons";
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 	let { supabase, session, user } = data;
@@ -87,7 +88,7 @@
 	}
 </script>
 
-<nav class="m-2">
+<nav class="m-2" data-sveltekit-preload-data="hover">
 	<div class="navbar border-cyan-500 border rounded-2xl !py-0 bg-sky-300">
 		<div class="navbar-start">
 			<div class="dropdown">
@@ -110,7 +111,7 @@
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
 					<li><a href="/">Šťastné srdce</a></li>
 
-					<li><a href="/admin">Nástěnka</a></li>
+					<li><a href={$ROUTES.ADMIN.BASE}>Nástěnka</a></li>
 					<li><a href="/admin/customer">Zákazníci</a></li>
 					<li><a href="/admin/order">Objednávky</a></li>
 					<li><a href="/admin/menu">Menu</a></li>
