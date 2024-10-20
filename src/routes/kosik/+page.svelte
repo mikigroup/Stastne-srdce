@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
-	import CartItemsStore from "$lib/stores/stores";
+	import CartItemsStore from "$lib/stores/store";
 	import { totalPiecesStore } from "$lib/stores/totalPiecesStore";
 	import { page } from "$app/stores";
 	import Modal from "./Modal.svelte";
