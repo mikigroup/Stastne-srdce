@@ -4,6 +4,7 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data: PageData;
 	let { supabase, allAllergens, allIngredients } = data;
@@ -122,7 +123,7 @@
 
 			updateMessage = "Nové menu úspěšně vytvořeno!";
 			console.log("Menu successfully created. Redirecting to /admin/menu");
-			await goto("/admin/menu", { replaceState: true });
+			await goto($ROUTES.ADMIN.MENU.LIST, { replaceState: true });
 		} catch (error) {
 			console.error("Error creating menu:", error);
 			errorMessage = "Nastala chyba při vytváření menu";
@@ -133,7 +134,7 @@
 
 	// Navigate back to menu list
 	async function back() {
-		await goto("/admin/menu");
+		await goto($ROUTES.ADMIN.MENU.LIST);
 	}
 
 	// Handle update events from MenuItemDetail component

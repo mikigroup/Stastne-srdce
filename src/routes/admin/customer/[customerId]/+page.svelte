@@ -12,7 +12,7 @@
 	let loading = false;
 	let updateMessage = "";
 
-	// Customer data fields
+	// Editable customer data fields
 	let first_name: string = customers?.first_name ?? "";
 	let last_name: string = customers?.last_name ?? "";
 	let telephone: string = customers?.telephone ?? "";
@@ -20,13 +20,14 @@
 	let city: string = customers?.city ?? "";
 	let street_number: string = customers?.street_number ?? "";
 	let zip_code: string = customers?.zip_code ?? "";
-	let email: string = customers?.email ?? "";
 	let ico: string = customers?.ico ?? "";
 	let dic: string = customers?.dic ?? "";
 	let company: string = customers?.company ?? "";
 	let website: string = customers?.website ?? "";
 	let username: string = customers?.username ?? "";
-	let customerId: string = customers?.id;
+
+	const customerId: string = customers?.id;
+	const email: string = customers?.email ?? "";
 
 	// Update customer data in Supabase
 	async function updateCustomer() {
@@ -102,9 +103,6 @@
 			loading = false;
 		}
 	}
-
-	console.log("customers:", customers);
-	console.log(customerId);
 </script>
 
 <svelte:head>
@@ -169,7 +167,7 @@
 								</div>
 								<input
 									type="text"
-									bind:value={email}
+									value={email}
 									placeholder="Zadejte email"
 									class="input input-bordered w-full max-w-xs !border-white !text-stone-700"
 									readonly

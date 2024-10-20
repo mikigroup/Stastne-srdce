@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 	let { session, supabase } = data;
@@ -16,7 +17,7 @@
 	let zip_code = "";	
 
 	function back() {
-		goto("/customer");
+		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
 
 	async function createCustomer() {
@@ -41,7 +42,7 @@
 			let { error } = await supabase.from("customers").insert(createCustomerData);
 			if (error) throw error;
 			console.log("Customer created successfully!");
-			goto("/customers", { replaceState: true });
+			goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
