@@ -9,6 +9,7 @@
 	import { BarLoader } from 'svelte-loading-spinners';
 	import { navigating } from '$app/stores'
 	import { fade, fly } from 'svelte/transition';
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 
@@ -35,9 +36,10 @@
 		searchQuery
 	} = data);
 
-	// State variablesWu
+	// State variables
 	let loading = false;
 	let searchInput = searchQuery;
+	let transitionKey: number = 0;
 
 	// Column definitions
 	const columnNames: Record<string, string> = {
@@ -91,9 +93,9 @@
 			console.error("Chyba při ukládání nastavení filtrů:", error);
 		}
 	}
+
 	// Subscribe to changes and save settings
 	visibleColumnsStore.subscribe(saveTableSettings);
-
 
 	// Filter customers based on search
 	$: filteredCustomers = customers?.filter((customer) =>
@@ -144,8 +146,6 @@
 		const minutes = dateObj.getMinutes().toString().padStart(2, "0");
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
 	}
-
-	let transitionKey: number = 0;
 
 	// Navigation functions
 	async function previousPage() {
@@ -198,7 +198,7 @@
 		<div class="flex flex-col gap-2 md:flex-row items-center">
 			<div>
 				<button
-					on:click={() => goto("/customer/newcustomer")}
+					on:click={() => goto($ROUTES.ADMIN.CUSTOMER.NEW)}
 					class="invisible w-full p-4 px-5 btn btn-outline">
 					Vytvořit zákazníka
 				</button>

@@ -16,6 +16,7 @@
 	let updateMessage = "";
 	let errorMessage = "";
 
+
 	// Initialize new menu object with default values
 	let newMenu: Menu = {
 		id: "",
