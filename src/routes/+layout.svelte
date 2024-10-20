@@ -3,11 +3,14 @@
 		import "./banner.css";
 		import { page } from "$app/stores";
 		import GDPR from "$lib/gdpr/Gdpr.svelte";
-		import { goto, invalidate } from "$app/navigation";
+		import { invalidate } from "$app/navigation";
 		import { onMount } from "svelte";
 		import HeaderAdmin from "$lib/component/HeaderAdmin.svelte";
 		import HeaderCustomer from "$lib/component/HeaderCustomer.svelte";
 		import Footer from "$lib/component/Footer.svelte";
+		import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+
+
 		
 		export let data;
 		let { supabase, session, user } = data;
@@ -22,6 +25,7 @@
 			return () => data.subscription.unsubscribe();
 		});
 		$: isAdminRoute = $page.url.pathname.startsWith('/admin');
+		injectSpeedInsights();
 	</script>
 
 	<!-- <Header /> -->

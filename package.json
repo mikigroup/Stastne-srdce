@@ -45,6 +45,7 @@
 		"@supabase/supabase-js": "^2.45.3",
 		"@tanstack/svelte-table": "^8.19.3",
 		"@types/node": "^20.12.7",
+		"@vercel/speed-insights": "^1.0.12",
 		"animate.css": "^4.1.1",
 		"chart.js": "^4.4.4",
 		"cl-editor": "^2.3.0",
