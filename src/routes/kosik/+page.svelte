@@ -252,7 +252,7 @@
 							class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300">
 							<div class="col-span-1 font-light text-center">
 								<p>Den</p>
-	 						</div>
+							</div>
 							<div class="col-span-2 font-light text-center">
 								<p>Polévka</p>
 							</div>
@@ -269,16 +269,19 @@
 					</div>
 
 					<!-- Desktop cart -->
-					<div class="hidden max-w-screen-2xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
+					<div
+						class="hidden max-w-screen-2xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
 						{#if cartItems.length === 0}
-							<div class="flex flex-col items-center justify-center w-full overflow-hidden">
+							<div
+								class="flex flex-col items-center justify-center w-full overflow-hidden">
 								<div class="my-20 text-2xl font-bold text-center">
 									<p>Košík je prázdný...</p>
 								</div>
 							</div>
 						{:else}
 							{#each cartItems as cartItem (cartItem.id)}
-								<div class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid">
+								<div
+									class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid">
 									<div class="col-span-1 text-center">
 										<p class="border-r-2">
 											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
@@ -290,38 +293,40 @@
 									<div class="col-span-2 pl-5">
 										<p>{truncateText(cartItem.soup, 30)}</p>
 									</div>
-									<div class="col-span-5 font-light border-x-2 pl-5 m-3">
+									<div class="col-span-5 border-x-2 pl-5 m-3">
 										{#each cartItem.variants as variant, index}
-											<div class="flex justify-between items-center mb-2">
-												<span class="mr-2">{index + 1}. {truncateText(variant.value, 50)}</span>
+											<div class="">
+												{index + 1}. {truncateText(variant.value, 50)}
 											</div>
 										{/each}
 									</div>
-									<div class="col-span-2 text-center h-full flex flex-col items-center justify-center">
-										{#each cartItem.variants as variant}
-											<div class="flex items-center justify-between w-full mb-8">
-												<div class="w-16 mr-8">
-													<input
-														min="0"
-														max="99"
-														type="number"
-														bind:value={variant.quantity}
-														on:change={updateCartItems}
-														class="w-full text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600"
-													/>
-												</div>
-												<div class="flex-grow text-right">
-													<span>{(variant.price || 0) * variant.quantity} ,-</span>
-												</div>
+									<div class="col-span-2 gap-10 flex flex-row">
+										<div class="w-16 col-span-2 flex flex-col gap-5">
+											{#each cartItem.variants as variant}
+												<input
+													min="0"
+													max="99"
+													type="number"
+													bind:value={variant.quantity}
+													on:change={updateCartItems}
+													class="w-full text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
+											{/each}
+										</div>
+										<div class="col-span-2 flex flex-col">
+											<div class="flex flex-col gap-5">
+											{#each cartItem.variants as variant}
+												<div>{(variant.price || 0) * variant.quantity} ,-</div>
+											{/each}
 											</div>
-										{/each}
+										</div>
 									</div>
+
 									<div class="col-span-1 text-center">
 										<button
 											type="button"
 											class="hover:animate-spin"
-											on:click|preventDefault={() => removeItem(cartItem.id, cartItem.variants[0].value)}
-										>
+											on:click|preventDefault={() =>
+												removeItem(cartItem.id, cartItem.variants[0].value)}>
 											X
 										</button>
 									</div>

@@ -16,6 +16,7 @@ interface CartItem {
 	id: string;
 	date: string;
 	soup: string;
+	active: boolean;
 	price: number;
 	notes: string;
 	variants: {
