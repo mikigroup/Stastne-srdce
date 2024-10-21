@@ -17,11 +17,7 @@ interface CartItem {
 	date: string;
 	soup: string;
 	price: number;
-	active: boolean;
 	notes: string;
-	type: string;
-	nutri: string;
-	alergens: any;
 	variants: {
 		variantId: string;
 		quantity: number;
@@ -36,7 +32,7 @@ export const actions: Actions = {
 			throw redirect(303, "/login");
 		}
 
-		const email = session.user.email;
+		const email = session?.user?.email;
 		if (!email) {
 			throw error(400, "Email uživatele není k dispozici");
 		}
@@ -81,7 +77,7 @@ export const actions: Actions = {
 				.select(
 					"first_name, last_name, street, street_number, city, zip_code, telephone"
 				)
-				.eq("id", session.user.id)
+				.eq("id", session?.user?.id)
 				.single();
 			if (customerError) throw customerError;
 
@@ -98,7 +94,7 @@ export const actions: Actions = {
 				customer_zip_code: customer.zip_code,
 				customer_telephone: customer.telephone,
 				customer_email: email,
-				user_id: session.user.id,
+				user_id: session?.user?.id,
 				note,
 				total_pieces: totalPieces,
 				total_price: totalPrice

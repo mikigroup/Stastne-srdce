@@ -383,7 +383,7 @@
 										<input
 											formaction="?/sendOrder"
 											type="submit"
-											class="w-full px-4 py-2 text-center text-white bg-green-600 rounded-lg shadow-md hover:text-black hover:cursor-pointer"
+											class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black"
 											value={loading ? "Odesílá se..." : "Odeslat"}
 											disabled={loading} />
 									</div>
