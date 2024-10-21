@@ -6,7 +6,6 @@ export const load: PageServerLoad = async ({
 }) => {
 	// Extract customerId from route parameters
 	const id = params.customerId;
-	// Query Supabase for customer data
 	const { data: customers, error } = await supabase
 		.from("customers")
 		.select(
@@ -33,6 +32,5 @@ export const load: PageServerLoad = async ({
 		console.error("Error fetching customers:", error);
 		throw error;
 	}
-	// Return the fetched customer data
 	return { customers };
 };
