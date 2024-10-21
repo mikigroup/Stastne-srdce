@@ -10,8 +10,6 @@
 		import Footer from "$lib/component/Footer.svelte";
 		import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
-
-		
 		export let data;
 		let { supabase, session, user } = data;
 		$: ({ supabase, session, user  } = data);

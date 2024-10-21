@@ -44,6 +44,7 @@
 		allergens: Database["public"]["Tables"]["allergens"]["Row"][]
 	) {
 		menu.variants[variantIndex].allergens = allergens;
+		dispatch("update", menu);
 	}
 
 	// Update ingredients for a specific menu variant

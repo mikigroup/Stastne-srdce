@@ -43,13 +43,17 @@
 				.eq("id", menu.id)
 				.select();
 
-			if (menuError) throw menuError;
+			if (menuError) {
+				console.error("Chyba při aktualizaci hlavního menu:", menuError);
+				throw menuError;
+			}
 
 			console.log("Hlavní menu aktualizováno:", updatedMenuData);
 
 			// Aktualizace variant
+			// Aktualizace variant
 			for (const variant of menu.variants) {
-				const { error: variantError } = await supabase
+				const { data: updatedVariant, error: variantError } = await supabase
 					.from('menu_variants')
 					.upsert({
 						menu_id: menu.id,
@@ -59,29 +63,29 @@
 						price: variant.price
 					}, {
 						onConflict: 'id'
-					});
+					})
+					.select()
+					.single();
 
 				if (variantError) throw variantError;
-			}
 
-			// Aktualizace alergenů menu
-			await supabase.from('menu_allergens').delete().eq('menu_id', menu.id);
-			console.log("Alergeny k uložení:", menu.allergens);
-			for (const allergen of menu.allergens) {
-				await supabase.from('menu_allergens').insert({
-					menu_id: menu.id,
-					allergen_id: allergen.id
-				});
-			}
+				// Aktualizace alergenů varianty
+				await supabase.from('variant_allergens').delete().eq('variant_id', variant.id);
+				for (const allergen of variant.allergens) {
+					await supabase.from('variant_allergens').insert({
+						variant_id: variant.id,
+						allergen_id: allergen.id
+					});
+				}
 
-			// Aktualizace ingrediencí menu
-			await supabase.from('menu_ingredients').delete().eq('menu_id', menu.id);
-			console.log("Ingredience k uložení:", menu.ingredients);
-			for (const ingredient of menu.ingredients) {
-				await supabase.from('menu_ingredients').insert({
-					menu_id: menu.id,
-					ingredient_id: ingredient.id
-				});
+				// Aktualizace ingrediencí varianty
+				await supabase.from('variant_ingredients').delete().eq('variant_id', variant.id);
+				for (const ingredient of variant.ingredients) {
+					await supabase.from('variant_ingredients').insert({
+						variant_id: variant.id,
+						ingredient_id: ingredient.id
+					});
+				}
 			}
 
 			updateMessage = "Menu upraveno!";

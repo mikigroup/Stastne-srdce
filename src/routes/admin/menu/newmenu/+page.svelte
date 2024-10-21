@@ -68,22 +68,36 @@
 
 			console.log("Basic menu created:", JSON.stringify(createdMenu, null, 2));
 
-			// 2. Add variants
+			// 2. Add variants and their allergens
 			if (newMenu.variants && newMenu.variants.length > 0) {
 				console.log("Adding variants:", JSON.stringify(newMenu.variants, null, 2));
-				const { data: createdVariants, error: variantsError } = await supabase
-					.from("menu_variants")
-					.insert(newMenu.variants.map((v, index) => ({
-						// Map each variant to a new object with the required structure
-						menu_id: createdMenu.id,
-						variant_number: (index + 1).toString(), // Convert index to string for variant number
-						description: v.description,
-						price: v.price
-					})))
-					.select();
+				for (let variant of newMenu.variants) {
+					const { data: createdVariant, error: variantError } = await supabase
+						.from("menu_variants")
+						.insert({
+							menu_id: createdMenu.id,
+							variant_number: (newMenu.variants.indexOf(variant) + 1).toString(),
+							description: variant.description,
+							price: variant.price
+						})
+						.select()
+						.single();
 
-				if (variantsError) throw variantsError;
-				console.log("Variants successfully added:", JSON.stringify(createdVariants, null, 2));
+					if (variantError) throw variantError;
+
+					// Add allergens for this variant
+					if (variant.allergens && variant.allergens.length > 0) {
+						const { error: variantAllergensError } = await supabase
+							.from("variant_allergens")
+							.insert(variant.allergens.map(a => ({
+								variant_id: createdVariant.id,
+								allergen_id: a.id
+							})));
+
+						if (variantAllergensError) throw variantAllergensError;
+					}
+				}
+				console.log("Variants and their allergens successfully added");
 			}
 
 			// 3. Add allergens

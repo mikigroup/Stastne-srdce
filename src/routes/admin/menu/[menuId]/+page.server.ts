@@ -3,7 +3,12 @@ import type { PageServerLoad } from "./$types";
 import type { Database } from "$lib/database.types";
 
 type Menu = Database["public"]["Tables"]["menus"]["Row"] & {
-	variants: Database["public"]["Tables"]["menu_variants"]["Row"][];
+	variants: (Database["public"]["Tables"]["menu_variants"]["Row"] & {
+		allergens: Database["public"]["Tables"]["allergens"]["Row"][];
+		ingredients: Database["public"]["Tables"]["ingredients"]["Row"][];
+	})[];
+	allergens: Database["public"]["Tables"]["allergens"]["Row"][];
+	ingredients: Database["public"]["Tables"]["ingredients"]["Row"][];
 };
 
 export const load: PageServerLoad = async ({
@@ -13,7 +18,8 @@ export const load: PageServerLoad = async ({
 	const { menuId } = params;
 
 	try {
-		// Načtení menu s variantami, alergeny a ingrediencemi
+		// Načtení menu s variantami, allergeny a ingrediencemi
+		// Load menu with variants, allergens and ingredients
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
@@ -21,8 +27,8 @@ export const load: PageServerLoad = async ({
         *,
         variants:menu_variants(
           *,
-          allergens:variant_allergens(allergen_id(id, name)),
-          ingredients:variant_ingredients(ingredient_id(id, name))
+          allergens:variant_allergens(allergen:allergens(*)),
+          ingredients:variant_ingredients(ingredient:ingredients(*))
         )
       `
 			)
@@ -33,7 +39,8 @@ export const load: PageServerLoad = async ({
 			throw error(404, "Menu not found");
 		}
 
-		// Načtení všech alergenů
+		// Načtení všech alergenů z DB (statické)
+		// Load all allergens from DB (static)
 		const { data: allergens, error: allergensError } = await supabase
 			.from("allergens")
 			.select("*");
@@ -44,6 +51,7 @@ export const load: PageServerLoad = async ({
 		}
 
 		// Načtení všech ingrediencí
+		// Load all ingredients
 		const { data: ingredients, error: ingredientsError } = await supabase
 			.from("ingredients")
 			.select("*");
@@ -54,9 +62,10 @@ export const load: PageServerLoad = async ({
 		}
 
 		// Načtení alergenů pro menu
+		// Load allergens for menu item
 		const { data: menuAllergens, error: menuAllergensError } = await supabase
 			.from("menu_allergens")
-			.select("allergen_id")
+			.select("allergen:allergens(*)")
 			.eq("menu_id", menuId);
 
 		if (menuAllergensError) {
@@ -65,10 +74,11 @@ export const load: PageServerLoad = async ({
 		}
 
 		// Načtení ingrediencí pro menu
+		// Load all ingredients for menu item
 		const { data: menuIngredients, error: menuIngredientsError } =
 			await supabase
 				.from("menu_ingredients")
-				.select("ingredient_id")
+				.select("ingredient:ingredients(*)")
 				.eq("menu_id", menuId);
 
 		if (menuIngredientsError) {
@@ -77,16 +87,20 @@ export const load: PageServerLoad = async ({
 		}
 
 		// Přidání alergenů a ingrediencí k menu
+		// Add alergens and ingredients to the menu
 		const fullMenu: Menu = {
 			...menu,
-			allergens: menuAllergens.map((ma) =>
-				allergens.find((a) => a.id === ma.allergen_id)
-			),
-			ingredients: menuIngredients.map((mi) =>
-				ingredients.find((i) => i.id === mi.ingredient_id)
-			)
+			allergens: menuAllergens.map((ma) => ma.allergen),
+			ingredients: menuIngredients.map((mi) => mi.ingredient),
+			variants: menu.variants.map((variant) => ({
+				...variant,
+				allergens: variant.allergens.map((va) => va.allergen),
+				ingredients: variant.ingredients.map((vi) => vi.ingredient)
+			}))
 		};
-		//console.log(fullMenu);
+
+		console.log("Full menu:", JSON.stringify(fullMenu, null, 2));
+
 		return {
 			menu: fullMenu,
 			allAllergens: allergens,
