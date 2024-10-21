@@ -125,7 +125,6 @@
 	}
 
 	let showModal = false;
-	let orderSubmitted = false;
 
 	function handleOrderSubmit() {
 		orderSubmitted = true;
@@ -312,7 +311,7 @@
 													class="w-full text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
 											{/each}
 										</div>
-										<div class="col-span-2 flex flex-col">
+										<div class="col-span-2">
 											<div class="flex flex-col gap-5">
 											{#each cartItem.variants as variant}
 												<div>{(variant.price || 0) * variant.quantity} ,-</div>
@@ -321,7 +320,8 @@
 										</div>
 									</div>
 
-									<div class="col-span-1 text-center">
+									<div class="col-span-2 flex flex-col gap-5">
+										{#each cartItem.variants as variant}
 										<button
 											type="button"
 											class="hover:animate-spin"
@@ -329,6 +329,7 @@
 												removeItem(cartItem.id, cartItem.variants[0].value)}>
 											X
 										</button>
+									{/each}
 									</div>
 								</div>
 							{/each}
