@@ -93,10 +93,10 @@ export const load: PageServerLoad = async ({
 			...menu,
 			allergens: menuAllergens.map((ma) => ma.allergen),
 			ingredients: menuIngredients.map((mi) => mi.ingredient),
-			variants: menu.variants.map((variant) => ({
+			variants: menu.variants.map((variant: any) => ({
 				...variant,
-				allergens: variant.allergens.map((va) => va.allergen),
-				ingredients: variant.ingredients.map((vi) => vi.ingredient)
+				allergens: variant.allergens.map((va: any) => va.allergen),
+				ingredients: variant.ingredients.map((vi: any) => vi.ingredient)
 			}))
 		};
 

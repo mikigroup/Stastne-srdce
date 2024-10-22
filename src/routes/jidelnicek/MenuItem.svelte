@@ -54,14 +54,14 @@
 	<div class="my-3 border rounded-lg shadow-md md:p-8">
 		<p class="text-lg">Polévka</p>
 		<div class="p-5 border rounded-2xl">
-			<p class="p-2 text-xl">{menu.soup}</p>
+			<p class="p-2 text-lg">{menu.soup}</p>
 		</div>
 
 		<div class="py-2 text-lg rounded-2xl">
 			<p class="text-lg mt-5">Hlavní jídlo</p>
 			{#each menu.variants as variant (variant.id)}
 					<div class="border rounded-2xl p-5">
-						<div class="p-2 text-xl">
+						<div class="p-2 text-lg">
 							{variant.description}
 						</div>
 						{#if !$page.data.session}

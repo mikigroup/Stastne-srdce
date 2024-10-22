@@ -28,19 +28,23 @@ interface Text {
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
+		// Výpočet datumového rozsahu pro menu
 		const now = new Date();
 		let startDate = new Date(
 			now.getFullYear(),
 			now.getMonth(),
 			now.getDate() + 1
 		);
+
+		// Pokud je po 17:00, začínáme od následujícího dne
 		if (now.getHours() >= 17) {
 			startDate.setDate(startDate.getDate() + 1);
 		}
 
 		const endDate = new Date(startDate);
-		endDate.setDate(endDate.getDate() + 27); // 4 týdny od startDate (28 dní - 1)
+		endDate.setDate(endDate.getDate() + 27); // 4 týdny od startDate
 
+		// Paralelní načtení menu a textů
 		const [menusResult, textsResult] = await Promise.all([
 			supabase
 				.from("menus")
@@ -69,23 +73,31 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			supabase.from("texts").select("*").eq("page", "jidelnicek")
 		]);
 
+		// Kontrola chyb při načítání menu
 		if (menusResult.error) {
 			console.error("Error fetching menus:", menusResult.error);
 			throw error(500, "Nepodařilo se načíst menu");
 		}
 
+		// Kontrola chyb při načítání textů
 		if (textsResult.error) {
 			console.error("Error fetching texts:", textsResult.error);
 			throw error(500, "Nepodařilo se načíst texty");
 		}
 
-		const menus = menusResult.data as Menu[];
+		// Seřazení variant pro každé menu
+		const menus = menusResult.data.map((menu) => ({
+			...menu,
+			variants: menu.variants.sort(
+				(a, b) => parseInt(a.variant_number) - parseInt(b.variant_number)
+			)
+		})) as Menu[];
+
 		const texts = textsResult.data as Text[];
 
 		// Rozdělení menu do týdnů
 		const weeks: Menu[][] = [[], [], [], []];
 		menus.forEach((menu) => {
-			// Přidáme kontrolu, zda menu.date není null
 			if (menu.date) {
 				const menuDate = new Date(menu.date);
 				const weekIndex = Math.floor(
@@ -96,10 +108,10 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				}
 			} else {
 				console.warn(`Menu s id ${menu.id} nemá nastavené datum.`);
-				// Zde můžete přidat další logiku pro zpracování menu bez data, pokud je to potřeba
 			}
 		});
 
+		// Vrácení zpracovaných dat
 		return {
 			menus,
 			weeks,
