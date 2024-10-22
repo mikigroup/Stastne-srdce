@@ -1,6 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
+import { CartItemsStore } from "$lib/stores/store";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -124,7 +125,7 @@ export const actions: Actions = {
 			const { data: insertedOrder, error: insertError } = await supabase
 				.from("orders")
 				.insert(orderData)
-				.select("*") // Vybereme všechna pole včetně id a order_number
+				.select("*")
 				.single();
 
 			if (insertError) {
@@ -192,6 +193,7 @@ export const actions: Actions = {
 	}
 };
 
+// Definice funkce odesílání
 async function sendOrderConfirmationEmail(
 	email: string,
 	orderId: string,
@@ -211,29 +213,113 @@ async function sendOrderConfirmationEmail(
 ${items
 	.map(
 		(item) => `
-	<li>
-		Datum: ${new Date(item.date).toLocaleDateString("cs-CZ", {
+	<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #4A5568;
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .order-item {
+            background-color: #f8fafc;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .variant {
+            padding-left: 20px;
+            border-left: 3px solid #4A5568;
+            margin: 10px 0;
+        }
+        .total {
+            background-color: #4A5568;
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note {
+            background-color: #FEF3C7;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Potvrzení objednávky #${orderId}</h1>
+    </div>
+    
+    <div class="content">
+        <p>Vážený zákazníku,</p>
+        <p>děkujeme za Vaši objednávku. Níže najdete detaily své objednávky:</p>
+        
+        ${items.map(item => `
+            <div class="order-item">
+                <h3>📅 ${new Date(item.date).toLocaleDateString("cs-CZ", {
 			weekday: "long",
 			year: "numeric",
 			month: "long",
 			day: "numeric"
-		})}<br>
-	Polévka: ${item.soup}<br>
-${item.variants
-	.map(
-		(variant) => `
-	${variant.variant_number}. ${variant.description} - Množství: ${variant.quantity} - Cena: ${variant.price * variant.quantity} Kč
-	`
-	)
-	.join("<br>")}
-          </li>
-        `
-	)
-	.join("")}
-</ul>
-<p>Celkový počet kusů: ${totalPieces}</p>
-<p>Celková cena: ${totalPrice} Kč</p>
-${note ? `<p>Poznámka: ${note}</p>` : ""}
+		})}</h3>
+                <p>🥣 <strong>Polévka:</strong> ${item.soup}</p>
+                ${item.variants.map(variant => `
+                    <div class="variant">
+                        <p><strong>${variant.variant_number}.</strong> ${variant.description}</p>
+                        <p>Množství: ${variant.quantity} ks</p>
+                        <p>Cena: ${variant.price * variant.quantity} Kč</p>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('')}
+
+        <div class="total">
+            <p><strong>Celkový počet kusů:</strong> ${totalPieces}</p>
+            <p><strong>Celková cena:</strong> ${totalPrice} Kč</p>
+        </div>
+
+        ${note ? `
+            <div class="note">
+                <p><strong>Poznámka k objednávce:</strong></p>
+                <p>${note}</p>
+            </div>
+        ` : ''}
+    </div>
+
+    <div class="footer">
+        <p>Šťastné srdce<br>
+        info@stastnesrdce.cz<br>
+        www.stastnesrdce.cz</p>
+        <p>Děkujeme za Vaši důvěru!</p>
+    </div>
+</body>
+</html>
 	`
 	};
 

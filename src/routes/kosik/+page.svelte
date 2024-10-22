@@ -35,7 +35,7 @@
 			let last_name: string;
 
 			const { data: customerData, error } = await supabase
-				.from("customers")
+				.from("profiles")
 				.select("first_name, last_name")
 				.eq("id", session.user.id)
 				.single();
@@ -53,10 +53,21 @@
 		}
 	}
 
-	function handleOrderSubmit() {
-		if (form?.success) {
+	async function handleOrderSubmit(event) {
+		// Prevent default form submission
+		event.preventDefault();
+
+		const formData = new FormData(event.target);
+		const response = await fetch('?/sendOrder', {
+			method: 'POST',
+			body: formData
+		});
+
+		const result = await response.json();
+
+		if (result.success) {
 			CartItemsStore.clear();
-			goto("/thankyou");
+			await goto("/thankyou");
 		}
 	}
 
