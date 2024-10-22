@@ -3,6 +3,7 @@
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/database.types";
 	import { createEventDispatcher } from "svelte";
+	import { page } from "$app/stores";
 
 	// Component props
 	export let menu: Menu;
@@ -11,6 +12,14 @@
 
 	// Create event dispatcher for menu updates
 	const dispatch = createEventDispatcher<{ update: Menu }>();
+
+	// Inicializace variant s čísly pokud je nové menu
+	$: if ($page.url.pathname === "/admin/menu/newmenu" && menu.variants) {
+		menu.variants = menu.variants.map((variant, index) => ({
+			...variant,
+			variant_number: (index + 1).toString()
+		}));
+	}
 
 	// Reactive statement to dispatch update event whenever menu changes
 	$: {
@@ -121,7 +130,9 @@
 				{#each menu.variants as variant, index}
 					<div
 						class="variant-container mb-10 border rounded-xl p-5 border-gray-400 bg-neutral-100">
-						{`Menu variant_number:  ${index + 1}`}
+						<div class="rounded-2xl border w-3 px-4 py-1 flex justify-center bg-white mb-2">
+							{variant.variant_number}
+						</div>
 						<textarea
 							class="textarea textarea-bordered w-full"
 							placeholder={`Menu ${index + 1}`}

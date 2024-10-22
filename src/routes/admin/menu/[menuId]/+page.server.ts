@@ -33,6 +33,7 @@ export const load: PageServerLoad = async ({
       `
 			)
 			.eq("id", menuId)
+			.order("variant_number", { referencedTable: "menu_variants" })
 			.single();
 
 		if (menuError) {

@@ -1,4 +1,4 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({
 	url
 }) => {
 	if (!session) {
-		throw redirect(303, "/");
+		throw redirect(303, "/admin");
 	}
 
 	const page = parseInt(url.searchParams.get("page") || "1");
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({
 		.select(
 			`
       *,
-      variants:menu_variants(id, description)
+      variants:menu_variants(id, description, variant_number)
     `,
 			{ count: "exact" }
 		)

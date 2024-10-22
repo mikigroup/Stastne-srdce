@@ -292,6 +292,8 @@
 
 <section>
 	<div class="flex flex-wrap">
+
+		<!-- Nadpis -->
 		<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
 			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 				<div
@@ -308,6 +310,8 @@
 				Editovat
 			</div>
 		</div>
+		<!-- Nadpis -->
+
 
 		{#key transitionKey}
 			<div in:fade="{{ duration: 300 }}" out:fade="{{ duration: 300 }}">
@@ -336,11 +340,13 @@
 										title={cell.getValue() ?? ""}>
 										{#if cell.column.id === "variants"}
 											{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
-												<ol class="list-decimal pl-4">
-													{#each cell.getValue() as variant}
-														<li>{variant.description}</li>
+												<div class="pl-4">
+													{#each cell.getValue().sort((a, b) => a.variant_number - b.variant_number) as variant}
+														<div class="mb-1">
+															<span class="font-medium">{variant.variant_number}.</span> {variant.description}
+														</div>
 													{/each}
-												</ol>
+												</div>
 											{:else}
 												<span class="text-gray-400">Žádné varianty</span>
 											{/if}
