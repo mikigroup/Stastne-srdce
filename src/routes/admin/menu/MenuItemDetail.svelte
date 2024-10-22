@@ -121,6 +121,7 @@
 				{#each menu.variants as variant, index}
 					<div
 						class="variant-container mb-10 border rounded-xl p-5 border-gray-400 bg-neutral-100">
+						{`Menu variant_number:  ${index + 1}`}
 						<textarea
 							class="textarea textarea-bordered w-full"
 							placeholder={`Menu ${index + 1}`}
