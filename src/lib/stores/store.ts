@@ -26,6 +26,14 @@ function createCartStore() {
 		}
 	}
 
+	function sortVariants(variants: MenuVariant[]): MenuVariant[] {
+		return [...variants].sort((a, b) => {
+			const aNum = parseInt(a.variant_number);
+			const bNum = parseInt(b.variant_number);
+			return aNum - bNum;
+		});
+	}
+
 	return {
 		subscribe,
 		addItem: (item: CartItem) => {
@@ -49,13 +57,19 @@ function createCartStore() {
 								...newVariant,
 								quantity: 1
 							});
+							// Seřadit varianty po přidání nové
+							newItems[existingItemIndex].variants = sortVariants(
+								newItems[existingItemIndex].variants
+							);
 						}
 					});
 				} else {
-					// Add new item
+					// Add new item with sorted variants
 					newItems.push({
 						...item,
-						variants: item.variants.map((v) => ({ ...v, quantity: 1 }))
+						variants: sortVariants(
+							item.variants.map((v) => ({ ...v, quantity: 1 }))
+						)
 					});
 				}
 
@@ -74,8 +88,10 @@ function createCartStore() {
 						if (item.id === itemId) {
 							return {
 								...item,
-								variants: item.variants.map((v) =>
-									v.id === variantId ? { ...v, quantity } : v
+								variants: sortVariants(
+									item.variants.map((v) =>
+										v.id === variantId ? { ...v, quantity } : v
+									)
 								)
 							};
 						}
@@ -97,7 +113,9 @@ function createCartStore() {
 						if (item.id === itemId) {
 							return {
 								...item,
-								variants: item.variants.filter((v) => v.id !== variantId)
+								variants: sortVariants(
+									item.variants.filter((v) => v.id !== variantId)
+								)
 							};
 						}
 						return item;
