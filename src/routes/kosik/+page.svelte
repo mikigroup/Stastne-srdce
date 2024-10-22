@@ -5,12 +5,13 @@
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { browser } from '$app/environment';
 
 	export let data;
 	export let form: Actions;
 
 	let { session, supabase } = data;
+	let loading = false;
+	let showModal = false;
 	$: ({ session, supabase } = data);
 
 	// Store subscriptions
@@ -18,23 +19,21 @@
 	$: cartItems = $CartItemsStore;
 	$: totalPieces = $totalPiecesStore;
 
-	// Calculate total price safely
+	// Calculate total price
 	$: totalPrice = cartItems.reduce((sum, item) => {
 		if (!item?.variants?.length) return sum;
 		return sum + item.variants.reduce((variantSum, variant) =>
 			variantSum + ((variant.price || 0) * (variant.quantity || 0)), 0);
 	}, 0);
 
-	let loading = false;
-	let first_name = null;
-	let last_name = null;
-	let showModal = false;
-
 	async function getProfile() {
 		if (!session?.user?.id) return;
 
 		try {
 			loading = true;
+			let first_name: string;
+			let last_name: string;
+
 			const { data: customerData, error } = await supabase
 				.from("customers")
 				.select("first_name, last_name")
@@ -157,20 +156,20 @@
 
 					<!-- Desktop cart header -->
 					<div class="hidden max-w-screen-2xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid">
-						<div class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300">
-							<div class="col-span-1 font-light text-center">
+						<div class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300 text-center font-light">
+							<div class="col-span-1 border-r border-white">
 								<p>Den</p>
 							</div>
-							<div class="col-span-2 font-light text-center">
+							<div class="col-span-2 border-r border-white">
 								<p>Polévka</p>
 							</div>
-							<div class="col-span-5 font-light text-center">
+							<div class="col-span-5 border-r border-white">
 								<p>Menu</p>
 							</div>
-							<div class="col-span-2 font-light text-center">
+							<div class="col-span-2 border-r border-white">
 								<p>Počet / cena</p>
 							</div>
-							<div class="col-span-2 font-light text-center">
+							<div class="col-span-2">
 								<p>Odebrat</p>
 							</div>
 						</div>
@@ -186,27 +185,27 @@
 							</div>
 						{:else}
 							{#each cartItems as cartItem (cartItem.id)}
-								<div class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid">
-									<div class="col-span-1 text-center">
-										<p class="border-r-2">
+								<div class="items-center hidden pl-5 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid py-7 my-1">
+									<div class="col-span-1 text-center border-r-2">
+										<p class="">
 											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
 												month: "long",
 												day: "numeric"
 											})}
 										</p>
 									</div>
-									<div class="col-span-2 pl-5">
+									<div class="col-span-2 pl-5 border-r-2">
 										<p>{truncateText(cartItem.soup, 30)}</p>
 									</div>
-									<div class="col-span-5 border-x-2 pl-5 m-3">
+									<div class="col-span-5 pl-5 border-r-2 mr-1 flex gap-2 flex-col">
 										{#each cartItem.variants as variant, index}
 											<div class="">
 												{index + 1}. {truncateText(variant.description, 50)}
 											</div>
 										{/each}
 									</div>
-									<div class="col-span-2 gap-10 flex flex-row">
-										<div class="w-16 col-span-2 flex flex-col gap-5">
+									<div class="col-span-2 gap-8 flex flex-row pl-5">
+										<div class="w-16 col-span-2 flex flex-col gap-10">
 											{#each cartItem.variants as variant}
 												<input
 													min="0"
@@ -218,7 +217,7 @@
 											{/each}
 										</div>
 										<div class="col-span-2">
-											<div class="flex flex-col gap-5">
+											<div class="flex flex-col gap-11">
 												{#each cartItem.variants as variant}
 													<div>{(variant.price || 0) * (variant.quantity || 0)} Kč</div>
 												{/each}
@@ -226,7 +225,7 @@
 										</div>
 									</div>
 
-									<div class="col-span-2 flex flex-col gap-5">
+									<div class="col-span-2 flex flex-col gap-11">
 										{#each cartItem.variants as variant}
 											<button
 												type="button"
