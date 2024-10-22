@@ -1,171 +1,94 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
-	import CartItemsStore from "$lib/stores/store";
-	import { totalPiecesStore } from "$lib/stores/totalPiecesStore";
+	import { CartItemsStore, totalPiecesStore } from "$lib/stores/store";
 	import { page } from "$app/stores";
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
+	import { browser } from '$app/environment';
 
 	export let data;
 	export let form: Actions;
 
-	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
+
+	// Store subscriptions
+	let cartItems: any[] = [];
+	$: cartItems = $CartItemsStore;
 	$: totalPieces = $totalPiecesStore;
-	let cartItems: any = [];
 
-	$: totalPrice = $CartItemsStore.reduce((sum, item) => {
-		if (!item || !item.variants || !Array.isArray(item.variants)) {
-			console.error("Invalid item structure:", item);
-			return sum;
-		}
-		const itemTotalPrice = item.variants.reduce((itemSum, variant) => {
-			if (
-				!variant ||
-				typeof variant.quantity !== "number" ||
-				typeof variant.price !== "number"
-			) {
-				console.error("Invalid variant structure:", variant);
-				return itemSum;
-			}
-			return itemSum + variant.price * variant.quantity;
-		}, 0);
-		return sum + itemTotalPrice;
+	// Calculate total price safely
+	$: totalPrice = cartItems.reduce((sum, item) => {
+		if (!item?.variants?.length) return sum;
+		return sum + item.variants.reduce((variantSum, variant) =>
+			variantSum + ((variant.price || 0) * (variant.quantity || 0)), 0);
 	}, 0);
-
-	onMount(() => {
-		const unsubscribe = CartItemsStore.subscribe((value) => {
-			cartItems = value;
-		});
-
-		return () => {
-			unsubscribe();
-		};
-	});
-
-	function removeItem(itemId: any, variantValue: any) {
-		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems
-				.map((item: any) => {
-					if (item.id === itemId) {
-						const updatedVariants = item.variants.filter(
-							(variant: any) => variant.value !== variantValue
-						);
-						if (updatedVariants.length === 0) {
-							return null;
-						}
-						return {
-							...item,
-							variants: updatedVariants
-						};
-					}
-					return item;
-				})
-				.filter((item) => item !== null);
-		});
-	}
-
-	function updateCartItems() {
-		CartItemsStore.update((currentCartItems) => {
-			return currentCartItems
-				.map((item: any) => {
-					const updatedVariants = item.variants
-						.map((variant: any) => ({
-							...variant,
-							quantity: variant.quantity < 0 ? 0 : variant.quantity
-						}))
-						.filter((variant: any) => variant.quantity > 0);
-
-					if (updatedVariants.length === 0) {
-						return null;
-					}
-
-					return {
-						...item,
-						variants: updatedVariants
-					};
-				})
-				.filter((item) => item !== null);
-		});
-	}
 
 	let loading = false;
 	let first_name = null;
 	let last_name = null;
-
-	const email = session?.user?.email;
+	let showModal = false;
 
 	async function getProfile() {
+		if (!session?.user?.id) return;
+
 		try {
 			loading = true;
-			if (session && session.user) {
-				const { data, error, status } = await supabase
-					.from("customers")
-					.select(`first_name, last_name`)
-					.eq("id", session.user.id)
-					.single();
+			const { data: customerData, error } = await supabase
+				.from("customers")
+				.select("first_name, last_name")
+				.eq("id", session.user.id)
+				.single();
 
-				if (data) {
-					first_name = data.first_name;
-					last_name = data.last_name;
-				}
+			if (error && error.code !== "406") throw error;
 
-				if (error && status !== 406) {
-					console.error(error);
-				}
+			if (customerData) {
+				first_name = customerData.first_name;
+				last_name = customerData.last_name;
 			}
 		} catch (error) {
-			if (error instanceof Error) {
-				alert(error.message);
-			}
+			console.error("Error fetching profile:", error);
 		} finally {
 			loading = false;
 		}
 	}
 
-	let showModal = false;
-
 	function handleOrderSubmit() {
-		orderSubmitted = true;
+		if (form?.success) {
+			CartItemsStore.clear();
+			goto("/thankyou");
+		}
+	}
+
+	function truncateText(text: string, maxLength: number) {
+		if (!text) return '';
+		return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 	}
 
 	onMount(() => {
 		getProfile();
-		if (form?.success) {
-			CartItemsStore.set([]);
-			localStorage.removeItem("cartItems");
-			goto("/thankyou");
-		}
 	});
-
-	function truncateText(text: string, maxLength: number) {
-		return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-	}
-
-	$: console.log("CartItemsStore:", $CartItemsStore);
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Košík</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
+
 <main>
 	<section>
 		{#if $page.data.session}
 			<form method="POST" action="?/sendOrder" on:submit={handleOrderSubmit}>
-				<div
-					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-					<h1
-						class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+				<div class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
+					<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 						Košík
 					</h1>
 
 					<!-- Mobile cart -->
 					<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
-						{#if cartItems.length === 0}
-							<div
-								class="flex flex-col items-center justify-center w-full overflow-hidden">
+						{#if !cartItems.length}
+							<div class="flex flex-col items-center justify-center w-full overflow-hidden">
 								<div class="my-20 text-xl font-bold text-center md:text-2xl">
 									<p>Košík je prázdný...</p>
 								</div>
@@ -192,14 +115,14 @@
 									</div>
 									<hr />
 									<div class="m-5">
-										{#each cartItem.variants as variant, index}
+										{#each cartItem.variants as variant}
 											<div class="flex justify-between items-center mb-2">
-												<span class="mr-2"
-													>{index + 1}. {truncateText(variant.value, 50)}</span>
+                        <span class="mr-2">
+                          {variant.variant_number}. {truncateText(variant.description, 50)}
+                        </span>
 												<button
 													class="hover:animate-spin"
-													on:click|preventDefault={() =>
-														removeItem(cartItem.id, variant.value)}>
+													on:click|preventDefault={() => CartItemsStore.removeItem(cartItem.id, variant.id)}>
 													X
 												</button>
 											</div>
@@ -215,7 +138,7 @@
 												max="99"
 												type="number"
 												bind:value={variant.quantity}
-												on:change={updateCartItems}
+												on:change={() => CartItemsStore.updateQuantity(cartItem.id, variant.id, variant.quantity)}
 												class="w-16 text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
 										{/each}
 									</div>
@@ -224,20 +147,8 @@
 										<p><strong>Cena</strong></p>
 									</div>
 									<div class="pl-2 mb-5 font-light text-center">
-										{cartItem.variants.reduce(
-											(total, variant) =>
-												total + (variant.price || 0) * variant.quantity,
-											0
-										)} ,-
-									</div>
-									<hr />
-									<div class="font-light text-center">
-										<button
-											class="hover:animate-spin"
-											on:click|preventDefault={() =>
-												removeItem(cartItem.id, cartItem.variants[0].value)}>
-											X
-										</button>
+										{cartItem.variants.reduce((total, variant) =>
+											total + (variant.price || 0) * (variant.quantity || 0), 0)} Kč
 									</div>
 								</div>
 							{/each}
@@ -245,10 +156,8 @@
 					</div>
 
 					<!-- Desktop cart header -->
-					<div
-						class="hidden max-w-screen-2xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid">
-						<div
-							class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300">
+					<div class="hidden max-w-screen-2xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid">
+						<div class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300">
 							<div class="col-span-1 font-light text-center">
 								<p>Den</p>
 							</div>
@@ -268,19 +177,16 @@
 					</div>
 
 					<!-- Desktop cart -->
-					<div
-						class="hidden max-w-screen-2xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
-						{#if cartItems.length === 0}
-							<div
-								class="flex flex-col items-center justify-center w-full overflow-hidden">
+					<div class="hidden max-w-screen-2xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
+						{#if !cartItems.length}
+							<div class="flex flex-col items-center justify-center w-full overflow-hidden">
 								<div class="my-20 text-2xl font-bold text-center">
 									<p>Košík je prázdný...</p>
 								</div>
 							</div>
 						{:else}
 							{#each cartItems as cartItem (cartItem.id)}
-								<div
-									class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid">
+								<div class="items-center hidden pl-5 my-1 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid">
 									<div class="col-span-1 text-center">
 										<p class="border-r-2">
 											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
@@ -295,7 +201,7 @@
 									<div class="col-span-5 border-x-2 pl-5 m-3">
 										{#each cartItem.variants as variant, index}
 											<div class="">
-												{index + 1}. {truncateText(variant.value, 50)}
+												{index + 1}. {truncateText(variant.description, 50)}
 											</div>
 										{/each}
 									</div>
@@ -307,37 +213,36 @@
 													max="99"
 													type="number"
 													bind:value={variant.quantity}
-													on:change={updateCartItems}
+													on:change={() => CartItemsStore.updateQuantity(cartItem.id, variant.id, variant.quantity)}
 													class="w-full text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
 											{/each}
 										</div>
 										<div class="col-span-2">
 											<div class="flex flex-col gap-5">
-											{#each cartItem.variants as variant}
-												<div>{(variant.price || 0) * variant.quantity} ,-</div>
-											{/each}
+												{#each cartItem.variants as variant}
+													<div>{(variant.price || 0) * (variant.quantity || 0)} Kč</div>
+												{/each}
 											</div>
 										</div>
 									</div>
 
 									<div class="col-span-2 flex flex-col gap-5">
 										{#each cartItem.variants as variant}
-										<button
-											type="button"
-											class="hover:animate-spin"
-											on:click|preventDefault={() =>
-												removeItem(cartItem.id, cartItem.variants[0].value)}>
-											X
-										</button>
-									{/each}
+											<button
+												type="button"
+												class="hover:animate-spin"
+												on:click|preventDefault={() => CartItemsStore.removeItem(cartItem.id, variant.id)}>
+												X
+											</button>
+										{/each}
 									</div>
 								</div>
 							{/each}
 						{/if}
 					</div>
 
-					<!-- Total and confirmation -->
-					{#if cartItems.length !== 0}
+					<!-- Total and checkout -->
+					{#if cartItems.length}
 						<div class="mt-5 border-2 rounded-lg">
 							<div class="grid p-5 border-b-2">
 								<label for="note">Poznámka</label>
@@ -349,42 +254,32 @@
 									cols="50"
 									placeholder="poznámka k objednávce" />
 							</div>
+
 							<div class="grid p-5 border-b-2 justify-items-end">
 								{#if $page.data.session}
 									<p class="text-sm text-gray-500">
 										Máte již vyplněný
-										<a
-											href="/profile"
-											class="text-sm text-blue-500 underline hover:text-blue-700"
-											>účet?</a>
+										<a href="/profile" class="text-sm text-blue-500 underline hover:text-blue-700">
+											účet?
+										</a>
 									</p>
 								{/if}
 								<p>
-									Celkově:
-									<strong>{totalPieces}ks</strong>
-									obědů v ceně
-									<strong>{totalPrice}</strong>
-									Kč
+									Celkově: <strong>{totalPieces} ks</strong> obědů v ceně
+									<strong>{totalPrice} Kč</strong>
 								</p>
 							</div>
+
 							<div class="m-5">
-								{#if $page.data.session}
-									<button
-										on:click={() => (showModal = true)}
-										type="button"
-										class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black">
-										<span>Potvrzení košíku</span>
-									</button>
-								{:else}
-									<a
-										class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black hover:text-black"
-										href="/login">Přihlaš se</a>
-								{/if}
+								<button
+									on:click={() => (showModal = true)}
+									type="button"
+									class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black">
+									<span>Potvrzení košíku</span>
+								</button>
+
 								<Modal bind:showModal>
-									<input
-										type="hidden"
-										name="cartItems"
-										value={JSON.stringify($CartItemsStore)} />
+									<input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
 									<div>
 										<input
 											formaction="?/sendOrder"
@@ -400,7 +295,9 @@
 				</div>
 			</form>
 		{:else}
-			<p>Pro zobrazení košíku se musíte přihlásit.</p>
+			<div class="flex justify-center items-center h-screen">
+				<p class="text-xl">Pro zobrazení košíku se musíte přihlásit.</p>
+			</div>
 		{/if}
 	</section>
 </main>

@@ -1,6 +1,6 @@
 <script>
 import { page } from "$app/stores";
-import {totalPiecesStore} from "$lib/stores/totalPiecesStore";
+import { totalPiecesStore } from "$lib/stores/store";
 import { goto } from "$app/navigation";
 import { readable } from "svelte/store";
 import { slide } from "svelte/transition";

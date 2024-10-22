@@ -1,3 +1,4 @@
+/*
 import { derived } from "svelte/store";
 import CartItemsStore from "$lib/stores/store";
 
@@ -15,3 +16,4 @@ export const totalPiecesStore = derived(CartItemsStore, ($CartItemsStore) => {
 		return sum + item.quantity;
 	}, 0);
 });
+*/
