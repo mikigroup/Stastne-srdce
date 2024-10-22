@@ -1,7 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
-import { CartItemsStore } from "$lib/stores/store";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -207,13 +206,7 @@ async function sendOrderConfirmationEmail(
 		to: email,
 		subject: `Šťastné srdce - Potvrzení objednávky`,
 		html: `
-<h1>Potvrzení objednávky #${orderId}</h1>
-<p>Děkujeme za Vaši objednávku. Zde jsou detaily:</p>
-<ul>
-${items
-	.map(
-		(item) => `
-	<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
@@ -280,36 +273,48 @@ ${items
         <p>Vážený zákazníku,</p>
         <p>děkujeme za Vaši objednávku. Níže najdete detaily své objednávky:</p>
         
-        ${items.map(item => `
+        ${items
+					.map(
+						(item) => `
             <div class="order-item">
                 <h3>📅 ${new Date(item.date).toLocaleDateString("cs-CZ", {
-			weekday: "long",
-			year: "numeric",
-			month: "long",
-			day: "numeric"
-		})}</h3>
+									weekday: "long",
+									year: "numeric",
+									month: "long",
+									day: "numeric"
+								})}</h3>
                 <p>🥣 <strong>Polévka:</strong> ${item.soup}</p>
-                ${item.variants.map(variant => `
+                ${item.variants
+									.map(
+										(variant) => `
                     <div class="variant">
                         <p><strong>${variant.variant_number}.</strong> ${variant.description}</p>
                         <p>Množství: ${variant.quantity} ks</p>
                         <p>Cena: ${variant.price * variant.quantity} Kč</p>
                     </div>
-                `).join('')}
+                `
+									)
+									.join("")}
             </div>
-        `).join('')}
+        `
+					)
+					.join("")}
 
         <div class="total">
             <p><strong>Celkový počet kusů:</strong> ${totalPieces}</p>
             <p><strong>Celková cena:</strong> ${totalPrice} Kč</p>
         </div>
 
-        ${note ? `
+        ${
+					note
+						? `
             <div class="note">
                 <p><strong>Poznámka k objednávce:</strong></p>
                 <p>${note}</p>
             </div>
-        ` : ''}
+        `
+						: ""
+				}
     </div>
 
     <div class="footer">
@@ -320,7 +325,7 @@ ${items
     </div>
 </body>
 </html>
-	`
+    `
 	};
 
 	try {

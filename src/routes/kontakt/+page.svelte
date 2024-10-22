@@ -43,6 +43,7 @@
 	<meta name="description" content="Kontakt" />
 	<script src="https://www.google.com/recaptcha/api.js?render={key}"></script>
 </svelte:head>
+
 <main>
 	<section class="">
 		<div
