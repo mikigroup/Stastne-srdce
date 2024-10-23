@@ -19,6 +19,25 @@
 	let isPaid: boolean = order?.pay_state || false;
 	let note: string = order?.note ?? "";
 
+	// Fakturační údaje
+	let customer_email: string = order?.customer_email ?? "";
+	let customer_first_name: string = order?.customer_first_name ?? "";
+	let customer_last_name: string = order?.customer_last_name ?? "";
+	let customer_street: string = order?.customer_street ?? "";
+	let customer_street_number: string = order?.customer_street_number ?? "";
+	let customer_city: string = order?.customer_city ?? "";
+	let customer_zip_code: string = order?.customer_zip_code ?? "";
+	let customer_telephone: string = order?.customer_telephone ?? "";
+
+	// Dodací údaje
+	let delivery_first_name: string = order?.delivery_first_name ?? "";
+	let delivery_last_name: string = order?.delivery_last_name ?? "";
+	let delivery_street: string = order?.delivery_street ?? "";
+	let delivery_street_number: string = order?.delivery_street_number ?? "";
+	let delivery_city: string = order?.delivery_city ?? "";
+	let delivery_zip_code: string = order?.delivery_zip_code ?? "";
+	let delivery_telephone: string = order?.delivery_telephone ?? "";
+
 	let updateMessage = "";
 
 	async function updateOrder() {
@@ -33,7 +52,22 @@
 				currency: selectedCurrency,
 				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
-				note
+				note,
+				customer_email,
+				customer_first_name,
+				customer_last_name,
+				customer_street,
+				customer_street_number,
+				customer_city,
+				customer_zip_code,
+				customer_telephone,
+				delivery_first_name,
+				delivery_last_name,
+				delivery_street,
+				delivery_street_number,
+				delivery_city,
+				delivery_zip_code,
+				delivery_telephone
 			};
 
 			const { data, error } = await supabase
@@ -144,10 +178,25 @@
 						date={order?.date}
 						isValidDate={isValidDate}
 						{selectedPaymentMethod}
-						{selectedOrderState}
-						{selectedCurrency}
-						{selectedShippingMethod}
-						{isPaid}
+						bind:selectedOrderState
+						bind:selectedCurrency
+						bind:selectedShippingMethod
+						bind:isPaid
+						{customer_email}
+						{customer_first_name}
+						{customer_last_name}
+						{customer_street}
+						{customer_street_number}
+						{customer_city}
+						{customer_zip_code}
+						{customer_telephone}
+						{delivery_first_name}
+						{delivery_last_name}
+						{delivery_street}
+						{delivery_street_number}
+						{delivery_city}
+						{delivery_zip_code}
+						{delivery_telephone}
 					/>
 				</div>
 

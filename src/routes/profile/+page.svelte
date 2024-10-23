@@ -153,7 +153,13 @@
 							{#if visible}
 								<div><p class="w-24 cursor-pointer">Méně</p></div>
 							{:else}
-								<div><p class="w-36 cursor-pointer lg:tooltip" data-tip="Klikni pro více informací">Více informací</p></div>
+								<div>
+									<p
+										class="w-36 cursor-pointer lg:tooltip"
+										data-tip="Klikni pro více informací">
+										Více informací
+									</p>
+								</div>
 							{/if}
 						</div>
 						{#if visible}
@@ -311,46 +317,44 @@
 								class="w-full text-left transition-all duration-300 ease-in-out"
 								class:underline={selectedOrderId === order.id}
 								class:text-xl={selectedOrderId === order.id}
-              	on:click={() => toggleOrderDetails(order.id)}>
+								on:click={() => toggleOrderDetails(order.id)}>
 								Objednávka <strong>{order.order_number}</strong> zde dne {formatDate(
 									order.created_at
 								)}
 							</button>
 							{#if expandedOrders[order.id]}
-									<div class="border p-5 rounded-xl bg-white">
-										<p>
-											<strong>Celková cena:</strong>
-											{order.total_price}
-											{order.currency}
+								<div class="border p-5 rounded-xl bg-white">
+									<p>
+										<strong>Celková cena:</strong>
+										{order.total_price}
+										{order.currency}
+									</p>
+									<p><strong>Stav:</strong> {order.state}</p>
+								</div>
+								<h3 class="mt-2">Položky:</h3>
+								{#each order.grouped_items as group}
+									<div class="mb-4 border p-5 rounded-xl bg-white">
+										<h4 class="font-semibold underline">
+											Menu ze dne: {formatDate(group.date)}
+										</h4>
+										<p class="py-2">
+											<strong>Polévka:</strong>
+											{group.items[0].variant.menu.soup}
 										</p>
-										<p><strong>Stav:</strong> {order.state}</p>
+										<ul class="list-disc pl-4">
+											{#each group.items as item}
+												<strong>Varianta:</strong>
+												{item.variant.variant_number} - {item.variant
+													.description}<br />
+												<strong>Cena:</strong>
+												{item.price}<br />
+												<strong>Množství:</strong>
+												{item.quantity}
+												<br /> <br />
+											{/each}
+										</ul>
 									</div>
-									<h3 class="mt-2">Položky:</h3>
-									{#each order.grouped_items as group}
-										<div class="mb-4 border p-5 rounded-xl bg-white">
-											<h4 class="font-semibold underline">
-												Menu ze dne: {formatDate(group.date)}
-											</h4>
-											<p class="py-2">
-												<strong>Polévka:</strong>
-												{group.items[0].variant.menu.soup}
-											</p>
-											<ul class="list-disc pl-4">
-												{#each group.items as item}
-													<strong>Varianta:</strong>
-													{item.variant.variant_number} - {item.variant
-														.description}<br />
-													<strong>Cena:</strong>
-													{item.price}<br />
-													<strong>Množství:</strong>
-													{item.quantity}
-													<br />		<br />
-												{/each}
-											</ul>
-										</div>
-									{/each}
-
-
+								{/each}
 							{/if}
 						</li>
 					{/each}

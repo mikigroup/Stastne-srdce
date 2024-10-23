@@ -6,12 +6,31 @@
 	export let selectedPaymentMethod = "";
 	export let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
 	export let selectedOrderState = "";
-	export let orderStateOptions = ["Přijata", "Expedována", "Vyfakturována"];
+	export let orderStateOptions = ["Nová", "Expedovaná", "Vyfakturovaná"];
 	export let selectedCurrency = "";
 	export let currencyOptions = ["CZK", "EUR", "USD"];
 	export let selectedShippingMethod = "";
 	export let shippingMethodOptions = ["Osobní odběr", "Kurýr", "Česká pošta"];
 	export let isPaid = false;
+
+	// Fakturační údaje
+	export let customer_email = "";
+	export let customer_first_name = "";
+	export let customer_last_name = "";
+	export let customer_street = "";
+	export let customer_street_number = "";
+	export let customer_city = "";
+	export let customer_zip_code = "";
+	export let customer_telephone = "";
+
+	// Dodací údaje
+	export let delivery_first_name = "";
+	export let delivery_last_name = "";
+	export let delivery_street = "";
+	export let delivery_street_number = "";
+	export let delivery_city = "";
+	export let delivery_zip_code = "";
+	export let delivery_telephone = "";
 
 	function handleDateInput(event) {
 		const enteredDate = event.target.value;
@@ -50,9 +69,10 @@
 				</label>
 				<input
 					type="text"
+					disabled
 					placeholder=""
 					readonly
-					class="input input-bordered w-full"
+					class="input input-bordered w-full !border-white !text-black"
 					value={order?.order_number ?? ""}
 				/>
 			</div>
@@ -115,7 +135,10 @@
 						<label class="label">
 							<span class="label-text">Doprava</span>
 						</label>
-						<select class="select select-bordered w-full" bind:value={selectedShippingMethod}>
+						<select
+							class="select select-bordered w-full"
+							bind:value={selectedShippingMethod}
+						>
 							{#each shippingMethodOptions as method}
 								<option value={method}>{method}</option>
 							{/each}
@@ -151,8 +174,9 @@
 				</label>
 				<input
 					type="text"
+					disabled
 					placeholder="E-mail"
-					class="input input-bordered w-full"
+					class="input input-bordered w-full !border-white !text-black"
 					bind:value={order.customer_email}
 				/>
 			</div>
