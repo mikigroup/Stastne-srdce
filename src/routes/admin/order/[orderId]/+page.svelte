@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fade, fly } from "svelte/transition";
+	import { fly } from "svelte/transition";
 	import OrderItemDetail from "../OrderItemDetail.svelte";
+	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 	let { session, supabase, order } = data;
@@ -89,7 +90,7 @@
 	}
 
 	async function back() {
-		await goto("/admin/order");
+		await goto($ROUTES.ADMIN.ORDER.LIST);
 	}
 </script>
 

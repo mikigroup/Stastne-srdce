@@ -24,6 +24,7 @@ export const load: PageServerLoad = async ({
 			{ count: "exact" }
 		)
 		.order("date", { ascending: false })
+		//.order("variants.id", { ascending: false })
 		.eq("deleted", false);
 
 	if (searchQuery) {

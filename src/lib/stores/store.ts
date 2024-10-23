@@ -18,20 +18,31 @@ export interface CartItem {
 function createCartStore() {
 	const { subscribe, set, update } = writable<CartItem[]>([]);
 
-	// Načtení dat z localStorage při inicializaci
-	if (typeof window !== "undefined") {
-		const stored = localStorage.getItem("cartItems");
-		if (stored) {
-			set(JSON.parse(stored));
-		}
+	// Funkce pro řazení podle datumu
+	function sortByDate(items: CartItem[]): CartItem[] {
+		return [...items].sort((a, b) => {
+			const dateA = new Date(a.date);
+			const dateB = new Date(b.date);
+			return dateA.getTime() - dateB.getTime();
+		});
 	}
 
+	// Funkce pro řazení variant
 	function sortVariants(variants: MenuVariant[]): MenuVariant[] {
 		return [...variants].sort((a, b) => {
 			const aNum = parseInt(a.variant_number);
 			const bNum = parseInt(b.variant_number);
 			return aNum - bNum;
 		});
+	}
+
+	// Načtení a seřazení dat z localStorage při inicializaci
+	if (typeof window !== "undefined") {
+		const stored = localStorage.getItem("cartItems");
+		if (stored) {
+			const items = JSON.parse(stored);
+			set(sortByDate(items));
+		}
 	}
 
 	return {
@@ -57,7 +68,6 @@ function createCartStore() {
 								...newVariant,
 								quantity: 1
 							});
-							// Seřadit varianty po přidání nové
 							newItems[existingItemIndex].variants = sortVariants(
 								newItems[existingItemIndex].variants
 							);
@@ -73,12 +83,13 @@ function createCartStore() {
 					});
 				}
 
-				// Uložení do localStorage
+				// Sort by date and save
+				const sortedItems = sortByDate(newItems);
 				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(newItems));
+					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
 				}
 
-				return newItems;
+				return sortedItems;
 			});
 		},
 		updateQuantity: (itemId: string, variantId: string, quantity: number) => {
@@ -99,11 +110,13 @@ function createCartStore() {
 					})
 					.filter((item) => item.variants.some((v) => v.quantity > 0));
 
+				// Sort by date and save
+				const sortedItems = sortByDate(newItems);
 				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(newItems));
+					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
 				}
 
-				return newItems;
+				return sortedItems;
 			});
 		},
 		removeItem: (itemId: string, variantId: string) => {
@@ -122,11 +135,13 @@ function createCartStore() {
 					})
 					.filter((item) => item.variants.length > 0);
 
+				// Sort by date and save
+				const sortedItems = sortByDate(newItems);
 				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(newItems));
+					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
 				}
 
-				return newItems;
+				return sortedItems;
 			});
 		},
 		clear: () => {
@@ -165,6 +180,7 @@ function createTotalPiecesStore() {
 
 export const totalPiecesStore = createTotalPiecesStore();
 
+// Routes configuration
 export const ROUTES = readable({
 	ADMIN: {
 		BASE: "/admin",
