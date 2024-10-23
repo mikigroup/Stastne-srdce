@@ -1,4 +1,3 @@
-import { fail, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
@@ -13,8 +12,10 @@ export const load: PageServerLoad = async ({
 	let query = supabase
 		.from("orders")
 		.select("*", { count: "exact" })
-		.order("date", { ascending: false });
+		.order("date", { ascending: false })
+		.order("order_number", { ascending: false });
 
+	// TODO:
 	if (searchQuery) {
 		const parsedSearchQuery = parseInt(searchQuery, 10);
 		const searchConditions = [
