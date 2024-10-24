@@ -14,6 +14,7 @@
 	export let isPaid = false;
 
 	// Fakturační údaje
+
 	export let customer_email = "";
 	export let customer_first_name = "";
 	export let customer_last_name = "";
@@ -31,6 +32,7 @@
 	export let delivery_city = "";
 	export let delivery_zip_code = "";
 	export let delivery_telephone = "";
+
 
 	function handleDateInput(event) {
 		const enteredDate = event.target.value;
@@ -177,7 +179,7 @@
 					disabled
 					placeholder="E-mail"
 					class="input input-bordered w-full !border-white !text-black"
-					bind:value={order.customer_email}
+					bind:value={customer_email}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -188,7 +190,7 @@
 					type="text"
 					placeholder="Jméno"
 					class="input input-bordered w-full"
-					bind:value={order.customer_first_name}
+					bind:value={customer_first_name}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -199,7 +201,7 @@
 					type="text"
 					placeholder="Příjmení"
 					class="input input-bordered w-full"
-					bind:value={order.customer_last_name}
+					bind:value={customer_last_name}
 				/>
 			</div>
 			<div class="collapse">
@@ -211,7 +213,7 @@
 							type="text"
 							placeholder="Ulice"
 							class="input input-bordered w-full"
-							bind:value={order.customer_street}
+							bind:value={customer_street}
 						/>
 					</div>
 					<div class="form-control w-full mb-2">
@@ -219,7 +221,7 @@
 							type="text"
 							placeholder="Číslo"
 							class="input input-bordered w-full"
-							bind:value={order.customer_street_number}
+							bind:value={customer_street_number}
 						/>
 					</div>
 					<div class="form-control w-full mb-2">
@@ -227,7 +229,7 @@
 							type="text"
 							placeholder="Město"
 							class="input input-bordered w-full"
-							bind:value={order.customer_city}
+							bind:value={customer_city}
 						/>
 					</div>
 					<div class="form-control w-full mb-2">
@@ -235,7 +237,7 @@
 							type="text"
 							placeholder="PSČ"
 							class="input input-bordered w-full"
-							bind:value={order.customer_zip_code}
+							bind:value={customer_zip_code}
 						/>
 					</div>
 					<div class="form-control w-full mb-2">
@@ -243,7 +245,7 @@
 							type="text"
 							placeholder="Telefon"
 							class="input input-bordered w-full"
-							bind:value={order.customer_telephone}
+							bind:value={customer_telephone}
 						/>
 					</div>
 				</div>
@@ -263,7 +265,7 @@
 					type="text"
 					placeholder="Jméno"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_first_name}
+					bind:value={delivery_first_name}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -271,7 +273,7 @@
 					type="text"
 					placeholder="Příjmení"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_last_name}
+					bind:value={delivery_last_name}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -279,7 +281,7 @@
 					type="text"
 					placeholder="Ulice"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_street}
+					bind:value={delivery_street}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -287,7 +289,7 @@
 					type="text"
 					placeholder="Číslo"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_street_number}
+					bind:value={delivery_street_number}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -295,7 +297,7 @@
 					type="text"
 					placeholder="Město"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_city}
+					bind:value={delivery_city}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -303,7 +305,7 @@
 					type="text"
 					placeholder="PSČ"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_zip_code}
+					bind:value={delivery_zip_code}
 				/>
 			</div>
 			<div class="form-control w-full mb-2">
@@ -311,7 +313,7 @@
 					type="text"
 					placeholder="Telefon"
 					class="input input-bordered w-full"
-					bind:value={order.delivery_telephone}
+					bind:value={delivery_telephone}
 				/>
 			</div>
 		</div>

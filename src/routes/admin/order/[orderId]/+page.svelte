@@ -187,26 +187,26 @@
 						{formattedDate}
 						date={order?.date}
 						isValidDate={isValidDate}
-						{selectedPaymentMethod}
+						bind:selectedPaymentMethod
 						bind:selectedOrderState
 						bind:selectedCurrency
 						bind:selectedShippingMethod
 						bind:isPaid
-						{customer_email}
-						{customer_first_name}
-						{customer_last_name}
-						{customer_street}
-						{customer_street_number}
-						{customer_city}
-						{customer_zip_code}
-						{customer_telephone}
-						{delivery_first_name}
-						{delivery_last_name}
-						{delivery_street}
-						{delivery_street_number}
-						{delivery_city}
-						{delivery_zip_code}
-						{delivery_telephone}
+						bind:customer_email
+						bind:customer_first_name
+						bind:customer_last_name
+						bind:customer_street
+						bind:customer_street_number
+						bind:customer_city
+						bind:customer_zip_code
+						bind:customer_telephone
+						bind:delivery_first_name
+						bind:delivery_last_name
+						bind:delivery_street
+						bind:delivery_street_number
+						bind:delivery_city
+						bind:delivery_zip_code
+						bind:delivery_telephone
 					/>
 				</div>
 
