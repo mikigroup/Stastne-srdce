@@ -9,33 +9,34 @@ export const load: PageServerLoad = async ({
 	const start = (page - 1) * itemsPerPage;
 	const searchQuery = url.searchParams.get("search") || "";
 
-	let query = supabase
-		.from("orders")
-		.select("*", { count: "exact" })
-		.order("date", { ascending: false })
-		.order("order_number", { ascending: false });
+	let query = supabase.from("orders").select("*", { count: "exact" });
 
-	// TODO:
+	// Aplikujeme vyhledávání pouze pokud existuje searchQuery
 	if (searchQuery) {
 		const parsedSearchQuery = parseInt(searchQuery, 10);
-		const searchConditions = [
+
+		// Vytvoříme pole podmínek pro vyhledávání
+		let searchConditions = [
 			`customer_first_name.ilike.%${searchQuery}%`,
 			`customer_last_name.ilike.%${searchQuery}%`,
 			`customer_email.ilike.%${searchQuery}%`
 		];
 
+		// Pokud je searchQuery číslo, přidáme podmínku pro order_number
 		if (!isNaN(parsedSearchQuery)) {
 			searchConditions.push(`order_number.eq.${parsedSearchQuery}`);
 		}
 
+		// Aplikujeme všechny podmínky najednou
 		query = query.or(searchConditions.join(","));
 	}
 
-	const {
-		data: orders,
-		error,
-		count
-	} = await query.range(start, start + itemsPerPage - 1);
+	// Přidáme řazení
+	query = query
+		.order("date", { ascending: false })
+		.range(start, start + itemsPerPage - 1);
+
+	const { data: orders, error, count } = await query;
 
 	if (error) {
 		console.error("Error fetching orders:", error);
