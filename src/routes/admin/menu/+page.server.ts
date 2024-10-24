@@ -11,10 +11,9 @@ export const load: PageServerLoad = async ({
 
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const itemsPerPage = 10;
-	const start = (page - 1) * itemsPerPage;
 	const searchQuery = url.searchParams.get("search") || "";
 
-	// Základní query
+	// Základní query bez range omezení pro vyhledávání
 	let query = supabase
 		.from("menus")
 		.select(
@@ -29,40 +28,43 @@ export const load: PageServerLoad = async ({
 		.order("date", { ascending: false })
 		.eq("deleted", false);
 
-	// Vyhledávání
+	// Vyhledávání v celé DB
 	if (searchQuery) {
-		// Nejdřív vyhledáme v soup
-		const soupQuery = query.ilike("soup", `%${searchQuery}%`);
-
-		// Pak vyhledáme v variants
-		const variantQuery = supabase
+		// Nejdřív získáme všechny menu_id z variant, které obsahují hledaný text
+		const { data: variantResults } = await supabase
 			.from("menu_variants")
 			.select("menu_id")
 			.ilike("description", `%${searchQuery}%`);
 
-		const { data: variantResults } = await variantQuery;
 		const menuIds = variantResults?.map((v) => v.menu_id) || [];
 
+		// Pak vytvoříme podmínku pro vyhledávání
 		if (menuIds.length > 0) {
 			query = query.or(
 				`id.in.(${menuIds.join(",")}),soup.ilike.%${searchQuery}%`
 			);
+		} else {
+			query = query.ilike("soup", `%${searchQuery}%`);
 		}
 	}
 
-	const {
-		data: menus,
-		error,
-		count
-	} = await query.range(start, start + itemsPerPage - 1);
+	// Nejdřív získáme celkový počet výsledků
+	const { count } = await query;
+	const totalItems = count ?? 0;
+	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+	// Pak aplikujeme stránkování na filtrované výsledky
+	const start = (page - 1) * itemsPerPage;
+	const { data: menus, error } = await query.range(
+		start,
+		start + itemsPerPage - 1
+	);
 
 	if (error) {
 		console.error("Error fetching menus:", error);
 		throw error;
 	}
 
-	const totalItems = count ?? 0;
-	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 	const itemsOnCurrentPage = menus?.length ?? 0;
 
 	const { data: profileTableSettings, error: profileError } = await supabase

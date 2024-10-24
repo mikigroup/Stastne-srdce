@@ -126,6 +126,16 @@
 	async function back() {
 		await goto($ROUTES.ADMIN.ORDER.LIST);
 	}
+
+	function formatDateToCzech(date: string) {
+		if (!date) return "";
+		const parts = date.split("-");
+		if (parts.length !== 3) {
+			return date;
+		}
+		const [year, month, day] = parts;
+		return `${day}.${month}.${year}`;
+	}
 </script>
 
 <div
@@ -210,8 +220,10 @@
 							<tr class="grid grid-cols-12 gap-4">
 								<th>Výběr</th>
 								<th>Pořadí</th>
-								<th class="col-span-9">Název</th>
+								<th>Datum</th>
+								<th class="col-span-7">Název</th>
 								<th>Množství</th>
+								<th>Cena</th>
 							</tr>
 							</thead>
 							<tbody>
@@ -225,22 +237,31 @@
 									<td>
 										{i + 1}
 									</td>
-									<td class="col-span-9">
+									<td>
+										{formatDateToCzech(item.variant_id.menu_id.date)}
+									</td>
+									<td class="col-span-7">
 										<div class="flex items-center space-x-3">
 											<div>
 												<div class="font-bold">{item.variant_id.description}</div>
-												<div class="text-sm opacity-50">{item.variant_id.menu_id.type}</div>
+												<div class="text-sm opacity-50">{item.price} Kč</div>
+												<div class="text-sm opacity-50">Varianta {item.variant_id.variant_number}</div>
 											</div>
 										</div>
 									</td>
 									<td>{item.quantity}</td>
+									<td>{item.quantity * item.price} Kč</td>
 								</tr>
 							{/each}
 							</tbody>
 							<tfoot>
 							<tr class="grid grid-cols-3 gap-4">
 								<th colspan="4"></th>
-								<th class="text-right">Cena {order.order_items.reduce((sum, item) => sum + item.quantity * item.price, 0)} CZK a množství {order.order_items.reduce((sum, item) => sum + item.quantity,0)} </th>
+								<th class="text-right">
+									Celkem cena: {order.order_items.reduce((sum, item) => sum + item.quantity * item.price, 0)} Kč
+									<br>
+									Celkový počet: {order.order_items.reduce((sum, item) => sum + item.quantity, 0)}
+								</th>
 							</tr>
 							</tfoot>
 						</table>
