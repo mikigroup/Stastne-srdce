@@ -14,6 +14,7 @@ export const load: PageServerLoad = async ({
 	const start = (page - 1) * itemsPerPage;
 	const searchQuery = url.searchParams.get("search") || "";
 
+	// Základní query
 	let query = supabase
 		.from("menus")
 		.select(
@@ -21,17 +22,32 @@ export const load: PageServerLoad = async ({
       *,
       variants:menu_variants(id, description, variant_number)
     `,
-			{ count: "exact" }
+			{
+				count: "exact"
+			}
 		)
 		.order("date", { ascending: false })
-		//.order("variants.id", { ascending: false })
 		.eq("deleted", false);
 
+	// Vyhledávání
 	if (searchQuery) {
-		query = query.or(
-			`soup.ilike.%${searchQuery}%,` +
-				`variants.description.ilike.%${searchQuery}%`
-		);
+		// Nejdřív vyhledáme v soup
+		const soupQuery = query.ilike("soup", `%${searchQuery}%`);
+
+		// Pak vyhledáme v variants
+		const variantQuery = supabase
+			.from("menu_variants")
+			.select("menu_id")
+			.ilike("description", `%${searchQuery}%`);
+
+		const { data: variantResults } = await variantQuery;
+		const menuIds = variantResults?.map((v) => v.menu_id) || [];
+
+		if (menuIds.length > 0) {
+			query = query.or(
+				`id.in.(${menuIds.join(",")}),soup.ilike.%${searchQuery}%`
+			);
+		}
 	}
 
 	const {
