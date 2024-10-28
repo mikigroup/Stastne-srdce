@@ -6,18 +6,24 @@
 	$: if (dialog && showModal) dialog.showModal();
 </script>
 
-
-<dialog class="w-full lg:w-1/2 xl:1/3"
+<dialog
+	class="w-full lg:w-1/2 xl:1/3"
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
->
-		<div on:click|stopPropagation>
+	on:click|self={() => dialog.close()}>
+	<div on:click|stopPropagation>
 		<div class="m-3 md:m-10">
-			<h5 class="pb-10 text-2xl text-center md:text-2xl">Opravdu chcete potvrdit košík a odeslat ?</h5>
+			<h5 class="pb-10 text-2xl text-center md:text-2xl">
+				Opravdu chcete potvrdit košík a odeslat ?
+			</h5>
 			<div class="grid grid-cols-2 gap-8">
 				<slot />
-				<div class=""><button class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black" type="button" autofocus on:click={() => dialog.close()}>Zavřít</button>
+				<div class="">
+					<button
+						class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black"
+						type="button"
+						autofocus
+						on:click={() => dialog.close()}>Zavřít</button>
 				</div>
 			</div>
 		</div>
@@ -25,7 +31,7 @@
 </dialog>
 
 <style>
-	dialog {		
+	dialog {
 		border-radius: 0.6em;
 		border: none;
 		padding: 0;

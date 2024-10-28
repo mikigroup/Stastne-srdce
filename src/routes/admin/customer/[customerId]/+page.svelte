@@ -4,8 +4,8 @@
 	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
-	let {  supabase, customers } = data;
-	$: ({  supabase, customers } = data);
+	let { supabase, customers } = data;
+	$: ({ supabase, customers } = data);
 	console.log("customersId:", customers);
 
 	// State variables
@@ -46,12 +46,12 @@
 				dic,
 				company,
 				website,
-				username,
+				username
 			};
 
 			console.log("Zákazník se ukládá s těmito daty:", update);
 			console.log("customerID:", customerId);
-			
+
 			const { error } = await supabase
 				.from("customers")
 				.update(update)
@@ -109,52 +109,53 @@
 	<title>LEO - Zákazník</title>
 </svelte:head>
 
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200">
-		<div class="antialiased bg-white sans-serif">
-			<div class="md:py-6 md:px-4">
-				<div class="flex justify-between">
-					<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-						Zákazník
-					</h2>
-					<div />
-				</div>
+<div
+	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200">
+	<div class="antialiased bg-white sans-serif">
+		<div class="md:py-6 md:px-4">
+			<div class="flex justify-between">
+				<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
+					Zákazník
+				</h2>
+				<div />
+			</div>
 
-				<div class="flex justify-between">
+			<div class="flex justify-between">
+				<div>
+					<button on:click={back} class="btn btn-outline"> Zpět </button>
+				</div>
+				{#if updateMessage}
+					<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
+						{updateMessage}
+					</div>
+				{/if}
+				<div class="flex flex-col gap-2 md:flex-row">
 					<div>
-						<button on:click={back} class="btn btn-outline"> Zpět </button>
+						<button
+							value={loading ? "Nahrává se..." : "Změněno"}
+							disabled={loading}
+							type="submit"
+							on:click={updateCustomer}
+							class="btn btn-outline">
+							Upravit
+						</button>
 					</div>
-					{#if updateMessage}
-						<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-							{updateMessage}
-						</div>
-					{/if}
-					<div class="flex flex-col gap-2 md:flex-row">
-						<div>
-							<button
-								value={loading ? "Nahrává se..." : "Změněno"}
-								disabled={loading}
-								type="submit"
-								on:click={updateCustomer}
-								class="btn btn-outline">
-								Upravit
-							</button>
-						</div>
-						<div>
-							<button
-								class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-								value={loading ? "Nahrává se..." : "Update"}
-								disabled={loading}
-								type="submit"
-								on:click={deleteCustomer}>
-								Smazat
-							</button>
-						</div>
+					<div>
+						<button
+							class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
+							value={loading ? "Nahrává se..." : "Update"}
+							disabled={loading}
+							type="submit"
+							on:click={deleteCustomer}>
+							Smazat
+						</button>
 					</div>
 				</div>
+			</div>
 
-				<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+			<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
-				<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
+			<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
 				<div class="mb-8 max-w-3xl mx-auto">
 					<div
 						class="collapse collapse-plus bg-base-200 p-10 border-slate-300 border">

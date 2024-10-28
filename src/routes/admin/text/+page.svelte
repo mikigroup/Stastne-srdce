@@ -8,8 +8,8 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	let { texts, occupiedPositions  } = data;
-	$: ({ texts, occupiedPositions  } = data);
+	let { texts, occupiedPositions } = data;
+	$: ({ texts, occupiedPositions } = data);
 
 	let html = "";
 	let Editor: any;
@@ -56,7 +56,7 @@
 			selectedPage = text.page || "hlavni";
 			position = text.position || "";
 
-			occupiedPositions = occupiedPositions.map(p =>
+			occupiedPositions = occupiedPositions.map((p) =>
 				p.id === text.id ? { ...p, position: text.position || "" } : p
 			);
 		}
@@ -98,7 +98,7 @@
 			await update();
 			loading = false;
 
-			if (result.type === 'success') {
+			if (result.type === "success") {
 				console.log("Text uložen:", result.data);
 			} else {
 				console.error("Chyba při ukládání:", result.error);
@@ -107,9 +107,13 @@
 	};
 
 	function checkPosition(selectedPosition: string) {
-		const occupiedPosition = occupiedPositions.find(p => p.position === selectedPosition);
+		const occupiedPosition = occupiedPositions.find(
+			(p) => p.position === selectedPosition
+		);
 		if (occupiedPosition && occupiedPosition.id !== selectedTextId) {
-			const confirmed = confirm(`Pozice '${selectedPosition}' je již obsazena. Chcete přepsat existující text?`);
+			const confirmed = confirm(
+				`Pozice '${selectedPosition}' je již obsazena. Chcete přepsat existující text?`
+			);
 			if (confirmed) {
 				selectedTextId = occupiedPosition.id;
 			} else {
@@ -136,8 +140,7 @@
 						class="mr-5 border-black rounded-lg border p-2"
 						bind:value={selectedPage}
 						on:change={handlePageChange}
-						required
-					>
+						required>
 						{#each pages as page}
 							<option value={page}>{page}</option>
 						{/each}
@@ -153,7 +156,8 @@
 						disabled={!selectedPage}>
 						<option value={0}>Vyberte text</option>
 						{#each filteredTexts as text}
-							<option value={text.id} selected={selectedTextId === text.id}>{text.title}</option>
+							<option value={text.id} selected={selectedTextId === text.id}
+								>{text.title}</option>
 						{/each}
 					</select>
 					<button type="button" class="btn btn-outline" on:click={newText}
@@ -165,7 +169,13 @@
 						<div class="flex gap-4">
 							{#each ["left", "center", "right"] as pos}
 								<div class="">
-									<div>{pos === "left" ? "Levý" : pos === "center" ? "Střed" : "Pravý"}</div>
+									<div>
+										{pos === "left"
+											? "Levý"
+											: pos === "center"
+												? "Střed"
+												: "Pravý"}
+									</div>
 									<div class="">
 										<input
 											type="radio"
@@ -174,8 +184,9 @@
 											class="radio border-black"
 											bind:group={position}
 											on:change={() => checkPosition(pos)}
-											disabled={occupiedPositions.some(p => p.position === pos && p.id !== selectedTextId)}
-										/>
+											disabled={occupiedPositions.some(
+												(p) => p.position === pos && p.id !== selectedTextId
+											)} />
 									</div>
 								</div>
 							{/each}
@@ -191,8 +202,7 @@
 							name="title"
 							type="text"
 							bind:value={title}
-							required
-						/>
+							required />
 					</div>
 				{:else}
 					<input type="hidden" name="title" value="" />
@@ -217,7 +227,10 @@
 				</div>
 			</div>
 			<button
-				disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && !title)}
+				disabled={loading ||
+					!html ||
+					!selectedPage ||
+					(selectedPage !== "jidelnicek" && !title)}
 				type="submit"
 				class="btn btn-outline mt-4">
 				{loading ? "Ukládá se..." : "Potvrdit změnu"}

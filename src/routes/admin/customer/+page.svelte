@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
-	import {
-		createSvelteTable,
-		getCoreRowModel
-	} from "@tanstack/svelte-table";
+	import { createSvelteTable, getCoreRowModel } from "@tanstack/svelte-table";
 	import type { TableOptions } from "@tanstack/svelte-table";
-	import { BarLoader } from 'svelte-loading-spinners';
-	import { navigating } from '$app/stores'
-	import { fade, fly } from 'svelte/transition';
+	import { BarLoader } from "svelte-loading-spinners";
+	import { navigating } from "$app/stores";
+	import { fade, fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
@@ -208,14 +205,12 @@
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black pr-10"
-					bind:value={searchInput}
-				/>
+					bind:value={searchInput} />
 				<button
 					class="btn btn-outline"
 					on:click={handleSearch}
-					disabled={loading}
-				>
-					{loading ? 'Vyhledávám...' : 'Vyhledat'}
+					disabled={loading}>
+					{loading ? "Vyhledávám..." : "Vyhledat"}
 				</button>
 			</div>
 		</div>
@@ -240,7 +235,8 @@
 		</button>
 	</div>
 
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+	<div
+		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet zákazníků: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
 		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
@@ -268,7 +264,8 @@
 </section>
 
 <section>
-	<div class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
+	<div
+		class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
 		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
 			<div
 				class="w-full {column === 'email'
@@ -286,56 +283,51 @@
 	</div>
 
 	{#key transitionKey}
-		<div in:fade="{{ duration: 300 }}" out:fade="{{ duration: 300 }}">
+		<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
 			{#if $navigating || loading}
-				<div transition:fade="{{ duration: 300 }}" class="loading-overlay">
+				<div transition:fade={{ duration: 300 }} class="loading-overlay">
 					<BarLoader size="120" color="black" unit="px" duration="1s" />
 				</div>
-			{:else}
-				{#if filteredCustomers && filteredCustomers.length > 0}
-					{#each $table.getRowModel().rows as row, index}
-						<div
-							in:fly="{{ y: 50, duration: 300, delay: index * 50 }}"
-							class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
-						2 ===
-					0
-						? 'bg-gray-100'
-						: 'bg-gray-200'}">
-							{#each row.getVisibleCells() as cell}
-								<div
-									class="w-full truncate-cell flex items-center {cell.column.id ===
-							'email'
-								? 'md:w-1/3'
-								: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
-									title={cell.getValue() ?? ""}>
-									{#if cell.column.id === "created_at"}
-										{formatDateToCzech(cell.getValue())}
-									{:else}
-										{cell.getValue() ?? ""}
-									{/if}
-								</div>
-							{/each}
+			{:else if filteredCustomers && filteredCustomers.length > 0}
+				{#each $table.getRowModel().rows as row, index}
+					<div
+						in:fly={{ y: 50, duration: 300, delay: index * 50 }}
+						class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
+							2 ===
+						0
+							? 'bg-gray-100'
+							: 'bg-gray-200'}">
+						{#each row.getVisibleCells() as cell}
 							<div
-								class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-								<a
-									href="/admin/customer/{row.original.id}"
-									data-sveltekit-preload-data
-									class="font-medium hover:underline">
-									Upravit
-								</a>
+								class="w-full truncate-cell flex items-center {cell.column
+									.id === 'email'
+									? 'md:w-1/3'
+									: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
+								title={cell.getValue() ?? ""}>
+								{#if cell.column.id === "created_at"}
+									{formatDateToCzech(cell.getValue())}
+								{:else}
+									{cell.getValue() ?? ""}
+								{/if}
 							</div>
+						{/each}
+						<div
+							class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+							<a
+								href="/admin/customer/{row.original.id}"
+								data-sveltekit-preload-data
+								class="font-medium hover:underline">
+								Upravit
+							</a>
 						</div>
-					{/each}
-				{:else}
-					<p>Žádní zákazníci</p>
-				{/if}
+					</div>
+				{/each}
+			{:else}
+				<p>Žádní zákazníci</p>
 			{/if}
 		</div>
 	{/key}
 </section>
-
-
-
 
 <style>
 	/*    .truncate-cell {

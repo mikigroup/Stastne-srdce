@@ -1,53 +1,53 @@
 <script>
-import { page } from "$app/stores";
-import { totalPiecesStore } from "$lib/stores/store";
-import { goto } from "$app/navigation";
-import { readable } from "svelte/store";
-import { slide } from "svelte/transition";
+	import { page } from "$app/stores";
+	import { totalPiecesStore } from "$lib/stores/store";
+	import { goto } from "$app/navigation";
+	import { readable } from "svelte/store";
+	import { slide } from "svelte/transition";
 
+	export let data;
+	let { supabase, session, user } = data;
+	$: ({ supabase, session, user } = data);
 
-export let data;
-let { supabase, session, user } = data;
-$: ({ supabase, session, user } = data);
-
-async function signOut() {
-	try {
-		const { error } = await supabase.auth.signOut();
-		if (error) throw error;
-		await goto("/");
-	} catch (error) {
-		console.error("Error logging out:", error);
+	async function signOut() {
+		try {
+			const { error } = await supabase.auth.signOut();
+			if (error) throw error;
+			await goto("/");
+		} catch (error) {
+			console.error("Error logging out:", error);
+		}
 	}
-}
 
-let src = "/android-chrome-192x192.png";
+	let src = "/android-chrome-192x192.png";
 
-const formatter = new Intl.DateTimeFormat("en", {
-	hour12: false,
-	hour: "numeric",
-	minute: "2-digit"
-});
+	const formatter = new Intl.DateTimeFormat("en", {
+		hour12: false,
+		hour: "numeric",
+		minute: "2-digit"
+	});
 
-const time = readable(new Date(), function start(set) {
-	const interval = setInterval(() => {
-		set(new Date());
-	}, 1000);
+	const time = readable(new Date(), function start(set) {
+		const interval = setInterval(() => {
+			set(new Date());
+		}, 1000);
 
-	return function stop() {
-		clearInterval(interval);
-	};
-});
+		return function stop() {
+			clearInterval(interval);
+		};
+	});
 
-let menuVisible = false;
+	let menuVisible = false;
 
-function toggleMenu() {
-	menuVisible = !menuVisible;
-}
+	function toggleMenu() {
+		menuVisible = !menuVisible;
+	}
 
-let loading = false;
+	let loading = false;
 
-$: totalPieces = $totalPiecesStore;
+	$: totalPieces = $totalPiecesStore;
 </script>
+
 <header class="bg-white">
 	<nav>
 		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl">
@@ -178,7 +178,7 @@ $: totalPieces = $totalPiecesStore;
 							<div class="col-end-2 pr-2">
 								<button
 									class="p-1 px-6 text-sm text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								><a href="/profile">Účet</a>
+									><a href="/profile">Účet</a>
 								</button>
 							</div>
 							<div class="">

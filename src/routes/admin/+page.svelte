@@ -1,8 +1,23 @@
 <script lang="ts">
-	import { Line } from 'svelte-chartjs';
-	import { Chart, Title, Tooltip, LineElement, LinearScale, PointElement, CategoryScale } from 'chart.js';
+	import { Line } from "svelte-chartjs";
+	import {
+		Chart,
+		Title,
+		Tooltip,
+		LineElement,
+		LinearScale,
+		PointElement,
+		CategoryScale
+	} from "chart.js";
 
-	Chart.register(Title, Tooltip, LineElement, LinearScale, PointElement, CategoryScale);
+	Chart.register(
+		Title,
+		Tooltip,
+		LineElement,
+		LinearScale,
+		PointElement,
+		CategoryScale
+	);
 
 	export let data;
 
@@ -16,8 +31,8 @@
 
 	function processOrderData(orders) {
 		return orders.reduce((acc, order) => {
-			const date = new Date(order.created_at).toISOString().split('T')[0];
-			const existingDate = acc.find(item => item.date === date);
+			const date = new Date(order.created_at).toISOString().split("T")[0];
+			const existingDate = acc.find((item) => item.date === date);
 			if (existingDate) {
 				existingDate.count++;
 			} else {
@@ -29,32 +44,36 @@
 
 	function processCustomerData(customers) {
 		return customers.reduce((acc, customer, index) => {
-			const date = new Date(customer.created_at).toISOString().split('T')[0];
+			const date = new Date(customer.created_at).toISOString().split("T")[0];
 			acc.push({ date, count: index + 1 });
 			return acc;
 		}, []);
 	}
 
 	$: orderChartData = {
-		labels: orderData.map(d => d.date),
-		datasets: [{
-			label: 'Počet objednávek',
-			data: orderData.map(d => d.count),
-			fill: false,
-			borderColor: 'rgb(75, 192, 192)',
-			tension: 0.1
-		}]
+		labels: orderData.map((d) => d.date),
+		datasets: [
+			{
+				label: "Počet objednávek",
+				data: orderData.map((d) => d.count),
+				fill: false,
+				borderColor: "rgb(75, 192, 192)",
+				tension: 0.1
+			}
+		]
 	};
 
 	$: customerChartData = {
-		labels: customerData.map(d => d.date),
-		datasets: [{
-			label: 'Počet zákazníků',
-			data: customerData.map(d => d.count),
-			fill: false,
-			borderColor: 'rgb(37,50,17)',
-			tension: 0.1
-		}]
+		labels: customerData.map((d) => d.date),
+		datasets: [
+			{
+				label: "Počet zákazníků",
+				data: customerData.map((d) => d.count),
+				fill: false,
+				borderColor: "rgb(37,50,17)",
+				tension: 0.1
+			}
+		]
 	};
 </script>
 
@@ -69,7 +88,12 @@
 			<div class="card-body">
 				<h2 class="card-title">Objednávky tento měsíc</h2>
 				<p class="text-4xl font-bold">{currentMonthOrders}</p>
-				<p class="text-sm text-gray-500">{new Date().toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' })}</p>
+				<p class="text-sm text-gray-500">
+					{new Date().toLocaleDateString("cs-CZ", {
+						month: "long",
+						year: "numeric"
+					})}
+				</p>
 			</div>
 		</div>
 		<div class="card bg-base-100 shadow-xl">

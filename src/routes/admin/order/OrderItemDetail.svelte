@@ -33,7 +33,6 @@
 	export let delivery_zip_code = "";
 	export let delivery_telephone = "";
 
-
 	function handleDateInput(event) {
 		const enteredDate = event.target.value;
 		const isValid = validateDate(enteredDate);
@@ -59,11 +58,10 @@
 
 <!--Základní údaje-->
 <div>
-	<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+	<div
+		class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
 		<input type="checkbox" checked="checked" />
-		<div class="collapse-title text-xl font-medium">
-			Základní údaje
-		</div>
+		<div class="collapse-title text-xl font-medium">Základní údaje</div>
 		<div class="collapse-content">
 			<div class="form-control w-full mb-2">
 				<label class="label">
@@ -75,8 +73,7 @@
 					placeholder=""
 					readonly
 					class="input input-bordered w-full !border-white !text-black"
-					value={order?.order_number ?? ""}
-				/>
+					value={order?.order_number ?? ""} />
 			</div>
 
 			<div class="form-control w-full mb-2">
@@ -90,15 +87,16 @@
 					class="input input-bordered w-full"
 					class:input-error={!isValidDate}
 					bind:value={formattedDate}
-					on:input={handleDateInput}
-				/>
+					on:input={handleDateInput} />
 			</div>
 
 			<div class="form-control w-full mb-2">
 				<label class="label">
 					<span class="label-text">Stav</span>
 				</label>
-				<select class="select select-bordered w-full" bind:value={selectedOrderState}>
+				<select
+					class="select select-bordered w-full"
+					bind:value={selectedOrderState}>
 					{#each orderStateOptions as state}
 						<option value={state}>{state}</option>
 					{/each}
@@ -107,15 +105,15 @@
 
 			<div class="collapse">
 				<input type="checkbox" />
-				<div class="collapse-title text-lg font-medium">
-					Platební údaje
-				</div>
+				<div class="collapse-title text-lg font-medium">Platební údaje</div>
 				<div class="collapse-content">
 					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Způsob platby</span>
 						</label>
-						<select class="select select-bordered w-full" bind:value={selectedPaymentMethod}>
+						<select
+							class="select select-bordered w-full"
+							bind:value={selectedPaymentMethod}>
 							{#each paymentMethodOptions as method}
 								<option value={method}>{method}</option>
 							{/each}
@@ -126,7 +124,9 @@
 						<label class="label">
 							<span class="label-text">Měna</span>
 						</label>
-						<select class="select select-bordered w-full" bind:value={selectedCurrency}>
+						<select
+							class="select select-bordered w-full"
+							bind:value={selectedCurrency}>
 							{#each currencyOptions as currency}
 								<option value={currency}>{currency}</option>
 							{/each}
@@ -139,8 +139,7 @@
 						</label>
 						<select
 							class="select select-bordered w-full"
-							bind:value={selectedShippingMethod}
-						>
+							bind:value={selectedShippingMethod}>
 							{#each shippingMethodOptions as method}
 								<option value={method}>{method}</option>
 							{/each}
@@ -164,11 +163,10 @@
 
 <!--Fakturační-->
 <div>
-	<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+	<div
+		class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
 		<input type="checkbox" checked="checked" />
-		<div class="collapse-title text-xl font-medium">
-			Fakturační údaje
-		</div>
+		<div class="collapse-title text-xl font-medium">Fakturační údaje</div>
 		<div class="collapse-content">
 			<div class="form-control w-full mb-2">
 				<label class="label">
@@ -179,8 +177,7 @@
 					disabled
 					placeholder="E-mail"
 					class="input input-bordered w-full !border-white !text-black"
-					bind:value={customer_email}
-				/>
+					bind:value={customer_email} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<label class="label">
@@ -190,8 +187,7 @@
 					type="text"
 					placeholder="Jméno"
 					class="input input-bordered w-full"
-					bind:value={customer_first_name}
-				/>
+					bind:value={customer_first_name} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<label class="label">
@@ -201,52 +197,48 @@
 					type="text"
 					placeholder="Příjmení"
 					class="input input-bordered w-full"
-					bind:value={customer_last_name}
-				/>
+					bind:value={customer_last_name} />
 			</div>
 			<div class="collapse">
 				<input type="checkbox" />
-				<div class="collapse-title text-lg font-medium">Další fakturační údaje</div>
+				<div class="collapse-title text-lg font-medium">
+					Další fakturační údaje
+				</div>
 				<div class="collapse-content">
 					<div class="form-control w-full mb-2">
 						<input
 							type="text"
 							placeholder="Ulice"
 							class="input input-bordered w-full"
-							bind:value={customer_street}
-						/>
+							bind:value={customer_street} />
 					</div>
 					<div class="form-control w-full mb-2">
 						<input
 							type="text"
 							placeholder="Číslo"
 							class="input input-bordered w-full"
-							bind:value={customer_street_number}
-						/>
+							bind:value={customer_street_number} />
 					</div>
 					<div class="form-control w-full mb-2">
 						<input
 							type="text"
 							placeholder="Město"
 							class="input input-bordered w-full"
-							bind:value={customer_city}
-						/>
+							bind:value={customer_city} />
 					</div>
 					<div class="form-control w-full mb-2">
 						<input
 							type="text"
 							placeholder="PSČ"
 							class="input input-bordered w-full"
-							bind:value={customer_zip_code}
-						/>
+							bind:value={customer_zip_code} />
 					</div>
 					<div class="form-control w-full mb-2">
 						<input
 							type="text"
 							placeholder="Telefon"
 							class="input input-bordered w-full"
-							bind:value={customer_telephone}
-						/>
+							bind:value={customer_telephone} />
 					</div>
 				</div>
 			</div>
@@ -256,7 +248,8 @@
 
 <!--Dodací adresa-->
 <div>
-	<div class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
+	<div
+		class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
 		<input type="checkbox" />
 		<div class="collapse-title text-xl font-medium">Dodací údaje</div>
 		<div class="collapse-content">
@@ -265,56 +258,49 @@
 					type="text"
 					placeholder="Jméno"
 					class="input input-bordered w-full"
-					bind:value={delivery_first_name}
-				/>
+					bind:value={delivery_first_name} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="Příjmení"
 					class="input input-bordered w-full"
-					bind:value={delivery_last_name}
-				/>
+					bind:value={delivery_last_name} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="Ulice"
 					class="input input-bordered w-full"
-					bind:value={delivery_street}
-				/>
+					bind:value={delivery_street} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="Číslo"
 					class="input input-bordered w-full"
-					bind:value={delivery_street_number}
-				/>
+					bind:value={delivery_street_number} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="Město"
 					class="input input-bordered w-full"
-					bind:value={delivery_city}
-				/>
+					bind:value={delivery_city} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="PSČ"
 					class="input input-bordered w-full"
-					bind:value={delivery_zip_code}
-				/>
+					bind:value={delivery_zip_code} />
 			</div>
 			<div class="form-control w-full mb-2">
 				<input
 					type="text"
 					placeholder="Telefon"
 					class="input input-bordered w-full"
-					bind:value={delivery_telephone}
-				/>
+					bind:value={delivery_telephone} />
 			</div>
 		</div>
 	</div>

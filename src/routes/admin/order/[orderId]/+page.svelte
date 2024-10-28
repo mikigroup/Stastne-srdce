@@ -96,7 +96,10 @@
 	async function deleteOrder() {
 		try {
 			loading = true;
-			const { error } = await supabase.from("orders").delete().eq("id", orderId);
+			const { error } = await supabase
+				.from("orders")
+				.delete()
+				.eq("id", orderId);
 
 			if (error) {
 				console.error("Error deleting order:", error);
@@ -186,7 +189,7 @@
 						{order}
 						{formattedDate}
 						date={order?.date}
-						isValidDate={isValidDate}
+						{isValidDate}
 						bind:selectedPaymentMethod
 						bind:selectedOrderState
 						bind:selectedCurrency
@@ -206,8 +209,7 @@
 						bind:delivery_street_number
 						bind:delivery_city
 						bind:delivery_zip_code
-						bind:delivery_telephone
-					/>
+						bind:delivery_telephone />
 				</div>
 
 				<!--Položky:-->
@@ -217,61 +219,72 @@
 					<div class="overflow-x-auto">
 						<table class="table table-zebra w-full">
 							<thead>
-							<tr class="grid grid-cols-12 gap-4">
-								<th>Výběr</th>
-								<th>Pořadí</th>
-								<th>Datum</th>
-								<th class="col-span-7">Název</th>
-								<th>Množství</th>
-								<th>Cena</th>
-							</tr>
+								<tr class="grid grid-cols-12 gap-4">
+									<th>Výběr</th>
+									<th>Pořadí</th>
+									<th>Datum</th>
+									<th class="col-span-7">Název</th>
+									<th>Množství</th>
+									<th>Cena</th>
+								</tr>
 							</thead>
 							<tbody>
-							{#each order.order_items as item, i}
-								<tr class="hover grid grid-cols-12 gap-4">
-									<td>
-										<label>
-											<input type="checkbox" class="checkbox" />
-										</label>
-									</td>
-									<td>
-										{i + 1}
-									</td>
-									<td>
-										{formatDateToCzech(item.variant_id.menu_id.date)}
-									</td>
-									<td class="col-span-7">
-										<div class="flex items-center space-x-3">
-											<div>
-												<div class="font-bold">{item.variant_id.description}</div>
-												<div class="text-sm opacity-50">{item.price} Kč</div>
-												<div class="text-sm opacity-50">Varianta {item.variant_id.variant_number}</div>
+								{#each order.order_items as item, i}
+									<tr class="hover grid grid-cols-12 gap-4">
+										<td>
+											<label>
+												<input type="checkbox" class="checkbox" />
+											</label>
+										</td>
+										<td>
+											{i + 1}
+										</td>
+										<td>
+											{formatDateToCzech(item.variant_id.menu_id.date)}
+										</td>
+										<td class="col-span-7">
+											<div class="flex items-center space-x-3">
+												<div>
+													<div class="font-bold">
+														{item.variant_id.description}
+													</div>
+													<div class="text-sm opacity-50">{item.price} Kč</div>
+													<div class="text-sm opacity-50">
+														Varianta {item.variant_id.variant_number}
+													</div>
+												</div>
 											</div>
-										</div>
-									</td>
-									<td>{item.quantity}</td>
-									<td>{item.quantity * item.price} Kč</td>
-								</tr>
-							{/each}
+										</td>
+										<td>{item.quantity}</td>
+										<td>{item.quantity * item.price} Kč</td>
+									</tr>
+								{/each}
 							</tbody>
 							<tfoot>
-							<tr class="grid grid-cols-3 gap-4">
-								<th colspan="4"></th>
-								<th class="text-right">
-									Celkem cena: {order.order_items.reduce((sum, item) => sum + item.quantity * item.price, 0)} Kč
-									<br>
-									Celkový počet: {order.order_items.reduce((sum, item) => sum + item.quantity, 0)}
-								</th>
-							</tr>
+								<tr class="grid grid-cols-3 gap-4">
+									<th colspan="4"></th>
+									<th class="text-right">
+										Celkem cena: {order.order_items.reduce(
+											(sum, item) => sum + item.quantity * item.price,
+											0
+										)} Kč
+										<br />
+										Celkový počet: {order.order_items.reduce(
+											(sum, item) => sum + item.quantity,
+											0
+										)}
+									</th>
+								</tr>
 							</tfoot>
 						</table>
 					</div>
 
 					<div class="mt-4">
-						<div class="text-sm text-gray-500">Počet položek: {order.order_items.length}</div>
+						<div class="text-sm text-gray-500">
+							Počet položek: {order.order_items.length}
+						</div>
 					</div>
 				</div>
-
 			</div>
 		</div>
 	</section>

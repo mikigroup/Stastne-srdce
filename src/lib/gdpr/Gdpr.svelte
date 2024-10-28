@@ -311,7 +311,7 @@
 				aria-label={closeLabel}
 				on:click={() => {
 					settingsShown = false;
-          choose();
+					choose();
 				}}>
 				{closeLabel}
 			</button>

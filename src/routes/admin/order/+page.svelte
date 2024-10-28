@@ -22,16 +22,16 @@
 		itemsPerPage
 	} = data;
 	$: ({
-			session,
-			supabase,
-			orders,
-			profileTableSettings,
-			currentPage,
-			totalPages,
-			totalItems,
-			itemsOnCurrentPage,
-			itemsPerPage
-		} = data);
+		session,
+		supabase,
+		orders,
+		profileTableSettings,
+		currentPage,
+		totalPages,
+		totalItems,
+		itemsOnCurrentPage,
+		itemsPerPage
+	} = data);
 
 	let loading = false;
 	let filterDate = "";
@@ -115,8 +115,6 @@
 	}
 
 	visibleColumnsStore.subscribe(saveTableSettings);
-
-
 
 	$: filteredOrders = orders?.filter((order) =>
 		Object.values(order).some((value) =>
@@ -211,14 +209,12 @@
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchInput}
-				/>
+					bind:value={searchInput} />
 				<button
 					class="btn btn-outline"
 					on:click={handleSearch}
-					disabled={loading}
-				>
-					{loading ? 'Vyhledávám...' : 'Vyhledat'}
+					disabled={loading}>
+					{loading ? "Vyhledávám..." : "Vyhledat"}
 				</button>
 			</div>
 		</div>
@@ -243,14 +239,13 @@
 		</button>
 	</div>
 
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+	<div
+		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
 		<p>Celkový počet objednávek: {totalItems}</p>
 		<p>Stránka {currentPage} z {totalPages}</p>
 		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} objednávek</p>
 	</div>
 </section>
-
-
 
 <section>
 	<div class="flex justify-end dropdown">
@@ -314,7 +309,8 @@
 							{/if}
 						</div>
 					{/each}
-					<div class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+					<div
+						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
 						<a
 							href="/admin/order/{row.original.id}"
 							data-sveltekit-preload-data
@@ -329,8 +325,6 @@
 		{/if}
 	</div>
 </section>
-
-
 
 <style>
 	/*    .truncate-cell {

@@ -50,23 +50,26 @@ Web application for food management and ordering.
 ## 📄 Popis stránek - Page descriptions
 
 ### 1. Úvodní stránka (/)
+
 - Prezentuje hlavní informace o službě
 - Obsahuje sekce s popisem nabídky jídel, procesu objednávání a dalších informací
 - Responzivní design s použitím Tailwind CSS
 - Animované prvky pro lepší uživatelský zážitek
 
 ### 1. Home page (/)
+
 - Presents main information about the service
 - Contains sections describing food offerings, ordering process, and other information
 - Responsive design using Tailwind CSS
 - Animated elements for better user experience
 
 ### 2. Jídelníček (/jidelnicek)
+
 - Zobrazuje aktuální denní menu na následující 4 týdny
 - Dynamické časové rozmezí:
   - Začátek (startDate):
     - Do 17:00 si zákazník objedná na další den
-    - Po 17:00 si zákazník objedná napozítří    
+    - Po 17:00 si zákazník objedná napozítří
     - Jedna stránka: 7 dní
     - Konec (endDate): 27 dní od startDate
 - Zobrazení menu:
@@ -86,11 +89,12 @@ Web application for food management and ordering.
   - Přímý přechod do košíku
 
 ### 2. Menu (/jidelnicek)
+
 - Displays current daily menu for the next 4 weeks
 - Dynamic time range:
   - Start (startDate):
     - Until 17:00, customer orders for the next day
-    - After 17:00, customer orders for the day after tomorrow    
+    - After 17:00, customer orders for the day after tomorrow
     - One page: 7 days
     - End (endDate): 27 days from startDate
 - Menu display:
@@ -110,6 +114,7 @@ Web application for food management and ordering.
   - Direct transition to cart
 
 ### 3. Košík (/kosik)
+
 - Zobrazení položek v košíku s detaily (datum, polévka, menu, počet, cena)
 - Možnost úpravy množství a odstranění položek z košíku
 - Výpočet celkové ceny a počtu kusů
@@ -147,6 +152,7 @@ Web application for food management and ordering.
   - Efektivní aktualizace UI při změnách v košíku
 
 ### 3. Cart (/kosik)
+
 - Display of cart items with details (date, soup, menu, quantity, price)
 - Ability to edit quantity and remove items from cart
 - Calculation of total price and number of items
@@ -184,6 +190,7 @@ Web application for food management and ordering.
   - Efficient UI updates when cart changes
 
 ### 4. Kontakt (/kontakt)
+
 - Kontaktní formulář:
   - Pole pro zadání emailu, jména, telefonu a zprávy
   - Validace vstupních polí (required atributy)
@@ -220,6 +227,7 @@ Web application for food management and ordering.
   - Popisky (labels) pro formulářové prvky
 
 ### 4. Contact (/kontakt)
+
 - Contact form:
   - Fields for entering email, name, phone, and message
   - Validation of input fields (required attributes)
@@ -256,6 +264,7 @@ Web application for food management and ordering.
   - Labels for form elements
 
 ### 5. Administrační rozhraní (/admin)
+
 - Zabezpečený přístup pouze pro autorizované uživatele
 - Správa menu (/admin/menu)
   - CRUD operace pro položky menu
@@ -269,6 +278,7 @@ Web application for food management and ordering.
   - Možnost úpravy údajů a nastavení oprávnění
 
 ### 5. Administrative interface (/admin)
+
 - Secure access only for authorized users
 - Menu management (/admin/menu)
   - CRUD operations for menu items
@@ -282,6 +292,7 @@ Web application for food management and ordering.
   - Option to edit data and set permissions
 
 #### 5.1 Správa zákazníků (/admin/customer)
+
 - Správa zákazníků:
   - Zobrazení seznamu zákazníků s možností stránkování
   - Vyhledávání zákazníků podle různých kritérií (jméno, příjmení, email, telefon, adresa)
@@ -315,6 +326,7 @@ Web application for food management and ordering.
   - Použití count pro efektivní získání celkového počtu záznamů
 
 #### 5.1 Customer management (/admin/customer)
+
 - Customer management:
   - Display of customer list with pagination option
   - Customer search by various criteria (first name, last name, email, phone, address)
@@ -348,12 +360,13 @@ Web application for food management and ordering.
   - Use of count for efficient retrieval of total number of records
 
 #### 5.2 Správa menu (/admin/menu)
+
 - Správa menu:
   - Zobrazení seznamu menu s možností stránkování
   - Vyhledávání menu podle polévky a variant
   - Řazení menu podle data (od nejnovějších)
   - Možnost vytvoření nového menu
-  - Editace existujících menu  
+  - Editace existujících menu
 - Paginace:
   - Implementace stránkování pro efektivní zobrazení velkého množství dat
   - Nastavitelný počet položek na stránku (aktuálně 10)
@@ -383,12 +396,13 @@ Web application for food management and ordering.
   - Kontrola přihlášení uživatele před načtením dat
 
 #### 5.2 Menu management (/admin/menu)
+
 - Menu management:
   - Display of menu list with pagination option
   - Menu search by soup and variants
   - Sorting menu by date (from newest)
   - Option to create a new menu
-  - Editing existing menus  
+  - Editing existing menus
 - Pagination:
   - Implementation of pagination for efficient display of large amounts of data
   - Adjustable number of items per page (currently 10)
@@ -418,6 +432,7 @@ Web application for food management and ordering.
   - User login check before loading data
 
 #### 5.3 Vytváření nového menu (/admin/menu/newmenu)
+
 - Vytváření nového menu:
   - Formulář pro vytvoření nového menu s detailními informacemi
   - Možnost přidání polévky, hlavních chodů (variant), alergenů a ingrediencí
@@ -454,6 +469,7 @@ Web application for food management and ordering.
   - Kontrola přístupu k API endpointům (implementováno v server.ts)
 
 #### 5.3 Creating a new menu (/admin/menu/newmenu)
+
 - Creating a new menu:
   - Form for creating a new menu with detailed information
   - Option to add soup, main courses (variants), allergens and ingredients
@@ -490,6 +506,7 @@ Web application for food management and ordering.
   - Access control to API endpoints (implemented in server.ts)
 
 #### 5.4 Editace existujícího menu (/admin/menu/[menuId])
+
 - Editace existujícího menu:
   - Načítání detailů konkrétního menu včetně variant, alergenů a ingrediencí
   - Možnost úpravy všech aspektů menu (datum, polévka, varianty, alergeny, ingredience atd.)
@@ -526,6 +543,7 @@ Web application for food management and ordering.
   - Příprava pro možné budoucí implementace verzování menu (menu_versions tabulka)
 
 #### 5.4 Editing existing menu (/admin/menu/[menuId])
+
 - Editing existing menu:
   - Loading details of specific menu including variants, allergens and ingredients
   - Option to edit all aspects of the menu (date, soup, variants, allergens, ingredients etc.)
@@ -562,6 +580,7 @@ Web application for food management and ordering.
   - Preparation for possible future implementations of menu versioning (menu_versions table)
 
 #### 5.5 Správa objednávek (/admin/order)
+
 - Správa objednávek:
   - Zobrazení seznamu objednávek s možností stránkování
   - Vyhledávání objednávek podle jména zákazníka, emailu a čísla objednávky
@@ -605,6 +624,7 @@ Web application for food management and ordering.
   - Snadná úprava a přidávání nových funkcí
 
 #### 5.5 Order management (/admin/order)
+
 - Order management:
   - Display of order list with pagination option
   - Order search by customer name, email, and order number
@@ -648,6 +668,7 @@ Web application for food management and ordering.
   - Easy modification and addition of new functions
 
 #### 5.6 Vytváření nové objednávky (/admin/order/neworder)
+
 - Vytváření nové objednávky:
   - Formulář pro vytvoření nové objednávky s detailními informacemi
   - Možnost zadání základních údajů o objednávce (datum, měna, způsob dopravy, platební metoda, stav objednávky)
@@ -681,6 +702,7 @@ Web application for food management and ordering.
   - Automatické přiřazení ID přihlášeného uživatele k objednávce
 
 #### 5.6 Creating a new order (/admin/order/neworder)
+
 - Creating a new order:
   - Form for creating a new order with detailed information
   - Option to enter basic order data (date, currency, shipping method, payment method, order status)
@@ -714,6 +736,7 @@ Web application for food management and ordering.
   - Automatic assignment of logged-in user ID to the order
 
 #### 5.7 Editace existující objednávky (/admin/order/[orderId])
+
 - Editace existující objednávky:
   - Načítání detailů konkrétní objednávky včetně souvisejících položek
   - Možnost úpravy všech aspektů objednávky (datum, stav, platební údaje, dodací údaje atd.)
@@ -753,6 +776,7 @@ Web application for food management and ordering.
   - Použití reaktivních proměnných pro optimalizaci re-renderování
 
 #### 5.7 Editing existing order (/admin/order/[orderId])
+
 - Editing existing order:
   - Loading details of specific order including related items
   - Option to edit all aspects of the order (date, status, payment details, delivery details etc.)
@@ -792,6 +816,7 @@ Web application for food management and ordering.
   - Use of reactive variables to optimize re-rendering
 
 #### 5.8 Správa textového obsahu (/admin/text)
+
 - Editor textového obsahu:
   - Možnost vytváření a editace textů pro různé stránky webu
   - Podpora pro formátovaný text s využitím WYSIWYG editoru (cl-editor)
@@ -830,6 +855,7 @@ Web application for food management and ordering.
   - Podmíněné renderování komponent
 
 #### 5.8 Text content management (/admin/text)
+
 - Text content editor:
   - Option to create and edit texts for various website pages
   - Support for formatted text using WYSIWYG editor (cl-editor)
@@ -867,106 +893,88 @@ Web application for food management and ordering.
   - Use of SvelteKit actions for efficient form processing
   - Conditional rendering of components
 
-
 ### 6. Profil uživatele (/profile)
+
 - Autentizace a autorizace:
   - Kontrola přihlášení uživatele před načtením stránky
   - Přesměrování na hlavní stránku, pokud uživatel není přihlášen
-    
 - Zobrazení a úprava profilu:
   - Načtení uživatelského profilu z databáze Supabase
   - Formulář pro editaci osobních údajů (jméno, příjmení, telefon, adresa atd.)
   - Možnost rozšířeného zobrazení pro dodatečné informace (IČO, DIČ, firma)
-    
 - Zobrazení objednávek:
   - Načtení objednávek uživatele z databáze Supabase
   - Řazení objednávek od nejnovějších
   - Detailní zobrazení položek objednávky včetně menu a variant
-    
 - Interaktivní UI:
   - Možnost rozbalení/sbalení detailů objednávky
   - Animace při interakci s UI prvky
   - Responsivní design pro různé velikosti obrazovek
-    
 - Formulářové zpracování:
   - Využití SvelteKit actions pro zpracování formuláře
   - Ochrana proti CSRF útokům
   - Validace vstupních dat na straně serveru
-    
 - Stavová logika:
   - Použití Svelte stores pro správu stavu formuláře
   - Reaktivní aktualizace UI při změnách dat
-    
 - Optimalizace výkonu:
   - Lazy loading komponent
   - Efektivní aktualizace DOM při změnách dat
-    
 - Zpracování chyb:
   - Logování chyb při načítání dat z databáze
   - Zobrazení chybových hlášek uživateli při neúspěšné aktualizaci profilu
-    
 - Datová struktura:
   - Komplexní dotazy do databáze pro získání souvisejících dat (objednávky, položky objednávek, menu)
   - Zpracování a strukturování dat pro efektivní zobrazení (např. seskupení položek objednávky podle data)
-    
 - Bezpečnost:
   - Použití prepared statements pro databázové dotazy
   - Ověření identity uživatele před provedením změn v profilu
-    
 - UX vylepšení:
   - Formátování dat (např. datum objednávky) pro lepší čitelnost
   - Přehledné zobrazení historie objednávek s možností zobrazení detailů
 
 ### 6. User Profile (/profile)
+
 - Authentication and Authorization:
   - Checking user login before loading the page
   - Redirecting to the main page if the user is not logged in
-    
 - Profile Display and Editing:
   - Loading user profile from Supabase database
   - Form for editing personal data (name, surname, phone, address, etc.)
   - Option for expanded display of additional information (Company ID, VAT ID, company name)
-    
 - Order Display:
   - Loading user orders from Supabase database
   - Sorting orders from newest
   - Detailed display of order items including menu and variants
-    
 - Interactive UI:
   - Option to expand/collapse order details
   - Animations for UI element interactions
   - Responsive design for various screen sizes
-    
 - Form Processing:
   - Using SvelteKit actions for form processing
   - Protection against CSRF attacks
   - Server-side validation of input data
-    
 - State Logic:
   - Using Svelte stores for form state management
   - Reactive UI updates when data changes
-    
 - Performance Optimization:
   - Lazy loading of components
   - Efficient DOM updates when data changes
-    
 - Error Handling:
   - Logging errors when loading data from database
   - Displaying error messages to user on unsuccessful profile update
-    
 - Data Structure:
   - Complex database queries to retrieve related data (orders, order items, menu)
   - Processing and structuring data for efficient display (e.g., grouping order items by date)
-    
 - Security:
   - Using prepared statements for database queries
   - Verifying user identity before making changes to the profile
-    
 - UX Improvements:
   - Formatting data (e.g., order date) for better readability
   - Clear display of order history with option to view details
 
 ### 7. Přihlášení a registrace (/login, /signup)
+
 - Registrace uživatele:
   - Formulář pro vytvoření nového účtu s polemi pro email a heslo
   - Validace shody hesla a jeho potvrzení
@@ -1009,6 +1017,7 @@ Web application for food management and ordering.
   - Konzolové logování pro debugování (může být odstraněno v produkci)
 
 ### 7. Login and Registration (/login, /signup)
+
 - User Registration:
   - Form for creating a new account with fields for email and password
   - Validation of password match and confirmation
@@ -1051,6 +1060,7 @@ Web application for food management and ordering.
   - Console logging for debugging (can be removed in production)
 
 ### 8. Resetování hesla (/reset)
+
 - Změna hesla:
   - Formulář pro zadání nového hesla
   - Validace shody nového hesla a jeho potvrzení
@@ -1089,6 +1099,7 @@ Web application for food management and ordering.
   - Další validace na straně serveru
 
 ### 8. Password Reset (/reset)
+
 - Password Change:
   - Form for entering new password
   - Validation of new password match and confirmation
@@ -1127,6 +1138,7 @@ Web application for food management and ordering.
   - Additional server-side validation
 
 ### 9. Obnovení zapomenutého hesla (/forgot)
+
 - Funkce obnovení hesla:
   - Formulář pro zadání emailu uživatele
   - Integrace s Supabase pro generování odkazu pro reset hesla
@@ -1164,6 +1176,7 @@ Web application for food management and ordering.
   - Asynchronní zpracování požadavků pro lepší odezvu aplikace
 
 ### 9. Forgotten Password Recovery (/forgot)
+
 - Password Recovery Function:
   - Form for entering user's email
   - Integration with Supabase for generating password reset link
@@ -1199,8 +1212,9 @@ Web application for food management and ordering.
   - Easy customization of email templates
 - Performance:
   - Asynchronous request processing for better application response
- 
+
 ### 10. Zpracování autentizačních callbacků (/auth/callback)
+
 - Zpracování autentizačních callbacků:
   - Handling různých typů autentizačních callbacků (signup, recovery, OTP verifikace)
   - Podpora pro OAuth flows (např. přihlášení přes Google)
@@ -1234,6 +1248,7 @@ Web application for food management and ordering.
   - Možnost customizace chybových zpráv a přesměrování
 
 ### 10. Processing Authentication Callbacks (/auth/callback)
+
 - Processing Authentication Callbacks:
   - Handling various types of authentication callbacks (signup, recovery, OTP verification)
   - Support for OAuth flows (e.g., Google login)
@@ -1267,6 +1282,7 @@ Web application for food management and ordering.
   - Possibility to customize error messages and redirections
 
 ### 11. Potvrzení emailu a OTP verifikace (/auth/confirm)
+
 - Zpracování potvrzovacích emailů a One-Time Password (OTP) verifikace:
   - Podpora pro různé typy EmailOtpType definované Supabase
 - Bezpečnost:
@@ -1296,6 +1312,7 @@ Web application for food management and ordering.
   - Možnost snadné integrace do větší autentizační struktury
 
 ### 11. Email Confirmation and OTP Verification (/auth/confirm)
+
 - Processing of Confirmation Emails and One-Time Password (OTP) Verification:
   - Support for various EmailOtpType types defined by Supabase
 - Security:
@@ -1325,6 +1342,7 @@ Web application for food management and ordering.
   - Possibility of easy integration into larger authentication structure
 
 ## 🔧 Společné prvky
+
 - Konzistentní navigace s responzivním menu
 - Footer s důležitými odkazy a informacemi
 - Optimalizace pro výkon a SEO
@@ -1334,6 +1352,7 @@ Web application for food management and ordering.
 Projekt využívá pokročilé funkce SvelteKitu jako server-side rendering, API routes pro backend logiku a layout systém pro konzistentní strukturu stránek.
 
 ## 🔧 Common Elements
+
 - Consistent navigation with responsive menu
 - Footer with important links and information
 - Optimization for performance and SEO
@@ -1343,18 +1362,23 @@ Projekt využívá pokročilé funkce SvelteKitu jako server-side rendering, API
 The project utilizes advanced SvelteKit features such as server-side rendering, API routes for backend logic, and a layout system for consistent page structure.
 
 ## 📫 Kontakt
+
 Pro více informací o projektu mě kontaktujte na info@malyleo.cz.
 
 ## 📫 Contact
+
 For more information about the project, contact me at info@malyleo.cz.
 
 ## 🤝 Přispívání
+
 Vítáme příspěvky! Pokud máte nápady na vylepšení nebo jste našli chybu, neváhejte otevřít issue nebo pull request.
 
 ## 🤝 Contributing
+
 Contributions are welcome! If you have ideas for improvements or have found a bug, don't hesitate to open an issue or pull request.
 
 ## 📚 Další informace - Additional Information
+
 - Table UI interface for items pages: https://tanstack.com/table/latest
 - Google reCAPTCHA: https://www.google.com/recaptcha/about/
 - Nodemailer: https://nodemailer.com/
@@ -1364,6 +1388,5 @@ Contributions are welcome! If you have ideas for improvements or have found a bu
 - PKCE (Proof Key for Code Exchange): https://oauth.net/2/pkce/
 - One-Time Password (OTP): https://en.wikipedia.org/wiki/One-time_password
 - cl-editor (WYSIWYG): https://github.com/ckeditor/ckeditor5
-
 
 ver1_17102024

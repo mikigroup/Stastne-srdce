@@ -14,7 +14,7 @@
 	let street = "";
 	let city = "";
 	let street_number = "";
-	let zip_code = "";	
+	let zip_code = "";
 
 	function back() {
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
@@ -34,12 +34,14 @@
 				city,
 				street_number,
 				zip_code,
-				id: user?.id,
+				id: user?.id
 			};
 
 			console.log(createCustomerData);
 
-			let { error } = await supabase.from("customers").insert(createCustomerData);
+			let { error } = await supabase
+				.from("customers")
+				.insert(createCustomerData);
 			if (error) throw error;
 			console.log("Customer created successfully!");
 			goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
@@ -67,8 +69,7 @@
 				type="submit"
 				on:click={back}
 				class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-				>Zpět</button
-			>
+				>Zpět</button>
 		</div>
 		<div class="flex flex-col gap-2 md:flex-row">
 			<div>
@@ -78,8 +79,7 @@
 					type="submit"
 					on:click={createCustomer}
 					class="w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-					>Vytvoř</button
-				>
+					>Vytvoř</button>
 			</div>
 		</div>
 	</div>
@@ -100,46 +100,39 @@
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={first_name}
-						placeholder="Jméno"
-					/>
+						placeholder="Jméno" />
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={last_name}
-						placeholder="Příjmení"
-					/>
+						placeholder="Příjmení" />
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={street}
-						placeholder="Ulice"
-					/>
+						placeholder="Ulice" />
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={street_number}
-						placeholder="Číslo"
-					/>
+						placeholder="Číslo" />
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={city}
-						placeholder="Město"
-					/>
+						placeholder="Město" />
 				</div>
 				<div class="w-full md:w-1/2">
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={zip_code}
-						placeholder="PSČ"
-					/>
+						placeholder="PSČ" />
 					<input
 						class="w-full px-4 py-2 mb-1 leading-tight text-gray-700 bg-gray-200 border-2 border-gray-200 rounded appearance-none focus:outline-none focus:bg-white"
 						type="text"
 						bind:value={telephone}
-						placeholder="Telefon"
-					/>
+						placeholder="Telefon" />
 				</div>
 			</div>
 		</div>

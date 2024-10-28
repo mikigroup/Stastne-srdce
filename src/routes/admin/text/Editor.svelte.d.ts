@@ -1,37 +1,39 @@
 declare class Editor {
 	constructor(options: {
-        target: Element,
-        props?: {
-            actions?: ({name: string, title?: string, icon?: string, result?: Function} | string)[],
-            height?: string,
-            html?: string,
-            removeFormatTags?: string[]
-        }
-    });
+		target: Element;
+		props?: {
+			actions?: (
+				| { name: string; title?: string; icon?: string; result?: Function }
+				| string
+			)[];
+			height?: string;
+			html?: string;
+			removeFormatTags?: string[];
+		};
+	});
 
-    $destroy(detach?: boolean);
+	$destroy(detach?: boolean);
 
-    $on(event: 'change' | 'blur', cb: (event?: any) => void);
+	$on(event: "change" | "blur", cb: (event?: any) => void);
 
-    exec(cmd: string, value?: string): void
+	exec(cmd: string, value?: string): void;
 
-    getHtml(sanitize?: boolean): string
+	getHtml(sanitize?: boolean): string;
 
-    getText(): string
+	getText(): string;
 
-    setHtml(html: string, sanitize?: boolean): void
+	setHtml(html: string, sanitize?: boolean): void;
 
-    saveRange(element: Element): void
+	saveRange(element: Element): void;
 
-    restoreRange(element: Element): void
+	restoreRange(element: Element): void;
 
-    refs: {
-        colorPicker: HTMLDivElement,
-        editor: HTMLDivElement,
-        modal: HTMLDivElement,
-        raw: HTMLTextAreaElement
-    }
-
+	refs: {
+		colorPicker: HTMLDivElement;
+		editor: HTMLDivElement;
+		modal: HTMLDivElement;
+		raw: HTMLTextAreaElement;
+	};
 }
 
 export default Editor;

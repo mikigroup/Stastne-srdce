@@ -129,4 +129,5 @@
 				Přihlásit se přes Google
 			</button>
 		{/if}
+	</div>
 </section>

@@ -18,7 +18,9 @@
 
 	function scrollToTop(event) {
 		event.preventDefault();
-		document.getElementById("menu-content")?.scrollIntoView({ behavior: "smooth" });
+		document
+			.getElementById("menu-content")
+			?.scrollIntoView({ behavior: "smooth" });
 	}
 </script>
 
@@ -28,8 +30,10 @@
 </svelte:head>
 
 <main>
-	<section class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
-		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+	<section
+		class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+		<h1
+			class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Jídelníček
 		</h1>
 
@@ -54,15 +58,17 @@
 		</div>
 
 		<div class="flex justify-end gap-4 pt-10 pr-5">
-			<a href="#menu-content"
-				 on:click={scrollToTop}
-				 class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
+			<a
+				href="#menu-content"
+				on:click={scrollToTop}
+				class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
 				Skoč nahoru
 			</a>
 
 			{#if totalPieces > 0 && $page.data.session}
-				<a href="/kosik"
-					 class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
+				<a
+					href="/kosik"
+					class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
 					Košík ({totalPieces})
 				</a>
 			{/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import type { ActionData, PageData } from './$types';
+	import type { ActionData, PageData } from "./$types";
 	import { enhance } from "$app/forms";
 
 	export let form: ActionData;
@@ -49,15 +49,17 @@
 					nebo <br />se chceš přihlásit?
 					<a
 						href="/admin/signin"
-						aria-current={$page.url.pathname === "/admin/signin" ? "page" : undefined}
+						aria-current={$page.url.pathname === "/admin/signin"
+							? "page"
+							: undefined}
 						class="text-blue-700 hover:underline dark:text-blue-500"
-					>Klikni sem!</a>
+						>Klikni sem!</a>
 				</div>
 				<div>
 					<label
 						for="email"
 						class="block mt-5 mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Email</label>
+						>Email</label>
 					<input
 						type="email"
 						id="email"
@@ -71,7 +73,7 @@
 					<label
 						for="password"
 						class="block mt-5 mb-2 text-sm font-medium text-gray-900"
-					>Vymysli heslo</label>
+						>Vymysli heslo</label>
 					<input
 						type="password"
 						id="password"
@@ -87,7 +89,7 @@
 					<label
 						for="confirmpassword"
 						class="block mt-5 mb-2 text-sm font-medium text-gray-900"
-					>Zadej znovu heslo</label>
+						>Zadej znovu heslo</label>
 					<input
 						type="password"
 						id="confirmpassword"
@@ -109,8 +111,8 @@
 					</div>
 					<p class="ml-2 text-sm font-medium text-gray-900">
 						Souhlasím s <a
-						href="/podminky"
-						aria-current={$page.url.pathname === "/podminky"
+							href="/podminky"
+							aria-current={$page.url.pathname === "/podminky"
 								? "page"
 								: undefined}>podmínkama</a>
 					</p>
@@ -152,12 +154,13 @@
 		</button>
 	</div>
 </section>
-<style>
-    .success {
-        color: green;
-    }
 
-    .error {
-        color: red;
-    }
+<style>
+	.success {
+		color: green;
+	}
+
+	.error {
+		color: red;
+	}
 </style>

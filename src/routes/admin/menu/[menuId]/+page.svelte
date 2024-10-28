@@ -54,34 +54,43 @@
 			// Aktualizace variant
 			for (const variant of menu.variants) {
 				const { data: updatedVariant, error: variantError } = await supabase
-					.from('menu_variants')
-					.upsert({
-						menu_id: menu.id,
-						id: variant.id,
-						variant_number: variant.variant_number,
-						description: variant.description,
-						price: variant.price
-					}, {
-						onConflict: 'id'
-					})
+					.from("menu_variants")
+					.upsert(
+						{
+							menu_id: menu.id,
+							id: variant.id,
+							variant_number: variant.variant_number,
+							description: variant.description,
+							price: variant.price
+						},
+						{
+							onConflict: "id"
+						}
+					)
 					.select()
 					.single();
 
 				if (variantError) throw variantError;
 
 				// Aktualizace alergenů varianty
-				await supabase.from('variant_allergens').delete().eq('variant_id', variant.id);
+				await supabase
+					.from("variant_allergens")
+					.delete()
+					.eq("variant_id", variant.id);
 				for (const allergen of variant.allergens) {
-					await supabase.from('variant_allergens').insert({
+					await supabase.from("variant_allergens").insert({
 						variant_id: variant.id,
 						allergen_id: allergen.id
 					});
 				}
 
 				// Aktualizace ingrediencí varianty
-				await supabase.from('variant_ingredients').delete().eq('variant_id', variant.id);
+				await supabase
+					.from("variant_ingredients")
+					.delete()
+					.eq("variant_id", variant.id);
 				for (const ingredient of variant.ingredients) {
-					await supabase.from('variant_ingredients').insert({
+					await supabase.from("variant_ingredients").insert({
 						variant_id: variant.id,
 						ingredient_id: ingredient.id
 					});
@@ -97,7 +106,7 @@
 		}
 	}
 
-/*	async function deleteMenu() {
+	/*	async function deleteMenu() {
 		try {
 			loading = true;
 
@@ -120,8 +129,9 @@
 		try {
 			loading = true;
 
-			const { data, error } = await supabase
-				.rpc('soft_delete_menu', { p_menu_id: menu.id });
+			const { data, error } = await supabase.rpc("soft_delete_menu", {
+				p_menu_id: menu.id
+			});
 
 			if (error) throw error;
 
@@ -146,7 +156,9 @@
 	}
 </script>
 
-<div class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200" in:fly="{{ y: 50, duration: 500 }}">
+<div
+	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200"
+	in:fly={{ y: 50, duration: 500 }}>
 	<div class="flex justify-between items-center mb-4">
 		<button on:click={back} class="btn btn-outline">Zpět</button>
 		{#if updateMessage}
@@ -160,17 +172,14 @@
 			</div>
 		{/if}
 		<div class="flex flex-col gap-2 md:flex-row">
-			<button
-				disabled={loading}
-				on:click={updateMenu}
-				class="btn btn-outline">
-				{loading ? 'Ukládá se...' : 'Uložit změny'}
+			<button disabled={loading} on:click={updateMenu} class="btn btn-outline">
+				{loading ? "Ukládá se..." : "Uložit změny"}
 			</button>
 			<button
 				class="btn btn-outline btn-error"
 				disabled={loading}
 				on:click={softDeleteMenu}>
-				{loading ? 'Maže se...' : 'Smazat menu'}
+				{loading ? "Maže se..." : "Smazat menu"}
 			</button>
 		</div>
 	</div>
@@ -182,8 +191,7 @@
 			bind:menu
 			{allAllergens}
 			{allIngredients}
-			on:update={handleUpdate}
-		/>
+			on:update={handleUpdate} />
 	</div>
 </div>
 

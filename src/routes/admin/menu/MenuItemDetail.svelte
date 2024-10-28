@@ -94,8 +94,7 @@
 			<TagSelector
 				selectedTags={menu.allergens}
 				availableTags={allAllergens}
-				on:update={(event) => updateAllergens(event.detail)}
-			/>
+				on:update={(event) => updateAllergens(event.detail)} />
 		</div>
 
 		<div class="form-control w-full mb-2">
@@ -106,8 +105,7 @@
 			<TagSelector
 				selectedTags={menu.ingredients}
 				availableTags={allIngredients}
-				on:update={(event) => updateIngredients(event.detail)}
-			/>
+				on:update={(event) => updateIngredients(event.detail)} />
 		</div>
 	</div>
 
@@ -130,7 +128,8 @@
 				{#each menu.variants as variant, index}
 					<div
 						class="variant-container mb-10 border rounded-xl p-5 border-gray-400 bg-neutral-100">
-						<div class="rounded-2xl border w-3 px-4 py-1 flex justify-center bg-white mb-2">
+						<div
+							class="rounded-2xl border w-3 px-4 py-1 flex justify-center bg-white mb-2">
 							{variant.variant_number}
 						</div>
 						<textarea

@@ -101,14 +101,13 @@
 					<OrderItemDetail
 						order={{}}
 						{formattedDate}
-						date={date}
-						isValidDate={isValidDate}
+						{date}
+						{isValidDate}
 						{selectedPaymentMethod}
 						{selectedOrderState}
 						{selectedCurrency}
 						{selectedShippingMethod}
-						{isPaid}
-					/>
+						{isPaid} />
 				</div>
 			</div>
 		</div>

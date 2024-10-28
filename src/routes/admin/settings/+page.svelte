@@ -25,7 +25,8 @@
 	};
 </script>
 
-<div class="form-widget xl:w-1/2 mx-auto border-gray-400 border p-5 rounded-lg bg-zinc-100">
+<div
+	class="form-widget xl:w-1/2 mx-auto border-gray-400 border p-5 rounded-lg bg-zinc-100">
 	<h1
 		class="mt-10 mb-10 text-4xl font-extrabold leading-none text-center md:text-5xl lg:text-6xl">
 		Nastavení
@@ -106,13 +107,16 @@
 		<button
 			disabled={loading}
 			type="submit"
-			class="w-full btn btn-outline btn-success"
-			>
+			class="w-full btn btn-outline btn-success">
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>
 		{#if form?.message}
 			<div class="flex w-full p-2 my-4 border rounded-lg">
-				<p class:success={form.message.success} class:error={!form.message.success}>{form.message.display}</p>
+				<p
+					class:success={form.message.success}
+					class:error={!form.message.success}>
+					{form.message.display}
+				</p>
 			</div>
 		{/if}
 	</form>

@@ -12,8 +12,7 @@
 		<div class="max-w-4xl pb-2 mx-auto">
 			<div
 				class="grid grid-cols-1 p-5 bg-white border-2 rounded-lg md:grid-cols-1">
-				<div
-					class="mb-4 text-xl font-light text-gray-500 md:text-xl">
+				<div class="mb-4 text-xl font-light text-gray-500 md:text-xl">
 					<p>
 						Správce osobních údajů Kuchyň K&K, Potoční 16, Mikulovice 79081
 						(dále jen „správce“), prohlašuje, že veškeré osobní údaje

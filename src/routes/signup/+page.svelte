@@ -156,19 +156,17 @@
 		<div class="form-widget">
 			<div
 				class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
-				
-					<div class="">
-						<button
-							on:click={signInWithGoogle}
-							value={loading ? "Loading" : "Log in with Google"}
-							disabled={loading}
-							id="btn-success"
-							type="submit"
-							class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
-							<img src="/google.svg" alt="" width="40" height="40" />
-						</button>
-					</div>
-				
+				<div class="">
+					<button
+						on:click={signInWithGoogle}
+						value={loading ? "Loading" : "Log in with Google"}
+						disabled={loading}
+						id="btn-success"
+						type="submit"
+						class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
+						<img src="/google.svg" alt="" width="40" height="40" />
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
