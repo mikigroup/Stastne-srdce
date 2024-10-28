@@ -20,10 +20,7 @@ const contactSchema = yup.object({
 		.string()
 		.min(2, "Jméno musí mít alespoň 2 znaky")
 		.required("Jméno je povinné"),
-	message: yup
-		.string()
-		.min(10, "Zpráva musí mít alespoň 10 znaků")
-		.required("Zpráva je povinná"),
+	content: yup.string().min(10).required(),
 	"g-recaptcha-response": yup.string().required("ReCaptcha je povinná")
 });
 
@@ -57,11 +54,11 @@ export const actions: Actions = {
 				to: "info@stastnesrdce.cz",
 				subject: "Šťastné srdce - Formulář",
 				text: `Dobrý den,\n
-byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.\n
-Kontaktní osoba: ${formValues.name}
-Email: ${formValues.email}
-Telefon: ${formValues.tel}\n
-Obsah zprávy:\n${formValues.message}`
+								byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.\n
+								Kontaktní osoba: ${formValues.name}
+								Email: ${formValues.email}
+								Telefon: ${formValues.tel}\n
+								Obsah zprávy:\n${formValues.message}`
 			};
 
 			await transporter.sendMail(options);

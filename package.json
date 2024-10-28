@@ -51,6 +51,7 @@
 		"cl-editor": "^2.3.0",
 		"emoji-js": "^3.8.0",
 		"gsap": "^3.12.5",
+		"lucide-svelte": "^0.454.0",
 		"node": "^20.10.0",
 		"nodemailer": "^6.9.13",
 		"svelte-chartjs": "^3.1.5",
