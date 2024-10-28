@@ -54,6 +54,7 @@
 		"node": "^20.10.0",
 		"nodemailer": "^6.9.13",
 		"svelte-chartjs": "^3.1.5",
-		"svelte-hero-icons": "^5.2.0"
+		"svelte-hero-icons": "^5.2.0",
+		"yup": "^1.4.0"
 	}
 }
