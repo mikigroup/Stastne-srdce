@@ -16,6 +16,7 @@ Web application for food management and ordering.
 - Security: Google reCAPTCHA v3
 - Authentication: OAuth (Google), Supabase Auth, OTP
 - Text Editor: cl-editor (WYSIWYG)
+- Style guide pomocí Prettier a ESLint
 
 ## 🌟 Klíčové funkce - Key features
 
