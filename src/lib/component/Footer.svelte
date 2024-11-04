@@ -9,11 +9,11 @@
 					href="https://www.mikigroup.cz/"
 					><i class="fa fa-regular fa-hand-spock" /> Mikigroup™
 				</a>
-				- core0.9a
+				- core0.9b
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">
-			<p>Šťastné srdce 2022-2024 ver_1.05</p>
+			<p>Malý Leo 2022-2024 ver_1.0a</p>
 		</div>
 	</div>
 </footer>

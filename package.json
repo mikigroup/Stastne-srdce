@@ -1,6 +1,6 @@
 {
-	"name": "Stastne srdce",
-	"version": "1.04",
+	"name": "Malý Leo",
+	"version": "1.0a",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
