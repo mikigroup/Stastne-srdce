@@ -153,7 +153,7 @@
 		</div>
 		<div
 			class="flex-wrap items-center justify-center gap-8 md:container md:mx-auto sm:flex">
-			<div
+			<!--<div
 				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
 				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
 					Info na Prosinec 2022
@@ -180,7 +180,7 @@
 					(rychlokvašenou zeleninu) a zkusit používat na některé vařiče
 					bioplynku.
 				</p>
-			</div>
+			</div>-->
 			<div
 				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
 				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
