@@ -90,49 +90,82 @@
 				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
-			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
-				<h2 class="text-2xl text-center"><strong>Naši milí strávníci, od března 2025 budou tyto změny a novinky.</strong></h2>
-
-				<p class="mt-3 text-center">
+			<div class="max-w-4xl p-10 mx-auto bg-white border-2 rounded-lg ">
+				<h2 class="text-2xl text-center mt-5">
 					<strong
-						>Naši milí strávníci, všechny Vás srdečně zdravíme. Voláte nám ze
-						všech stran, zda jsme v pořádku. „ My jsme ty ohromné přívaly vody
-						ustáli.“ Doufáme, že Vy také. <br> Voda nám zatřásla životem, nastal čas
-						vykročit a pořádně se s překážkami poprat.<br> Od pondělí 23.9. začínáme
-						vařit, máme na dalších 14 dnů naplánovaný povodňový jídelníček s
-						jedním menu (i s variantou bez lepku a bez laktózy). Vzhledem ke
-						ztíženým hygienickým podmínkám, budeme používat jednorázové
-						menuboxy.<br> Většina z Vás měla jídlo předplaceno, jakmile se situace
-						trochu zklidní všem se ozvu a domluvíme se na vrácení peněz.
-						<br>Nesmírně se na Vás všechny těšíme a pevně věříme, že se setkáme.</strong>
-					<!--<strong>Od 1.9.2024 přistupujeme ke zvýšení ceny obědů na 128,- Kč včetně DPH. Nadále budeme
-						usilovat o co nejlepší kvalitu, chuť obědů a organizaci dovozu obědů k Vám.</strong>-->
+						>Naši milí strávníci, od března 2025 budou tyto změny a novinky.</strong>
+				</h2>
+
+				<p class="mt-3">
+					<span class="underline"
+						>1. AKCE NA BŘEZEN: <strong
+							>Sleva 5 % z objednávky pro naše věrné strávníky</strong
+						></span
+					>, kteří si objednají na každý den v měsíci a zároveň na celý měsíc
+					dopředu (v březnu vaříme 20 dnů).
 					<br />
 					<br />
+					<strong>Sleva bude 140,8 Kč.</strong>
+					<br />
+					<br />
+					<span class="underline"
+						>2. <strong>Rekrabičky, jednorázový box, nosič?</strong></span>
 					<!--<strong>Děkujeme všem za důvěru a pochopení.</strong>-->
 					<br />
 					<br />
+					a) nosič je pouze Váš a zodpovídáte si za něj. Je nutné ho označit jménem
+					a udržovat v dobrém stavu. Pokud nám ho nepředáte, dodáme Vám jídlo v menuboxu
+					za 12Kč.
+					<br />
+					<br />
+					b) jednorázový box je řešením při nedostatku času a zaplatíte za něj 12Kč
+					vč. DPH
+					<br />
+					<br />
+					c) Rekrabička, zaplatíte za ni zálohu, označíme ji Vaším jménem a pokud
+					nám ji vrátíte a už dál s námi nebudete jíst, zase Vám zálohu vrátíme.
+					V případě, že se Vám krabička rozbije nebo netěsní, tak Vám ji zadarmo
+					vyměníme. Jídlo v ní můžete ohřívat v mikrovlnce, umývat v myčce, výborně
+					těsní. Pokud nám Rekrabičku nepředáte na další den, dodáme Vám oběd v menuboxu
+					za 12 Kč.
+					<br />
+					<br />
 				</p>
-				<hr class="devider_dashed" />
-				<p class="mt-5 text-center text-lg">
-					<strong
-						>Platbu můžete provést v hotovosti nebo přes bankovní účet číslo
-						131-2288130267/0100.</strong>
-					Pokud potřebujete fakturu, dejte vědět.
-					<br />
-					<br />
-					<strong>Pro nové zájemce o naši stravu.</strong>
-					<br />
-					V případě, že se chcete stát našimi strávníky, prosíme, kontaktujte nás
-					na tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte,
-					pošlete SMS nebo nás kontaktujte na emailu
-					<strong class="underline">stastnesrdcekk@seznam.cz</strong>
-					a my se Vám co nejdříve ozveme. Na každého nového strávníka se těšíme.
-					<br />
-					<br />
-					<strong
-						>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
+				<ul class="">
+					<strong> My fandíme Rekrabičce, protože:</strong>
+					<li class="ml-4">- výborně těsní</li>
+					<li class="ml-4">
+						- šetří přírodu a je možné použít ji opakovaně, dát do mikrovlnky, do
+						myčky
+					</li>
+					<li class="ml-4">- český výrobek</li>
+					<li class="ml-4">- strávník nemusí investovat do nákupu nosiče</li>
+					<li class="ml-4">- když se poničí, zdarma ji vyměníme</li>
+				</ul>
+				<p>
+					V případě zájmu o Rekrabičku nám volejte.
+					<br>
+					<br>
+					3. <span class="underline"><strong>Máme nové číslo účtu 273177960/0600.</strong></span> Prosíme o registrování změny. Platby v hotovosti přijímáme i nadále. Terminál nemáme. Faktury na vyžádání vystavujeme.
+					<br>
+					<br>
+					<span class="underline"><strong>4. Od 3.3.2025 otevíráme Poradnu prevence některých onemocnění a zdravého životního stylu.</strong></span> Máme vynikajícího odborníka, skvělou diagnostiku. Podrobnosti sdělíme telefonicky.
+					<br>
+					<br>
+					5. <strong>Přibývá strávníků s intolerancí či alergií na lepek, laktózu, mléčnou bílkovinu, česnek, kuřecí maso, rajčata, …………………… Pokud i Vás trápí tyto i další nevyjmenované zdravotní potíže volejte a domluvíme se co pro Vás můžeme udělat.</strong>
+					<br>
+					<br>
 				</p>
+				<p class="text-center">
+					Kontaktujte nás na tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte, pošlete SMS nebo nás kontaktujte na emailu <a href="mailto:stastnesrdcekk@seznam.cz"><strong>stastnesrdcekk@seznam.cz</strong></a> a my se Vám co nejdříve ozveme.
+					<br>
+					<br>
+					Na každého nového strávníka se těšíme.
+					<br>
+					<br>
+					<strong>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
+				</p>
+
 				<br id="cilovyPrvek" />
 				<!-- <h6 class="pb-2">Vyhledávání</h6> 
 				<form class="flex items-center">					
