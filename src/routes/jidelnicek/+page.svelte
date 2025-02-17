@@ -91,6 +91,8 @@
 				Jídelníček
 			</h1>
 			<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg">
+				<h2 class="text-2xl text-center"><strong>Naši milí strávníci, od března 2025 budou tyto změny a novinky.</strong></h2>
+
 				<p class="mt-3 text-center">
 					<strong
 						>Naši milí strávníci, všechny Vás srdečně zdravíme. Voláte nám ze
