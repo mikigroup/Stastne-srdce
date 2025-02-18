@@ -1,46 +1,33 @@
-import { redirect, fail } from "@sveltejs/kit";
+import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 
-export const actions: Actions = {
+export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
 		try {
 			const formData = await request.formData();
-			const email = formData.get("email") as string;
-			const password = formData.get("password") as string;
-			const repassword = formData.get("repassword") as string;
+			const email = formData.get("email")?.toString();
+			const password = formData.get("password")?.toString();
+			const repassword = formData.get("repassword")?.toString();
 
-			// Validace
+			// Validace vstupů
 			if (!email || !password || !repassword) {
 				return fail(400, {
-					message: {
-						success: false,
-						display: "Vyplňte prosím všechna pole"
-					}
+					error: true,
+					message: "Vyplňte prosím všechna pole",
+					email
 				});
 			}
 
 			if (password !== repassword) {
 				return fail(400, {
-					email,
-					message: {
-						success: false,
-						display: "Hesla se neshodují"
-					}
+					error: true,
+					message: "Hesla se neshodují",
+					email
 				});
 			}
 
-			if (password.length < 6) {
-				return fail(400, {
-					email,
-					message: {
-						success: false,
-						display: "Heslo musí mít alespoň 6 znaků"
-					}
-				});
-			}
-
-			// Registrace
-			const { data, error } = await supabase.auth.signUp({
+			// Supabase registrace
+			const { data: userData, error } = await supabase.auth.signUp({
 				email,
 				password,
 				options: {
@@ -50,44 +37,27 @@ export const actions: Actions = {
 
 			if (error) {
 				return fail(400, {
-					email,
-					message: {
-						success: false,
-						display:
-							error.message === "User already registered"
-								? "Tento email je již registrován"
-								: "Chyba při registraci. Zkuste to prosím později."
-					}
-				});
-			}
-
-			if (!data.user) {
-				return fail(400, {
-					email,
-					message: {
-						success: false,
-						display: "Chyba při vytváření účtu"
-					}
+					error: true,
+					message:
+						error.message === "User already registered"
+							? "Tento email je již registrován"
+							: "Chyba při registraci",
+					email
 				});
 			}
 
 			// Úspěšná registrace
 			return {
 				success: true,
-				email,
-				message: {
-					success: true,
-					display: `Na emailovou adresu ${email} byla odeslána zpráva pro potvrzení registrace. Pro dokončení registrace prosím potvrďte odkaz ve zprávě.`
-				}
+				error: false,
+				message: `Na emailovou adresu ${email} byla odeslána zpráva pro potvrzení registrace. Pro dokončení registrace prosím potvrďte odkaz ve zprávě.`
 			};
 		} catch (error) {
-			console.error("Neočekávaná chyba:", error);
+			console.error("Unexpected error:", error);
 			return fail(500, {
-				message: {
-					success: false,
-					display: "Došlo k neočekávané chybě. Zkuste to prosím později."
-				}
+				error: true,
+				message: "Došlo k neočekávané chybě"
 			});
 		}
 	}
-};
+} satisfies Actions;
