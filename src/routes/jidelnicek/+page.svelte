@@ -36,7 +36,6 @@
 			class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Jídelníček
 		</h1>
-
 		<div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg mb-3">
 			{@html texts?.text || "Žádný text pro jídelníček není k dispozici."}
 		</div>
