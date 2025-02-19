@@ -201,4 +201,47 @@
 							['cash', 'Hotově'],
 							['bankNoInvoice', 'Na účet bez faktury'],
 							['bankWithInvoice', 'Na účet s fakturou']
-						] as [value,
+						] as [value, label]}
+							<label class="flex items-center">
+								<input
+									type="radio"
+									name="paymentMethod"
+									{value}
+									bind:group={paymentMethod}
+									class="mr-2"
+									required
+								/>
+								{label}
+							</label>
+						{/each}
+					</div>
+				</div>
+
+				<!-- Submit button -->
+				<div class="flex w-full mt-8">
+					<button
+						type="submit"
+						class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50"
+						disabled={loading}
+					>
+						{loading ? "Ukládám..." : "Dokončit registraci"}
+					</button>
+				</div>
+
+				{#if form?.message}
+					<div class="rounded-md p-4" class:bg-red-50={!form.message.success} class:bg-green-50={form.message.success}>
+						<p class="text-sm" class:text-red-700={!form.message.success} class:text-green-700={form.message.success}>
+							{form.message.display}
+						</p>
+					</div>
+				{/if}
+			</form>
+		</div>
+	</div>
+</section>
+
+<style>
+    .input-field {
+        @apply w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600;
+    }
+</style>

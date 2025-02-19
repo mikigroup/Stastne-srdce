@@ -1,7 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { dev } from "$app/environment";
 
 export const GET: RequestHandler = async ({
 	url,
@@ -72,7 +71,7 @@ export const GET: RequestHandler = async ({
 	}
 
 	if (type === "signup") {
-		redirectTo.pathname = "/";
+		redirectTo.pathname = "/signup/complete";
 		redirectTo.searchParams.append("success", "signup");
 	} else if (type === "recovery") {
 		redirectTo.pathname = "/reset";
