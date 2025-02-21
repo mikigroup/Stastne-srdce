@@ -46,7 +46,7 @@
   let ico: string = profile?.ico ?? "";
   let dic: string = profile?.dic ?? "";
   let company: string = profile?.company ?? "";
-  let zip_code: string = profile?.zip ?? "";
+  let zip_code: string = profile?.zip_code ?? "";
   // Nové proměnné
   let allergies: string = profile?.allergies ? "yes" : "no";
   let allergiesDescription: string = profile?.allergies_description ?? "";
