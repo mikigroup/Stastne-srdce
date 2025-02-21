@@ -145,14 +145,41 @@
 
 <section>
 	<div class="">
-		<div class="mt-20">
-			<h2
-				class="mb-4 mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
-				Info koutek
-			</h2>
-		</div>
 		<div
 			class="flex-wrap items-center justify-center gap-8 md:container md:mx-auto sm:flex">
+			<section>
+				<div class="max-w-screen-xl mx-auto px-4">
+					<div class="mt-20">
+						<h2 class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
+							Info koutek
+						</h2>
+					</div>
+					<!-- Grid container for texts -->
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+						{#if texts && texts.length > 0}
+							{#each texts as text}
+								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50">
+									{#if text.title}
+										<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
+											{text.title}
+										</h3>
+										<hr class="mx-5" />
+									{/if}
+									{#if text.text}
+										<div class="p-5 mb-5 text-gray-600 text-md">
+											{@html text.text}
+										</div>
+									{/if}
+								</div>
+							{/each}
+						{:else if import.meta.env.DEV}
+							<div class="col-span-full text-center text-gray-500">
+								Žádné texty k zobrazení
+							</div>
+						{/if}
+					</div>
+				</div>
+			</section>
 			<!--<div
 				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
 				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">

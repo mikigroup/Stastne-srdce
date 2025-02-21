@@ -73,38 +73,50 @@
 			</div>
 			<!-- menu -->
 			<div
-				class="items-center hidden grid-cols-4 text-center border-2 rounded-full lg:grid textmenu md:grid bg-slate-50">
+				class="items-center hidden grid-cols-3 text-center border-2 rounded-full lg:grid textmenu md:grid bg-slate-50">
 				<div class="border-r-2 text-slate-600" id="">
 					<a class="navItem" href="/">Úvod</a>
 				</div>
 				<div class="border-r-2 text-slate-600">
 					<a class="navItem" href="/jidelnicek"> Jídelníček </a>
 				</div>
-				<div class="border-r-2 text-slate-600">
+				<div class=" text-slate-600">
 					<a class="navItem" href="/kontakt"> Kontakt </a>
 				</div>
-				<div class="text-slate-600">
+				<!--<div class="text-slate-600">
 					<a class="navItem" href="/kosik">
 						Košík
 						{#if $page.data.session}
 							<strong>{totalPieces}</strong>
 						{/if}
 					</a>
-				</div>
+				</div>-->
 			</div>
 
 			<div class="flex items-center justify-self-end">
 				{#if $page.data.session}
 					<!-- pravá část menu -->
-					<div
-						class="relative items-center hidden grid-cols-2 ml-auto lg:grid md:flex">
-						<div class="flex pr-2">
-							<!-- svelte-ignore a11y-missing-attribute -->
-							<a
-								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								href="/profile">Účet</a>
+					<div class="relative items-center hidden grid-cols-3 ml-auto lg:grid md:flex gap-2">
+						<div class="flex">
+							<a href="/kosik"
+								 class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800 flex items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<circle cx="9" cy="21" r="1"/>
+									<circle cx="20" cy="21" r="1"/>
+									<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+								</svg>
+								{#if $page.data.session}
+									<strong>{totalPieces}</strong>
+								{/if}
+							</a>
 						</div>
-						<div class="">
+						<div class="flex">
+							<a href="/profile"
+								 class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800">
+								Účet
+							</a>
+						</div>
+						<div class="flex">
 							<button
 								on:click={signOut}
 								disabled={loading}
@@ -114,44 +126,20 @@
 						</div>
 					</div>
 				{:else}
+					<!-- Existing non-logged in menu -->
 					<div class="relative items-center hidden grid-cols-2 ml-auto md:grid">
 						<div class="flex pr-2">
-							<a
-								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								href="/login">Přihlásit</a>
+							<a class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								 href="/login">Přihlásit</a>
 						</div>
 						<div class="flex">
-							<a
-								class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
-								href="/signup">
+							<a class="p-2 px-6 text-green-800 border border-green-700 btn rounded-3xl hover:text-white hover:bg-green-800"
+								 href="/signup">
 								Přidej se
 							</a>
 						</div>
 					</div>
 				{/if}
-				<div class="grid justify-center md:hidden">
-					<button on:click={toggleMenu} class="text-xl">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-7 w-7"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M4 6h16M4 12h16M4 18h16" />
-						</svg>
-					</button>
-				</div>
-				<div class="md:hidden">
-					<!-- svelte-ignore empty-block -->
-					{#if !totalPieces}{:else}
-						<strong>{totalPieces}</strong>
-					{/if}
-				</div>
-			</div>
 		</div>
 		<div
 			class="flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white md:hidden">
