@@ -5,14 +5,22 @@ export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession }
 }) => {
 	const { session } = await safeGetSession();
-
 	if (!session) {
 		throw redirect(303, "/");
 	}
 
+	// Načtení profilu včetně nových polí
 	const { data: profile, error: profileError } = await supabase
 		.from("profiles")
-		.select("*")
+		.select(
+			`
+     *,
+     allergies,
+     allergies_description,
+     delivery_method,
+     payment_method
+   `
+		)
 		.eq("id", session.user.id)
 		.single();
 
@@ -20,27 +28,28 @@ export const load: PageServerLoad = async ({
 		console.error("Error fetching profile:", profileError);
 	}
 
+	// Načtení objednávek s detaily
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
 		.select(
 			`
-      *,
-      order_items: order_items (
-        id,
-        price,
-        quantity,
-        variant: menu_variants (
-          id,
-          variant_number,
-          description,
-          menu: menus (
-            id,
-            date,
-            soup
-          )
-        )
-      )
-    `
+     *,
+     order_items: order_items (
+       id,
+       price,
+       quantity,
+       variant: menu_variants (
+         id,
+         variant_number,
+         description,
+         menu: menus (
+           id,
+           date,
+           soup
+         )
+       )
+     )
+   `
 		)
 		.eq("user_id", session.user.id)
 		.order("created_at", { ascending: false });
@@ -74,71 +83,74 @@ export const load: PageServerLoad = async ({
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const formData = await request.formData();
-		let first_name = formData.get("first_name") as string;
-		let last_name = formData.get("last_name") as string;
-		let telephone = formData.get("telephone") as string;
-		let street = formData.get("street") as string;
-		let street_number = formData.get("street_number") as string;
-		let city = formData.get("city") as string;
-		let ico = formData.get("ico") as string;
-		let dic = formData.get("dic") as string;
-		let company = formData.get("company") as string;
-		let username = formData.get("username") as string;
 		const { session } = await safeGetSession();
 
-		/* 	    console.log('Form data in action:', {
-      first_name,
-      last_name,
-      telephone,
-      street,
-      street_number,
-      city,
-      ico,
-      dic,
-      company,
-      username
-    });
- */
-		const { error } = await supabase.from("profiles").upsert({
-			id: session?.user.id,
-			first_name,
-			last_name,
-			telephone,
-			street,
-			street_number,
-			city,
-			ico,
-			dic,
-			company,
-			username
-		});
-
-		if (error) {
-			return fail(500, {
-				first_name,
-				last_name,
-				telephone,
-				street,
-				street_number,
-				city,
-				ico,
-				dic,
-				company,
-				username
+		if (!session) {
+			return fail(401, {
+				message: {
+					success: false,
+					display: "Pro aktualizaci profilu se musíte přihlásit"
+				}
 			});
 		}
 
+		// Získání dat z formuláře
+		const profileData = {
+			id: session.user.id,
+			first_name: formData.get("first_name") as string,
+			last_name: formData.get("last_name") as string,
+			telephone: formData.get("telephone") as string,
+			street: formData.get("street") as string,
+			street_number: formData.get("street_number") as string,
+			city: formData.get("city") as string,
+			zip_code: formData.get("zip_code") as string,
+			ico: formData.get("ico") as string,
+			dic: formData.get("dic") as string,
+			company: formData.get("company") as string,
+			username: formData.get("username") as string,
+			// Nová pole
+			allergies: formData.get("allergies") === "yes",
+			allergies_description:
+				formData.get("allergies") === "yes"
+					? formData.get("allergiesDescription")
+					: null,
+			delivery_method: formData.get("deliveryMethod") as string,
+			payment_method: formData.get("paymentMethod") as string,
+			updated_at: new Date().toISOString()
+		};
+
+		// Validace povinných polí
+		if (!profileData.first_name || !profileData.last_name) {
+			return fail(400, {
+				message: {
+					success: false,
+					display: "Jméno a příjmení jsou povinná pole"
+				},
+				...profileData
+			});
+		}
+
+		// Uložení do databáze
+		const { error } = await supabase.from("profiles").upsert(profileData);
+
+		if (error) {
+			console.error("Error updating profile:", error);
+			return fail(500, {
+				message: {
+					success: false,
+					display: "Chyba při ukládání profilu"
+				},
+				...profileData
+			});
+		}
+
+		// Úspěšná aktualizace
 		return {
-			first_name,
-			last_name,
-			telephone,
-			street,
-			street_number,
-			city,
-			ico,
-			dic,
-			company,
-			username
+			message: {
+				success: true,
+				display: "Profil byl úspěšně aktualizován"
+			},
+			...profileData
 		};
 	}
-};
+} satisfies Actions;
