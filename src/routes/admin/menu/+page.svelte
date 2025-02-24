@@ -64,7 +64,6 @@
 		notes: "Poznámky",
 		type: "Typ",
 		nutri: "Nutriční informace",
-		edit: "Editovat"
 	};
 
 	const columnOrder = [
@@ -75,7 +74,6 @@
 		"notes",
 		"type",
 		"nutri",
-		"edit"
 	];
 
 	// Initialize visible columns based on profile settings or default to all columns
