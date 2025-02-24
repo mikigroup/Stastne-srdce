@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({
 	const searchQuery = url.searchParams.get("search") || "";
 
 	let query = supabase
-		.from("customers")
+		.from("profiles")
 		.select("*", { count: "exact" })
 		.order("created_at", { ascending: false });
 
