@@ -73,6 +73,16 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			supabase.from("texts").select("*").eq("page", "jidelnicek")
 		]);
 
+		/*		const { data: menuAllergens, error: menuAllergensError } = await supabase
+			.from("menu_allergens")
+			.select("allergen:allergens(*)")
+			.eq("menu_id", menus.id);
+
+		if (menuAllergensError) {
+			console.error("Error fetching menu allergens:", menuAllergensError);
+			throw error(500, "Failed to load menu allergens");
+		}
+*/
 		// Kontrola chyb při načítání menu
 		if (menusResult.error) {
 			console.error("Error fetching menus:", menusResult.error);

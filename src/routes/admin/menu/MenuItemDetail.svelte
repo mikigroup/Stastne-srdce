@@ -65,18 +65,30 @@
 	}
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 menuWrap mt-10">
-	<div>
-		<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Datum</span>
-			</label>
-			<input
-				type="date"
-				class="input input-bordered w-full"
-				bind:value={menu.date} />
-		</div>
+<div class=" gap-6 menuWrap mt-10">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
+		<div class="">
+			<div class="form-control w-full mb-2">
+				<label class="label">
+					<span class="label-text">Datum</span>
+				</label>
+				<input
+					type="date"
+					class="input input-bordered w-full"
+					bind:value={menu.date} />
+			</div>
 
+			<!--	<div class="form-control w-full mb-2">
+			<label class="label">
+				<span class="label-text">Ingredience</span>
+			</label>
+
+			<TagSelector
+				selectedTags={menu.ingredients}
+				availableTags={allIngredients}
+				on:update={(event) => updateIngredients(event.detail)} />
+		</div>-->
+		</div>
 		<div class="form-control w-full mb-2">
 			<label class="label">
 				<span class="label-text">Aktivní</span>
@@ -86,38 +98,28 @@
 				<option value={true}>Ano</option>
 			</select>
 		</div>
-
-		<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Alergeny</span>
-			</label>
-			<TagSelector
-				selectedTags={menu.allergens}
-				availableTags={allAllergens}
-				on:update={(event) => updateAllergens(event.detail)} />
-		</div>
-
-		<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Ingredience</span>
-			</label>
-
-			<TagSelector
-				selectedTags={menu.ingredients}
-				availableTags={allIngredients}
-				on:update={(event) => updateIngredients(event.detail)} />
-		</div>
 	</div>
 
-	<div>
-		<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Polévka</span>
-			</label>
-			<input
-				type="text"
-				class="input input-bordered w-full"
-				bind:value={menu.soup} />
+	<div class="max-w-2xl mx-auto mt-10">
+		<label class="label">
+			<span class="label-text">Polévka</span>
+		</label>
+		<div class="border rounded-xl p-5 border-gray-400 bg-neutral-100">
+			<div class="form-control w-full mb-2">
+				<input
+					type="text"
+					class="input input-bordered w-full"
+					bind:value={menu.soup} />
+			</div>
+			<div class="form-control w-full mb-2">
+				<label class="label">
+					<span class="label-text">Alergeny</span>
+				</label>
+				<TagSelector
+					selectedTags={menu.allergens}
+					availableTags={allAllergens}
+					on:update={(event) => updateAllergens(event.detail)} />
+			</div>
 		</div>
 
 		<div class="form-control w-full mb-2 border rounded-xl mt-5">
@@ -149,23 +151,23 @@
 						<div class="flex-row flex">
 							<div class="mt-2 w-full">
 								<label class="label">
-									<span class="label-text">Alergeny varianty</span>
+									<span class="label-text">Alergeny:</span>
 								</label>
 								<TagSelector
 									selectedTags={variant.allergens}
 									availableTags={allAllergens}
 									on:update={(event) =>
 										updateVariantAllergens(index, event.detail)} />
-								<div class="mt-2 w-full">
-									<label class="label">
-										<span class="label-text">Ingredience varianty</span>
-									</label>
-									<!--		<TagSelector
-									selectedTags={variant.ingredients}
-									availableTags={allIngredients}
-									on:update={(ingredients) => updateVariantIngredients(index, ingredients)}
-								/>-->
-								</div>
+								<!--	<div class="mt-2 w-full">
+											<label class="label">
+												<span class="label-text">Ingredience varianty</span>
+											</label>
+													<TagSelector
+											selectedTags={variant.ingredients}
+											availableTags={allIngredients}
+											on:update={(ingredients) => updateVariantIngredients(index, ingredients)}
+										/>
+								</div> -->
 							</div>
 						</div>
 					</div>
@@ -173,16 +175,15 @@
 			</div>
 		</div>
 	</div>
+</div>
 
+<div class="mt-4">
 	<div class="form-control w-full mb-2">
 		<label class="label">
 			<span class="label-text">Poznámky</span>
 		</label>
 		<textarea class="textarea textarea-bordered"></textarea>
 	</div>
-</div>
-
-<div class="mt-4">
 	<div class="form-control w-full mb-2">
 		<label class="label">
 			<span class="label-text">Nutriční info</span>

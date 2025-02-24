@@ -64,7 +64,12 @@
 			{#each menu.variants as variant (variant.id)}
 				<div class="border rounded-2xl p-5">
 					<div class="p-2 text-lg">
+						<div>
 						{variant.description}
+					</div>
+					<div>
+						Alergeny:
+					</div>
 					</div>
 					{#if !$page.data.session}
 						<a href="/login" class="flex justify-end pt-2">
