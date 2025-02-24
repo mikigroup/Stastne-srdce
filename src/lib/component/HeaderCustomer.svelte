@@ -136,7 +136,7 @@
 					<li><a href="/kontakt" class="hover:text-green-800 transition-colors duration-200">Kontakt</a></li>
 					<li><a href="/kosik" class="hover:text-green-800 transition-colors duration-200">Košík</a></li>
 						</ul>
-				
+
 					{#if $page.data.session}
 						<a href="/profile"
 							 class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
