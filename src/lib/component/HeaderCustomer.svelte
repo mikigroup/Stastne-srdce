@@ -44,7 +44,7 @@
 
 <header class="fixed top-0 left-0 w-full bg-white z-10">
 	<nav>
-		<div class="grid grid-cols-2 px-4 m-2 mx-auto md:grid-cols-3 max-w-8xl">
+		<div class="grid grid-cols-2 px-4 m-2 mx-auto xl:grid-cols-3 max-w-8xl">
 			<!-- Logo a čas -->
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 w-80">
@@ -59,7 +59,7 @@
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="items-center hidden grid-cols-3 text-center border-2 rounded-full md:grid bg-slate-50">
+			<div class="items-center hidden grid-cols-3 text-center border-2 rounded-full xl:grid bg-slate-50">
 				<div class="border-r-2 text-slate-600">
 					<a href="/" class="block py-2 px-4 hover:text-green-800 transition-colors duration-200">Úvod</a>
 				</div>
@@ -76,7 +76,7 @@
 			<div class="flex items-center justify-self-end gap-2">
 				{#if $page.data.session}
 					<!-- Desktop nav for logged users -->
-					<div class="hidden md:flex items-center gap-2">
+					<div class="hidden xl:flex items-center gap-2">
 						<a href="/kosik"
 							 class="flex items-center gap-2 p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -111,7 +111,7 @@
 				{/if}
 
 				<!-- Mobile menu button and cart -->
-				<div class="flex items-center md:hidden">
+				<div class="flex items-center xl:hidden">
 					<button on:click={() => menuVisible = !menuVisible} class="p-2">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
 								 stroke="currentColor">
@@ -127,13 +127,16 @@
 
 		<!-- Mobile menu -->
 		{#if menuVisible}
-			<div transition:slide={{ duration: 400 }} class="md:hidden bg-white border-t">
+			<div transition:slide={{ duration: 400 }} class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
 				<div class="flex flex-col space-y-4 p-4">
-					<a href="/" class="hover:text-green-800 transition-colors duration-200">Úvod</a>
-					<a href="/jidelnicek" class="hover:text-green-800 transition-colors duration-200">Jídelníček</a>
-					<a href="/kontakt" class="hover:text-green-800 transition-colors duration-200">Kontakt</a>
-					<a href="/kosik" class="hover:text-green-800 transition-colors duration-200">Košík</a>
-
+					<hr>
+					<ul>
+					<li><a href="/" class="hover:text-green-800 transition-colors duration-200">Úvod</a></li>
+					<li><a href="/jidelnicek" class="hover:text-green-800 transition-colors duration-200">Jídelníček</a></li>
+					<li><a href="/kontakt" class="hover:text-green-800 transition-colors duration-200">Kontakt</a></li>
+					<li><a href="/kosik" class="hover:text-green-800 transition-colors duration-200">Košík</a></li>
+						</ul>
+				
 					{#if $page.data.session}
 						<a href="/profile"
 							 class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
