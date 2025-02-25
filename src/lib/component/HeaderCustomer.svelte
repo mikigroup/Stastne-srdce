@@ -46,10 +46,14 @@
 	<nav>
 		<div class="grid grid-cols-2 px-4 m-2 mx-auto xl:grid-cols-3 max-w-8xl">
 			<!-- Logo a čas -->
-			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
+			<div
+				class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 w-80">
 					<h1 class="grid items-center text-xl font-semibold">
-						<a href="/" class="hover:text-gray-600 transition-colors duration-200">Šťastné srdce</a>
+						<a
+							href="/"
+							class="hover:text-gray-600 transition-colors duration-200"
+							>Šťastné srdce</a>
 					</h1>
 					<img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
 				</div>
@@ -59,16 +63,25 @@
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="items-center hidden grid-cols-3 text-center border-2 rounded-full xl:grid bg-slate-50">
+			<div
+				class="items-center hidden grid-cols-3 text-center border-2 rounded-full xl:grid bg-slate-50">
 				<div class="border-r-2 text-slate-600">
-					<a href="/" class="block py-2 px-4 hover:text-green-800 transition-colors duration-200">Úvod</a>
+					<a
+						href="/"
+						class="block py-2 px-4 hover:text-green-800 transition-colors duration-200"
+						>Úvod</a>
 				</div>
 				<div class="border-r-2 text-slate-600">
-					<a href="/jidelnicek"
-						 class="block py-2 px-4 hover:text-green-800 transition-colors duration-200">Jídelníček</a>
+					<a
+						href="/jidelnicek"
+						class="block py-2 px-4 hover:text-green-800 transition-colors duration-200"
+						>Jídelníček</a>
 				</div>
 				<div class="text-slate-600">
-					<a href="/kontakt" class="block py-2 px-4 hover:text-green-800 transition-colors duration-200">Kontakt</a>
+					<a
+						href="/kontakt"
+						class="block py-2 px-4 hover:text-green-800 transition-colors duration-200"
+						>Kontakt</a>
 				</div>
 			</div>
 
@@ -77,34 +90,49 @@
 				{#if $page.data.session}
 					<!-- Desktop nav for logged users -->
 					<div class="hidden xl:flex items-center gap-2">
-						<a href="/kosik"
-							 class="flex items-center gap-2 p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-									 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<a
+							href="/kosik"
+							class="flex items-center gap-2 p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="20"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round">
 								<circle cx="9" cy="21" r="1" />
 								<circle cx="20" cy="21" r="1" />
-								<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+								<path
+									d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
 							</svg>
 							{#if totalPieces}<strong>{totalPieces}</strong>{/if}
 						</a>
-						<a href="/profile"
-							 class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<a
+							href="/profile"
+							class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Účet
 						</a>
-						<button on:click={signOut} disabled={loading}
-										class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">
+						<button
+							on:click={signOut}
+							disabled={loading}
+							class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">
 							Odhlásit
 						</button>
 					</div>
 				{:else}
 					<!-- Desktop nav for guests -->
 					<div class="hidden md:flex items-center gap-2">
-						<a href="/login"
-							 class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<a
+							href="/login"
+							class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Přihlásit
 						</a>
-						<a href="/signup"
-							 class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<a
+							href="/signup"
+							class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Přidej se
 						</a>
 					</div>
@@ -112,10 +140,18 @@
 
 				<!-- Mobile menu button and cart -->
 				<div class="flex items-center xl:hidden">
-					<button on:click={() => menuVisible = !menuVisible} class="p-2">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-								 stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+					<button on:click={() => (menuVisible = !menuVisible)} class="p-2">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-7 w-7"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 6h16M4 12h16M4 18h16" />
 						</svg>
 					</button>
 					{#if totalPieces}
@@ -127,34 +163,65 @@
 
 		<!-- Mobile menu -->
 		{#if menuVisible}
-			<div transition:slide={{ duration: 400 }} class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
+			<div
+				transition:slide={{ duration: 400 }}
+				class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
 				<div class="flex flex-col space-y-4 p-4">
-					<hr>
+					<hr />
 					<ul>
-					<li><a href="/" class="hover:text-green-800 transition-colors duration-200">Úvod</a></li>
-					<li><a href="/jidelnicek" class="hover:text-green-800 transition-colors duration-200">Jídelníček</a></li>
-					<li><a href="/kontakt" class="hover:text-green-800 transition-colors duration-200">Kontakt</a></li>
-					<li><a href="/kosik" class="hover:text-green-800 transition-colors duration-200">Košík</a></li>
-						</ul>
+						<li>
+							<a
+								href="/"
+								class="hover:text-green-800 transition-colors duration-200"
+								>Úvod</a>
+						</li>
+						<li>
+							<a
+								href="/jidelnicek"
+								class="hover:text-green-800 transition-colors duration-200"
+								>Jídelníček</a>
+						</li>
+						<li>
+							<a
+								href="/kontakt"
+								class="hover:text-green-800 transition-colors duration-200"
+								>Kontakt</a>
+						</li>
+						<li>
+							<a
+								href="/kosik"
+								class="hover:text-green-800 transition-colors duration-200"
+								>Košík</a>
+						</li>
+					</ul>
 
 					{#if $page.data.session}
-						<a href="/profile"
-							 class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<div class="flex gap-2">
+						<a
+							href="/profile"
+							class="py-2 px-4 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Účet
 						</a>
-						<button on:click={signOut} disabled={loading}
-										class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">
+						<button
+							on:click={signOut}
+							disabled={loading}
+							class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">
 							Odhlásit
 						</button>
+						</div>
 					{:else}
-						<a href="/login"
-							 class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<div>
+						<a
+							href="/login"
+							class="py-2 px-4 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Přihlásit
 						</a>
-						<a href="/signup"
-							 class="p-2 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+						<a
+							href="/signup"
+							class="py-2 px-4 text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							Přidej se
 						</a>
+						</div>
 					{/if}
 				</div>
 			</div>
