@@ -1,20 +1,15 @@
 <script lang="ts">
 	import { CartItemsStore, type CartItem } from "$lib/stores/store";
 	import { page } from "$app/stores";
+	import type { Menu } from "$lib/types/menu";
+	import type { Database } from "$lib/database.types";
 
-	export let menu: {
-		id: string;
-		date: string;
-		soup: string;
-		variants: Array<{
-			id: string;
-			variant_number: string;
-			description: string;
-			price: number;
-		}>;
-	};
+	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
-	function formatDate(dateString: string): string {
+	export let menu: Menu;
+
+	function formatDate(dateString: string | null): string {
+		if (!dateString) return "";
 		const date = new Date(dateString);
 		return date.toLocaleDateString("cs-CZ", {
 			weekday: "long",
@@ -24,18 +19,39 @@
 		});
 	}
 
+	function formatAllergens(allergens: Allergen[]): string {
+		if (!allergens || allergens.length === 0) return "Žádné alergeny";
+
+		// Seřadíme alergeny podle čísla a zobrazíme pouze čísla oddělená čárkou
+		return allergens
+			.sort((a, b) => (a.number || 0) - (b.number || 0))
+			.map(a => a.number)
+			.filter(Boolean) // Odstranění null hodnot
+			.join(", ");
+	}
+
+	function getAllergenTooltip(allergens: Allergen[]): string {
+		if (!allergens || allergens.length === 0) return "";
+
+		return allergens
+			.sort((a, b) => (a.number || 0) - (b.number || 0))
+			.filter(a => a.number && a.name) // Jen alergeny s číslem a názvem
+			.map(a => `${a.number}. ${a.name}`)
+			.join("\n");
+	}
+
 	function addToCart(variant: (typeof menu.variants)[0]) {
 		if ($page.data.session) {
 			const cartItem: CartItem = {
 				id: menu.id,
-				date: menu.date,
-				soup: menu.soup,
+				date: menu.date || "",
+				soup: menu.soup || "",
 				variants: [
 					{
 						id: variant.id,
 						variant_number: variant.variant_number,
 						description: variant.description,
-						price: variant.price,
+						price: variant.price || 0,
 						quantity: 1
 					}
 				]
@@ -54,22 +70,29 @@
 	</div>
 
 	<div class="my-3 border rounded-lg shadow-md md:p-8">
-		<p class="text-lg">Polévka</p>
-		<div class="p-5 border rounded-2xl">
+		<p class="text-lg p-2">Polévka</p>
+		<div class="p-5 border rounded-2xl bg-neutral-50">
 			<p class="p-2 text-lg">{menu.soup}</p>
+			<div class="mt-2 p-2">
+				<p class="text-xs text-gray-600">
+					Alergeny: <span title={getAllergenTooltip(menu.allergens)} class="font-medium cursor-help">{formatAllergens(menu.allergens)}</span>
+				</p>
+			</div>
 		</div>
 
 		<div class="py-2 text-lg rounded-2xl">
-			<p class="text-lg mt-5">Hlavní jídlo</p>
+			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
 			{#each menu.variants as variant (variant.id)}
-				<div class="border rounded-2xl p-5">
+				<div class="border rounded-2xl p-5 bg-neutral-50 mb-4">
 					<div class="p-2 text-lg">
 						<div>
-						{variant.description}
-					</div>
-					<div>
-						Alergeny:
-					</div>
+							{variant.description}
+						</div>
+						<div class="mt-4">
+							<p class="text-xs text-gray-600">
+								Alergeny: <span title={getAllergenTooltip(variant.allergens)} class="font-medium cursor-help">{formatAllergens(variant.allergens)}</span>
+							</p>
+						</div>
 					</div>
 					{#if !$page.data.session}
 						<a href="/login" class="flex justify-end pt-2">

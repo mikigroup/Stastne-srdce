@@ -1,30 +1,10 @@
 import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
+import type { Menu } from "$lib/types/menu";
+import type { Database } from "$lib/database.types";
 
-interface MenuVariant {
-	id: string;
-	variant_number: string;
-	description: string;
-	price: number | null;
-}
-
-interface Menu {
-	id: string;
-	date: string | null;
-	soup: string | null;
-	active: boolean | null;
-	notes: string | null;
-	type: string | null;
-	nutri: string | null;
-	variants: MenuVariant[];
-}
-
-interface Text {
-	id: number;
-	title: string | null;
-	text: string | null;
-	page: string | null;
-}
+type Text = Database["public"]["Tables"]["texts"]["Row"];
+type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
@@ -44,24 +24,21 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const endDate = new Date(startDate);
 		endDate.setDate(endDate.getDate() + 27); // 4 týdny od startDate
 
-		// Paralelní načtení menu a textů
-		const [menusResult, textsResult] = await Promise.all([
+		// Paralelní načtení menu, textů a alergenů
+		const [menusResult, textsResult, allergensResult] = await Promise.all([
 			supabase
 				.from("menus")
 				.select(
 					`
-          id,
-          date,
-          soup,
-          active,
-          notes,
-          type,
-          nutri,
+          id, date, soup, active, notes, type, nutri,
           variants:menu_variants(
-            id,
-            variant_number,
-            description,
-            price
+            id, variant_number, description, price,
+            allergens:variant_allergens(
+              allergen:allergens(*)
+            )
+          ),
+          allergens:menu_allergens(
+            allergen:allergens(*)
           )
         `
 				)
@@ -70,44 +47,98 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				.lte("date", endDate.toISOString())
 				.order("date", { ascending: true }),
 
-			supabase.from("texts").select("*").eq("page", "jidelnicek")
+			supabase.from("texts").select("*").eq("page", "jidelnicek"),
+
+			supabase.from("allergens").select("*").order("number")
 		]);
 
-		/*		const { data: menuAllergens, error: menuAllergensError } = await supabase
-			.from("menu_allergens")
-			.select("allergen:allergens(*)")
-			.eq("menu_id", menus.id);
-
-		if (menuAllergensError) {
-			console.error("Error fetching menu allergens:", menuAllergensError);
-			throw error(500, "Failed to load menu allergens");
-		}
-*/
-		// Kontrola chyb při načítání menu
+		// Kontrola chyb při načítání
 		if (menusResult.error) {
 			console.error("Error fetching menus:", menusResult.error);
 			throw error(500, "Nepodařilo se načíst menu");
 		}
 
-		// Kontrola chyb při načítání textů
 		if (textsResult.error) {
 			console.error("Error fetching texts:", textsResult.error);
 			throw error(500, "Nepodařilo se načíst texty");
 		}
 
-		// Seřazení variant pro každé menu
-		const menus = menusResult.data.map((menu) => ({
-			...menu,
-			variants: menu.variants.sort(
-				(a, b) => parseInt(a.variant_number) - parseInt(b.variant_number)
-			)
-		})) as Menu[];
+		if (allergensResult.error) {
+			console.error("Error fetching allergens:", allergensResult.error);
+			throw error(500, "Nepodařilo se načíst alergeny");
+		}
+
+		// Transformace dat do struktury očekávané typem Menu
+		const processedMenus = menusResult.data.map((menu) => {
+			// Přidáme console.log pro ladění
+			// console.log("Menu data structure:", JSON.stringify(menu, null, 2));
+
+			// Zpracování menu
+			const processedMenu = {
+				...menu,
+				// Transformace variant s udržením všech původních vlastností
+				variants: (menu.variants || [])
+					.map((variant) => {
+						// Extrahujeme alergeny z vnořené struktury
+						const variantAllergens = (variant.allergens || [])
+							.map((wrapper) => {
+								// console.log("Variant allergen wrapper:", JSON.stringify(wrapper, null, 2));
+								if (wrapper && wrapper.allergen) {
+									// Použití dvojitého přetypování přes unknown
+									return wrapper.allergen as unknown as Database["public"]["Tables"]["allergens"]["Row"];
+								}
+								return null;
+							})
+							.filter(
+								(
+									allergen
+								): allergen is Database["public"]["Tables"]["allergens"]["Row"] =>
+									allergen !== null
+							);
+
+						// Vrátíme původní variantu se správně typovanými alergeny
+						return {
+							...variant,
+							allergens: variantAllergens,
+							ingredients:
+								[] as Database["public"]["Tables"]["ingredients"]["Row"][]
+						};
+					})
+					.sort(
+						(a, b) => parseInt(a.variant_number) - parseInt(b.variant_number)
+					),
+				// Transformace alergenů menu
+				allergens: (menu.allergens || [])
+					.map((wrapper) => {
+						// console.log("Menu allergen wrapper:", JSON.stringify(wrapper, null, 2));
+						if (wrapper && wrapper.allergen) {
+							// Použití dvojitého přetypování přes unknown
+							return wrapper.allergen as unknown as Database["public"]["Tables"]["allergens"]["Row"];
+						}
+						return null;
+					})
+					.filter(
+						(
+							allergen
+						): allergen is Database["public"]["Tables"]["allergens"]["Row"] =>
+							allergen !== null
+					),
+				// Prázdné pole ingrediencí, které typ Menu očekává
+				ingredients: [] as Database["public"]["Tables"]["ingredients"]["Row"][]
+			};
+
+			return processedMenu;
+		});
+
+		// Přetypování na Menu[] - tento krok je nutný pro plnou typovou kompatibilitu
+		const transformedMenus = processedMenus as unknown as Menu[];
 
 		const texts = textsResult.data as Text[];
+		const allAllergens = allergensResult.data as Allergen[];
 
 		// Rozdělení menu do týdnů
 		const weeks: Menu[][] = [[], [], [], []];
-		menus.forEach((menu) => {
+		transformedMenus.forEach((menu) => {
 			if (menu.date) {
 				const menuDate = new Date(menu.date);
 				const weekIndex = Math.floor(
@@ -123,11 +154,12 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 
 		// Vrácení zpracovaných dat
 		return {
-			menus,
+			menus: transformedMenus,
 			weeks,
 			startDate: startDate.toISOString(),
 			endDate: endDate.toISOString(),
-			texts: texts.length > 0 ? texts[0] : null
+			texts: texts.length > 0 ? texts[0] : null,
+			allergens: allAllergens
 		};
 	} catch (err) {
 		console.error("Error in load function:", err);
