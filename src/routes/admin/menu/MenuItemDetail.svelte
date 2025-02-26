@@ -187,7 +187,7 @@
 		</label>
 		<textarea class="textarea textarea-bordered"></textarea>
 	</div>
-	<div class="form-control w-full mb-2">
+	<!--<div class="form-control w-full mb-2">
 		<label class="label">
 			<span class="label-text">Nutriční info</span>
 		</label>
@@ -198,7 +198,7 @@
 			<span class="label-text">Typ</span>
 		</label>
 		<input type="text" class="input input-bordered w-full" />
-	</div>
+	</div>-->
 </div>
 
 <style>
