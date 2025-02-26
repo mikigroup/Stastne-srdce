@@ -28,13 +28,9 @@
 	}
 
 	// Update allergens for the main menu
-	function updateAllergens(
-		allergens: Database["public"]["Tables"]["allergens"]["Row"][]
-	) {
-		console.log("function updateAllergens called with:", allergens);
-		menu = { ...menu, allergens }; // Create a new object to trigger reactivity
-		console.log("menu after allergens update:", menu);
-		dispatch("update", menu); // Dispatch immediately after update
+	function updateAllergens(allergens) {
+		menu = { ...menu, allergens };
+		dispatch("update", menu);
 	}
 
 	// Update ingredients for the main menu
@@ -48,10 +44,7 @@
 	}
 
 	// Update allergens for a specific menu variant
-	function updateVariantAllergens(
-		variantIndex: number,
-		allergens: Database["public"]["Tables"]["allergens"]["Row"][]
-	) {
+	function updateVariantAllergens(variantIndex, allergens) {
 		menu.variants[variantIndex].allergens = allergens;
 		dispatch("update", menu);
 	}
@@ -116,9 +109,15 @@
 					<span class="label-text">Alergeny</span>
 				</label>
 				<TagSelector
-					selectedTags={menu.allergens}
+					bind:selectedTags={menu.allergens}
 					availableTags={allAllergens}
-					on:update={(event) => updateAllergens(event.detail)} />
+					on:tagsChanged={(e) => {
+						// Explicitně aktualizujte menu
+						menu = {
+							...menu,
+							allergens: e.detail
+						};
+					}} />
 			</div>
 		</div>
 
@@ -154,10 +153,14 @@
 									<span class="label-text">Alergeny:</span>
 								</label>
 								<TagSelector
-									selectedTags={variant.allergens}
+									bind:selectedTags={variant.allergens}
 									availableTags={allAllergens}
-									on:update={(event) =>
-										updateVariantAllergens(index, event.detail)} />
+									on:tagsChanged={(e) => {
+										// Explicitně aktualizujte variantu
+										variant.allergens = e.detail;
+										// A pak menu pro jistotu
+										menu = { ...menu };
+									}} />
 								<!--	<div class="mt-2 w-full">
 											<label class="label">
 												<span class="label-text">Ingredience varianty</span>

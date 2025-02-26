@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
-	import type { Database } from "$lib/database.types";
+	export let menuStore;
+	export let isMenuAllergens = false;
+	export let variantIndex = null;
 
-	// Component props: arrays of selected and available tags
+	// Přímé bindování místo event dispatcheru
 	export let selectedTags:
 		| Database["public"]["Tables"]["allergens"]["Row"][]
 		| Database["public"]["Tables"]["ingredients"]["Row"][] = [];
@@ -10,53 +11,46 @@
 		| Database["public"]["Tables"]["allergens"]["Row"][]
 		| Database["public"]["Tables"]["ingredients"]["Row"][] = [];
 
-	// Create event dispatcher for tag updates
-	const dispatch = createEventDispatcher<{ update: typeof selectedTags }>();
-
-	// State for input and filtered tags
+	// State pro input a filtrované tagy
 	let inputValue = "";
 	let filteredTags: typeof availableTags = [];
 
-	// Reactive statement to filter available tags based on input
+	// Reaktivní deklarace pro filtrování dostupných tagů
 	$: {
 		filteredTags = availableTags.filter(
 			(tag) =>
-				// Filter tags that include the input value (case-insensitive)
 				tag.name.toLowerCase().includes(inputValue.toLowerCase()) &&
-				// Exclude tags that are already selected
 				!selectedTags.some((selected) => selected.id === tag.id)
 		);
 	}
 
-	// Add a tag to the selected tags
+	// Přímá manipulace s bindovaným polem
+	function toggleTag(tag) {
+		const newTags = selectedTags.some(t => t.id === tag.id)
+			? selectedTags.filter(t => t.id !== tag.id)
+			: [...selectedTags, tag];
+
+		// Aktualizujte lokální proměnnou
+		selectedTags = newTags;
+
+		// Vyvolejte událost s novými tagy
+		dispatch('tagsChanged', newTags);
+
+		console.log("Aktualizované selectedTags:", selectedTags);
+	}
+
+	// Funkce pro přidání tagu z textového vstupu
 	function addTag(tag: (typeof availableTags)[number]) {
-		console.log("addTag called with:", tag);
-		// Check if the tag is not already in the selected tags
 		if (!selectedTags.some((selected) => selected.id === tag.id)) {
-			// Create a new array with the new tag added (to trigger reactivity)
 			selectedTags = [...selectedTags, tag];
-			console.log("selectedTags after adding:", selectedTags);
-			// Dispatch the update event with the new selectedTags array
-			dispatch("update", selectedTags);
 		}
-		// Clear the input value after adding a tag
 		inputValue = "";
 	}
 
-	// Remove a tag from the selected tags
-	function removeTag(tag: (typeof selectedTags)[number]) {
-		// Filter out the tag to be removed
-		selectedTags = selectedTags.filter((t) => t.id !== tag.id);
-		// Dispatch the update event with the new selectedTags array
-		dispatch("update", selectedTags);
-	}
-
-	// Handle keydown event for adding tags
+	// Handle keydown event pro přidání tagů
 	function handleKeydown(event: KeyboardEvent) {
-		// Check if the pressed key is Enter and there's input
 		if (event.key === "Enter" && inputValue) {
 			event.preventDefault();
-			// If there are filtered tags, add the first one
 			if (filteredTags.length > 0) {
 				addTag(filteredTags[0]);
 			}
@@ -65,19 +59,42 @@
 </script>
 
 <div class="tag-selector">
+	<!-- Alternativní UI s tlačítky pro snadnější výběr -->
+	<div class="quick-select mb-3 flex flex-wrap gap-2">
+		{#each availableTags as tag (tag.id)}
+			<button
+				type="button"
+				class="text-sm rounded-full border px-3 py-1"
+				class:bg-green-600={selectedTags.some(t => t.id === tag.id)}
+				class:text-white={selectedTags.some(t => t.id === tag.id)}
+				class:border-green-700={selectedTags.some(t => t.id === tag.id)}
+				class:bg-gray-100={!selectedTags.some(t => t.id === tag.id)}
+				class:text-gray-700={!selectedTags.some(t => t.id === tag.id)}
+				class:border-gray-300={!selectedTags.some(t => t.id === tag.id)}
+				on:click={() => toggleTag(tag)}>
+				{tag.number ? `${tag.number}. ` : ""}{tag.name}
+			</button>
+		{/each}
+	</div>
+
+	<!-- Vybrané tagy -->
 	<div class="selected-tags">
 		{#each selectedTags as tag (tag.id)}
 			<span class="tag">
 				{tag.name}
-				<button on:click={() => removeTag(tag)}>&times;</button>
+				<button on:click={() => toggleTag(tag)}>&times;</button>
 			</span>
 		{/each}
 	</div>
+
+	<!-- Textový vstup pro filtrování -->
 	<input
 		type="text"
 		bind:value={inputValue}
 		on:keydown={handleKeydown}
 		placeholder="Přidat tag..." />
+
+	<!-- Návrhy tagů -->
 	{#if inputValue && filteredTags.length > 0}
 		<ul class="tag-suggestions">
 			{#each filteredTags as tag (tag.id)}
@@ -85,44 +102,50 @@
 			{/each}
 		</ul>
 	{/if}
+
+	<!-- Debug informace -->
+	<details class="mt-2 text-xs">
+		<summary class="cursor-pointer text-gray-500">Debug: vybrané tagy ({selectedTags.length})</summary>
+		<pre class="mt-1 p-2 bg-gray-100 rounded text-xs">{JSON.stringify(selectedTags, null, 2)}</pre>
+	</details>
 </div>
 
 <style>
-	.tag-selector {
-		/* Add your styles here */
-	}
-	.selected-tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-	}
-	.tag {
-		background-color: #e0e0e0;
-		padding: 0.25rem 0.5rem;
-		border-radius: 0.25rem;
-		display: flex;
-		align-items: center;
-	}
-	.tag button {
-		margin-left: 0.25rem;
-		border: none;
-		background: none;
-		cursor: pointer;
-	}
-	.tag-suggestions {
-		list-style-type: none;
-		padding: 0;
-		margin: 0;
-		border: 1px solid #ccc;
-		max-height: 200px;
-		overflow-y: auto;
-	}
-	.tag-suggestions li {
-		padding: 0.5rem;
-		cursor: pointer;
-	}
-	.tag-suggestions li:hover {
-		background-color: #f0f0f0;
-	}
+    .tag-selector {
+        /* Add your styles here */
+    }
+    .selected-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .tag {
+        background-color: #e0e0e0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+    .tag button {
+        margin-left: 0.25rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+    .tag-suggestions {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .tag-suggestions li {
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+    .tag-suggestions li:hover {
+        background-color: #f0f0f0;
+    }
 </style>
