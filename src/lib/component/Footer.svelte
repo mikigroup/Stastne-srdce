@@ -7,13 +7,13 @@
 					class="items-center mt-3 text-sm sm:mt-0"
 					target="_blank"
 					href="https://www.mikigroup.cz/"
-					><i class="fa fa-regular fa-hand-spock" /> Mikigroup™
+					><i class="fa fa-regular fa-hand-spock" /> MalyLeo™
 				</a>
-				- core0.9b
+				- core1.0a
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">
-			<p>Malý Leo 2022-2024 ver_1.0a</p>
+			<p>Šťastné srdce 2022 - 2025</p>
 		</div>
 	</div>
 </footer>

@@ -1,7 +1,4 @@
 <script lang="ts">
-	export let menuStore;
-	export let isMenuAllergens = false;
-	export let variantIndex = null;
 
 	// Přímé bindování místo event dispatcheru
 	export let selectedTags:
@@ -65,7 +62,7 @@
 			<button
 				type="button"
 				class="text-sm rounded-full border px-3 py-1"
-				class:bg-green-600={selectedTags.some(t => t.id === tag.id)}
+				class:bg-teal-800={selectedTags.some(t => t.id === tag.id)}
 				class:text-white={selectedTags.some(t => t.id === tag.id)}
 				class:border-green-700={selectedTags.some(t => t.id === tag.id)}
 				class:bg-gray-100={!selectedTags.some(t => t.id === tag.id)}
@@ -76,38 +73,31 @@
 			</button>
 		{/each}
 	</div>
-
+	<hr>
 	<!-- Vybrané tagy -->
-	<div class="selected-tags">
+	<div class="selected-tags my-5">
 		{#each selectedTags as tag (tag.id)}
-			<span class="tag">
+			<span class="tag p-5">
 				{tag.name}
-				<button on:click={() => toggleTag(tag)}>&times;</button>
 			</span>
 		{/each}
 	</div>
 
 	<!-- Textový vstup pro filtrování -->
-	<input
+	<!--<input
 		type="text"
 		bind:value={inputValue}
 		on:keydown={handleKeydown}
-		placeholder="Přidat tag..." />
+		placeholder="Přidat tag..." />-->
 
 	<!-- Návrhy tagů -->
-	{#if inputValue && filteredTags.length > 0}
+	<!--{#if inputValue && filteredTags.length > 0}
 		<ul class="tag-suggestions">
 			{#each filteredTags as tag (tag.id)}
 				<li on:click={() => addTag(tag)}>{tag.name}</li>
 			{/each}
 		</ul>
-	{/if}
-
-	<!-- Debug informace -->
-	<details class="mt-2 text-xs">
-		<summary class="cursor-pointer text-gray-500">Debug: vybrané tagy ({selectedTags.length})</summary>
-		<pre class="mt-1 p-2 bg-gray-100 rounded text-xs">{JSON.stringify(selectedTags, null, 2)}</pre>
-	</details>
+	{/if}-->
 </div>
 
 <style>

@@ -67,7 +67,7 @@
 				</label>
 				<input
 					type="date"
-					class="input input-bordered w-full"
+					class="input border border-black !rounded-md w-full"
 					bind:value={menu.date} />
 			</div>
 
@@ -86,7 +86,7 @@
 			<label class="label">
 				<span class="label-text">Aktivní</span>
 			</label>
-			<select class="select select-bordered w-full" bind:value={menu.active}>
+			<select class="select border border-black !rounded-md w-full" bind:value={menu.active}>
 				<option value={false}>NE</option>
 				<option value={true}>Ano</option>
 			</select>
@@ -185,7 +185,9 @@
 		<label class="label">
 			<span class="label-text">Poznámky</span>
 		</label>
-		<textarea class="textarea textarea-bordered"></textarea>
+		<textarea
+			class="textarea textarea-bordered"
+			bind:value={menu.notes}></textarea>
 	</div>
 	<!--<div class="form-control w-full mb-2">
 		<label class="label">
