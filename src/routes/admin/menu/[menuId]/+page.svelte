@@ -84,7 +84,7 @@
 				);
 			}
 
-			updateMessage = "Menu úspěšně upraveno - vytvořena nová verze!";
+			updateMessage = "Menu úspěšně upraveno";
 
 			// Načteme aktualizované menu pro zobrazení
 			const refreshedMenu = await loadMenu(supabase, menuToSave.id);
