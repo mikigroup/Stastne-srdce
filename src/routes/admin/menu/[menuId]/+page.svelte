@@ -5,6 +5,14 @@
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/database.types";
+	import {
+		createMenuVersion,
+		updateMenuAllergens,
+		createMenuVariant,
+		updateVariantAllergens,
+		updateVariantIngredients,
+		loadMenu
+	} from "$lib/services/menuService";
 
 	export let data: PageData;
 	let { session, supabase, menu, allAllergens, allIngredients } = data;
@@ -16,20 +24,12 @@
 
 	async function updateMenu() {
 		try {
-			// Explicitní kopie menu objektu pro ukládání - zajistí nejnovější stav všech změn
+			// Explicitní kopie menu objektu pro ukládání
 			const menuToSave = JSON.parse(JSON.stringify(menu));
 
 			loading = true;
 			errorMessage = "";
 			updateMessage = "";
-
-			// Diagnostické výpisy
-			console.log("Menu před ukládáním:", menuToSave);
-			console.log("Alergeny polévky před ukládáním:", menuToSave.allergens);
-
-			for (const variant of menuToSave.variants) {
-				console.log(`Alergeny varianty ${variant.variant_number} před ukládáním:`, variant.allergens);
-			}
 
 			// Inicializace undefined polí jako prázdná pole
 			if (!menuToSave.allergens) menuToSave.allergens = [];
@@ -38,146 +38,58 @@
 				if (!variant.ingredients) variant.ingredients = [];
 			}
 
-			// Aktualizace hlavního menu
-			const { data: updatedMenuData, error: menuError } = await supabase
-				.from("menus")
-				.update({
-					date: menuToSave.date,
-					soup: menuToSave.soup,
-					active: menuToSave.active,
-					notes: menuToSave.notes,
-					type: menuToSave.type,
-					nutri: menuToSave.nutri
-				})
-				.eq("id", menuToSave.id)
-				.select();
+			// 1. Vytvořit novou verzi menu
+			const menuVersionId = await createMenuVersion(supabase, {
+				id: menuToSave.id,
+				date: menuToSave.date,
+				soup: menuToSave.soup,
+				active: menuToSave.active,
+				notes: menuToSave.notes,
+				type: menuToSave.type,
+				nutri: menuToSave.nutri
+			});
 
-			if (menuError) {
-				console.error("Chyba při aktualizaci hlavního menu:", menuError);
-				throw menuError;
-			}
+			console.log("Vytvořena nová verze menu s ID:", menuVersionId);
 
-			console.log("Hlavní menu aktualizováno:", updatedMenuData);
+			// 2. Aktualizace alergenů polévky
+			await updateMenuAllergens(
+				supabase,
+				menuToSave.id,
+				menuToSave.allergens.map(a => a.id)
+			);
 
-			// Aktualizace alergenů polévky (menu)
-			console.log("Aktualizace alergenů polévky:", menuToSave.allergens);
-
-			// 1. Nejprve smažeme všechny existující alergeny polévky
-			const { error: deleteAllergensError } = await supabase
-				.from("menu_allergens")
-				.delete()
-				.eq("menu_id", menuToSave.id);
-
-			if (deleteAllergensError) {
-				console.error("Chyba při mazání alergenů polévky:", deleteAllergensError);
-				throw deleteAllergensError;
-			}
-
-			// 2. Poté vložíme všechny nové alergeny polévky najednou
-			if (menuToSave.allergens && menuToSave.allergens.length > 0) {
-				const allergensToInsert = menuToSave.allergens.map(allergen => ({
-					menu_id: menuToSave.id,
-					allergen_id: allergen.id
-				}));
-
-				console.log("Vkládané alergeny polévky:", allergensToInsert);
-
-				const { error: insertAllergensError } = await supabase
-					.from("menu_allergens")
-					.insert(allergensToInsert);
-
-				if (insertAllergensError) {
-					console.error("Chyba při vkládání alergenů polévky:", insertAllergensError);
-					throw insertAllergensError;
-				}
-			}
-
-			console.log("Alergeny polévky aktualizovány");
-
-			// Aktualizace variant
+			// 3. Vytvoření nových variant pro novou verzi menu
 			for (const variant of menuToSave.variants) {
-				const { data: updatedVariant, error: variantError } = await supabase
-					.from("menu_variants")
-					.upsert(
-						{
-							menu_id: menuToSave.id,
-							id: variant.id,
-							variant_number: variant.variant_number,
-							description: variant.description,
-							price: variant.price
-						},
-						{
-							onConflict: "id"
-						}
-					)
-					.select()
-					.single();
+				// Vytvoříme novou variantu pro novou verzi
+				const insertedVariant = await createMenuVariant(supabase, {
+					menu_id: menuToSave.id,
+					menu_version_id: menuVersionId,
+					variant_number: variant.variant_number,
+					description: variant.description,
+					price: variant.price
+				});
 
-				if (variantError) {
-					console.error("Chyba při aktualizaci varianty:", variantError);
-					throw variantError;
-				}
+				// Přidání alergenů k nové variantě
+				await updateVariantAllergens(
+					supabase,
+					insertedVariant.id,
+					variant.allergens.map(a => a.id)
+				);
 
-				console.log("Varianta aktualizována:", updatedVariant);
-
-				// Aktualizace alergenů varianty - hromadné vkládání
-				const { error: deleteVariantAllergensError } = await supabase
-					.from("variant_allergens")
-					.delete()
-					.eq("variant_id", variant.id);
-
-				if (deleteVariantAllergensError) {
-					console.error("Chyba při mazání alergenů varianty:", deleteVariantAllergensError);
-					throw deleteVariantAllergensError;
-				}
-
-				if (variant.allergens && variant.allergens.length > 0) {
-					const variantAllergensToInsert = variant.allergens.map(allergen => ({
-						variant_id: variant.id,
-						allergen_id: allergen.id
-					}));
-
-					console.log("Vkládané alergeny varianty:", variantAllergensToInsert);
-
-					const { error: insertVariantAllergensError } = await supabase
-						.from("variant_allergens")
-						.insert(variantAllergensToInsert);
-
-					if (insertVariantAllergensError) {
-						console.error("Chyba při vkládání alergenů varianty:", insertVariantAllergensError);
-						throw insertVariantAllergensError;
-					}
-				}
-
-				// Aktualizace ingrediencí varianty - hromadné vkládání
-				const { error: deleteVariantIngredientsError } = await supabase
-					.from("variant_ingredients")
-					.delete()
-					.eq("variant_id", variant.id);
-
-				if (deleteVariantIngredientsError) {
-					console.error("Chyba při mazání ingrediencí varianty:", deleteVariantIngredientsError);
-					throw deleteVariantIngredientsError;
-				}
-
-				if (variant.ingredients && variant.ingredients.length > 0) {
-					const variantIngredientsToInsert = variant.ingredients.map(ingredient => ({
-						variant_id: variant.id,
-						ingredient_id: ingredient.id
-					}));
-
-					const { error: insertVariantIngredientsError } = await supabase
-						.from("variant_ingredients")
-						.insert(variantIngredientsToInsert);
-
-					if (insertVariantIngredientsError) {
-						console.error("Chyba při vkládání ingrediencí varianty:", insertVariantIngredientsError);
-						throw insertVariantIngredientsError;
-					}
-				}
+				// Přidání ingrediencí k nové variantě
+				await updateVariantIngredients(
+					supabase,
+					insertedVariant.id,
+					variant.ingredients.map(i => i.id)
+				);
 			}
 
-			updateMessage = "Menu úspěšně upraveno!";
+			updateMessage = "Menu úspěšně upraveno - vytvořena nová verze!";
+
+			// Načteme aktualizované menu pro zobrazení
+			const refreshedMenu = await loadMenu(supabase, menuToSave.id);
+			menu = refreshedMenu;
+
 		} catch (error) {
 			console.error("Chyba při aktualizaci menu:", error);
 			errorMessage = "Chyba při úpravě menu: " + (error.message || "Neznámá chyba");
@@ -248,6 +160,3 @@
 			{allIngredients} />
 	</div>
 </div>
-
-<style>
-</style>

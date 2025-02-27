@@ -187,11 +187,11 @@
 <section>
 	<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row">
-			<div>
+			<!--<div>
 				<button on:click={newOrderPage} class="btn btn-outline" disabled>
 					Vytvořit objednávku
 				</button>
-			</div>
+			</div>-->
 			<div>
 				<input type="date" bind:value={filterDate} class="btn btn-outline" />
 			</div>

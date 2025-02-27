@@ -346,7 +346,7 @@
 									title={cell.getValue() ?? ""}>
 									{#if cell.column.id === "variants"}
 										{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
-											<div class="pl-4">
+											<div class="">
 												{#each cell
 													.getValue()
 													.sort((a, b) => a.variant_number - b.variant_number) as variant}

@@ -2,16 +2,13 @@
 	import TagSelector from "./TagSelector.svelte";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/database.types";
-	import { createEventDispatcher } from "svelte";
 	import { page } from "$app/stores";
+	import type { Menu, MenuAllergen, MenuIngredient } from "$lib/services/menuService";
 
-	// Component props
 	export let menu: Menu;
-	export let allAllergens: Database["public"]["Tables"]["allergens"]["Row"][];
-	export let allIngredients: Database["public"]["Tables"]["ingredients"]["Row"][];
+	export let allAllergens: MenuAllergen[];
+	export let allIngredients: MenuIngredient[];
 
-	// Create event dispatcher for menu updates
-	const dispatch = createEventDispatcher<{ update: Menu }>();
 
 	// Inicializace variant s čísly pokud je nové menu
 	$: if ($page.url.pathname === "/admin/menu/newmenu" && menu.variants) {
@@ -20,45 +17,9 @@
 			variant_number: (index + 1).toString()
 		}));
 	}
-
-	// Reactive statement to dispatch update event whenever menu changes
-	$: {
-		dispatch("update", menu);
-		console.log("Dispatching update with menu:", menu);
-	}
-
-	// Update allergens for the main menu
-	function updateAllergens(allergens) {
-		menu = { ...menu, allergens };
-		dispatch("update", menu);
-	}
-
-	// Update ingredients for the main menu
-	function updateIngredients(
-		ingredients: Database["public"]["Tables"]["ingredients"]["Row"][]
-	) {
-		console.log("function updateIngredients called with:", ingredients);
-		menu = { ...menu, ingredients }; // Create a new object to trigger reactivity
-		console.log("menu after ingredients update:", menu);
-		dispatch("update", menu); // Dispatch immediately after update
-	}
-
-	// Update allergens for a specific menu variant
-	function updateVariantAllergens(variantIndex, allergens) {
-		menu.variants[variantIndex].allergens = allergens;
-		dispatch("update", menu);
-	}
-
-	// Update ingredients for a specific menu variant
-	function updateVariantIngredients(
-		variantIndex: number,
-		ingredients: Database["public"]["Tables"]["ingredients"]["Row"][]
-	) {
-		menu.variants[variantIndex].ingredients = ingredients;
-	}
 </script>
 
-<div class=" gap-6 menuWrap mt-10">
+<div class="gap-6 menuWrap mt-10">
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
 		<div class="">
 			<div class="form-control w-full mb-2">
@@ -70,17 +31,6 @@
 					class="input border border-black !rounded-md w-full"
 					bind:value={menu.date} />
 			</div>
-
-			<!--	<div class="form-control w-full mb-2">
-			<label class="label">
-				<span class="label-text">Ingredience</span>
-			</label>
-
-			<TagSelector
-				selectedTags={menu.ingredients}
-				availableTags={allIngredients}
-				on:update={(event) => updateIngredients(event.detail)} />
-		</div>-->
 		</div>
 		<div class="form-control w-full mb-2">
 			<label class="label">
@@ -161,16 +111,6 @@
 										// A pak menu pro jistotu
 										menu = { ...menu };
 									}} />
-								<!--	<div class="mt-2 w-full">
-											<label class="label">
-												<span class="label-text">Ingredience varianty</span>
-											</label>
-													<TagSelector
-											selectedTags={variant.ingredients}
-											availableTags={allIngredients}
-											on:update={(ingredients) => updateVariantIngredients(index, ingredients)}
-										/>
-								</div> -->
 							</div>
 						</div>
 					</div>
@@ -193,19 +133,25 @@
 		<label class="label">
 			<span class="label-text">Nutriční info</span>
 		</label>
-		<input type="text" class="input input-bordered w-full" />
+		<input
+			type="text"
+			class="input input-bordered w-full"
+			bind:value={menu.nutri} />
 	</div>
 	<div class="form-control w-full mb-2">
 		<label class="label">
 			<span class="label-text">Typ</span>
 		</label>
-		<input type="text" class="input input-bordered w-full" />
+		<input
+			type="text"
+			class="input input-bordered w-full"
+			bind:value={menu.type} />
 	</div>-->
 </div>
 
 <style>
-	input {
-		border: solid 1px;
-		border-radius: 20px;
-	}
+    input {
+        border: solid 1px;
+        border-radius: 20px;
+    }
 </style>

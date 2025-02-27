@@ -229,36 +229,47 @@
 								</tr>
 							</thead>
 							<tbody>
-								{#each order.order_items as item, i}
-									<tr class="hover grid grid-cols-12 gap-4">
-										<td>
-											<label>
-												<input type="checkbox" class="checkbox" />
-											</label>
-										</td>
-										<td>
-											{i + 1}
-										</td>
-										<td>
+							{#each order.order_items as item, i}
+								<tr class="hover grid grid-cols-12 gap-4">
+									<td>
+										<label>
+											<input type="checkbox" class="checkbox" />
+										</label>
+									</td>
+									<td>
+										{i + 1}
+									</td>
+									<td>
+										<!-- Použijeme datum z verze menu, pokud je k dispozici -->
+										{#if item.menuVersionData}
+											{formatDateToCzech(item.menuVersionData.date)}
+										{:else}
 											{formatDateToCzech(item.variant_id.menu_id.date)}
-										</td>
-										<td class="col-span-7">
-											<div class="flex items-center space-x-3">
-												<div>
-													<div class="font-bold">
-														{item.variant_id.description}
-													</div>
-													<div class="text-sm opacity-50">{item.price} Kč</div>
-													<div class="text-sm opacity-50">
-														Varianta {item.variant_id.variant_number}
-													</div>
+										{/if}
+									</td>
+									<td class="col-span-7">
+										<div class="flex items-center space-x-3">
+											<div>
+												<div class="font-bold">
+													{item.variant_id.description}
 												</div>
+												<div class="text-sm opacity-50">{item.price} Kč</div>
+												<div class="text-sm opacity-50">
+													Varianta {item.variant_id.variant_number}
+												</div>
+												<!-- Zobrazíme polévku z verze menu, pokud je k dispozici -->
+												{#if item.menuVersionData}
+													<div class="text-sm opacity-50">
+														Polévka: {item.menuVersionData.soup}
+													</div>
+												{/if}
 											</div>
-										</td>
-										<td>{item.quantity}</td>
-										<td>{item.quantity * item.price} Kč</td>
-									</tr>
-								{/each}
+										</div>
+									</td>
+									<td>{item.quantity}</td>
+									<td>{item.quantity * item.price} Kč</td>
+								</tr>
+							{/each}
 							</tbody>
 							<tfoot>
 								<tr class="grid grid-cols-3 gap-4">

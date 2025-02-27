@@ -27,6 +27,44 @@ interface CartItem {
 	variants: MenuVariant[];
 }
 
+// Funkce pro získání aktuální verze menu pro variantu
+async function getCurrentMenuVersionId(variantId: string, supabase: any) {
+	try {
+		// Nejprve zjistíme, ke kterému menu patří varianta
+		const { data: variant, error: variantError } = await supabase
+			.from("menu_variants")
+			.select("menu_id, menu_version_id")
+			.eq("id", variantId)
+			.single();
+
+		if (variantError) {
+			console.error("Chyba při získávání informací o variantě:", variantError);
+			return null;
+		}
+
+		// Pokud má varianta již přiřazenou verzi menu, vrátíme ji
+		if (variant.menu_version_id) {
+			return variant.menu_version_id;
+		}
+
+		// Jinak získáme aktuální verzi menu pomocí RPC funkce
+		const { data: versionId, error: versionError } = await supabase.rpc(
+			"get_current_menu_version",
+			{ p_menu_id: variant.menu_id }
+		);
+
+		if (versionError) {
+			console.error("Chyba při získávání aktuální verze menu:", versionError);
+			return null;
+		}
+
+		return versionId;
+	} catch (error) {
+		console.error("Nečekaná chyba při získávání verze menu:", error);
+		return null;
+	}
+}
+
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
 		const session = await safeGetSession();
@@ -139,17 +177,28 @@ export const actions: Actions = {
 
 			console.log("Úspěšně vytvořena objednávka:", insertedOrder);
 
-			// Vytvoření položek objednávky
-			const orderItems = cartItems.flatMap((item) =>
-				item.variants.map((variant) => ({
-					order_id: insertedOrder.id,
-					variant_id: variant.id,
-					price: variant.price,
-					quantity: variant.quantity,
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString()
-				}))
+			// Příprava položek objednávky - zpracování všech verzí menu nejprve
+			const orderItemsPromises = cartItems.flatMap((item) =>
+				item.variants.map(async (variant) => {
+					const menuVersionId = await getCurrentMenuVersionId(
+						variant.id,
+						supabase
+					);
+
+					return {
+						order_id: insertedOrder.id,
+						variant_id: variant.id,
+						price: variant.price,
+						quantity: variant.quantity,
+						menu_version_id: menuVersionId,
+						created_at: new Date().toISOString(),
+						updated_at: new Date().toISOString()
+					};
+				})
 			);
+
+			// Počkáme na vyřešení všech promises a získáme položky s verzemi menu
+			const orderItems = await Promise.all(orderItemsPromises);
 
 			console.log("Pokus o vytvoření položek objednávky:", orderItems);
 

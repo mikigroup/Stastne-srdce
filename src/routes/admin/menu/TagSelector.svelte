@@ -30,9 +30,6 @@
 		// Aktualizujte lokální proměnnou
 		selectedTags = newTags;
 
-		// Vyvolejte událost s novými tagy
-		dispatch('tagsChanged', newTags);
-
 		console.log("Aktualizované selectedTags:", selectedTags);
 	}
 
