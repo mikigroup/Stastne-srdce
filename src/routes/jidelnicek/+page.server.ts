@@ -24,40 +24,84 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const endDate = new Date(startDate);
 		endDate.setDate(endDate.getDate() + 27); // 4 týdny od startDate
 
-		// Paralelní načtení menu, textů a alergenů
-		const [menusResult, textsResult, allergensResult] = await Promise.all([
-			supabase
-				.from("menus")
-				.select(
-					`
-          id, date, soup, active, notes, type, nutri,
-          variants:menu_variants(
-            id, variant_number, description, price,
-            allergens:variant_allergens(
-              allergen:allergens(*)
+		// Nejprve získáme všechna platná menu v daném časovém rozsahu
+		const { data: validMenus, error: menusError } = await supabase
+			.from("menus")
+			.select("id")
+			.eq("active", true)
+			.gte("date", startDate.toISOString())
+			.lte("date", endDate.toISOString());
+
+		if (menusError) {
+			throw error(500, "Nepodařilo se načíst základní menu");
+		}
+
+		// Pro každé menu získáme jeho aktuální verzi
+		const menuPromises = validMenus.map(async (menu) => {
+			// Zde voláme funkci get_current_menu_version
+			const { data: versionData, error: versionError } = await supabase.rpc(
+				"get_current_menu_version",
+				{ p_menu_id: menu.id }
+			);
+
+			if (versionError) {
+				console.error(
+					`Error getting current version for menu ${menu.id}:`,
+					versionError
+				);
+				return null;
+			}
+
+			const versionId = versionData;
+
+			// Pokud jsme získali ID verze, načteme kompletní data
+			if (versionId) {
+				const { data: menuVersionData, error: menuVersionError } =
+					await supabase
+						.from("menu_versions")
+						.select(
+							`
+            id, date, soup, active, notes, type, nutri,
+            menu_id,
+            menu:menus!inner(*),
+            variants:menu_variants(
+              id, variant_number, description, price,
+              allergens:variant_allergens(
+                allergen:allergens(*)
+              )
             )
-          ),
-          allergens:menu_allergens(
-            allergen:allergens(*)
-          )
-        `
-				)
-				.eq("active", true)
-				.gte("date", startDate.toISOString())
-				.lte("date", endDate.toISOString())
-				.order("date", { ascending: true }),
+          `
+						)
+						.eq("id", versionId)
+						.single();
 
+				if (menuVersionError) {
+					console.error(
+						`Error loading menu version ${versionId}:`,
+						menuVersionError
+					);
+					return null;
+				}
+
+				return menuVersionData;
+			}
+
+			return null;
+		});
+
+		// Počkáme na dokončení všech dotazů
+		const menuVersionsResults = await Promise.all(menuPromises);
+
+		// Odfiltrujeme null hodnoty
+		const menuVersions = menuVersionsResults.filter((menu) => menu !== null);
+
+		// Paralelní načtení textů a alergenů
+		const [textsResult, allergensResult] = await Promise.all([
 			supabase.from("texts").select("*").eq("page", "jidelnicek"),
-
 			supabase.from("allergens").select("*").order("number")
 		]);
 
 		// Kontrola chyb při načítání
-		if (menusResult.error) {
-			console.error("Error fetching menus:", menusResult.error);
-			throw error(500, "Nepodařilo se načíst menu");
-		}
-
 		if (textsResult.error) {
 			console.error("Error fetching texts:", textsResult.error);
 			throw error(500, "Nepodařilo se načíst texty");
@@ -69,22 +113,23 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		}
 
 		// Transformace dat do struktury očekávané typem Menu
-		const processedMenus = menusResult.data.map((menu) => {
-			// Přidáme console.log pro ladění
-			// console.log("Menu data structure:", JSON.stringify(menu, null, 2));
-
-			// Zpracování menu
+		const processedMenus = menuVersions.map((menuVersion) => {
+			// Přidáme potřebná data z původního menu
 			const processedMenu = {
-				...menu,
+				id: menuVersion.menu_id,
+				date: menuVersion.date,
+				soup: menuVersion.soup,
+				active: menuVersion.active,
+				notes: menuVersion.notes,
+				type: menuVersion.type,
+				nutri: menuVersion.nutri,
 				// Transformace variant s udržením všech původních vlastností
-				variants: (menu.variants || [])
+				variants: (menuVersion.variants || [])
 					.map((variant) => {
 						// Extrahujeme alergeny z vnořené struktury
 						const variantAllergens = (variant.allergens || [])
 							.map((wrapper) => {
-								// console.log("Variant allergen wrapper:", JSON.stringify(wrapper, null, 2));
 								if (wrapper && wrapper.allergen) {
-									// Použití dvojitého přetypování přes unknown
 									return wrapper.allergen as unknown as Database["public"]["Tables"]["allergens"]["Row"];
 								}
 								return null;
@@ -107,23 +152,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 					.sort(
 						(a, b) => parseInt(a.variant_number) - parseInt(b.variant_number)
 					),
-				// Transformace alergenů menu
-				allergens: (menu.allergens || [])
-					.map((wrapper) => {
-						// console.log("Menu allergen wrapper:", JSON.stringify(wrapper, null, 2));
-						if (wrapper && wrapper.allergen) {
-							// Použití dvojitého přetypování přes unknown
-							return wrapper.allergen as unknown as Database["public"]["Tables"]["allergens"]["Row"];
-						}
-						return null;
-					})
-					.filter(
-						(
-							allergen
-						): allergen is Database["public"]["Tables"]["allergens"]["Row"] =>
-							allergen !== null
-					),
-				// Prázdné pole ingrediencí, které typ Menu očekává
+				// Prázdné hodnoty pro alergeny a ingredience menu
+				allergens: [] as Database["public"]["Tables"]["allergens"]["Row"][],
 				ingredients: [] as Database["public"]["Tables"]["ingredients"]["Row"][]
 			};
 
@@ -150,6 +180,12 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			} else {
 				console.warn(`Menu s id ${menu.id} nemá nastavené datum.`);
 			}
+		});
+
+		// Seřadíme menu podle data
+		transformedMenus.sort((a, b) => {
+			if (!a.date || !b.date) return 0;
+			return new Date(a.date).getTime() - new Date(b.date).getTime();
 		});
 
 		// Vrácení zpracovaných dat

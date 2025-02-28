@@ -173,7 +173,7 @@
 							<a
 								href="/"
 								class="hover:text-green-800 transition-colors duration-200"
-								>Úvod</a>
+								>O nás</a>
 						</li>
 						<li>
 							<a

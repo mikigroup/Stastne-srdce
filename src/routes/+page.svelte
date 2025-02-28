@@ -2,6 +2,7 @@
 	export let data;
 	let { texts } = data;
 	$: ({ texts } = data);
+	let src = "/android-chrome-192x192.png";
 
 	console.log(texts);
 </script>
@@ -25,84 +26,29 @@
 						class="mt-2 text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9">
 						Vítejte na stránkách Šťastného srdce
 					</h2>
-					<h3 class="mt-3 text-xl leading-6 text-gray-500">
-						Vaříme zdravé jídlo
-					</h3>
-					<ul
-						class="p-5 mt-8 rounded-lg md:grid md:grid-cols-2 md:gap-3 sm:gap-1 bg-slate-50">
-						<li class="mt-6 lg:mt-0">
-							<div class="flex text-xl">
-								<span
-									class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full">
-									<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-										<path
-											fill-rule="evenodd"
-											d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0
-												011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-											clip-rule="evenodd" />
-									</svg>
-								</span>
-								<span
-									class="ml-4 text-base font-medium leading-6 text-gray-600">
-									Vegetariánské jídlo
-								</span>
-							</div>
-						</li>
-						<li class="mt-6 lg:mt-0">
-							<div class="flex">
-								<span
-									class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full">
-									<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-										<path
-											fill-rule="evenodd"
-											d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0
-												011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-											clip-rule="evenodd" />
-									</svg>
-								</span>
-								<span
-									class="ml-4 text-base font-medium leading-6 text-gray-600">
-									Rozvoz jídla
-								</span>
-							</div>
-						</li>
-						<li class="mt-6 lg:mt-0">
-							<div class="flex">
-								<span
-									class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full">
-									<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-										<path
-											fill-rule="evenodd"
-											d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0
-												011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-											clip-rule="evenodd" />
-									</svg>
-								</span>
-								<span
-									class="ml-4 text-base font-medium leading-6 text-gray-600">
-									Cena 128,-
-								</span>
-							</div>
-						</li>
-						<li class="mt-6 lg:mt-0">
-							<div class="flex">
-								<span
-									class="flex items-center justify-center flex-shrink-0 w-6 h-6 text-green-800 bg-green-100 rounded-full">
-									<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-										<path
-											fill-rule="evenodd"
-											d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0
-												011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-											clip-rule="evenodd" />
-									</svg>
-								</span>
-								<span
-									class="ml-4 text-base font-medium leading-6 text-gray-600">
-									Do krabičky nebo ešusu
-								</span>
-							</div>
-						</li>
-					</ul>
+					<p class="py-5">
+						Náš tým odborníků Mgr. Bc. Kamila Kučerová, Mgr. Martin Forejt,
+						PhD., Olga Bednářová (proklik na každé jméno zvlášť, tak aby se
+						objevilo na straně O nás informace o dané osobě v samostatném okně)
+						Vám nabízí
+					</p>
+		<ul>
+   <ul class="space-y-2">
+  <li class="flex items-start gap-2">
+    <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+    <div>kvalitní a zdravé obědy (proklik na Menu Jídelníček)</div>
+  </li>
+		 <li class="flex items-start gap-2">
+        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <div>odborné poradenství v oblasti výživy a preventivního lékařství (proklik na Menu Poradna)</div>
+    </li>
+ <li class="flex items-start gap-2">
+        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <div>vytvoření systému HACCP pro všechny provozy pracující s potravinami (proklik na Menu HACCP)</div>
+    </li>
+</ul>
+
+
 				</div>
 				<div class="relative mt-10 lg:-mx-4 relative-20 lg:mt-0 lg:col-start-1">
 					<div class="relative space-y-4">
@@ -150,17 +96,20 @@
 			<section>
 				<div class="max-w-screen-xl mx-auto px-4">
 					<div class="mt-20">
-						<h2 class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
+						<h2
+							class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
 							Info koutek
 						</h2>
 					</div>
 					<!-- Grid container for texts -->
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+					<div
+						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
 						{#if texts && texts.length > 0}
 							{#each texts as text}
 								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50">
 									{#if text.title}
-										<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
+										<h3
+											class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
 											{text.title}
 										</h3>
 										<hr class="mx-5" />
