@@ -64,37 +64,65 @@ export const load: PageServerLoad = async ({
 		// 5. Pro každé menu načteme aktuální verzi variant
 		menusWithVersions = await Promise.all(
 			menus.map(async (menu) => {
-				// Získáme aktuální verzi menu
-				const { data: versionId, error: versionError } = await supabase.rpc(
-					"get_current_menu_version",
-					{ p_menu_id: menu.id }
-				);
-
-				if (versionError) {
-					console.error(
-						`Error getting current version for menu ${menu.id}:`,
-						versionError
+				try {
+					// Získáme aktuální verzi menu
+					const { data: versionId, error: versionError } = await supabase.rpc(
+						"get_current_menu_version",
+						{ p_menu_id: menu.id }
 					);
+
+					if (versionError) {
+						console.error(
+							`Error getting current version for menu ${menu.id}:`,
+							versionError
+						);
+						return { ...menu, variants: [] };
+					}
+
+					// Pokud není dostupná žádná verze menu, načteme varianty bez filtru na verzi
+					if (versionId === null) {
+						console.log(
+							`No current version found for menu ${menu.id}, fetching all variants`
+						);
+
+						const { data: variants, error: variantsError } = await supabase
+							.from("menu_variants")
+							.select("id, description, variant_number")
+							.eq("menu_id", menu.id)
+							.order("variant_number");
+
+						if (variantsError) {
+							console.error(
+								`Error fetching variants for menu ${menu.id}:`,
+								variantsError
+							);
+							return { ...menu, variants: [] };
+						}
+
+						return { ...menu, variants };
+					}
+
+					// Získáme varianty pro aktuální verzi
+					const { data: variants, error: variantsError } = await supabase
+						.from("menu_variants")
+						.select("id, description, variant_number")
+						.eq("menu_id", menu.id)
+						.eq("menu_version_id", versionId)
+						.order("variant_number");
+
+					if (variantsError) {
+						console.error(
+							`Error fetching variants for menu ${menu.id}:`,
+							variantsError
+						);
+						return { ...menu, variants: [] };
+					}
+
+					return { ...menu, variants };
+				} catch (error) {
+					console.error(`Unexpected error processing menu ${menu.id}:`, error);
 					return { ...menu, variants: [] };
 				}
-
-				// Získáme varianty pro aktuální verzi
-				const { data: variants, error: variantsError } = await supabase
-					.from("menu_variants")
-					.select("id, description, variant_number")
-					.eq("menu_id", menu.id)
-					.eq("menu_version_id", versionId)
-					.order("variant_number");
-
-				if (variantsError) {
-					console.error(
-						`Error fetching variants for menu ${menu.id}:`,
-						variantsError
-					);
-					return { ...menu, variants: [] };
-				}
-
-				return { ...menu, variants };
 			})
 		);
 

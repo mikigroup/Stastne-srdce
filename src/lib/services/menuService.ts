@@ -270,6 +270,9 @@ export async function updateVariantIngredients(
 /**
  * Načte menu včetně variant, alergenů a ingrediencí.
  */
+/**
+ * Načte menu včetně variant, alergenů a ingrediencí z aktuální verze menu.
+ */
 export async function loadMenu(
 	supabase: SupabaseClient<Database>,
 	menuId: string
@@ -305,8 +308,8 @@ export async function loadMenu(
 			throw menuError;
 		}
 
-		// 3. Načteme varianty z aktuální verze menu
-		const { data: variants, error: variantsError } = await supabase
+		// 3. Načteme varianty
+		let variantsQuery = supabase
 			.from("menu_variants")
 			.select(
 				`
@@ -320,7 +323,17 @@ export async function loadMenu(
       `
 			)
 			.eq("menu_id", menuId)
-			.eq("menu_version_id", currentVersionId);
+			.order("variant_number"); // Seřadíme podle čísla varianty
+
+		// Pokud existuje aktuální verze, filtrujeme podle ní
+		if (currentVersionId !== null) {
+			variantsQuery = variantsQuery.eq("menu_version_id", currentVersionId);
+		} else {
+			// Pokud není žádná verze, vezmeme varianty, které nemají přiřazenou verzi
+			variantsQuery = variantsQuery.is("menu_version_id", null);
+		}
+
+		const { data: variants, error: variantsError } = await variantsQuery;
 
 		if (variantsError) {
 			console.error("Chyba při načítání variant menu:", variantsError);
@@ -332,11 +345,18 @@ export async function loadMenu(
 			...menu,
 			allergens: menu.allergens?.map((a) => a.allergen) || [],
 			variants:
-				variants.map((v) => ({
-					...v,
-					allergens: v.allergens?.map((a) => a.allergen) || [],
-					ingredients: v.ingredients?.map((i) => i.ingredient) || []
-				})) || []
+				variants
+					.map((v) => ({
+						...v,
+						allergens: v.allergens?.map((a) => a.allergen) || [],
+						ingredients: v.ingredients?.map((i) => i.ingredient) || []
+					}))
+					// Numerické řazení podle variant_number
+					.sort((a, b) => {
+						const aNum = parseInt(a.variant_number);
+						const bNum = parseInt(b.variant_number);
+						return aNum - bNum;
+					}) || []
 		};
 
 		return formattedMenu;

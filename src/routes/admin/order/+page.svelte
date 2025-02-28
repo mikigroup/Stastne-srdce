@@ -195,7 +195,7 @@
 			<div>
 				<input type="date" bind:value={filterDate} class="btn btn-outline" />
 			</div>
-			<div>
+			<!--<div>
 				<select
 					bind:value={filterActive}
 					class="select select-bordered w-full max-w-xs border-black">
@@ -203,7 +203,7 @@
 					<option value="true">Aktivní</option>
 					<option value="false">Neaktivní</option>
 				</select>
-			</div>
+			</div>-->
 			<div class="flex gap-2">
 				<input
 					type="text"

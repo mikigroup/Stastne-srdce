@@ -190,7 +190,6 @@ export const actions: Actions = {
 						variant_id: variant.id,
 						price: variant.price,
 						quantity: variant.quantity,
-						menu_version_id: menuVersionId,
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString()
 					};
