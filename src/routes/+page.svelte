@@ -36,7 +36,7 @@
    <ul class="space-y-2">
   <li class="flex items-start gap-2">
     <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
-    <div>kvalitní a zdravé obědy (proklik na Menu Jídelníček)</div>
+    <div><a href="/jidelnicek" class="hover:underline">kvalitní a zdravé obědy</a> </div>
   </li>
 		 <li class="flex items-start gap-2">
         <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
