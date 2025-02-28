@@ -92,7 +92,7 @@
 					<div class="hidden xl:flex items-center gap-2">
 						<a
 							href="/kosik"
-							class="flex items-center gap-2 p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
+							class="flex items-center gap-2 p-[10px] px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								width="20"
