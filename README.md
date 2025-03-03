@@ -63,7 +63,7 @@ Web application for food management and ordering.
 - Responsive design using Tailwind CSS
 - Animated elements for better user experience
 
-### 2. Jídelníček (/jidelnicek)
+### 2. Jídelníček (/obedy)
 
 - Zobrazuje aktuální denní menu na následující 4 týdny
 - Dynamické časové rozmezí:
@@ -88,7 +88,7 @@ Web application for food management and ordering.
   - Zobrazení celkového počtu položek v košíku
   - Přímý přechod do košíku
 
-### 2. Menu (/jidelnicek)
+### 2. Menu (/obedy)
 
 - Displays current daily menu for the next 4 weeks
 - Dynamic time range:

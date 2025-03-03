@@ -102,15 +102,12 @@
 						</div>
 						<div class="flex items-center gap-3">
 							<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
-							<p class="text-gray-600">724 448 377</p>
+							<p class="text-gray-600">+420 724 448 377</p>
+							<p class="text-gray-600">+420 732 722 115</p>
 						</div>
 						<div class="flex items-center gap-3">
 							<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
 							<p class="text-gray-600">stastnesrdcekk@seznam.cz</p>
-						</div>
-						<div class="flex items-center gap-3">
-							<Clock class="w-5 h-5 text-green-700 flex-shrink-0" />
-							<p class="text-gray-600">Po-Pá: 8:00 - 16:00</p>
 						</div>
 					</div>
 				</div>

@@ -203,7 +203,7 @@ export const ROUTES = readable({
 	},
 	CUSTOMER: {
 		HOME: "/",
-		MENU: "/jidelnicek",
+		MENU: "/obedy",
 		CART: "/kosik",
 		PROFILE: "/profile",
 		CONTACT: "/kontakt",

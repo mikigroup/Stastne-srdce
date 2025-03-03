@@ -20,7 +20,7 @@
 			}
 
 			messageSuc = "Heslo změněno."
-			goto("/jidelnicek")
+			goto("/obedy")
 		} catch (error) {
 			messageFalse = error.error_description || error.message
 		} finally {

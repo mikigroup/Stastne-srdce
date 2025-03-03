@@ -24,7 +24,7 @@ export const actions: Actions = {
 		}
 
 		if (data.user) {
-			throw redirect(303, "/jidelnicek");
+			throw redirect(303, "/obedy");
 		}
 
 		return fail(500, {

@@ -27,23 +27,29 @@
 						Vítejte na stránkách Šťastného srdce
 					</h2>
 					<p class="py-5">
-						Náš tým odborníků <a href="/mgr-bc-kamila-kucerova" class="!underline">Mgr. Bc. Kamila Kučerová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt PhD.</a>,
+						Náš tým odborníků <a href="/mgr-bc-kamila-kucerova" class="!underline">Mgr. Bc. Kamila Kučerová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
 						<a href="/olga-bednarova" class="!underline">Olga Bednářová</a> Vám nabízí
 					</p>
 		<ul>
    <ul class="space-y-2">
   <li class="flex items-start gap-2">
     <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
-    <div><a href="/jidelnicek" class="hover:underline">kvalitní a zdravé obědy</a> </div>
+    <div><a href="/obedy" class="hover:underline"><strong>kvalitní a zdravé obědy</strong></a> </div>
   </li>
 		 <li class="flex items-start gap-2">
         <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
-        <div>odborné poradenství v oblasti výživy a preventivního lékařství (proklik na Menu Poradna)</div>
+        <div><strong>odborné poradenství v oblasti výživy a preventivního lékařství</strong></div>
     </li>
  <li class="flex items-start gap-2">
         <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
-        <div>vytvoření systému HACCP pro všechny provozy pracující s potravinami (proklik na Menu HACCP)</div>
+        <div><strong>vytvoření systému HACCP pro všechny provozy pracující s potravinami</strong></div>
     </li>
+		  <li class="flex items-start gap-2">
+        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <div>realizace přednášek na různá témata z oblasti výživy</div>
+    </li>
+
+
 </ul>
 
 

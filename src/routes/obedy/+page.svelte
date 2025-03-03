@@ -25,8 +25,8 @@
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Jídelníček</title>
-	<meta name="description" content="Jídelníček" />
+	<title>Šťastné srdce - Obědy</title>
+	<meta name="description" content="Obědy" />
 </svelte:head>
 
 <main>

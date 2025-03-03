@@ -43,7 +43,7 @@
 
         <div class="mt-6 text-center">
           <a
-            href="/jidelnicek"
+            href="/obedy"
             class="px-4 py-2 text-white bg-green-800 rounded hover:bg-green-900">
             Prohlédnout jídelníček
           </a>
