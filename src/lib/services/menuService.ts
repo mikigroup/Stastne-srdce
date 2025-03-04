@@ -289,12 +289,12 @@ export async function loadMenu(
 			throw versionError;
 		}
 
-		// 2. Načteme samotné menu
+		// 2. Načteme základní menu data
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
 				`
-        *,
+        id, active, deleted,
         allergens:menu_allergens(
           allergen:allergens(*)
         )
@@ -308,8 +308,23 @@ export async function loadMenu(
 			throw menuError;
 		}
 
-		// 3. Načteme varianty
-		let variantsQuery = supabase
+		// 3. Načteme aktuální verzi menu pro získání aktuálních dat (datum, polévka, atd.)
+		const { data: currentVersion, error: currentVersionError } = await supabase
+			.from("menu_versions")
+			.select("*")
+			.eq("id", currentVersionId)
+			.single();
+
+		if (currentVersionError) {
+			console.error(
+				"Chyba při načítání aktuální verze menu:",
+				currentVersionError
+			);
+			throw currentVersionError;
+		}
+
+		// 4. Načteme varianty
+		const { data: variants, error: variantsError } = await supabase
 			.from("menu_variants")
 			.select(
 				`
@@ -323,26 +338,24 @@ export async function loadMenu(
       `
 			)
 			.eq("menu_id", menuId)
-			.order("variant_number"); // Seřadíme podle čísla varianty
-
-		// Pokud existuje aktuální verze, filtrujeme podle ní
-		if (currentVersionId !== null) {
-			variantsQuery = variantsQuery.eq("menu_version_id", currentVersionId);
-		} else {
-			// Pokud není žádná verze, vezmeme varianty, které nemají přiřazenou verzi
-			variantsQuery = variantsQuery.is("menu_version_id", null);
-		}
-
-		const { data: variants, error: variantsError } = await variantsQuery;
+			.eq("menu_version_id", currentVersionId)
+			.order("variant_number");
 
 		if (variantsError) {
 			console.error("Chyba při načítání variant menu:", variantsError);
 			throw variantsError;
 		}
 
-		// 4. Formátování dat pro snadnější práci v UI
+		// 5. Formátování dat - použití údajů z verze
 		const formattedMenu = {
 			...menu,
+			// Použijeme data z aktuální verze
+			date: currentVersion.date,
+			soup: currentVersion.soup,
+			active: currentVersion.active,
+			notes: currentVersion.notes,
+			type: currentVersion.type,
+			nutri: currentVersion.nutri,
 			allergens: menu.allergens?.map((a) => a.allergen) || [],
 			variants:
 				variants
@@ -351,7 +364,6 @@ export async function loadMenu(
 						allergens: v.allergens?.map((a) => a.allergen) || [],
 						ingredients: v.ingredients?.map((i) => i.ingredient) || []
 					}))
-					// Numerické řazení podle variant_number
 					.sort((a, b) => {
 						const aNum = parseInt(a.variant_number);
 						const bNum = parseInt(b.variant_number);

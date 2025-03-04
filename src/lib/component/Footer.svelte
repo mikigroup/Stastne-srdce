@@ -6,7 +6,7 @@
 				<a
 					class="items-center mt-3 text-sm sm:mt-0"
 					target="_blank"
-					href="https://www.mikigroup.cz/"
+					href="https://www.malyleo.cz/"
 					><i class="fa fa-regular fa-hand-spock" /> MalyLeo™
 				</a>
 				- core1.0a

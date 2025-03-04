@@ -72,13 +72,13 @@
 	</div>
 	<hr>
 	<!-- Vybrané tagy -->
-	<div class="selected-tags my-5">
+<!--	<div class="selected-tags my-5">
 		{#each selectedTags as tag (tag.id)}
 			<span class="tag p-5">
 				{tag.name}
 			</span>
 		{/each}
-	</div>
+	</div>-->
 
 	<!-- Textový vstup pro filtrování -->
 	<!--<input
