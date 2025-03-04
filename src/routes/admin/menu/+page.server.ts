@@ -79,27 +79,25 @@ export const load: PageServerLoad = async ({
 						return { ...menu, variants: [] };
 					}
 
-					// Pokud není dostupná žádná verze menu, načteme varianty bez filtru na verzi
-					if (versionId === null) {
-						console.log(
-							`No current version found for menu ${menu.id}, fetching all variants`
-						);
+					console.log(`Načtena aktuální verze menu ${menu.id}: ${versionId}`);
 
-						const { data: variants, error: variantsError } = await supabase
-							.from("menu_variants")
-							.select("id, description, variant_number")
-							.eq("menu_id", menu.id)
-							.order("variant_number");
+					// Načteme data aktuální verze menu z tabulky menu_versions
+					let versionData = null;
+					if (versionId !== null) {
+						const { data: version, error: versionDataError } = await supabase
+							.from("menu_versions")
+							.select("*")
+							.eq("id", versionId)
+							.single();
 
-						if (variantsError) {
+						if (!versionDataError) {
+							versionData = version;
+						} else {
 							console.error(
-								`Error fetching variants for menu ${menu.id}:`,
-								variantsError
+								`Error fetching version data for menu ${menu.id}:`,
+								versionDataError
 							);
-							return { ...menu, variants: [] };
 						}
-
-						return { ...menu, variants };
 					}
 
 					// Získáme varianty pro aktuální verzi
@@ -110,15 +108,93 @@ export const load: PageServerLoad = async ({
 						.eq("menu_version_id", versionId)
 						.order("variant_number");
 
-					if (variantsError) {
-						console.error(
-							`Error fetching variants for menu ${menu.id}:`,
-							variantsError
+					console.log(
+						`Načteno ${variants?.length || 0} variant pro verzi ${versionId}`
+					);
+
+					// Pokud nemáme žádné varianty, zkontrolujeme všechny varianty pro toto menu
+					if (!variants || variants.length === 0) {
+						console.log(
+							`Žádné varianty nenalezeny pro verzi ${versionId}, hledám všechny varianty`
 						);
-						return { ...menu, variants: [] };
+
+						// Nejprve zkontrolujeme, zda existují nějaké varianty pro toto menu
+						const { data: allVariants, error: allVariantsError } =
+							await supabase
+								.from("menu_variants")
+								.select("id, description, variant_number")
+								.eq("menu_id", menu.id)
+								.order("variant_number");
+
+						if (allVariantsError) {
+							console.error(
+								`Error fetching all variants for menu ${menu.id}:`,
+								allVariantsError
+							);
+							return { ...menu, variants: [] };
+						}
+
+						console.log(`Nalezeno ${allVariants?.length || 0} variant celkem`);
+
+						// Pokud máme varianty, aktualizujeme jejich verzi
+						if (allVariants && allVariants.length > 0 && versionId) {
+							console.log(
+								`Aktualizuji ${allVariants.length} variant na verzi ${versionId}`
+							);
+
+							// Aktualizujeme verzi pro všechny varianty
+							for (const variant of allVariants) {
+								await supabase
+									.from("menu_variants")
+									.update({ menu_version_id: versionId })
+									.eq("id", variant.id);
+							}
+
+							// Znovu načteme varianty s aktuální verzí
+							const { data: updatedVariants } = await supabase
+								.from("menu_variants")
+								.select("id, description, variant_number")
+								.eq("menu_id", menu.id)
+								.eq("menu_version_id", versionId)
+								.order("variant_number");
+
+							return {
+								...menu,
+								date: versionData?.date || menu.date,
+								soup: versionData?.soup || menu.soup,
+								active: versionData?.active ?? menu.active,
+								notes: versionData?.notes || menu.notes,
+								type: versionData?.type || menu.type,
+								nutri: versionData?.nutri || menu.nutri,
+								variants: updatedVariants || []
+							};
+						}
+
+						// Pokud jsme nenašli žádné varianty, vracíme prázdný seznam
+						return {
+							...menu,
+							date: versionData?.date || menu.date,
+							soup: versionData?.soup || menu.soup,
+							active: versionData?.active ?? menu.active,
+							notes: versionData?.notes || menu.notes,
+							type: versionData?.type || menu.type,
+							nutri: versionData?.nutri || menu.nutri,
+							variants: allVariants || []
+						};
 					}
 
-					return { ...menu, variants };
+					// Použijeme data z verze, pokud jsou k dispozici
+					return {
+						...menu,
+						// Přepíšeme hodnoty z tabulky menus hodnotami z aktuální verze
+						date: versionData?.date || menu.date,
+						soup: versionData?.soup || menu.soup,
+						active: versionData?.active ?? menu.active,
+						notes: versionData?.notes || menu.notes,
+						type: versionData?.type || menu.type,
+						nutri: versionData?.nutri || menu.nutri,
+						variants: variants || []
+					};
 				} catch (error) {
 					console.error(`Unexpected error processing menu ${menu.id}:`, error);
 					return { ...menu, variants: [] };

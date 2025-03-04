@@ -16,6 +16,7 @@ export type Menu = Database["public"]["Tables"]["menus"]["Row"] & {
 	variants: MenuVariant[];
 	allergens: MenuAllergen[];
 };
+
 /**
  * Vytvoří novou verzi menu v databázi.
  */
@@ -268,9 +269,6 @@ export async function updateVariantIngredients(
 }
 
 /**
- * Načte menu včetně variant, alergenů a ingrediencí.
- */
-/**
  * Načte menu včetně variant, alergenů a ingrediencí z aktuální verze menu.
  */
 export async function loadMenu(
@@ -278,6 +276,8 @@ export async function loadMenu(
 	menuId: string
 ) {
 	try {
+		console.log(`Načítání menu pro ID: ${menuId}`);
+
 		// 1. Nejprve získáme aktuální verzi menu
 		const { data: currentVersionId, error: versionError } = await supabase.rpc(
 			"get_current_menu_version",
@@ -289,12 +289,51 @@ export async function loadMenu(
 			throw versionError;
 		}
 
-		// 2. Načteme základní menu data
+		console.log(`Aktuální verze menu: ${currentVersionId}`);
+
+		// Ošetření případu, kdy není vrácena žádná verze menu
+		let versionId = currentVersionId;
+		let isNewVersion = false;
+
+		if (!versionId) {
+			console.warn(
+				`Pro menu ${menuId} nebyla nalezena žádná verze, vytvářím novou...`
+			);
+
+			// Získáme základní data menu
+			const { data: menuData, error: menuDataError } = await supabase
+				.from("menus")
+				.select("*")
+				.eq("id", menuId)
+				.single();
+
+			if (menuDataError) {
+				console.error("Chyba při načítání menu dat:", menuDataError);
+				throw menuDataError;
+			}
+
+			// Vytvoříme novou verzi
+			const newVersionId = await createMenuVersion(supabase, {
+				id: menuId,
+				date: menuData.date,
+				soup: menuData.soup,
+				active: menuData.active,
+				notes: menuData.notes,
+				type: menuData.type,
+				nutri: menuData.nutri
+			});
+
+			versionId = newVersionId;
+			isNewVersion = true;
+			console.log("Vytvořena nová verze menu s ID:", versionId);
+		}
+
+		// 2. Načteme samotné menu
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
 				`
-        id, active, deleted,
+        *,
         allergens:menu_allergens(
           allergen:allergens(*)
         )
@@ -308,11 +347,11 @@ export async function loadMenu(
 			throw menuError;
 		}
 
-		// 3. Načteme aktuální verzi menu pro získání aktuálních dat (datum, polévka, atd.)
+		// 3. Načteme verzi menu pro získání aktuálních dat
 		const { data: currentVersion, error: currentVersionError } = await supabase
 			.from("menu_versions")
 			.select("*")
-			.eq("id", currentVersionId)
+			.eq("id", versionId)
 			.single();
 
 		if (currentVersionError) {
@@ -324,6 +363,12 @@ export async function loadMenu(
 		}
 
 		// 4. Načteme varianty
+		console.log(
+			`Načítání variant pro menu_id: ${menuId}, menu_version_id: ${versionId}`
+		);
+
+		let finalVariants = [];
+
 		const { data: variants, error: variantsError } = await supabase
 			.from("menu_variants")
 			.select(
@@ -338,15 +383,118 @@ export async function loadMenu(
       `
 			)
 			.eq("menu_id", menuId)
-			.eq("menu_version_id", currentVersionId)
+			.eq("menu_version_id", versionId)
 			.order("variant_number");
+
+		console.log(
+			"SQL dotaz na varianty:",
+			JSON.stringify({
+				table: "menu_variants",
+				filters: {
+					menu_id: menuId,
+					menu_version_id: versionId
+				}
+			})
+		);
 
 		if (variantsError) {
 			console.error("Chyba při načítání variant menu:", variantsError);
 			throw variantsError;
 		}
 
-		// 5. Formátování dat - použití údajů z verze
+		console.log(`Načteno ${variants?.length || 0} variant:`, variants);
+
+		finalVariants = variants || [];
+
+		// Pokud varianty nejsou nalezeny, zkusme načíst varianty bez filtru na verzi
+		if (!variants || variants.length === 0) {
+			console.log(
+				"Žádné varianty nenalezeny s verzí, zkouším načíst všechny varianty pro toto menu"
+			);
+
+			const { data: allVariants, error: allVariantsError } = await supabase
+				.from("menu_variants")
+				.select(
+					`
+          *,
+          allergens:variant_allergens(
+            allergen:allergens(*)
+          ),
+          ingredients:variant_ingredients(
+            ingredient:ingredients(*)
+          )
+        `
+				)
+				.eq("menu_id", menuId)
+				.order("variant_number");
+
+			if (allVariantsError) {
+				console.error(
+					"Chyba při načítání všech variant menu:",
+					allVariantsError
+				);
+			} else {
+				console.log(
+					`Nalezeno ${allVariants?.length || 0} variant bez filtru na verzi:`,
+					allVariants
+				);
+
+				// Pokud existují varianty, ale nemají správnou verzi, aktualizujme je
+				if (allVariants && allVariants.length > 0) {
+					console.log(
+						`Aktualizuji verzi pro ${allVariants.length} variant na ${versionId}`
+					);
+
+					for (const variant of allVariants) {
+						const { error: updateError } = await supabase
+							.from("menu_variants")
+							.update({ menu_version_id: versionId })
+							.eq("id", variant.id);
+
+						if (updateError) {
+							console.error(
+								`Chyba při aktualizaci varianty ${variant.id}:`,
+								updateError
+							);
+						}
+					}
+
+					// Znovu načteme varianty s aktuální verzí
+					const { data: updatedVariants, error: updatedVariantsError } =
+						await supabase
+							.from("menu_variants")
+							.select(
+								`
+                *,
+                allergens:variant_allergens(
+                  allergen:allergens(*)
+                ),
+                ingredients:variant_ingredients(
+                  ingredient:ingredients(*)
+                )
+              `
+							)
+							.eq("menu_id", menuId)
+							.eq("menu_version_id", versionId)
+							.order("variant_number");
+
+					if (updatedVariantsError) {
+						console.error(
+							"Chyba při načítání aktualizovaných variant:",
+							updatedVariantsError
+						);
+					} else {
+						console.log(
+							`Načteno ${updatedVariants?.length || 0} aktualizovaných variant:`,
+							updatedVariants
+						);
+						finalVariants = updatedVariants || [];
+					}
+				}
+			}
+		}
+
+		// 5. Formátování dat - použití údajů z aktuální verze
 		const formattedMenu = {
 			...menu,
 			// Použijeme data z aktuální verze
@@ -358,7 +506,7 @@ export async function loadMenu(
 			nutri: currentVersion.nutri,
 			allergens: menu.allergens?.map((a) => a.allergen) || [],
 			variants:
-				variants
+				finalVariants
 					.map((v) => ({
 						...v,
 						allergens: v.allergens?.map((a) => a.allergen) || [],
@@ -371,6 +519,7 @@ export async function loadMenu(
 					}) || []
 		};
 
+		console.log("Vracím formátované menu:", formattedMenu);
 		return formattedMenu;
 	} catch (error) {
 		console.error("Nečekaná chyba při načítání menu:", error);
