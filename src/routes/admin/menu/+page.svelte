@@ -55,6 +55,18 @@
 		return `${day}.${month}.${year}`;
 	}
 
+	// Převede pole variant na jednoduchý textový řetězec
+	function formatVariantsText(variants) {
+		if (!Array.isArray(variants) || variants.length === 0) {
+			return "Žádné varianty";
+		}
+
+		return variants
+			.sort((a, b) => parseInt(a.variant_number) - parseInt(b.variant_number))
+			.map(v => `${v.variant_number}. ${v.description}`)
+			.join(" | ");
+	}
+
 	// Define column names and order
 	const columnNames: Record<string, string> = {
 		date: "Datum",
@@ -128,15 +140,15 @@
 		(menu) =>
 			searchQuery
 				? Object.values(menu).some((value) =>
-						// Check if any menu property includes the search query
-						value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-					) ||
-					menu.variants.some((variant) =>
-						// Check if any variant description includes the search query
-						variant.description
-							.toLowerCase()
-							.includes(searchQuery.toLowerCase())
-					)
+					// Check if any menu property includes the search query
+					value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+				) ||
+				menu.variants.some((variant) =>
+					// Check if any variant description includes the search query
+					variant.description
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase())
+				)
 				: true // If no search query, return all menus
 	);
 
@@ -151,9 +163,8 @@
 				if (key === "date") {
 					return formatDateToCzech(value);
 				} else if (key === "variants") {
-					return Object.entries(value)
-						.map(([k, v], i) => `${i + 1}. ${v.description}`)
-						.join("<br>");
+					// Necháme původní data, zpracování provedeme přímo v šabloně
+					return value;
 				} else if (key === "active") {
 					return value ? "ANO" : "NE";
 				} else if (key === "edit") {
@@ -300,28 +311,16 @@
 
 <section>
 	<div class="flex flex-wrap">
-		<!-- Nadpis -->
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div
-					class="w-full {column === 'variants' || column === 'soup'
-						? 'md:w-1/4'
-						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index >
-					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-						? 'border-r-2'
-						: ''}">
-					{columnNames[column]}
-				</div>
+		<!-- Nadpis tabulky -->
+		<div class="menu-table-header">
+			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
+				<div class="menu-table-cell menu-cell-{column}">{columnNames[column]}</div>
 			{/each}
-			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
-				Editovat
-			</div>
+			<div class="menu-table-cell menu-cell-edit">Editovat</div>
 		</div>
-		<!-- Nadpis -->
 
 		{#key transitionKey}
-			<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
+			<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }} class="w-full">
 				{#if $navigating || loading}
 					<div transition:fade={{ duration: 300 }} class="loading-overlay">
 						<BarLoader size="120" color="black" unit="px" duration="1s" />
@@ -330,49 +329,21 @@
 					{#each $table.getRowModel().rows as row, index}
 						<div
 							in:fly={{ y: 50, duration: 300, delay: index * 50 }}
-							class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
-								2 ===
-							0
-								? 'bg-gray-100'
-								: 'bg-gray-200'}">
+							class="menu-table-row {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}">
 							{#each row.getVisibleCells() as cell}
 								<div
-									class="w-full truncate-cell flex items-center {cell.column
-										.id === 'variants' || cell.column.id === 'soup'
-										? 'md:w-1/4'
-										: cell.column.id === 'edit'
-											? 'md:w-1/6 lg:w-1/6 xl:w-1/6 justify-end'
-											: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
-									title={cell.getValue() ?? ""}>
+									class="menu-table-cell menu-cell-{cell.column.id}"
+									title={cell.column.id === 'variants'
+                    ? formatVariantsText(cell.getValue())
+                    : cell.getValue() ?? ""}>
 									{#if cell.column.id === "variants"}
-										{#if Array.isArray(cell.getValue()) && cell.getValue().length > 0}
-											<div class="">
-												{#each cell
-													.getValue()
-													.sort((a, b) => a.variant_number - b.variant_number) as variant}
-													<div class="mb-1">
-														<span class="font-medium"
-															>{variant.variant_number}.</span>
-														{variant.description}
-													</div>
-												{/each}
-											</div>
-										{:else}
-											<span class="text-gray-400">Žádné varianty</span>
-										{/if}
-									{:else if cell.column.id === "active"}
-										{cell.getValue() ? "Ano" : "Ne"}
-									{:else if cell.column.id === "date"}
-										{formatDateToCzech(cell.getValue())}
-									{:else if cell.column.id === "edit"}
-										{@html cell.getValue()}
+										{formatVariantsText(cell.getValue())}
 									{:else}
 										{cell.getValue() ?? ""}
 									{/if}
 								</div>
 							{/each}
-							<div
-								class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
+							<div class="menu-table-cell menu-cell-edit">
 								<a
 									href="/admin/menu/{row.original.id}"
 									data-sveltekit-preload-data
@@ -389,3 +360,73 @@
 		{/key}
 	</div>
 </section>
+
+<style>
+    /* Tabulka s pevnou strukturou */
+    .menu-table-header {
+        display: flex;
+        width: 100%;
+        background-color: #718096;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .menu-table-row {
+        display: flex;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.25rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    .menu-table-row:hover {
+        background-color: #0e7490 !important;
+        color: white;
+    }
+
+    .menu-table-cell {
+        padding: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    /* Pevné šířky pro sloupce */
+    .menu-cell-date {
+        width: 100px;
+        flex-shrink: 0;
+    }
+
+    .menu-cell-soup {
+        width: 150px;
+        flex-shrink: 0;
+    }
+
+    .menu-cell-variants {
+        flex: 1; /* Tento sloupec se roztáhne pro vyplnění zbývajícího prostoru */
+        min-width: 200px;
+    }
+
+    .menu-cell-active {
+        width: 80px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+
+    .menu-cell-notes, .menu-cell-type, .menu-cell-nutri {
+        width: 120px;
+        flex-shrink: 0;
+    }
+
+    .menu-cell-edit {
+        width: 80px;
+        flex-shrink: 0;
+        text-align: right;
+    }
+</style>
