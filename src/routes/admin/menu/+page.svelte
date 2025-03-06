@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
-	import { createSvelteTable, getCoreRowModel } from "@tanstack/svelte-table";
-	import type { TableOptions } from "@tanstack/svelte-table";
+	import {
+		createSvelteTable,
+		getCoreRowModel,
+		flexRender
+	} from "@tanstack/svelte-table";
+	import type {
+		ColumnDef,
+		TableOptions,
+		VisibilityState,
+		OnChangeFn
+	} from "@tanstack/svelte-table";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
@@ -71,7 +80,7 @@
 	const columnNames: Record<string, string> = {
 		date: "Datum",
 		soup: "Polévka",
-		variants: "Varianty",
+		variants: "Hlavní jídla",
 		active: "Aktivní",
 		notes: "Poznámky",
 		type: "Typ",
@@ -89,51 +98,46 @@
 	];
 
 	// Initialize visible columns based on profile settings or default to all columns
-	let visibleColumns =
+	let visibleColumns: VisibilityState =
 		profileTableSettings?.table_settings_menus ??
 		columnOrder.reduce((obj, column) => {
 			obj[column] = true;
 			return obj;
 		}, {});
 
-	const visibleColumnsStore = writable(visibleColumns);
-
-	// Toggle column visibility
-	function toggleColumn(column) {
-		visibleColumnsStore.update((cols) => ({
-			...cols,
-			[column]: !cols[column]
+	// Callback funkce pro aktualizaci viditelnosti sloupců
+	const setColumnVisibility: OnChangeFn<VisibilityState> = updater => {
+		if (updater instanceof Function) {
+			visibleColumns = updater(visibleColumns);
+		} else {
+			visibleColumns = updater;
+		}
+		options.update(old => ({
+			...old,
+			state: {
+				...old.state,
+				columnVisibility: visibleColumns,
+			},
 		}));
-	}
+		saveTableSettings(visibleColumns);
+	};
 
 	// Save table settings to user profile
-	async function saveTableSettings() {
+	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
 			return; // Exit if user is not logged in
 		}
 
-		const updatedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = $visibleColumnsStore[column];
-			return obj;
-		}, {});
-
-		const orderedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = updatedSettings[column];
-			return obj;
-		}, {});
-
 		const { error } = await supabase
 			.from("profiles")
-			.update({ table_settings_menus: orderedSettings })
+			.update({ table_settings_menus: columnVisibility })
 			.eq("id", session.user.id);
 
 		if (error) {
 			console.error("Chyba při ukládání nastavení filtrů:", error);
 		}
 	}
-
-	visibleColumnsStore.subscribe(saveTableSettings);
 
 	// Filter menus based on search query
 	$: filteredMenus = menus?.filter(
@@ -152,45 +156,65 @@
 				: true // If no search query, return all menus
 	);
 
-	// Define table columns
-	$: columns = columnOrder
-		.filter((key) => $visibleColumnsStore[key])
-		.map((key) => ({
-			accessorKey: key,
-			header: columnNames[key],
-			cell: ({ getValue, row }) => {
-				const value = getValue();
-				if (key === "date") {
-					return formatDateToCzech(value);
-				} else if (key === "variants") {
-					// Necháme původní data, zpracování provedeme přímo v šabloně
-					return value;
-				} else if (key === "active") {
-					return value ? "ANO" : "NE";
-				} else if (key === "edit") {
-					return `<a href="/admin/menu/${row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">Upravit</a>`;
-				}
-				return value;
+	// Define table columns with TanStack column definition
+	const columns: ColumnDef<any>[] = columnOrder.map(key => ({
+		accessorKey: key,
+		id: key,
+		header: columnNames[key],
+		// Nastavení velikostí sloupců - variants bude nejširší
+		size: key === 'variants' ? 400 :
+			key === 'soup' ? 150 :
+				key === 'date' ? 100 :
+					key === 'active' ? 80 : 100,
+		cell: info => {
+			const value = info.getValue();
+			if (key === "date") {
+				return formatDateToCzech(value);
+			} else if (key === "variants") {
+				return value; // Zpracujeme v template
+			} else if (key === "active") {
+				return value ? "ANO" : "NE";
 			}
-		}));
+			return value ?? "";
+		}
+	}));
 
-	// Create table options
-	$: options = writable<TableOptions<(typeof menus)[0]>>({
-		data: filteredMenus,
-		columns,
-		getCoreRowModel: getCoreRowModel()
+	// Přidáme sloupec "Upravit"
+	columns.push({
+		id: 'actions',
+		header: 'Editovat',
+		size: 80,
+		cell: info => {
+			return {
+				id: info.row.original.id,
+			};
+		}
 	});
 
-	// Update table when visible columns change
-	$: visibleColumnsStore.subscribe((value) => {
-		options.update((options) => ({
-			...options,
-			columns: columns.filter((column) => value[column.accessorKey])
-		}));
+	// Create table options
+	const options = writable<TableOptions<any>>({
+		data: filteredMenus,
+		columns,
+		state: {
+			columnVisibility: visibleColumns,
+		},
+		onColumnVisibilityChange: setColumnVisibility,
+		getCoreRowModel: getCoreRowModel(),
+		enableColumnResizing: true,
+		columnResizeMode: 'onChange',
+		debugTable: false,
 	});
 
 	// Create Svelte table
 	$: table = createSvelteTable(options);
+
+	// Update data when it changes
+	$: if (filteredMenus) {
+		options.update(opts => ({
+			...opts,
+			data: filteredMenus,
+		}));
+	}
 
 	let transitionKey = 0;
 
@@ -236,31 +260,6 @@
 		} finally {
 			loading = false;
 		}
-	}
-
-	// Definice šířek sloupců podle typu
-	function getColumnWidth(column) {
-		switch(column) {
-			case 'date':
-				return 'md:w-1/12';
-			case 'soup':
-				return 'md:w-1/6';
-			case 'variants':
-				return 'md:w-1/3';
-			case 'active':
-				return 'md:w-1/12';
-			case 'notes':
-			case 'type':
-			case 'nutri':
-				return 'md:w-1/8';
-			default:
-				return 'md:w-1/12';
-		}
-	}
-
-	// Přidáno pro lepší zobrazení na mobilech
-	function getColumnNameForMobile(column) {
-		return columnNames[column] || "Neznámý";
 	}
 </script>
 
@@ -320,77 +319,100 @@
 	<ul
 		tabindex="0"
 		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-		{#each Object.keys(visibleColumns) as column}
-			<li>
-				<label>
-					<input
-						type="checkbox"
-						checked={$visibleColumnsStore[column]}
-						on:change={() => toggleColumn(column)} />
-					{columnNames[column]}
-				</label>
-			</li>
+		{#each $table.getAllLeafColumns() as column}
+			{#if column.id !== 'actions'}
+				<li>
+					<label>
+						<input
+							type="checkbox"
+							checked={column.getIsVisible()}
+							on:change={column.getToggleVisibilityHandler()}
+						/>
+						{columnNames[column.id] || column.id}
+					</label>
+				</li>
+			{/if}
 		{/each}
 	</ul>
 </div>
 
 <section>
-	<!-- Hlavička tabulky -->
-	<div class="hidden w-full gap-2 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
-		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-			<div
-				class="w-full {getColumnWidth(column)} {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2 pr-2' : ''} overflow-hidden text-ellipsis">
-				{columnNames[column]}
-			</div>
-		{/each}
-		<div class="flex justify-end w-full md:w-1/8">
-			Editovat
-		</div>
-	</div>
-
-	{#key transitionKey}
-		<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }} class="w-full">
+	<!-- Nová tabulka používající TanStack Table -->
+	<div class="overflow-x-auto border rounded-xl shadow-sm">
+		<table class="min-w-full divide-y divide-gray-200">
+			<thead class="bg-gray-400">
+			{#each $table.getHeaderGroups() as headerGroup}
+				<tr>
+					{#each headerGroup.headers as header}
+						<th
+							class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
+							style="width: {header.getSize()}px; position: relative;"
+						>
+							{#if !header.isPlaceholder}
+								<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
+									{header.column.columnDef.header}
+								</div>
+							{/if}
+							{#if header.column.getCanResize()}
+								<div
+									class="resizer"
+									on:mousedown={header.getResizeHandler()}
+									on:touchstart={header.getResizeHandler()}
+									class:isResizing={header.column.getIsResizing()}
+								></div>
+							{/if}
+						</th>
+					{/each}
+				</tr>
+			{/each}
+			</thead>
+			<tbody class="bg-white divide-y divide-gray-200">
 			{#if $navigating || loading}
-				<div transition:fade={{ duration: 300 }} class="loading-overlay">
-					<BarLoader size="120" color="black" unit="px" duration="1s" />
-				</div>
+				<tr>
+					<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4">
+						<div class="loading-overlay flex justify-center">
+							<BarLoader size="120" color="black" unit="px" duration="1s" />
+						</div>
+					</td>
+				</tr>
 			{:else if filteredMenus && filteredMenus.length > 0}
 				{#each $table.getRowModel().rows as row, index}
-					<div
+					<tr
+						class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
 						in:fly={{ y: 50, duration: 300, delay: index * 50 }}
-						class="w-full gap-2 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}">
+					>
 						{#each row.getVisibleCells() as cell}
-							<div
-								class="w-full {getColumnWidth(cell.column.id)} overflow-hidden flex items-center"
-								title={cell.column.id === 'variants' ? formatVariantsText(cell.getValue()) : cell.getValue() ?? ""}>
+							<td
+								class="px-4 py-3"
+								style="width: {cell.column.getSize()}px;"
+							>
 								{#if cell.column.id === "variants"}
-									<div class="truncate">
+									<div class="truncate max-w-full" title={formatVariantsText(cell.getValue())}>
 										{formatVariantsText(cell.getValue())}
 									</div>
-								{:else if cell.column.id === "active"}
-									<div>
-										{cell.getValue() ? "ANO" : "NE"}
+								{:else if cell.column.id === "actions"}
+									<div class="flex justify-end">
+										<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
+											Upravit
+										</a>
 									</div>
 								{:else}
-									{cell.getValue() ?? ""}
+									{cell.getValue()}
 								{/if}
-							</div>
+							</td>
 						{/each}
-						<div class="w-full md:w-1/8 flex items-center justify-end">
-							<a
-								href="/admin/menu/{row.original.id}"
-								data-sveltekit-preload-data
-								class="font-medium hover:underline">
-								Upravit
-							</a>
-						</div>
-					</div>
+					</tr>
 				{/each}
 			{:else}
-				<p>Žádná menu</p>
+				<tr>
+					<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4 text-center">
+						Žádná menu
+					</td>
+				</tr>
 			{/if}
-		</div>
-	{/key}
+			</tbody>
+		</table>
+	</div>
 </section>
 
 <style>
@@ -398,10 +420,8 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 100%;
     }
 
-    /* Přidáme responsivní styly pro mobilní zobrazení */
     @media (max-width: 768px) {
         :global(.loading-overlay) {
             display: flex;
