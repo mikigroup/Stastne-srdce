@@ -237,6 +237,31 @@
 			loading = false;
 		}
 	}
+
+	// Definice šířek sloupců podle typu
+	function getColumnWidth(column) {
+		switch(column) {
+			case 'date':
+				return 'md:w-1/12';
+			case 'soup':
+				return 'md:w-1/6';
+			case 'variants':
+				return 'md:w-1/3';
+			case 'active':
+				return 'md:w-1/12';
+			case 'notes':
+			case 'type':
+			case 'nutri':
+				return 'md:w-1/8';
+			default:
+				return 'md:w-1/12';
+		}
+	}
+
+	// Přidáno pro lepší zobrazení na mobilech
+	function getColumnNameForMobile(column) {
+		return columnNames[column] || "Neznámý";
+	}
 </script>
 
 <svelte:head>
@@ -290,7 +315,7 @@
 	</div>
 </section>
 
-<div class="flex justify-end dropdown">
+<div class="flex justify-end dropdown mb-4">
 	<button class="btn btn-outline" tabindex="0">Sloupce</button>
 	<ul
 		tabindex="0"
@@ -310,123 +335,79 @@
 </div>
 
 <section>
-	<div class="flex flex-wrap">
-		<!-- Nadpis tabulky -->
-		<div class="menu-table-header">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column}
-				<div class="menu-table-cell menu-cell-{column}">{columnNames[column]}</div>
-			{/each}
-			<div class="menu-table-cell menu-cell-edit">Editovat</div>
-		</div>
-
-		{#key transitionKey}
-			<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }} class="w-full">
-				{#if $navigating || loading}
-					<div transition:fade={{ duration: 300 }} class="loading-overlay">
-						<BarLoader size="120" color="black" unit="px" duration="1s" />
-					</div>
-				{:else if filteredMenus && filteredMenus.length > 0}
-					{#each $table.getRowModel().rows as row, index}
-						<div
-							in:fly={{ y: 50, duration: 300, delay: index * 50 }}
-							class="menu-table-row {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}">
-							{#each row.getVisibleCells() as cell}
-								<div
-									class="menu-table-cell menu-cell-{cell.column.id}"
-									title={cell.column.id === 'variants'
-                    ? formatVariantsText(cell.getValue())
-                    : cell.getValue() ?? ""}>
-									{#if cell.column.id === "variants"}
-										{formatVariantsText(cell.getValue())}
-									{:else}
-										{cell.getValue() ?? ""}
-									{/if}
-								</div>
-							{/each}
-							<div class="menu-table-cell menu-cell-edit">
-								<a
-									href="/admin/menu/{row.original.id}"
-									data-sveltekit-preload-data
-									class="font-medium hover:underline">
-									Upravit
-								</a>
-							</div>
-						</div>
-					{/each}
-				{:else}
-					<p>Žádná menu</p>
-				{/if}
+	<!-- Hlavička tabulky -->
+	<div class="hidden w-full gap-2 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
+		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
+			<div
+				class="w-full {getColumnWidth(column)} {index < columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1 ? 'border-r-2 pr-2' : ''} overflow-hidden text-ellipsis">
+				{columnNames[column]}
 			</div>
-		{/key}
+		{/each}
+		<div class="flex justify-end w-full md:w-1/8">
+			Editovat
+		</div>
 	</div>
+
+	{#key transitionKey}
+		<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }} class="w-full">
+			{#if $navigating || loading}
+				<div transition:fade={{ duration: 300 }} class="loading-overlay">
+					<BarLoader size="120" color="black" unit="px" duration="1s" />
+				</div>
+			{:else if filteredMenus && filteredMenus.length > 0}
+				{#each $table.getRowModel().rows as row, index}
+					<div
+						in:fly={{ y: 50, duration: 300, delay: index * 50 }}
+						class="w-full gap-2 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}">
+						{#each row.getVisibleCells() as cell}
+							<div
+								class="w-full {getColumnWidth(cell.column.id)} overflow-hidden flex items-center"
+								title={cell.column.id === 'variants' ? formatVariantsText(cell.getValue()) : cell.getValue() ?? ""}>
+								{#if cell.column.id === "variants"}
+									<div class="truncate">
+										{formatVariantsText(cell.getValue())}
+									</div>
+								{:else if cell.column.id === "active"}
+									<div>
+										{cell.getValue() ? "ANO" : "NE"}
+									</div>
+								{:else}
+									{cell.getValue() ?? ""}
+								{/if}
+							</div>
+						{/each}
+						<div class="w-full md:w-1/8 flex items-center justify-end">
+							<a
+								href="/admin/menu/{row.original.id}"
+								data-sveltekit-preload-data
+								class="font-medium hover:underline">
+								Upravit
+							</a>
+						</div>
+					</div>
+				{/each}
+			{:else}
+				<p>Žádná menu</p>
+			{/if}
+		</div>
+	{/key}
 </section>
 
 <style>
-    /* Tabulka s pevnou strukturou */
-    .menu-table-header {
-        display: flex;
-        width: 100%;
-        background-color: #718096;
-        color: white;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
-        font-weight: bold;
-    }
-
-    .menu-table-row {
-        display: flex;
-        width: 100%;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 0.25rem;
-        border: 1px solid #e2e8f0;
-        transition: all 0.2s;
-    }
-
-    .menu-table-row:hover {
-        background-color: #0e7490 !important;
-        color: white;
-    }
-
-    .menu-table-cell {
-        padding: 0.5rem;
+    .truncate {
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: normal;
-        word-break: break-word;
+        max-width: 100%;
     }
 
-    /* Pevné šířky pro sloupce */
-    .menu-cell-date {
-        width: 100px;
-        flex-shrink: 0;
-    }
-
-    .menu-cell-soup {
-        width: 150px;
-        flex-shrink: 0;
-    }
-
-    .menu-cell-variants {
-        flex: 1; /* Tento sloupec se roztáhne pro vyplnění zbývajícího prostoru */
-        min-width: 200px;
-    }
-
-    .menu-cell-active {
-        width: 80px;
-        flex-shrink: 0;
-        text-align: center;
-    }
-
-    .menu-cell-notes, .menu-cell-type, .menu-cell-nutri {
-        width: 120px;
-        flex-shrink: 0;
-    }
-
-    .menu-cell-edit {
-        width: 80px;
-        flex-shrink: 0;
-        text-align: right;
+    /* Přidáme responsivní styly pro mobilní zobrazení */
+    @media (max-width: 768px) {
+        :global(.loading-overlay) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
     }
 </style>
