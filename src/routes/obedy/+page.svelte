@@ -9,7 +9,6 @@
 	let { weeks, texts } = data;
 	let selectedWeek = 0;
 	let currentWeekMenus = weeks[0] || [];
-	console.log(data);
 	$: totalPieces = $totalPiecesStore;
 
 	function handleWeekSelect(event) {
