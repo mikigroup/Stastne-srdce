@@ -10,6 +10,8 @@
 		CategoryScale
 	} from "chart.js";
 	import { goto } from "$app/navigation";
+	import DateRangeSelector from "$lib/component/DateRangeSelector.svelte";
+	import { onMount } from "svelte";
 
 	Chart.register(
 		Title,
@@ -22,16 +24,56 @@
 
 	export let data;
 
-	$: orders = data.orders;
-	$: customers = data.customers;
+	// All data from the server
+	$: allOrders = data.orders;
+	$: allCustomers = data.customers;
 	$: todayOrders = data.todayOrders || [];
 	$: todayOrdersCount = data.todayOrdersCount || 0;
 	$: todayOrdersTotal = data.todayOrdersTotal || 0;
-	$: orderData = processOrderData(orders);
-	$: customerData = processCustomerData(customers);
-	$: currentMonthOrders = orders.length;
-	$: currentMonthCustomers = customers.length;
-	$: currentMonthRevenue = orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
+
+	// Filtered data based on selected date range
+	let filteredOrders = [];
+	let filteredCustomers = [];
+	let currentDateRange = '';
+	let startDate: string;
+	let endDate: string;
+
+	onMount(() => {
+		// Default to current month on initial load
+		const now = new Date();
+		startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+		endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+		filterDataByDateRange();
+	});
+
+	function handleRangeChange(event) {
+		const { startDate: start, endDate: end, formattedRange } = event.detail;
+		startDate = start;
+		endDate = end;
+		currentDateRange = formattedRange;
+		filterDataByDateRange();
+	}
+
+	function filterDataByDateRange() {
+		// Filter orders by date range
+		filteredOrders = allOrders.filter(order => {
+			const orderDate = new Date(order.created_at);
+			return orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
+		});
+
+		// Filter customers by date range (customers who registered in the period)
+		filteredCustomers = allCustomers.filter(customer => {
+			const customerDate = new Date(customer.created_at);
+			return customerDate >= new Date(startDate) && customerDate <= new Date(endDate);
+		});
+	}
+
+	// Process data for charts
+	$: orderData = processOrderData(filteredOrders);
+	$: customerData = processCustomerData(filteredCustomers);
+	$: currentRangeOrders = filteredOrders.length;
+	$: currentRangeCustomers = filteredCustomers.length;
+	$: currentRangeRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_price || 0), 0);
 
 	function processOrderData(orders) {
 		return orders.reduce((acc, order) => {
@@ -43,7 +85,7 @@
 				acc.push({ date, count: 1 });
 			}
 			return acc;
-		}, []);
+		}, []).sort((a, b) => a.date.localeCompare(b.date));
 	}
 
 	function processCustomerData(customers) {
@@ -51,7 +93,7 @@
 			const date = new Date(customer.created_at).toISOString().split("T")[0];
 			acc.push({ date, count: index + 1 });
 			return acc;
-		}, []);
+		}, []).sort((a, b) => a.date.localeCompare(b.date));
 	}
 
 	function formatCurrency(value) {
@@ -114,55 +156,54 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - Šťastné srdce</title>
+	<title>Dashboard</title>
 </svelte:head>
 
 <div class="p-4">
 	<h2 class="text-2xl font-bold mb-4">Dashboard</h2>
 
+	<!-- Date Range Selector -->
+	<DateRangeSelector on:rangeChange={handleRangeChange} />
+
 	<!-- Horní statistické karty -->
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-		<div class="card bg-base-100 shadow-xl">
+		<div class="card bg-base-100 shadow-xl border">
 			<div class="card-body">
-				<h2 class="card-title">Objednávky tento měsíc</h2>
-				<p class="text-4xl font-bold">{currentMonthOrders}</p>
+				<h2 class="card-title">Objednávky</h2>
+				<p class="text-4xl font-bold">{currentRangeOrders}</p>
 				<p class="text-sm text-gray-500">
-					{new Date().toLocaleDateString("cs-CZ", {
-						month: "long",
-						year: "numeric"
-					})}
+					{currentDateRange || "Aktuální měsíc"}
 				</p>
 			</div>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl">
+		<div class="card bg-base-100 shadow-xl border">
 			<div class="card-body">
-				<h2 class="card-title">Tržby tento měsíc</h2>
-				<p class="text-4xl font-bold">{formatCurrency(currentMonthRevenue)}</p>
+				<h2 class="card-title">Tržby</h2>
+				<p class="text-4xl font-bold">{formatCurrency(currentRangeRevenue)}</p>
 				<p class="text-sm text-gray-500">
-					{new Date().toLocaleDateString("cs-CZ", {
-						month: "long",
-						year: "numeric"
-					})}
+					{currentDateRange || "Aktuální měsíc"}
 				</p>
 			</div>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl">
+		<div class="card bg-base-100 shadow-xl border">
 			<div class="card-body">
-				<h2 class="card-title">Celkový počet zákazníků</h2>
-				<p class="text-4xl font-bold">{currentMonthCustomers}</p>
-				<p class="text-sm text-gray-500">K dnešnímu dni</p>
+				<h2 class="card-title">Noví zákazníci</h2>
+				<p class="text-4xl font-bold">{currentRangeCustomers}</p>
+				<p class="text-sm text-gray-500">
+					{currentDateRange || "Aktuální měsíc"}
+				</p>
 			</div>
 		</div>
 	</div>
 
 	<!-- Sekce dnešních objednávek -->
-	<div class="card bg-base-100 shadow-xl mb-8">
+	<div class="card bg-base-100 shadow-xl mb-8 border">
 		<div class="card-body">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="card-title">Objednávky za dnešní den</h2>
-				<div class="stats shadow">
+				<div class="stats shadow bg-gray-200 border">
 					<div class="stat">
 						<div class="stat-title">Počet</div>
 						<div class="stat-value">{todayOrdersCount}</div>
@@ -228,7 +269,7 @@
 					</table>
 				</div>
 			{:else}
-				<div class="alert alert-info">
+				<div class="alert">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 					</svg>
@@ -240,16 +281,28 @@
 
 	<!-- Grafy -->
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-		<div class="card bg-base-100 shadow-xl">
+		<div class="card bg-base-100 shadow-xl border">
 			<div class="card-body">
 				<h2 class="card-title">Vývoj objednávek</h2>
-				<Line data={orderChartData} options={{ responsive: true }} />
+				{#if orderData.length > 0}
+					<Line data={orderChartData} options={{ responsive: true }} />
+				{:else}
+					<div class="alert mt-4">
+						<span>Žádná data pro zobrazení v tomto období.</span>
+					</div>
+				{/if}
 			</div>
 		</div>
-		<div class="card bg-base-100 shadow-xl">
+		<div class="card bg-base-100 shadow-xl border">
 			<div class="card-body">
 				<h2 class="card-title">Růst zákazníků</h2>
-				<Line data={customerChartData} options={{ responsive: true }} />
+				{#if customerData.length > 0}
+					<Line data={customerChartData} options={{ responsive: true }} />
+				{:else}
+					<div class="alert mt-4">
+						<span>Žádná data pro zobrazení v tomto období.</span>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
