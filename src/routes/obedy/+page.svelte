@@ -3,12 +3,13 @@
 	import MenuWeekSelector from "./MenuWeekSelector.svelte";
 	import MenuItem from "./MenuItem.svelte";
 	import { page } from "$app/stores";
+	import * as querystring from "node:querystring";
 
 	export let data;
 	let { weeks, texts } = data;
 	let selectedWeek = 0;
 	let currentWeekMenus = weeks[0] || [];
-
+	console.log(data);
 	$: totalPieces = $totalPiecesStore;
 
 	function handleWeekSelect(event) {
