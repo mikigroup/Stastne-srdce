@@ -12,7 +12,7 @@
 		try {
 			const { data: profile, error } = await supabase
 				.from("profiles")
-				.select("username")
+				.select("first_name")
 				.eq("id", session.user.id)
 				.single();
 			if (error) {
@@ -109,8 +109,7 @@
 				<ul
 					tabindex="0"
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-					<li><a href="/">Šťastné srdce</a></li>
-
+					<li><a href="/">Klientská část</a></li>
 					<li><a href={$ROUTES.ADMIN.BASE}>Nástěnka</a></li>
 					<li><a href="/admin/customer">Zákazníci</a></li>
 					<li><a href="/admin/order">Objednávky</a></li>
@@ -127,7 +126,7 @@
 						<p>...</p>
 					{:then profile}
 						{#if profile}
-							<p>Vítej, {profile.username}!</p>
+							<p>Vítej, {profile.first_name}!</p>
 							<span class="pr-2">&nbsp;</span><Icon src={FaceSmile} size="26" />
 						{:else}
 							<p>Profil nenalezen.</p>

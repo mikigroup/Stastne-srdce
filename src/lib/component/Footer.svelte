@@ -13,7 +13,7 @@
 			</p>
 		</div>
 		<div class="grid justify-end col-span-3 text-sm">
-			<p>Šťastné srdce 2022 - 2025</p>
+			<p>Šťastné srdce s.r.o. 2022 - 2025</p>
 		</div>
 	</div>
 </footer>
