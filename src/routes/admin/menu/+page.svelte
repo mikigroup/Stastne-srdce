@@ -390,6 +390,8 @@
 									<div class="truncate max-w-full" title={formatVariantsText(cell.getValue())}>
 										{formatVariantsText(cell.getValue())}
 									</div>
+								{:else if cell.column.id === "date"}
+									{formatDateToCzech(cell.getValue())}
 								{:else if cell.column.id === "actions"}
 									<div class="flex justify-end">
 										<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
