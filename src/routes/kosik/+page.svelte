@@ -63,8 +63,15 @@
 	function handleOrderSubmit() {
 		return async ({ result }) => {
 			if (result.type === "success") {
-				CartItemsStore.clear();
-				await goto("/thankyou");
+				// Zkontroluje, zda máme redirectUrl ve výsledku
+				if (result.data?.redirectUrl) {
+					// Použije window.location pro přesměrování s uchováním košíku v localStorage
+					window.location.href = result.data.redirectUrl;
+				} else {
+					// Původní chování - vyčistit košík a přejít na děkovnou stránku
+					CartItemsStore.clear();
+					await goto("/thankyou");
+				}
 			} else {
 				console.error("Chyba při odesílání objednávky - page", result.error);
 			}

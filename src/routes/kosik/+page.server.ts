@@ -224,10 +224,13 @@ export const actions: Actions = {
 
 			console.log("Proces vytvoření objednávky dokončen");
 
+			// Místo přesměrování vrátíme úspěšný výsledek
+			// na klientské straně pak provedeme přesměrování
 			return {
 				success: true,
 				message: "Objednávka byla úspěšně vytvořena.",
-				orderId: insertedOrder.order_number
+				orderId: insertedOrder.order_number,
+				redirectUrl: `/thankyou?order=${insertedOrder.order_number}`
 			};
 		} catch (error) {
 			console.error("Chyba při vytváření objednávky:", error);
