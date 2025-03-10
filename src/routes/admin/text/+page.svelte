@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { enhance } from "$app/forms";
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import type { ActionData, PageData } from "./$types";
-	import { browser } from "$app/environment";
+	import Editor from "cl-editor/src/Editor.svelte";
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -11,15 +10,14 @@
 	let { texts, occupiedPositions } = data;
 	$: ({ texts, occupiedPositions } = data);
 
-	let html = "";  // Primární proměnná pro obsah
-	let Editor: any;
-	let colors = ["#000000"];
+	// Inicializace prázdným obsahem
+	let html = "";
 	let loading = false;
-	let title: string = "";
-	let selectedTextId: number = 0;
-	let existingContent: string = "";
-	let selectedPage: string = "hlavni";
-	let position: string = "";
+	let title = "";
+	let selectedTextId = 0;
+	let existingContent = "";
+	let selectedPage = "hlavni";
+	let position = "";
 
 	const pages = ["hlavni", "jidelnicek"];
 
@@ -30,13 +28,6 @@
 	];
 
 	$: filteredTexts = texts.filter((text) => text.page === selectedPage);
-
-	onMount(async () => {
-		if (browser) {
-			const module = await import("cl-editor");
-			Editor = module.default;
-		}
-	});
 
 	function loadText(textId: number) {
 		const text = texts.find((t) => t.id === textId);
@@ -55,7 +46,7 @@
 				p.id === text.id ? { ...p, position: text.position || "" } : p
 			);
 
-			console.log("Načtený text:", text);
+			console.log("Načtený text:", html);
 		}
 	}
 
@@ -70,6 +61,12 @@
 	function handlePageChange() {
 		selectedTextId = 0;
 		newText();
+
+		// Automaticky vybere první text na dané stránce, pokud existuje
+		const firstTextOnPage = texts.find(text => text.page === selectedPage);
+		if (firstTextOnPage) {
+			loadText(firstTextOnPage.id);
+		}
 	}
 
 	const handleSubmit: SubmitFunction = ({ formData }) => {
@@ -210,21 +207,19 @@
 				<div class="mt-10">
 					<h2 class="text-xl font-bold mb-2">Existující obsah:</h2>
 					<div class="border-gray-400 border rounded-2xl p-5 w-full">
-						{@html existingContent}
+						{@html html}
 					</div>
 				</div>
 
 				<div class="mt-10">
-					{#if browser && Editor}
-						<Editor
-							bind:html
-							{colors}
-							{actions}
-							on:change={(evt) => {
-								html = evt.detail;
-								console.log('Editor content changed:', html);
-							}} />
-					{/if}
+					<Editor
+						{html}
+						{actions}
+						on:change={(evt) => {
+							html = evt.detail;
+							console.log('Editor content changed:', html);
+						}}
+					/>
 				</div>
 			</div>
 
