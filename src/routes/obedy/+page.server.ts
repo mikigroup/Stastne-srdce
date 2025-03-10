@@ -48,7 +48,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			supabase.from("allergens").select("*").order("number")
 		]);
 
-		// Seřazení menu podle data
+		// Seřazení menu podle data s ošetřením možných null hodnot
 		loadedMenus.sort((a, b) => {
 			// Pokud některé datum chybí, umístíme ho na konec
 			if (!a.date) return 1;
@@ -56,24 +56,41 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			return a.date.localeCompare(b.date);
 		});
 
-		// Rozdělení menu do týdnů
+		// ===== UPRAVENÁ LOGIKA PRO ROZDĚLENÍ MENU DO TÝDNŮ =====
+
+		// Rozdělíme menu do týdnů po 7 dnech (počínaje aktuálním datem)
 		const weeks: Menu[][] = [[], [], [], []];
 
-		if (loadedMenus.length <= 4) {
-			loadedMenus.forEach((menu, index) => {
-				weeks[index].push(menu);
-			});
-		} else {
-			const menusPerWeek = Math.ceil(loadedMenus.length / 4);
-			loadedMenus.forEach((menu, index) => {
-				const weekIndex = Math.min(Math.floor(index / menusPerWeek), 3);
-				weeks[weekIndex].push(menu);
-			});
+		// Vytvoříme hraniční data pro rozdělení týdnů
+		const weekBoundaries: Date[] = [];
+		let tempDate = new Date(currentDate);
+
+		// Vytvoříme hraniční data pro 4 týdny
+		for (let i = 0; i < 4; i++) {
+			weekBoundaries.push(new Date(tempDate));
+			tempDate.setDate(tempDate.getDate() + 7);
+		}
+		// Přidáme ještě jedno hraniční datum pro poslední týden
+		weekBoundaries.push(new Date(tempDate));
+
+		// Rozdělíme menu do příslušných týdnů
+		for (const menu of loadedMenus) {
+			if (!menu.date) continue;
+
+			const menuDate = new Date(menu.date);
+
+			// Najdeme správný týden pro toto menu
+			for (let i = 0; i < 4; i++) {
+				if (menuDate >= weekBoundaries[i] && menuDate < weekBoundaries[i + 1]) {
+					weeks[i].push(menu);
+					break;
+				}
+			}
 		}
 
 		return {
 			menus: loadedMenus,
-			weeks,
+			weeks: weeks,
 			startDate: currentDate.toISOString(),
 			endDate: new Date(
 				currentDate.getTime() + 27 * 24 * 60 * 60 * 1000
