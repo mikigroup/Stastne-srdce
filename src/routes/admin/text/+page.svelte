@@ -11,7 +11,7 @@
 	let { texts, occupiedPositions } = data;
 	$: ({ texts, occupiedPositions } = data);
 
-	let html = "";
+	let html = "";  // Primární proměnná pro obsah
 	let Editor: any;
 	let colors = ["#000000"];
 	let loading = false;
@@ -24,17 +24,9 @@
 	const pages = ["hlavni", "jidelnicek"];
 
 	const actions = [
-		"p",
-		"hr",
-		"b",
-		"i",
-		"undo",
-		"redo",
-		"left",
-		"right",
-		"center",
-		"justify",
-		"viewHtml"
+		"left", "right", "center", "justify", "p", "hr",
+		"b", "i", "u", "strike", "h2", "blockquote",
+		"ol", "ul", "a", "removeFormat", "undo", "redo", "viewHtml"
 	];
 
 	$: filteredTexts = texts.filter((text) => text.page === selectedPage);
@@ -51,7 +43,10 @@
 		if (text) {
 			selectedTextId = text.id;
 			title = text.title || "";
+
+			// Nastavení HTML přímo přes reaktivní proměnnou
 			html = text.text || "";
+
 			existingContent = text.text || "";
 			selectedPage = text.page || "hlavni";
 			position = text.position || "";
@@ -59,13 +54,15 @@
 			occupiedPositions = occupiedPositions.map((p) =>
 				p.id === text.id ? { ...p, position: text.position || "" } : p
 			);
+
+			console.log("Načtený text:", text);
 		}
 	}
 
 	function newText() {
 		selectedTextId = 0;
 		title = "";
-		html = "";
+		html = "";  // Vyčištění obsahu
 		existingContent = "";
 		position = "";
 	}
@@ -79,8 +76,6 @@
 		const submittedTitle = formData.get("title") as string;
 		const submittedText = formData.get("text") as string;
 		const submittedPage = formData.get("page") as string;
-		const submittedId = formData.get("id") as string;
-		const submittedPosition = formData.get("position") as string;
 
 		if (!submittedText || !submittedPage) {
 			alert("Text a stránka jsou povinné");
@@ -116,6 +111,8 @@
 			);
 			if (confirmed) {
 				selectedTextId = occupiedPosition.id;
+				// Automaticky načteme text obsazené pozice
+				loadText(occupiedPosition.id);
 			} else {
 				position = "";
 			}
@@ -124,8 +121,8 @@
 </script>
 
 <svelte:head>
-	<title>Editor</title>
-	<meta name="description" content="" />
+	<title>Editor textů</title>
+	<meta name="description" content="Editor textů pro různé stránky" />
 </svelte:head>
 
 <section class="flex justify-center container">
@@ -156,27 +153,26 @@
 						disabled={!selectedPage}>
 						<option value={0}>Vyberte text</option>
 						{#each filteredTexts as text}
-							<option value={text.id} selected={selectedTextId === text.id}
-								>{text.title}</option>
+							<option value={text.id} selected={selectedTextId === text.id}>
+								{text.title || 'Bez nadpisu'}
+							</option>
 						{/each}
 					</select>
-					<button type="button" class="btn btn-outline" on:click={newText}
-						>Nový text</button>
+					<button type="button" class="btn btn-outline" on:click={newText}>
+						Nový text
+					</button>
 				</div>
+
 				{#if selectedPage === "hlavni"}
 					<div class="py-5">
-						<label for="">Umístění</label><br />
+						<label>Umístění</label><br />
 						<div class="flex gap-4">
 							{#each ["left", "center", "right"] as pos}
-								<div class="">
+								<div>
 									<div>
-										{pos === "left"
-											? "Levý"
-											: pos === "center"
-												? "Střed"
-												: "Pravý"}
+										{pos === "left" ? "Levý" : pos === "center" ? "Střed" : "Pravý"}
 									</div>
-									<div class="">
+									<div>
 										<input
 											type="radio"
 											name="position"
@@ -193,6 +189,7 @@
 						</div>
 					</div>
 				{/if}
+
 				{#if selectedPage !== "jidelnicek"}
 					<div class="py-5">
 						<label for="title">Nadpis</label><br />
@@ -209,6 +206,7 @@
 				{/if}
 
 				<input type="hidden" name="text" bind:value={html} />
+
 				<div class="mt-10">
 					<h2 class="text-xl font-bold mb-2">Existující obsah:</h2>
 					<div class="border-gray-400 border rounded-2xl p-5 w-full">
@@ -222,10 +220,14 @@
 							bind:html
 							{colors}
 							{actions}
-							on:change={(evt) => (html = evt.detail)} />
+							on:change={(evt) => {
+								html = evt.detail;
+								console.log('Editor content changed:', html);
+							}} />
 					{/if}
 				</div>
 			</div>
+
 			<button
 				disabled={loading ||
 					!html ||
@@ -235,6 +237,7 @@
 				class="btn btn-outline mt-4">
 				{loading ? "Ukládá se..." : "Potvrdit změnu"}
 			</button>
+
 			{#if form?.message}
 				<div class="flex w-full p-2 my-4 border rounded-lg">
 					<p
@@ -247,3 +250,8 @@
 		</form>
 	</div>
 </section>
+
+<style>
+    .success { color: green; }
+    .error { color: red; }
+</style>
