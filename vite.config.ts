@@ -1,16 +1,5 @@
 import { sentrySvelteKit } from "@sentry/sveltekit";
-/* import { sveltekit } from '@sveltejs/kit/vite';
-import type { UserConfig } from 'vite';
-
-const config: UserConfig = {
-	plugins: [sveltekit()]
-};
-
-export default config;
- */
-
 import { defineConfig } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 

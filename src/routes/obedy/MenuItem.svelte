@@ -62,8 +62,8 @@
 	}
 </script>
 
-<div class="p-2 my-3 border rounded-lg bg-stone-100">
-	<div class="py-1 bg-green-800 border rounded-lg shadow-md sm:py-3">
+<div class="p-2 my-3 border rounded-lg bg-stone-100 border-gray-500">
+	<div class="py-1 bg-green-800 rounded-lg shadow-md sm:py-3 mt-5">
 		<p class="pl-3 text-2xl font-bold tracking-tight text-gray-200">
 			{formatDate(menu.date)}
 		</p>

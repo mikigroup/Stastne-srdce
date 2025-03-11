@@ -14,7 +14,7 @@
 		</h1>
 
 		<div class="max-w-4xl mx-auto">
-			<div class="bg-white border-2 rounded-lg shadow-md p-8">
+			<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
 				<div class="prose prose-lg max-w-none">
 					<p class="mb-6 text-lg font-medium text-gray-700">
 						Po pár letech opět obnovujeme činnost naší dietologické poradny. Přiměla nás k tomu
@@ -81,7 +81,7 @@
 					<h2 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Diagnostické metody</h2>
 
 					<div class="grid md:grid-cols-2 gap-6 mb-8">
-						<div class="bg-gray-50 p-5 rounded-lg border shadow-sm">
+						<div class="bg-gray-50 p-5 rounded-lg border shadow-sm border-gray-400">
 							<h3 class="text-xl font-semibold mb-3 text-gray-800">InBody analýza</h3>
 							<p>
 								Pro hodnocení složení těla a změny v tělesném složení využíváme přístroje InBody 230 a InBody
@@ -90,7 +90,7 @@
 							</p>
 						</div>
 
-						<div class="bg-gray-50 p-5 rounded-lg border shadow-sm">
+						<div class="bg-gray-50 p-5 rounded-lg border shadow-sm border-gray-400">
 							<h3 class="text-xl font-semibold mb-3 text-gray-800">Max Pulse diagnostika</h3>
 							<p>
 								Pro diagnostiku kardiovaskulárního systému, stresu a činnosti autonomního
@@ -114,7 +114,7 @@
 
 					<h2 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Bemer terapie</h2>
 
-					<div class="flex flex-col md:flex-row gap-6 items-center mb-6 bg-gray-50 p-5 rounded-lg border">
+					<div class="flex flex-col md:flex-row gap-6 items-center mb-6 bg-gray-50 p-5 rounded-lg border border-gray-400">
 						<div class="md:w-3/4">
 							<p>
 								Kromě diagnostických metod nabízíme i cévní fyzikální rehabilitační terapii prováděnou na

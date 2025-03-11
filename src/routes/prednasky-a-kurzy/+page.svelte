@@ -15,7 +15,7 @@
 
 		<div class="max-w-4xl mx-auto">
 			<!-- Sekce Přednášky -->
-			<div class="bg-white border-2 rounded-lg shadow-md p-8 mb-8">
+			<div class="bg-white border rounded-lg shadow-md p-8 mb-8 border-gray-400">
 				<h2 class="text-3xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
 					Přednášky
 				</h2>
@@ -39,7 +39,7 @@
 					</p>
 
 					<div class="flex flex-col md:flex-row gap-6 my-8">
-						<div class="md:w-1/2 bg-gray-50 p-5 rounded-lg border shadow-sm">
+						<div class="md:w-1/2 bg-gray-50 p-5 rounded-lg border shadow-sm border-gray-400">
 							<h3 class="text-xl font-semibold mb-3 text-gray-800">Dodatečné služby</h3>
 							<p>
 								Na přednášku může volně navázat provádění analýzy tělesného složení na přístroji InBody
@@ -47,7 +47,7 @@
 							</p>
 						</div>
 
-						<div class="md:w-1/2 bg-gray-50 p-5 rounded-lg border shadow-sm">
+						<div class="md:w-1/2 bg-gray-50 p-5 rounded-lg border border-gray-400 shadow-sm">
 							<h3 class="text-xl font-semibold mb-3 text-gray-800">Cena</h3>
 							<p>
 								Cena přednášky se stanovuje dohodou a zahrnuje i cestovné.
@@ -58,7 +58,7 @@
 			</div>
 
 			<!-- Sekce Školení -->
-			<div class="bg-white border-2 rounded-lg shadow-md p-8">
+			<div class="bg-white border border-gray-400 rounded-lg shadow-md p-8 border-gray-400">
 				<h2 class="text-3xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200">
 					Školení
 				</h2>
@@ -69,7 +69,7 @@
 						vaření s netradičními surovinami.
 					</p>
 
-					<div class="bg-gray-50 p-5 rounded-lg border shadow-sm">
+					<div class="bg-gray-50 p-5 rounded-lg border border-gray-400 shadow-sm">
 						<h3 class="text-xl font-semibold mb-3 text-gray-800">Cena</h3>
 						<p>
 							Cena školení se stanovuje dohodou a zahrnuje i cestovné.

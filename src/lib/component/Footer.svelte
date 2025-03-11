@@ -1,4 +1,4 @@
-<footer class="border-2 rounded-lg mt-40 flex justify-center">
+<footer class="border rounded-lg mt-40 flex justify-center border-gray-300">
 	<div class="grid p-4 text-gray-500 md:grid-cols-5 md:mx-2 w-3/4">
 		<div class="grid col-span-2 text-sm">
 			<p>

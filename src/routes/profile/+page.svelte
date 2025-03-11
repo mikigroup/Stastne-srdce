@@ -78,7 +78,7 @@
       use:enhance={handleSubmit}
       bind:this={profileForm}
     >
-      <div class="max-w-4xl p-5 pb-2 mx-auto bg-white border-2 rounded-lg lg:mx-auto">
+      <div class="max-w-4xl p-5 pb-2 mx-auto bg-white border rounded-lg lg:mx-auto">
         <div class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg">
           <div class="my-2">
             <div class="flex flex-col items-center md:flex-row">

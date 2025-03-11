@@ -115,7 +115,7 @@
 							</div>
 						{:else}
 							{#each cartItems as cartItem, i (cartItem.id)}
-								<div class="mb-5 border-2 rounded-lg bg-stone-100">
+								<div class="mb-5 border rounded-lg bg-stone-100">
 									<div class="text-center rounded-lg bg-slate-300">
 										<p><strong>Den</strong></p>
 									</div>
@@ -189,9 +189,9 @@
 
 					<!-- Desktop cart header -->
 					<div
-						class="hidden max-w-screen-2xl px-4 py-4 mx-auto mt-5 border-2 rounded-lg md:grid">
+						class="hidden max-w-screen-2xl px-4 py-2 mx-auto mt-5 border rounded-lg md:grid border-gray-300 bg-slate-300">
 						<div
-							class="grid items-center grid-cols-12 p-2 pl-5 text-lg border rounded-lg bg-slate-300 text-center font-light">
+							class="grid items-center grid-cols-12 pl-5 text-lg rounded-lg text-center font-light">
 							<div class="col-span-1 border-r border-white">
 								<p>Den</p>
 							</div>
@@ -212,7 +212,7 @@
 
 					<!-- Desktop cart -->
 					<div
-						class="hidden max-w-screen-2xl p-4 mx-auto border-2 rounded-lg md:grid bg-orange-50">
+						class="hidden max-w-screen-2xl p-4 mx-auto border border-gray-300 rounded-lg md:grid bg-orange-50">
 						{#if !cartItems.length}
 							<div
 								class="flex flex-col items-center justify-center w-full overflow-hidden">
@@ -223,8 +223,8 @@
 						{:else}
 							{#each cartItems as cartItem (cartItem.id)}
 								<div
-									class="items-center hidden pl-5 text-lg border-2 rounded-lg md:grid-cols-12 bg-stone-100 md:grid py-7 my-1">
-									<div class="col-span-1 text-center border-r-2">
+									class="items-center hidden pl-5 text-lg border border-gray-400 rounded-lg md:grid-cols-12 bg-stone-100 md:grid py-7 my-1">
+									<div class="col-span-1 text-center border-r">
 										<p class="">
 											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
 												month: "long",
@@ -232,11 +232,11 @@
 											})}
 										</p>
 									</div>
-									<div class="col-span-2 pl-5 border-r-2">
+									<div class="col-span-2 pl-5 border-r">
 										<p>{truncateText(cartItem.soup, 30)}</p>
 									</div>
 									<div
-										class="col-span-5 pl-5 border-r-2 mr-1 flex gap-2 flex-col">
+										class="col-span-5 pl-5 border-r mr-1 flex gap-2 flex-col">
 										{#each cartItem.variants as variant, index}
 											<div class="">
 												{index + 1}. {truncateText(variant.description, 50)}
@@ -290,11 +290,11 @@
 
 					<!-- Total and checkout -->
 					{#if cartItems.length}
-						<div class="mt-5 border-2 rounded-lg">
-							<div class="grid p-5 border-b-2">
+						<div class="mt-5 border rounded-lg border-gray-300">
+							<div class="grid p-5 border-b">
 								<label for="note">Poznámka</label>
 								<textarea
-									class="bg-gray-50 border rounded-lg block w-full p-2.5 focus:outline-none focus:border-green-600 mb-5"
+									class="bg-gray-50 border rounded-lg block w-full p-2.5 focus:outline-none focus:border-green-600 mb-5 border-gray-300"
 									id="note"
 									name="note"
 									rows="4"
@@ -302,7 +302,7 @@
 									placeholder="poznámka k objednávce" />
 							</div>
 
-							<div class="grid p-5 border-b-2 justify-items-end">
+							<div class="grid p-5 border-b justify-items-end">
 								{#if $page.data.session}
 									<p class="text-sm text-gray-500">
 										Máte již vyplněný

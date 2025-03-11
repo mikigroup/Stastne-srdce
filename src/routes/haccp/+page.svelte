@@ -14,7 +14,7 @@
     </h1>
 
     <div class="max-w-4xl mx-auto">
-      <div class="bg-white border-2 rounded-lg shadow-md p-8">
+      <div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
         <div class="prose prose-lg max-w-none">
           <div class="mb-8 text-lg font-medium text-center bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
             <p>
