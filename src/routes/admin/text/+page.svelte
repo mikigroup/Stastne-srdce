@@ -151,21 +151,27 @@
 		}
 	}
 
-	// Vytvoření nového textu
-	function newText() {
-		loadText(0);
+	// Reset formuláře
+	function resetForm() {
+		selectedTextId = 0;
+		title = "";
+		html = "";
+		setEditorContent("");
+		position = "";
 	}
 
 	// Změna vybrané stránky
 	function handlePageChange() {
 		selectedTextId = 0;
-		newText();
+		html = "";
+		title = "";
+		position = "";
 
-		// Automaticky vybere první text na dané stránce, pokud existuje
+		// Automaticky vybere existující text pro tuto stránku, pokud existuje
 		if (texts) {
-			const firstTextOnPage = texts.find(text => text.page === selectedPage);
-			if (firstTextOnPage) {
-				loadText(firstTextOnPage.id);
+			const existingText = texts.find(text => text.page === selectedPage);
+			if (existingText) {
+				loadText(existingText.id);
 			}
 		}
 	}
@@ -191,7 +197,7 @@
 		}
 
 		// Pro jídelníček není nadpis povinný
-		if (submittedPage !== "obedy" && !submittedTitle) {
+		if (submittedPage !== "jidelnicek" && !submittedTitle) {
 			alert("Název je povinný pro všechny stránky kromě jídelníčku");
 			return;
 		}
@@ -203,8 +209,11 @@
 
 			if (result.type === "success") {
 				console.log("Text uložen úspěšně");
+				// Obnovit stránku pro načtení aktuálních dat
+				setTimeout(() => window.location.reload(), 1000);
 			} else {
 				console.error("Chyba při ukládání:", result.error);
+				alert("Chyba při ukládání: " + (result.error?.message || "Neznámá chyba"));
 			}
 		};
 	};
@@ -302,10 +311,9 @@
 				</div>
 
 				<!-- Výběr textu -->
-				{#if selectedPage === "hlavni"}
 				<div class="mb-6">
 					<label for="text-select" class="block text-sm font-medium text-gray-700 mb-2">
-						Vyberte text
+						{selectedPage === "jidelnicek" ? "Jídelníček" : "Vyberte text"}
 					</label>
 					<div class="flex flex-col md:flex-row md:items-center gap-4">
 						<input type="hidden" name="id" value={selectedTextId} />
@@ -315,22 +323,18 @@
 							bind:value={selectedTextId}
 							on:change={() => loadText(selectedTextId)}
 							disabled={!selectedPage}>
-							<option value={0}>Vyberte text</option>
-							{#each filteredTexts as text}
-								<option value={text.id} selected={selectedTextId === text.id}>
-									{text.title || `ID ${text.id} (bez nadpisu)`}
-								</option>
-							{/each}
+							{#if filteredTexts.length === 0}
+								<option value={0}>Text pro tuto stránku</option>
+							{:else}
+								{#each filteredTexts as text}
+									<option value={text.id} selected={selectedTextId === text.id}>
+										{text.title || `ID ${text.id} (bez nadpisu)`}
+									</option>
+								{/each}
+							{/if}
 						</select>
-						<!--<button
-							type="button"
-							class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition duration-200"
-							on:click={newText}>
-							Nový text
-						</button>-->
 					</div>
 				</div>
-				{/if}
 
 				<!-- Umístění (pouze pro stránku "hlavni") -->
 				{#if selectedPage === "hlavni"}
@@ -358,23 +362,19 @@
 					<input type="hidden" name="position" value="" />
 				{/if}
 
-				<!-- Nadpis (není povinný pro stránku "obedy") -->
-				{#if selectedPage !== "obedy"}
-					<div class="mb-6">
-						<!--<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-							Nadpis
-						</label>-->
-						<input
-							class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-							id="title"
-							name="title"
-							type="text"
-							bind:value={title}
-							required={selectedPage !== "obedy"} />
-					</div>
-				{:else}
-					<input type="hidden" name="title" value="" />
-				{/if}
+				<!-- Nadpis (není povinný pro stránku "jidelnicek") -->
+				<div class="mb-6">
+					<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+						Nadpis
+					</label>
+					<input
+						class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+						id="title"
+						name="title"
+						type="text"
+						bind:value={title}
+						required={selectedPage !== "jidelnicek"} />
+				</div>
 
 				<!-- Skrytý input pro odeslání obsahu -->
 				<input type="hidden" name="text" value={html} />
@@ -387,7 +387,7 @@
 							type="button"
 							title={action.title}
 							class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200"
-							on:click={() => execCommand(action.cmd)}>
+							on:click={() => action.result ? action.result() : execCommand(action.cmd)}>
 							{@html action.icon}
 						</button>
 					{/each}
@@ -436,10 +436,10 @@
 			<!-- Tlačítka a zpětná vazba -->
 			<div class="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<button
-					disabled={loading || !html || !selectedPage || (selectedPage !== "obedy" && !title)}
+					disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && !title)}
 					type="submit"
 					class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
-					{loading ? "Ukládá se..." : "Potvrdit změnu"}
+					{loading ? "Ukládá se..." : "Uložit text"}
 				</button>
 
 				{#if form?.message}

@@ -89,7 +89,7 @@
 </script>
 
 <nav class="m-2" data-sveltekit-preload-data="hover">
-	<div class="navbar border-cyan-500 border rounded-2xl !py-0 bg-[#4281BB] antialiased text-[#0A0A0A]">
+	<div class="navbar rounded-2xl !py-0 bg-[#00adad] antialiased text-[#0A0A0A] ">
 		<div class="navbar-start">
 			<div class="dropdown">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle">
