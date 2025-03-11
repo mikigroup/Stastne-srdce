@@ -4,13 +4,15 @@
 	import {
 		createSvelteTable,
 		getCoreRowModel,
+		getSortedRowModel,
 		flexRender
 	} from "@tanstack/svelte-table";
 	import type {
 		ColumnDef,
 		TableOptions,
 		VisibilityState,
-		OnChangeFn
+		OnChangeFn,
+		SortingState
 	} from "@tanstack/svelte-table";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
@@ -47,6 +49,12 @@
 
 	let loading = false;
 	let searchInput = searchQuery;
+	let transitionKey = 0; // Pro klíčované přechody
+
+	// Výchozí stav řazení - řadíme podle data
+	let sorting: SortingState = [
+		{ id: 'date', desc: true } // Výchozí řazení podle data sestupně
+	];
 
 	// Navigate to new menu page
 	function newMenuPage() {
@@ -122,6 +130,22 @@
 		saveTableSettings(visibleColumns);
 	};
 
+	// Callback funkce pro aktualizaci řazení
+	const setSorting: OnChangeFn<SortingState> = updater => {
+		if (updater instanceof Function) {
+			sorting = updater(sorting);
+		} else {
+			sorting = updater;
+		}
+		options.update(old => ({
+			...old,
+			state: {
+				...old.state,
+				sorting,
+			},
+		}));
+	};
+
 	// Save table settings to user profile
 	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
@@ -166,6 +190,9 @@
 			key === 'soup' ? 150 :
 				key === 'date' ? 100 :
 					key === 'active' ? 80 : 100,
+		// Pro některé sloupce budeme používat speciální řazení
+		enableSorting: key !== 'variants', // Zakážeme řazení pro sloupce, které jsou pole
+		sortingFn: key === 'date' ? 'datetime' : 'alphanumeric',
 		cell: info => {
 			const value = info.getValue();
 			if (key === "date") {
@@ -184,6 +211,7 @@
 		id: 'actions',
 		header: 'Editovat',
 		size: 80,
+		enableSorting: false, // Zakážeme řazení pro sloupec akcí
 		cell: info => {
 			return {
 				id: info.row.original.id,
@@ -193,13 +221,16 @@
 
 	// Create table options
 	const options = writable<TableOptions<any>>({
-		data: filteredMenus,
+		data: filteredMenus || [],
 		columns,
 		state: {
 			columnVisibility: visibleColumns,
+			sorting, // Přidáme výchozí stav řazení
 		},
 		onColumnVisibilityChange: setColumnVisibility,
+		onSortingChange: setSorting, // Přidáme handler pro změnu řazení
 		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(), // Přidáme model pro řazení
 		enableColumnResizing: true,
 		columnResizeMode: 'onChange',
 		debugTable: false,
@@ -215,8 +246,6 @@
 			data: filteredMenus,
 		}));
 	}
-
-	let transitionKey = 0;
 
 	// Navigate to previous page
 	async function previousPage() {
@@ -267,10 +296,10 @@
 	<title>LEO - Menu</title>
 </svelte:head>
 
-<div class="flex justify-between">
+<div class="flex justify-between mb-4">
 	<div class="flex flex-col gap-2 md:flex-row items-center">
 		<button on:click={newMenuPage} class="btn btn-outline">
-			Vytvořit menu
+			Vytvořit
 		</button>
 
 		<div class="flex gap-2">
@@ -336,86 +365,110 @@
 	</ul>
 </div>
 
-<section>
-	<!-- Nová tabulka používající TanStack Table -->
-	<div class="overflow-x-auto border rounded-xl shadow-sm">
-		<table class="min-w-full divide-y divide-gray-200">
-			<thead class="bg-gray-400">
-			{#each $table.getHeaderGroups() as headerGroup}
-				<tr>
-					{#each headerGroup.headers as header}
-						<th
-							class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
-							style="width: {header.getSize()}px; position: relative;"
-						>
-							{#if !header.isPlaceholder}
-								<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
-									{header.column.columnDef.header}
-								</div>
-							{/if}
-							{#if header.column.getCanResize()}
-								<div
-									class="resizer"
-									on:mousedown={header.getResizeHandler()}
-									on:touchstart={header.getResizeHandler()}
-									class:isResizing={header.column.getIsResizing()}
-								></div>
-							{/if}
-						</th>
-					{/each}
-				</tr>
-			{/each}
-			</thead>
-			<tbody class="bg-white divide-y divide-gray-200">
-			{#if $navigating || loading}
-				<tr>
-					<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4">
-						<div class="loading-overlay flex justify-center">
-							<BarLoader size="120" color="black" unit="px" duration="1s" />
-						</div>
-					</td>
-				</tr>
-			{:else if filteredMenus && filteredMenus.length > 0}
-				{#each $table.getRowModel().rows as row, index}
-					<tr
-						class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
-						in:fly={{ y: 50, duration: 300, delay: index * 50 }}
-					>
-						{#each row.getVisibleCells() as cell}
-							<td
-								class="px-4 py-3"
-								style="width: {cell.column.getSize()}px;"
+{#key transitionKey}
+	<section in:fade={{ duration: 300 }} out:fade={{ duration: 150 }}>
+		<!-- Sémantická tabulka používající TanStack Table -->
+		<div class="overflow-x-auto border border-gray-500 rounded-xl shadow-sm">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-300 border-b-gray-700 border">
+				{#each $table.getHeaderGroups() as headerGroup}
+					<tr>
+						{#each headerGroup.headers as header}
+							<th
+								class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
+								style="width: {header.getSize()}px; position: relative;"
 							>
-								{#if cell.column.id === "variants"}
-									<div class="truncate max-w-full" title={formatVariantsText(cell.getValue())}>
-										{formatVariantsText(cell.getValue())}
-									</div>
-								{:else if cell.column.id === "date"}
-									{formatDateToCzech(cell.getValue())}
-								{:else if cell.column.id === "actions"}
-									<div class="flex justify-end">
-										<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
-											Upravit
-										</a>
+								{#if !header.isPlaceholder && header.column.getCanSort()}
+									<!-- Řaditelné hlavičky -->
+									<div
+										class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'} cursor-pointer select-none"
+										on:click={header.column.getToggleSortingHandler()}
+										role="button"
+										title="Seřadit podle {header.column.columnDef.header}"
+									>
+										{header.column.columnDef.header}
+										<!-- Indikátor řazení -->
+										<span class="ml-2">
+										{#if header.column.getIsSorted() === "asc"}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>
+										{:else if header.column.getIsSorted() === "desc"}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+										{:else}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down opacity-20"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+										{/if}
+									</span>
 									</div>
 								{:else}
-									{cell.getValue()}
+									<!-- Neřaditelné hlavičky -->
+									<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
+										{header.column.columnDef.header}
+									</div>
 								{/if}
-							</td>
+
+								{#if header.column.getCanResize()}
+									<div
+										class="resizer"
+										on:mousedown={header.getResizeHandler()}
+										on:touchstart={header.getResizeHandler()}
+										class:isResizing={header.column.getIsResizing()}
+									></div>
+								{/if}
+							</th>
 						{/each}
 					</tr>
 				{/each}
-			{:else}
-				<tr>
-					<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4 text-center">
-						Žádná menu
-					</td>
-				</tr>
-			{/if}
-			</tbody>
-		</table>
-	</div>
-</section>
+				</thead>
+				<tbody class="bg-white divide-y divide-gray-200">
+				{#if $navigating || loading}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4">
+							<div class="loading-overlay flex justify-center">
+								<BarLoader size="120" color="black" unit="px" duration="1s" />
+							</div>
+						</td>
+					</tr>
+				{:else if filteredMenus && filteredMenus.length > 0}
+					{#each $table.getRowModel().rows as row, index}
+						<tr
+							class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
+							in:fly={{ y: 50, duration: 300, delay: index * 50 }}
+						>
+							{#each row.getVisibleCells() as cell}
+								<td
+									class="px-4 py-3"
+									style="width: {cell.column.getSize()}px;"
+								>
+									{#if cell.column.id === "variants"}
+										<div class="truncate max-w-full" title={formatVariantsText(cell.getValue())}>
+											{formatVariantsText(cell.getValue())}
+										</div>
+									{:else if cell.column.id === "date"}
+										{formatDateToCzech(cell.getValue())}
+									{:else if cell.column.id === "actions"}
+										<div class="flex justify-end">
+											<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
+												Upravit
+											</a>
+										</div>
+									{:else}
+										{cell.getValue()}
+									{/if}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				{:else}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4 text-center">
+							Žádná menu
+						</td>
+					</tr>
+				{/if}
+				</tbody>
+			</table>
+		</div>
+	</section>
+{/key}
 
 <style>
     .truncate {
@@ -424,12 +477,45 @@
         text-overflow: ellipsis;
     }
 
+    .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 5px;
+        background: rgba(0, 0, 0, 0.1);
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+    }
+
+    .resizer.isResizing {
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 1;
+    }
+
+    @media (hover: hover) {
+        .resizer {
+            opacity: 0;
+        }
+
+        *:hover > .resizer {
+            opacity: 1;
+        }
+    }
+
     @media (max-width: 768px) {
         :global(.loading-overlay) {
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2rem;
+        }
+
+        /* Responzivní úpravy pro mobilní zobrazení */
+        table {
+            display: block;
+            overflow-x: auto;
         }
     }
 </style>

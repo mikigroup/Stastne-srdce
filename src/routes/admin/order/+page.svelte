@@ -6,7 +6,15 @@
 		flexRender,
 		getCoreRowModel
 	} from "@tanstack/svelte-table";
-	import type { ColumnDef, TableOptions } from "@tanstack/svelte-table";
+	import type {
+		ColumnDef,
+		TableOptions,
+		VisibilityState,
+		OnChangeFn
+	} from "@tanstack/svelte-table";
+	import { BarLoader } from "svelte-loading-spinners";
+	import { navigating } from "$app/stores";
+	import { fade, fly } from "svelte/transition";
 
 	export let data;
 
@@ -19,7 +27,8 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	} = data;
 	$: ({
 		session,
@@ -30,21 +39,16 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		itemsPerPage
+		itemsPerPage,
+		searchQuery
 	} = data);
 
 	let loading = false;
-	let filterDate = "";
-	let filterActive = "";
-	let searchQuery = "";
-	let searchInput = searchQuery;
+	let searchInput = searchQuery || "";
+	let transitionKey = 0; // Pro klíčované přechody
 
 	function newOrderPage() {
-		const route = {
-			NEW_ORDER: "/admin/order/neworder"
-		} as const;
-
-		goto(route.NEW_ORDER);
+		goto("/admin/order/neworder");
 	}
 
 	function formatDateToCzech(date) {
@@ -55,6 +59,10 @@
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
+	}
+
+	function formatPayState(pay_state: boolean) {
+		return pay_state ? "Zaplaceno" : "Nezaplaceno";
 	}
 
 	const columnNames = {
@@ -72,41 +80,41 @@
 
 	const columnOrder = Object.keys(columnNames);
 
-	let visibleColumns =
+	// Initialize visible columns based on profile settings or default to all columns
+	let visibleColumns: VisibilityState =
 		profileTableSettings?.table_settings_orders ??
 		columnOrder.reduce((obj, column) => {
 			obj[column] = true;
 			return obj;
 		}, {});
 
-	const visibleColumnsStore = writable(visibleColumns);
-
-	function toggleColumn(column) {
-		visibleColumnsStore.update((cols) => ({
-			...cols,
-			[column]: !cols[column]
+	// Callback funkce pro aktualizaci viditelnosti sloupců
+	const setColumnVisibility: OnChangeFn<VisibilityState> = updater => {
+		if (updater instanceof Function) {
+			visibleColumns = updater(visibleColumns);
+		} else {
+			visibleColumns = updater;
+		}
+		options.update(old => ({
+			...old,
+			state: {
+				...old.state,
+				columnVisibility: visibleColumns,
+			},
 		}));
-	}
+		saveTableSettings(visibleColumns);
+	};
 
-	async function saveTableSettings() {
+	// Save table settings to user profile
+	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
-			return;
+			return; // Exit if user is not logged in
 		}
 
-		const updatedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = $visibleColumnsStore[column];
-			return obj;
-		}, {});
-
-		const orderedSettings = columnOrder.reduce((obj, column) => {
-			obj[column] = updatedSettings[column];
-			return obj;
-		}, {});
-
-		const { data, error } = await supabase
+		const { error } = await supabase
 			.from("profiles")
-			.update({ table_settings_orders: $visibleColumnsStore })
+			.update({ table_settings_orders: columnVisibility })
 			.eq("id", session.user.id);
 
 		if (error) {
@@ -114,60 +122,101 @@
 		}
 	}
 
-	visibleColumnsStore.subscribe(saveTableSettings);
-
 	$: filteredOrders = orders?.filter((order) =>
-		Object.values(order).some((value) =>
-			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-		)
+		searchQuery
+			? Object.values(order).some((value) =>
+				value?.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+			: true
 	);
 
-	$: columns = columnOrder
-		.filter((key) => $visibleColumnsStore[key])
-		.map((key) => ({
-			accessorKey: key,
-			header: columnNames[key],
-			cell: ({ getValue }) => {
-				if (key === "date" || key === "created_at" || key === "updated_at") {
-					return formatDateToCzech(getValue());
-				} else if (key === "pay_state") {
-					return formatPayState(getValue());
-				}
-				return getValue();
+	// Define table columns with TanStack column definition
+	const columns: ColumnDef<any>[] = columnOrder.map(key => ({
+		accessorKey: key,
+		id: key,
+		header: columnNames[key],
+		// Nastavení velikostí sloupců
+		size: key === 'customer_email' ? 200 :
+			key === 'order_number' ? 100 :
+				key === 'note' ? 150 : 120,
+		cell: info => {
+			const value = info.getValue();
+			if (key === "date" || key === "created_at" || key === "updated_at") {
+				return formatDateToCzech(value);
+			} else if (key === "pay_state") {
+				return formatPayState(value);
 			}
-		}));
+			return value ?? "";
+		}
+	}));
 
-	$: options = writable<TableOptions<(typeof customers)[0]>>({
+	// Přidáme sloupec "Upravit"
+	columns.push({
+		id: 'actions',
+		header: 'Editovat',
+		size: 80,
+		cell: info => {
+			return {
+				id: info.row.original.id,
+			};
+		}
+	});
+
+	// Create table options
+	const options = writable<TableOptions<any>>({
 		data: filteredOrders,
 		columns,
-		getCoreRowModel: getCoreRowModel()
+		state: {
+			columnVisibility: visibleColumns,
+		},
+		onColumnVisibilityChange: setColumnVisibility,
+		getCoreRowModel: getCoreRowModel(),
+		enableColumnResizing: true,
+		columnResizeMode: 'onChange',
+		debugTable: false,
 	});
 
-	$: visibleColumnsStore.subscribe((value) => {
-		options.update((options) => ({
-			...options,
-			columns: columns.filter((column) => value[column.accessorKey])
-		}));
-	});
-
+	// Create Svelte table
 	$: table = createSvelteTable(options);
 
-	function formatPayState(pay_state: boolean) {
-		return pay_state ? "Zaplaceno" : "Nezaplaceno";
+	// Update data when it changes
+	$: if (filteredOrders) {
+		options.update(opts => ({
+			...opts,
+			data: filteredOrders,
+		}));
 	}
 
-	function previousPage() {
-		if (currentPage > 1) {
-			goto(`?page=${currentPage - 1}`);
+	// Navigate to previous page
+	async function previousPage() {
+		try {
+			loading = true;
+			if (currentPage > 1) {
+				transitionKey++;
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání předchozí stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
-	function nextPage() {
-		if (currentPage < totalPages) {
-			goto(`?page=${currentPage + 1}`);
+	// Navigate to next page
+	async function nextPage() {
+		try {
+			loading = true;
+			if (currentPage < totalPages) {
+				transitionKey++;
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání další stránky:", error);
+		} finally {
+			loading = false;
 		}
 	}
 
+	// Handle search
 	async function handleSearch() {
 		loading = true;
 		try {
@@ -186,24 +235,15 @@
 
 <section>
 	<div class="flex justify-between">
-		<div class="flex flex-col gap-2 md:flex-row">
+		<div class="flex flex-col gap-2 md:flex-row items-center">
 			<!--<div>
 				<button on:click={newOrderPage} class="btn btn-outline" disabled>
 					Vytvořit objednávku
 				</button>
 			</div>-->
 			<div>
-				<input type="date" bind:value={filterDate} class="btn btn-outline" />
+				<input type="date" bind:value={searchInput} class="btn btn-outline" />
 			</div>
-			<!--<div>
-				<select
-					bind:value={filterActive}
-					class="select select-bordered w-full max-w-xs border-black">
-					<option value="">Všechny aktivity</option>
-					<option value="true">Aktivní</option>
-					<option value="false">Neaktivní</option>
-				</select>
-			</div>-->
 			<div class="flex gap-2">
 				<input
 					type="text"
@@ -247,90 +287,156 @@
 	</div>
 </section>
 
-<section>
-	<div class="flex justify-end dropdown">
-		<button class="btn btn-outline" tabindex="0">Sloupce</button>
-		<ul
-			tabindex="0"
-			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-			{#each Object.keys(visibleColumns) as column}
+<div class="flex justify-end dropdown mb-4">
+	<button class="btn btn-outline" tabindex="0">Sloupce</button>
+	<ul
+		tabindex="0"
+		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
+		{#each $table.getAllLeafColumns() as column}
+			{#if column.id !== 'actions'}
 				<li>
 					<label>
 						<input
 							type="checkbox"
-							checked={$visibleColumnsStore[column]}
-							on:change={() => toggleColumn(column)} />
-						{columnNames[column]}
+							checked={column.getIsVisible()}
+							on:change={column.getToggleVisibilityHandler()}
+						/>
+						{columnNames[column.id] || column.id}
 					</label>
 				</li>
-			{/each}
-		</ul>
-	</div>
-</section>
+			{/if}
+		{/each}
+	</ul>
+</div>
 
-<section>
-	<div class="flex flex-wrap">
-		<div
-			class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
-			{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-				<div
-					class="w-full {column === 'email'
-						? 'md:w-1/3'
-						: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
-					columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-						? 'border-r-2'
-						: ''}">
-					{columnNames[column]}
-				</div>
-			{/each}
-			<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
-				Editovat
-			</div>
-		</div>
-
-		{#if filteredOrders && filteredOrders.length > 0}
-			{#each $table.getRowModel().rows as row, index}
-				<div
-					class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
-						2 ===
-					0
-						? 'bg-gray-100'
-						: 'bg-gray-200'}">
-					{#each row.getVisibleCells() as cell}
-						<div
-							class="w-full lg:w-1/6 xl:w-1/6 truncate-cell"
-							title={cell.getValue() ?? ""}>
-							{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
-								{formatDateToCzech(cell.getValue())}
-							{:else if cell.column.id === "pay_state"}
-								{formatPayState(cell.getValue())}
-							{:else}
-								{cell.getValue() ?? ""}
-							{/if}
-						</div>
+{#key transitionKey}
+	<section in:fade={{ duration: 300 }} out:fade={{ duration: 150 }}>
+		<!-- Sémantická tabulka používající TanStack Table -->
+		<div class="overflow-x-auto border rounded-xl shadow-sm">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-400">
+				{#each $table.getHeaderGroups() as headerGroup}
+					<tr>
+						{#each headerGroup.headers as header}
+							<th
+								class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
+								style="width: {header.getSize()}px; position: relative;"
+							>
+								{#if !header.isPlaceholder}
+									<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
+										{header.column.columnDef.header}
+									</div>
+								{/if}
+								{#if header.column.getCanResize()}
+									<div
+										class="resizer"
+										on:mousedown={header.getResizeHandler()}
+										on:touchstart={header.getResizeHandler()}
+										class:isResizing={header.column.getIsResizing()}
+									></div>
+								{/if}
+							</th>
+						{/each}
+					</tr>
+				{/each}
+				</thead>
+				<tbody class="bg-white divide-y divide-gray-200">
+				{#if $navigating || loading}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4">
+							<div class="loading-overlay flex justify-center">
+								<BarLoader size="120" color="black" unit="px" duration="1s" />
+							</div>
+						</td>
+					</tr>
+				{:else if filteredOrders && filteredOrders.length > 0}
+					{#each $table.getRowModel().rows as row, index}
+						<tr
+							class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
+							in:fly={{ y: 50, duration: 300, delay: index * 50 }}
+						>
+							{#each row.getVisibleCells() as cell}
+								<td
+									class="px-4 py-3 {cell.column.id === 'note' ? 'truncate max-w-xs' : ''}"
+									style="width: {cell.column.getSize()}px;"
+									title={cell.column.id === 'note' ? cell.getValue() : ''}
+								>
+									{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
+										{formatDateToCzech(cell.getValue())}
+									{:else if cell.column.id === "pay_state"}
+										{formatPayState(cell.getValue())}
+									{:else if cell.column.id === "actions"}
+										<div class="flex justify-end">
+											<a href="/admin/order/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
+												Upravit
+											</a>
+										</div>
+									{:else}
+										{cell.getValue() ?? ""}
+									{/if}
+								</td>
+							{/each}
+						</tr>
 					{/each}
-					<div
-						class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-						<a
-							href="/admin/order/{row.original.id}"
-							data-sveltekit-preload-data
-							class="font-medium hover:underline">
-							Upravit
-						</a>
-					</div>
-				</div>
-			{/each}
-		{:else}
-			<p>Žádné objednávky</p>
-		{/if}
-	</div>
-</section>
+				{:else}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4 text-center">
+							Žádné objednávky
+						</td>
+					</tr>
+				{/if}
+				</tbody>
+			</table>
+		</div>
+	</section>
+{/key}
 
 <style>
-	/*    .truncate-cell {
-					max-width: 300px;
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
-			}*/
+    .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 5px;
+        background: rgba(0, 0, 0, 0.1);
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+    }
+
+    .resizer.isResizing {
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 1;
+    }
+
+    @media (hover: hover) {
+        .resizer {
+            opacity: 0;
+        }
+
+        *:hover > .resizer {
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :global(.loading-overlay) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Responzivní úpravy pro mobilní zobrazení */
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
 </style>

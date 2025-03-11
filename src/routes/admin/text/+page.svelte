@@ -34,7 +34,45 @@
 		{ cmd: 'justifyCenter', icon: '<i class="fas fa-align-center"></i>', title: 'Zarovnat na střed' },
 		{ cmd: 'justifyRight', icon: '<i class="fas fa-align-right"></i>', title: 'Zarovnat vpravo' },
 		{ cmd: 'insertHorizontalRule', icon: '<i class="fas fa-ruler-horizontal"></i>', title: 'Horizontální čára' },
-		{ cmd: 'removeFormat', icon: '<i class="fas fa-eraser"></i>', title: 'Odstranit formátování' }
+		{ cmd: 'removeFormat', icon: '<i class="fas fa-eraser"></i>', title: 'Odstranit formátování' },
+		{
+			cmd: 'code',
+			icon: '<i class="fas fa-code"></i>',
+			title: 'Zdrojový kód',
+			result: () => {
+				// Uložení aktuální pozice kurzoru
+				const selection = window.getSelection();
+				const range = selection.getRangeAt(0);
+
+				// Vytvoření pre a code elementů
+				const pre = document.createElement('pre');
+				const code = document.createElement('code');
+
+				// Získání vybraného textu nebo vložení prázdného řádku pro kód
+				let content = '';
+				if (selection.toString().length > 0) {
+					content = selection.toString();
+				} else {
+					content = 'Sem vložte kód';
+				}
+
+				// Nastavení obsahu a vložení elementů
+				code.textContent = content;
+				pre.appendChild(code);
+				pre.style.backgroundColor = '#f6f8fa';
+				pre.style.padding = '16px';
+				pre.style.borderRadius = '6px';
+				pre.style.overflow = 'auto';
+				code.style.fontFamily = 'monospace';
+
+				// Vložení do dokumentu
+				range.deleteContents();
+				range.insertNode(pre);
+
+				// Aktualizace HTML
+				updateHtmlFromEditor();
+			}
+		}
 	];
 
 	// Headings a speciální formátování
@@ -153,7 +191,7 @@
 		}
 
 		// Pro jídelníček není nadpis povinný
-		if (submittedPage !== "jidelnicek" && !submittedTitle) {
+		if (submittedPage !== "obedy" && !submittedTitle) {
 			alert("Název je povinný pro všechny stránky kromě jídelníčku");
 			return;
 		}
@@ -264,6 +302,7 @@
 				</div>
 
 				<!-- Výběr textu -->
+				{#if selectedPage === "hlavni"}
 				<div class="mb-6">
 					<label for="text-select" class="block text-sm font-medium text-gray-700 mb-2">
 						Vyberte text
@@ -291,6 +330,7 @@
 						</button>-->
 					</div>
 				</div>
+				{/if}
 
 				<!-- Umístění (pouze pro stránku "hlavni") -->
 				{#if selectedPage === "hlavni"}
@@ -318,19 +358,19 @@
 					<input type="hidden" name="position" value="" />
 				{/if}
 
-				<!-- Nadpis (není povinný pro stránku "jidelnicek") -->
-				{#if selectedPage !== "jidelnicek"}
+				<!-- Nadpis (není povinný pro stránku "obedy") -->
+				{#if selectedPage !== "obedy"}
 					<div class="mb-6">
-						<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+						<!--<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
 							Nadpis
-						</label>
+						</label>-->
 						<input
 							class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 							id="title"
 							name="title"
 							type="text"
 							bind:value={title}
-							required={selectedPage !== "jidelnicek"} />
+							required={selectedPage !== "obedy"} />
 					</div>
 				{:else}
 					<input type="hidden" name="title" value="" />
@@ -396,7 +436,7 @@
 			<!-- Tlačítka a zpětná vazba -->
 			<div class="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<button
-					disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && !title)}
+					disabled={loading || !html || !selectedPage || (selectedPage !== "obedy" && !title)}
 					type="submit"
 					class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
 					{loading ? "Ukládá se..." : "Potvrdit změnu"}

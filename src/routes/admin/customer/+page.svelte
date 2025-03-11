@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { writable } from "svelte/store";
-	import { createSvelteTable, getCoreRowModel } from "@tanstack/svelte-table";
-	import type { TableOptions } from "@tanstack/svelte-table";
+	import {
+		createSvelteTable,
+		getCoreRowModel,
+		flexRender
+	} from "@tanstack/svelte-table";
+	import type {
+		ColumnDef,
+		TableOptions,
+		VisibilityState,
+		OnChangeFn
+	} from "@tanstack/svelte-table";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
@@ -53,37 +62,41 @@
 
 	const columnOrder: string[] = Object.keys(columnNames);
 
-	// Visible columns management
-	let visibleColumns: Record<string, boolean> =
+	// Initialize visible columns based on profile settings or default to all columns
+	let visibleColumns: VisibilityState =
 		profileTableSettings?.table_settings_customers ??
 		columnOrder.reduce((obj, column) => {
 			obj[column] = true;
 			return obj;
 		}, {});
 
-	const visibleColumnsStore = writable<Record<string, boolean>>(visibleColumns);
-
-	// Column visibility toggle
-	function toggleColumn(column: string) {
-		visibleColumnsStore.update((cols) => {
-			const newCols = { ...cols, [column]: !cols[column] };
-			return columnOrder.reduce((obj, col) => {
-				obj[col] = newCols[col] ?? true;
-				return obj;
-			}, {});
-		});
-	}
+	// Callback funkce pro aktualizaci viditelnosti sloupců
+	const setColumnVisibility: OnChangeFn<VisibilityState> = updater => {
+		if (updater instanceof Function) {
+			visibleColumns = updater(visibleColumns);
+		} else {
+			visibleColumns = updater;
+		}
+		options.update(old => ({
+			...old,
+			state: {
+				...old.state,
+				columnVisibility: visibleColumns,
+			},
+		}));
+		saveTableSettings(visibleColumns);
+	};
 
 	// Save table settings to DB profile setting of logged in user
-	async function saveTableSettings() {
+	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
 			return;
 		}
 
-		const { data, error } = await supabase
+		const { error } = await supabase
 			.from("profiles")
-			.update({ table_settings_customers: $visibleColumnsStore })
+			.update({ table_settings_customers: columnVisibility })
 			.eq("id", session.user.id);
 
 		if (error) {
@@ -91,50 +104,17 @@
 		}
 	}
 
-	// Subscribe to changes and save settings
-	visibleColumnsStore.subscribe(saveTableSettings);
-
 	// Filter customers based on search
 	$: filteredCustomers = customers?.filter((customer) =>
-		Object.values(customer).some((value) =>
-			value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-		)
+		searchQuery
+			? Object.values(customer).some((value) =>
+				value?.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+			: true
 	);
-
-	// Define table columns
-	$: columns = columnOrder
-		.filter((key) => $visibleColumnsStore[key])
-		.map((key) => ({
-			accessorKey: key,
-			header: columnNames[key],
-			cell: ({ getValue }) => {
-				if (key === "created_at") {
-					return formatDateToCzech(getValue<string>());
-				}
-				return getValue<string>();
-			}
-		}));
-
-	// Create table options
-	$: options = writable<TableOptions<(typeof customers)[0]>>({
-		data: filteredCustomers,
-		columns,
-		getCoreRowModel: getCoreRowModel()
-	});
-
-	$: visibleColumnsStore.subscribe((value) => {
-		options.update((options) => ({
-			...options,
-			columns: columns.filter((column) => value[column.accessorKey])
-		}));
-	});
-
-	// Create table instance
-	$: table = createSvelteTable(options);
 
 	// Helper function: Format date to Czech format
 	function formatDateToCzech(date: string) {
-		if (!date) return ""; //
+		if (!date) return "";
 		const dateObj = new Date(date);
 		const day = dateObj.getDate().toString().padStart(2, "0");
 		const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
@@ -144,13 +124,68 @@
 		return `${day}.${month}.${year} ${hours}:${minutes}`;
 	}
 
+	// Define table columns
+	const columns: ColumnDef<any>[] = columnOrder.map(key => ({
+		accessorKey: key,
+		id: key,
+		header: columnNames[key],
+		// Nastavení velikostí sloupců
+		size: key === 'email' ? 200 :
+			key === 'created_at' ? 150 :
+				key === 'telephone' ? 120 : 100,
+		cell: info => {
+			const value = info.getValue();
+			if (key === "created_at") {
+				return formatDateToCzech(value);
+			}
+			return value ?? "";
+		}
+	}));
+
+	// Přidáme sloupec "Upravit"
+	columns.push({
+		id: 'actions',
+		header: 'Editovat',
+		size: 80,
+		cell: info => {
+			return {
+				id: info.row.original.id,
+			};
+		}
+	});
+
+	// Create table options
+	const options = writable<TableOptions<any>>({
+		data: filteredCustomers,
+		columns,
+		state: {
+			columnVisibility: visibleColumns,
+		},
+		onColumnVisibilityChange: setColumnVisibility,
+		getCoreRowModel: getCoreRowModel(),
+		enableColumnResizing: true,
+		columnResizeMode: 'onChange',
+		debugTable: false,
+	});
+
+	// Create Svelte table
+	$: table = createSvelteTable(options);
+
+	// Update data when it changes
+	$: if (filteredCustomers) {
+		options.update(opts => ({
+			...opts,
+			data: filteredCustomers,
+		}));
+	}
+
 	// Navigation functions
 	async function previousPage() {
 		try {
 			loading = true;
 			if (currentPage > 1) {
-				transitionKey++; // Inkrementujeme klíč pro novou animaci
-				await goto(`?page=${currentPage - 1}`);
+				transitionKey++;
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání předchozí stránky:", error);
@@ -163,8 +198,8 @@
 		try {
 			loading = true;
 			if (currentPage < totalPages) {
-				transitionKey++; // Inkrementujeme klíč pro novou animaci
-				await goto(`?page=${currentPage + 1}`);
+				transitionKey++;
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání další stránky:", error);
@@ -243,97 +278,155 @@
 	</div>
 </section>
 <section id="page-top">
-	<div class="flex justify-end dropdown">
+	<div class="flex justify-end dropdown mb-4">
 		<button class="btn btn-outline" tabindex="0">Sloupce</button>
 		<ul
 			tabindex="0"
 			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-			{#each Object.keys(visibleColumns) as column}
-				<li>
-					<label>
-						<input
-							type="checkbox"
-							checked={$visibleColumnsStore[column]}
-							on:change={() => toggleColumn(column)} />
-						{columnNames[column]}
-					</label>
-				</li>
+			{#each $table.getAllLeafColumns() as column}
+				{#if column.id !== 'actions'}
+					<li>
+						<label>
+							<input
+								type="checkbox"
+								checked={column.getIsVisible()}
+								on:change={column.getToggleVisibilityHandler()}
+							/>
+							{columnNames[column.id] || column.id}
+						</label>
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	</div>
 </section>
 
-<section>
-	<div
-		class="hidden w-full gap-4 p-2 px-5 my-2 border border-gray-300 md:flex rounded-xl bg-gray-400">
-		{#each columnOrder.filter((col) => $visibleColumnsStore[col]) as column, index}
-			<div
-				class="w-full {column === 'email'
-					? 'md:w-1/3'
-					: 'md:w-1/6 lg:w-1/6 xl:w-1/6'} {index <
-				columnOrder.filter((col) => $visibleColumnsStore[col]).length - 1
-					? 'border-r-2'
-					: ''}">
-				{columnNames[column]}
-			</div>
-		{/each}
-		<div class="flex justify-end w-full md:w-1/6 lg:w-1/6 xl:w-1/6">
-			Editovat
-		</div>
-	</div>
-
-	{#key transitionKey}
-		<div in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
-			{#if $navigating || loading}
-				<div transition:fade={{ duration: 300 }} class="loading-overlay">
-					<BarLoader size="120" color="black" unit="px" duration="1s" />
-				</div>
-			{:else if filteredCustomers && filteredCustomers.length > 0}
-				{#each $table.getRowModel().rows as row, index}
-					<div
-						in:fly={{ y: 50, duration: 300, delay: index * 50 }}
-						class="w-full gap-4 p-2 px-5 my-1 border border-gray-300 md:flex rounded-xl hover:bg-cyan-700 hover:text-white row {index %
-							2 ===
-						0
-							? 'bg-gray-100'
-							: 'bg-gray-200'}">
-						{#each row.getVisibleCells() as cell}
-							<div
-								class="w-full truncate-cell flex items-center {cell.column
-									.id === 'email'
-									? 'md:w-1/3'
-									: 'md:w-1/6 lg:w-1/6 xl:w-1/6'}"
-								title={cell.getValue() ?? ""}>
-								{#if cell.column.id === "created_at"}
-									{formatDateToCzech(cell.getValue())}
-								{:else}
-									{cell.getValue() ?? ""}
+{#key transitionKey}
+	<section in:fade={{ duration: 300 }} out:fade={{ duration: 150 }}>
+		<!-- Sémantická tabulka používající TanStack Table -->
+		<div class="overflow-x-auto border rounded-xl shadow-sm">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-400">
+				{#each $table.getHeaderGroups() as headerGroup}
+					<tr>
+						{#each headerGroup.headers as header}
+							<th
+								class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
+								style="width: {header.getSize()}px; position: relative;"
+							>
+								{#if !header.isPlaceholder}
+									<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
+										{header.column.columnDef.header}
+									</div>
 								{/if}
-							</div>
+								{#if header.column.getCanResize()}
+									<div
+										class="resizer"
+										on:mousedown={header.getResizeHandler()}
+										on:touchstart={header.getResizeHandler()}
+										class:isResizing={header.column.getIsResizing()}
+									></div>
+								{/if}
+							</th>
 						{/each}
-						<div
-							class="w-full md:w-1/6 lg:w-1/6 xl:w-1/6 flex items-center justify-end">
-							<a
-								href="/admin/customer/{row.original.id}"
-								data-sveltekit-preload-data
-								class="font-medium hover:underline">
-								Upravit
-							</a>
-						</div>
-					</div>
+					</tr>
 				{/each}
-			{:else}
-				<p>Žádní zákazníci</p>
-			{/if}
+				</thead>
+				<tbody class="bg-white divide-y divide-gray-200">
+				{#if $navigating || loading}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4">
+							<div class="loading-overlay flex justify-center">
+								<BarLoader size="120" color="black" unit="px" duration="1s" />
+							</div>
+						</td>
+					</tr>
+				{:else if filteredCustomers && filteredCustomers.length > 0}
+					{#each $table.getRowModel().rows as row, index}
+						<tr
+							class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
+							in:fly={{ y: 50, duration: 300, delay: index * 50 }}
+						>
+							{#each row.getVisibleCells() as cell}
+								<td
+									class="px-4 py-3 {cell.column.id === 'email' ? 'truncate max-w-xs' : ''}"
+									style="width: {cell.column.getSize()}px;"
+									title={cell.column.id === 'email' ? cell.getValue() : ''}
+								>
+									{#if cell.column.id === "created_at"}
+										{formatDateToCzech(cell.getValue())}
+									{:else if cell.column.id === "actions"}
+										<div class="flex justify-end">
+											<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
+												Upravit
+											</a>
+										</div>
+									{:else}
+										{cell.getValue() ?? ""}
+									{/if}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				{:else}
+					<tr>
+						<td colspan={$table.getVisibleLeafColumns().length} class="px-6 py-4 text-center">
+							Žádní zákazníci
+						</td>
+					</tr>
+				{/if}
+				</tbody>
+			</table>
 		</div>
-	{/key}
-</section>
+	</section>
+{/key}
 
 <style>
-	/*    .truncate-cell {
-						max-width: 150px;
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
-				}*/
+    .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 5px;
+        background: rgba(0, 0, 0, 0.1);
+        cursor: col-resize;
+        user-select: none;
+        touch-action: none;
+    }
+
+    .resizer.isResizing {
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 1;
+    }
+
+    @media (hover: hover) {
+        .resizer {
+            opacity: 0;
+        }
+
+        *:hover > .resizer {
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :global(.loading-overlay) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Responzivní úpravy pro mobilní zobrazení */
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
 </style>
