@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 
 		// Načtení textů a alergenů
 		const [textsResult, allergensResult] = await Promise.all([
-			supabase.from("texts").select("*").eq("page", "jidelnicek"),
+			supabase.from("texts").select("*").eq("page", "obedy"),
 			supabase.from("allergens").select("*").order("number")
 		]);
 
