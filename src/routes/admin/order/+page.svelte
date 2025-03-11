@@ -4,13 +4,15 @@
 	import {
 		createSvelteTable,
 		flexRender,
-		getCoreRowModel
+		getCoreRowModel,
+		getSortedRowModel
 	} from "@tanstack/svelte-table";
 	import type {
 		ColumnDef,
 		TableOptions,
 		VisibilityState,
-		OnChangeFn
+		OnChangeFn,
+		SortingState
 	} from "@tanstack/svelte-table";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
@@ -46,6 +48,11 @@
 	let loading = false;
 	let searchInput = searchQuery || "";
 	let transitionKey = 0; // Pro klíčované přechody
+
+	// Výchozí stav řazení
+	let sorting: SortingState = [
+		{ id: 'order_number', desc: true } // Výchozí řazení sestupně podle čísla objednávky
+	];
 
 	function newOrderPage() {
 		goto("/admin/order/neworder");
@@ -105,6 +112,22 @@
 		saveTableSettings(visibleColumns);
 	};
 
+	// Callback funkce pro aktualizaci řazení
+	const setSorting: OnChangeFn<SortingState> = updater => {
+		if (updater instanceof Function) {
+			sorting = updater(sorting);
+		} else {
+			sorting = updater;
+		}
+		options.update(old => ({
+			...old,
+			state: {
+				...old.state,
+				sorting,
+			},
+		}));
+	};
+
 	// Save table settings to user profile
 	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
@@ -138,6 +161,11 @@
 		size: key === 'customer_email' ? 200 :
 			key === 'order_number' ? 100 :
 				key === 'note' ? 150 : 120,
+		// Nastavení řazení podle typu sloupce
+		enableSorting: true,
+		sortingFn: key === 'date' ? 'datetime' :
+			key === 'order_number' ? 'basic' :
+				'alphanumeric',
 		cell: info => {
 			const value = info.getValue();
 			if (key === "date" || key === "created_at" || key === "updated_at") {
@@ -154,6 +182,7 @@
 		id: 'actions',
 		header: 'Editovat',
 		size: 80,
+		enableSorting: false, // Zakázeme řazení pro sloupec akcí
 		cell: info => {
 			return {
 				id: info.row.original.id,
@@ -163,13 +192,16 @@
 
 	// Create table options
 	const options = writable<TableOptions<any>>({
-		data: filteredOrders,
+		data: filteredOrders || [],
 		columns,
 		state: {
 			columnVisibility: visibleColumns,
+			sorting, // Přidáme výchozí stav řazení
 		},
 		onColumnVisibilityChange: setColumnVisibility,
+		onSortingChange: setSorting, // Přidáme handler pro změnu řazení
 		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(), // Přidáme model pro řazení
 		enableColumnResizing: true,
 		columnResizeMode: 'onChange',
 		debugTable: false,
@@ -312,9 +344,9 @@
 {#key transitionKey}
 	<section in:fade={{ duration: 300 }} out:fade={{ duration: 150 }}>
 		<!-- Sémantická tabulka používající TanStack Table -->
-		<div class="overflow-x-auto border rounded-xl shadow-sm">
+		<div class="overflow-x-auto border border-gray-500 rounded-xl shadow-sm">
 			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-400">
+				<thead class="bg-gray-300 border-b-gray-700 border">
 				{#each $table.getHeaderGroups() as headerGroup}
 					<tr>
 						{#each headerGroup.headers as header}
@@ -322,11 +354,33 @@
 								class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
 								style="width: {header.getSize()}px; position: relative;"
 							>
-								{#if !header.isPlaceholder}
+								{#if !header.isPlaceholder && header.column.getCanSort()}
+									<!-- Řaditelné hlavičky -->
+									<div
+										class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'} cursor-pointer select-none"
+										on:click={header.column.getToggleSortingHandler()}
+										role="button"
+										title="Seřadit podle {header.column.columnDef.header}"
+									>
+										{header.column.columnDef.header}
+										<!-- Indikátor řazení -->
+										<span class="ml-2">
+										{#if header.column.getIsSorted() === "asc"}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>
+										{:else if header.column.getIsSorted() === "desc"}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+										{:else}
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down opacity-20"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+										{/if}
+									</span>
+									</div>
+								{:else}
+									<!-- Neřaditelné hlavičky -->
 									<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
 										{header.column.columnDef.header}
 									</div>
 								{/if}
+
 								{#if header.column.getCanResize()}
 									<div
 										class="resizer"
