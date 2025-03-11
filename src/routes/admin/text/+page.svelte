@@ -266,7 +266,7 @@
 				<!-- Výběr textu -->
 				<div class="mb-6">
 					<label for="text-select" class="block text-sm font-medium text-gray-700 mb-2">
-						Vyberte text nebo vytvořte nový
+						Vyberte text
 					</label>
 					<div class="flex flex-col md:flex-row md:items-center gap-4">
 						<input type="hidden" name="id" value={selectedTextId} />
@@ -283,12 +283,12 @@
 								</option>
 							{/each}
 						</select>
-						<button
+						<!--<button
 							type="button"
 							class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition duration-200"
 							on:click={newText}>
 							Nový text
-						</button>
+						</button>-->
 					</div>
 				</div>
 

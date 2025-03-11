@@ -40,7 +40,7 @@
 			{@html texts?.text || "Žádný text pro jídelníček není k dispozici."}
 		</div>
 
-		<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg">
+		<div class="max-w-4xl mx-auto mt-5 bg-white border-2 rounded-lg border-gray-300">
 			<div class="pb-10" id="menu-content">
 				<MenuWeekSelector
 					{weeks}
@@ -49,7 +49,7 @@
 
 				<hr>
 
-				<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
+				<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#if currentWeekMenus.length > 0}
 						{#each currentWeekMenus as menu (menu.id)}
 							<MenuItem {menu} />
