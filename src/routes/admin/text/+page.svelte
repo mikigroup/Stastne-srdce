@@ -196,8 +196,8 @@
 			return;
 		}
 
-		// Pro jídelníček není nadpis povinný
-		if (submittedPage !== "jidelnicek" && !submittedTitle) {
+		// Pro jídelníček nebo obedy není nadpis povinný
+		if (submittedPage !== "jidelnicek" && submittedPage !== "obedy" && !submittedTitle) {
 			alert("Název je povinný pro všechny stránky kromě jídelníčku");
 			return;
 		}
@@ -311,9 +311,10 @@
 				</div>
 
 				<!-- Výběr textu -->
+				<!--{#if selectedPage === "hlavni"}
 				<div class="mb-6">
 					<label for="text-select" class="block text-sm font-medium text-gray-700 mb-2">
-						{selectedPage === "jidelnicek" ? "Jídelníček" : "Vyberte text"}
+						{selectedPage === "jidelnicek" || selectedPage === "obedy" ? "Jídelníček" : "Vyberte text"}
 					</label>
 					<div class="flex flex-col md:flex-row md:items-center gap-4">
 						<input type="hidden" name="id" value={selectedTextId} />
@@ -335,7 +336,7 @@
 						</select>
 					</div>
 				</div>
-
+				{/if}-->
 				<!-- Umístění (pouze pro stránku "hlavni") -->
 				{#if selectedPage === "hlavni"}
 					<div class="mb-6">
@@ -362,10 +363,11 @@
 					<input type="hidden" name="position" value="" />
 				{/if}
 
-				<!-- Nadpis (není povinný pro stránku "jidelnicek") -->
+				<!-- Nadpis (není povinný pro stránku "jidelnicek" nebo "obedy") -->
+				{#if selectedPage === "hlavni"}
 				<div class="mb-6">
 					<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-						Nadpis
+						Nadpis {selectedPage === "hlavni" ? "(není povinný pro obědy)" : ""}
 					</label>
 					<input
 						class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -373,8 +375,9 @@
 						name="title"
 						type="text"
 						bind:value={title}
-						required={selectedPage !== "jidelnicek"} />
+						required={ selectedPage !== "hlavni"} />
 				</div>
+				{/if}
 
 				<!-- Skrytý input pro odeslání obsahu -->
 				<input type="hidden" name="text" value={html} />
@@ -436,7 +439,7 @@
 			<!-- Tlačítka a zpětná vazba -->
 			<div class="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<button
-					disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && !title)}
+					disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && selectedPage !== "obedy" && !title)}
 					type="submit"
 					class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
 					{loading ? "Ukládá se..." : "Uložit text"}

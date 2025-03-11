@@ -74,13 +74,25 @@ export const actions: Actions = {
 
 		// Základní validace
 		if (!text || !page) {
-			console.error("Chybí povinné údaje");
 			return fail(400, {
 				message: {
 					success: false,
 					display: "Text a stránka jsou povinné"
 				},
 				title,
+				text,
+				page,
+				position
+			});
+		}
+
+		// Nadpis je povinný jen u jiných stránek než jidelnicek/obedy
+		if (page !== "jidelnicek" && page !== "obedy" && !title) {
+			return fail(400, {
+				message: {
+					success: false,
+					display: "Nadpis je povinný pro všechny stránky kromě jídelníčku"
+				},
 				text,
 				page,
 				position
