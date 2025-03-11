@@ -69,9 +69,9 @@
 		</p>
 	</div>
 
-	<div class="my-3 border rounded-lg shadow-md md:p-8">
+	<div class="my-3 border border-[#67696B] rounded-lg shadow-md md:p-8">
 		<p class="text-lg p-2">Polévka</p>
-		<div class="p-5 border rounded-2xl bg-neutral-50">
+		<div class="p-5 border rounded-2xl bg-neutral-50 border-[#67696B]">
 			<p class="p-2 text-lg">{menu.soup}</p>
 			<div class="mt-2 p-2">
 				<p class="text-xs text-gray-600">
@@ -83,7 +83,7 @@
 		<div class="py-2 text-lg rounded-2xl">
 			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
 			{#each menu.variants as variant (variant.id)}
-				<div class="border rounded-2xl p-5 bg-neutral-50 mb-4">
+				<div class="border rounded-2xl p-5 bg-neutral-50 mb-4 border-[#67696B]">
 					<div class="p-2 text-lg">
 						<div>
 							{variant.description}
@@ -109,10 +109,10 @@
 							on:keydown={(e) => e.key === "Enter" && addToCart(variant)}
 							tabindex="0">
 							<div
-								class="py-2 px-4 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition-all duration-150 ease-in-out cursor-pointer active:bg-green-800 active:text-white">
+								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-150 ease-in-out cursor-pointer active:bg-green-800 active:text-white border-[#67696B]">
 								<div class="">
 									<p class="text-base justify-end flex">{variant.price} Kč</p>
-									<p class="text-sm uppercase">Přidat do košíku</p>
+									<p class="text-sm uppercase">Do košíku</p>
 								</div>
 							</div>
 						</div>

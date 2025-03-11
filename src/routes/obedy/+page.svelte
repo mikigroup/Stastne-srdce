@@ -47,6 +47,8 @@
 					{selectedWeek}
 					on:select={handleWeekSelect} />
 
+				<hr>
+
 				<div class="mt-10 border-2 md:mx-10 md:p-5 bg-orange-50">
 					{#if currentWeekMenus.length > 0}
 						{#each currentWeekMenus as menu (menu.id)}

@@ -20,6 +20,7 @@
 	let selectedPage = "hlavni";
 	let position = "";
 	let editorDiv: HTMLElement;
+	let editorInitialized = false;
 
 	// Formátovací akce pro editor
 	const formatActions = [
@@ -64,15 +65,24 @@
 		}
 	}
 
-	// Nastavit obsah editoru
+	// Nastavit obsah editoru - vylepšená verze
 	function setEditorContent(content: string) {
 		if (editorDiv) {
+			// Zabránění nekonečné smyčce aktualizací při nastavování obsahu
+			const temp = editorDiv.onblur;
+			editorDiv.onblur = null;
+
 			editorDiv.innerHTML = content;
-			updateHtmlFromEditor();
+
+			// Obnovení event listeneru
+			setTimeout(() => {
+				editorDiv.onblur = temp;
+				updateHtmlFromEditor();
+			}, 0);
 		}
 	}
 
-	// Funkce pro načtení textu
+	// Funkce pro načtení textu - rozšířená verze
 	function loadText(textId: number) {
 		if (!texts) return;
 
@@ -80,6 +90,7 @@
 			// Nový text
 			selectedTextId = 0;
 			title = "";
+			html = "";
 			setEditorContent("");
 			position = "";
 			return;
@@ -91,9 +102,12 @@
 			title = text.title || "";
 			selectedPage = text.page || "hlavni";
 			position = text.position || "";
+			html = text.text || "";
 
-			// Nastavíme obsah editoru
-			setEditorContent(text.text || "");
+			// Nastavíme obsah editoru, pokud je již inicializován
+			if (editorInitialized) {
+				setEditorContent(text.text || "");
+			}
 
 			console.log("Načtený text ID:", selectedTextId, "Titulek:", title);
 		}
@@ -178,13 +192,35 @@
 		}
 	}
 
+	// Inicializace editoru a nastavení sledování změn
+	function initializeEditor() {
+		if (!editorDiv) return;
+
+		// Přidáme event listenery pro sledování změn
+		editorDiv.addEventListener('input', updateHtmlFromEditor);
+		editorDiv.addEventListener('blur', updateHtmlFromEditor);
+
+		// Označíme editor jako inicializovaný
+		editorInitialized = true;
+
+		// Pokud máme již vybraný text, nastavíme jeho obsah
+		if (selectedTextId > 0) {
+			const text = texts.find(t => t.id === selectedTextId);
+			if (text && text.text) {
+				setEditorContent(text.text);
+			}
+		}
+	}
+
+	// Reaktivní aktualizace obsahu editoru při změně html
+	$: if (editorInitialized && editorDiv && html !== editorDiv.innerHTML) {
+		setEditorContent(html);
+	}
+
 	// Inicializace - načtení prvního textu po vykreslení komponenty
 	onMount(() => {
-		// Přidáme event listener na contenteditable div pro aktualizaci HTML
-		if (editorDiv) {
-			editorDiv.addEventListener('input', updateHtmlFromEditor);
-			editorDiv.addEventListener('blur', updateHtmlFromEditor);
-		}
+		// Inicializace editoru
+		initializeEditor();
 
 		// Pokud existují texty pro vybranou stránku, načteme první
 		if (texts && texts.length > 0) {
