@@ -72,7 +72,7 @@
 				<div class="border-r-2">
 					<a href="/haccp" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">HACCP</a>
 				</div>
-				<div class="border-r-2">
+				<div class="border-r-2 h-[40px] flex items-center justify-center">
 					<a href="/prednasky-a-kurzy" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2 text-xs lg:text-sm">Přednášky a kurzy</a>
 				</div>
 				<div class="text-slate-600">
