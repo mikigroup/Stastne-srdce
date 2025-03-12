@@ -80,7 +80,7 @@
 			<div class="space-y-8">
 				<!-- Info karta -->
 				<div
-					class="bg-white rounded-2xl shadow-xl p-8 space-y-6 transform transition-all duration-300 hover:shadow-2xl">
+					class="bg-white rounded-2xl shadow-xl p-8 space-y-6 transform transition-all duration-300 hover:shadow-2xl border border-gray-300">
 					<div class="flex items-center gap-3 border-b pb-4">
 						<Building2 class="w-6 h-6 text-green-700" />
 						<h2 class="text-2xl font-semibold text-gray-800">
@@ -115,7 +115,7 @@
 				</div>
 
 				<!-- Mapa -->
-				<div class="bg-white rounded-2xl shadow-xl overflow-hidden h-64">
+				<div class="bg-white rounded-2xl shadow-xl overflow-hidden h-64 border border-gray-300">
 					<iframe
 						class="w-full h-full"
 						src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
@@ -126,7 +126,7 @@
 			</div>
 
 			<!-- Pravá strana - Kontaktní formulář -->
-			<div class="bg-white rounded-2xl shadow-xl p-8">
+			<div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-300">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Napište nám</h2>
 				<form
 					method="POST"

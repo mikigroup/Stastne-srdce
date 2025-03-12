@@ -167,7 +167,7 @@
 
 	<!-- Horní statistické karty -->
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-		<div class="card bg-base-100 shadow-xl border">
+		<div class="card bg-base-100 shadow-xl border border-gray-300">
 			<div class="card-body">
 				<h2 class="card-title">Objednávky</h2>
 				<p class="text-4xl font-bold">{currentRangeOrders}</p>
@@ -177,7 +177,7 @@
 			</div>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl border">
+		<div class="card bg-base-100 shadow-xl border border-gray-300">
 			<div class="card-body">
 				<h2 class="card-title">Tržby</h2>
 				<p class="text-4xl font-bold">{formatCurrency(currentRangeRevenue)}</p>
@@ -187,7 +187,7 @@
 			</div>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl border">
+		<div class="card bg-base-100 shadow-xl border border-gray-300">
 			<div class="card-body">
 				<h2 class="card-title">Noví zákazníci</h2>
 				<p class="text-4xl font-bold">{currentRangeCustomers}</p>
@@ -199,11 +199,11 @@
 	</div>
 
 	<!-- Sekce dnešních objednávek -->
-	<div class="card bg-base-100 shadow-xl mb-8 border">
+	<div class="card bg-base-100 shadow-xl mb-8 border border-gray-300">
 		<div class="card-body">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="card-title">Objednávky za dnešní den</h2>
-				<div class="stats shadow bg-gray-200 border">
+				<div class="stats shadow bg-gray-200 border border-gray-300">
 					<div class="stat">
 						<div class="stat-title">Počet</div>
 						<div class="stat-value">{todayOrdersCount}</div>
@@ -281,7 +281,7 @@
 
 	<!-- Grafy -->
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-		<div class="card bg-base-100 shadow-xl border">
+		<div class="card bg-base-100 shadow-xl border border-gray-300">
 			<div class="card-body">
 				<h2 class="card-title">Vývoj objednávek</h2>
 				{#if orderData.length > 0}
@@ -293,7 +293,7 @@
 				{/if}
 			</div>
 		</div>
-		<div class="card bg-base-100 shadow-xl border">
+		<div class="card bg-base-100 shadow-xl border border-gray-300">
 			<div class="card-body">
 				<h2 class="card-title">Růst zákazníků</h2>
 				{#if customerData.length > 0}

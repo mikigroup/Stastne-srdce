@@ -211,7 +211,7 @@
 </script>
 
 <div class="flex flex-col sm:flex-row gap-2 mb-8">
-  <div class="card bg-base-100 shadow-lg border w-full">
+  <div class="card bg-base-100 shadow-lg border w-full border-gray-300">
     <div class="card-body p-4">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="flex flex-col gap-1">
