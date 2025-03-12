@@ -33,7 +33,7 @@
 
 <section>
 	<div class="footer_fix">
-		<div class="flex flex-col max-w-md px-4 pb-2 mx-auto bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
+		<div class="flex flex-col max-w-md px-4 mx-auto bg-white rounded-lg shadow p-10 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 			<div class="self-center mb-6 text-3xl font-light text-gray-800 sm:text-2xl">
 				Dokončení registrace
 			</div>
@@ -49,7 +49,7 @@
 							type="text"
 							id="name"
 							name="name"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Jméno"
 							required
 						/>
@@ -61,7 +61,7 @@
 							type="text"
 							id="surname"
 							name="surname"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Příjmení"
 							required
 						/>
@@ -78,7 +78,7 @@
 							type="text"
 							id="street"
 							name="street"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Ulice"
 							required
 						/>
@@ -90,7 +90,7 @@
 							type="text"
 							id="street_number"
 							name="street_number"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Číslo popisné"
 							required
 						/>
@@ -102,7 +102,7 @@
 							type="text"
 							id="city"
 							name="city"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Město"
 							required
 						/>
@@ -114,7 +114,7 @@
 							type="text"
 							id="zip"
 							name="zip"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="PSČ"
 							required
 						/>
@@ -126,7 +126,7 @@
 							type="tel"
 							id="telephone"
 							name="telephone"
-							class="input-field"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Telefon"
 							required
 						/>
@@ -134,7 +134,7 @@
 				</div>
 
 				<!-- Alergie -->
-				<div class="space-y-4">
+				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Alergie</h3>
 					<div class="flex gap-4">
 						<label class="flex items-center">
@@ -201,7 +201,7 @@
 				</div>
 
 				<!-- Způsob platby -->
-				<div class="space-y-4">
+				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Způsob platby</h3>
 					<div class="flex flex-col gap-2">
 						{#each [
@@ -248,7 +248,5 @@
 </section>
 
 <style>
-    .input-field {
-        @apply w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600;
-    }
+
 </style>
