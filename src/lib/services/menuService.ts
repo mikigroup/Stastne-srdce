@@ -314,12 +314,12 @@ export async function loadMenu(
 			// Vytvoříme novou verzi
 			const newVersionId = await createMenuVersion(supabase, {
 				id: menuId,
-				date: menuData.date,
-				soup: menuData.soup,
-				active: menuData.active,
-				notes: menuData.notes,
-				type: menuData.type,
-				nutri: menuData.nutri
+				date: menuData.date || new Date().toISOString(), // Zajištění, že date není null
+				soup: menuData.soup || "",
+				active: menuData.active === null ? false : menuData.active,
+				notes: menuData.notes || "",
+				type: menuData.type || "",
+				nutri: menuData.nutri || ""
 			});
 
 			versionId = newVersionId;
