@@ -4,13 +4,14 @@
 	import { goto } from "$app/navigation";
 
 	export let data: PageData;
-	export let form;
+	export let form: any; // Explicitně definujeme jako any, nebo by měl být správně typován
 
 	let loading = false;
-	let allergies = form?.data?.allergies === true ? "yes" : "no";
-	let allergiesDescription = form?.data?.allergies_description || "";
-	let deliveryMethod = form?.data?.delivery_method || "";
-	let paymentMethod = form?.data?.payment_method || "";
+	// Oprava přístupu k datům - přímý přístup k properties z form
+	let allergies = form?.allergies === true ? "yes" : "no";
+	let allergiesDescription = form?.allergies_description || "";
+	let deliveryMethod = form?.delivery_method || "";
+	let paymentMethod = form?.payment_method || "";
 
 	function handleSubmit() {
 		loading = true;
@@ -32,23 +33,23 @@
 </svelte:head>
 
 <section>
-	<div class="footer_fix">
-		<div class="flex flex-col max-w-md px-4 mx-auto bg-white rounded-lg shadow p-10 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
+	<div class="footer_fix mt-5">
+		<div class="flex flex-col max-w-md px-4 mx-auto rounded-lg shadow p-10 sm:px-6 md:px-8 lg:px-10 border border-gray-300 bg-stone-100">
 			<div class="self-center mb-6 text-3xl font-light text-gray-800 sm:text-2xl">
 				Dokončení registrace
 			</div>
 
 			<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
 				<!-- Osobní údaje -->
-				<div class="space-y-4">
+				<div class="space-y-4 pt-5">
 					<h3 class="text-lg font-medium">Osobní údaje</h3>
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.first_name ?? ""}
+							value={form?.first_name ?? ""}
 							type="text"
-							id="name"
-							name="name"
+							id="first_name"
+							name="first_name"
 							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Jméno"
 							required
@@ -57,10 +58,10 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.last_name ?? ""}
+							value={form?.last_name ?? ""}
 							type="text"
-							id="surname"
-							name="surname"
+							id="last_name"
+							name="last_name"
 							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="Příjmení"
 							required
@@ -74,7 +75,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.street ?? ""}
+							value={form?.street ?? ""}
 							type="text"
 							id="street"
 							name="street"
@@ -86,7 +87,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.street_number ?? ""}
+							value={form?.street_number ?? ""}
 							type="text"
 							id="street_number"
 							name="street_number"
@@ -98,7 +99,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.city ?? ""}
+							value={form?.city ?? ""}
 							type="text"
 							id="city"
 							name="city"
@@ -110,10 +111,10 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.zip_code ?? ""}
+							value={form?.zip_code ?? ""}
 							type="text"
-							id="zip"
-							name="zip"
+							id="zip_code"
+							name="zip_code"
 							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 							placeholder="PSČ"
 							required
@@ -122,7 +123,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.data?.telephone ?? ""}
+							value={form?.telephone ?? ""}
 							type="tel"
 							id="telephone"
 							name="telephone"
@@ -162,11 +163,11 @@
 					{#if allergies === "yes"}
 						<div class="flex flex-col">
               <textarea
-								name="allergiesDescription"
+								name="allergies_description"
 								bind:value={allergiesDescription}
 								maxlength="300"
 								placeholder="Popište vaše alergie (max 300 znaků)"
-								class="input-field"
+								class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
 								rows="3"
 							></textarea>
 							<span class="text-sm text-gray-500 mt-1">
@@ -188,7 +189,7 @@
 							<label class="flex items-center">
 								<input
 									type="radio"
-									name="deliveryMethod"
+									name="delivery_method"
 									{value}
 									bind:group={deliveryMethod}
 									class="mr-2"
@@ -212,7 +213,7 @@
 							<label class="flex items-center">
 								<input
 									type="radio"
-									name="paymentMethod"
+									name="payment_method"
 									{value}
 									bind:group={paymentMethod}
 									class="mr-2"
@@ -245,8 +246,4 @@
 			</form>
 		</div>
 	</div>
-</section>
-
-<style>
-
-</style>
+	</section>

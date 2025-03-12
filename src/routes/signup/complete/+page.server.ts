@@ -14,10 +14,11 @@ export const load: PageServerLoad = async ({
 		.select("*")
 		.eq("id", session.user.id)
 		.single();
+
 	/*
 	if (profile?.registration_status === "completed") {
 		throw redirect(303, "/");
-	}*/
+*/
 
 	return { profile };
 };
