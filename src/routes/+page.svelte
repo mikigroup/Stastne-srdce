@@ -18,7 +18,7 @@
 			<div
 				class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 				<div
-					class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl">
+					class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl border border-gray-300">
 					<!-- <div class="grid justify-center pb-5">
 					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
 					</div> -->
@@ -110,7 +110,7 @@
 						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
 						{#if texts && texts.length > 0}
 							{#each texts as text}
-								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50">
+								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
 									{#if text.title}
 										<h3
 											class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
