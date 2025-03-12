@@ -1,6 +1,34 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
+interface OrderItem {
+	id: string;
+	price: number;
+	quantity: number;
+	variant: {
+		id: string;
+		variant_number: string;
+		description: string;
+		menu: {
+			id: string;
+			date: string;
+			soup: string;
+		};
+	};
+}
+
+interface Order {
+	id: string;
+	created_at: string;
+	// Další vlastnosti objednávky
+	order_items: OrderItem[];
+	grouped_items?: Array<{ date: string; items: OrderItem[] }>;
+}
+
+interface GroupedItems {
+	[date: string]: OrderItem[];
+}
+
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession }
 }) => {
@@ -56,10 +84,11 @@ export const load: PageServerLoad = async ({
 
 	if (ordersError) {
 		console.error("Error fetching orders:", ordersError);
-	} else {
+	} else if (orders) {
 		// Group order items by menu date
-		orders.forEach((order) => {
-			const groupedItems = {};
+		orders.forEach((order: Order) => {
+			const groupedItems: GroupedItems = {};
+
 			order.order_items.forEach((item) => {
 				const date = item.variant.menu.date;
 				if (!groupedItems[date]) {
@@ -67,6 +96,7 @@ export const load: PageServerLoad = async ({
 				}
 				groupedItems[date].push(item);
 			});
+
 			order.grouped_items = Object.entries(groupedItems).map(
 				([date, items]) => ({ date, items })
 			);
@@ -76,7 +106,7 @@ export const load: PageServerLoad = async ({
 	return {
 		session,
 		profile,
-		orders
+		orders: orders || []
 	};
 };
 
@@ -94,28 +124,48 @@ export const actions: Actions = {
 			});
 		}
 
+		// Definice typu pro data profilu
+		interface ProfileData {
+			id: string;
+			first_name: string;
+			last_name: string;
+			telephone: string;
+			street: string;
+			street_number: string;
+			city: string;
+			zip_code: string;
+			ico: string;
+			dic: string;
+			company: string;
+			username: string;
+			allergies: boolean;
+			allergies_description: string | null;
+			delivery_method: string;
+			payment_method: string;
+			updated_at: string;
+		}
+
 		// Získání dat z formuláře
-		const profileData = {
+		const profileData: ProfileData = {
 			id: session.user.id,
-			first_name: formData.get("first_name") as string,
-			last_name: formData.get("last_name") as string,
-			telephone: formData.get("telephone") as string,
-			street: formData.get("street") as string,
-			street_number: formData.get("street_number") as string,
-			city: formData.get("city") as string,
-			zip_code: formData.get("zip_code") as string,
-			ico: formData.get("ico") as string,
-			dic: formData.get("dic") as string,
-			company: formData.get("company") as string,
-			username: formData.get("username") as string,
-			// Nová pole
+			first_name: (formData.get("first_name") as string) || "",
+			last_name: (formData.get("last_name") as string) || "",
+			telephone: (formData.get("telephone") as string) || "",
+			street: (formData.get("street") as string) || "",
+			street_number: (formData.get("street_number") as string) || "",
+			city: (formData.get("city") as string) || "",
+			zip_code: (formData.get("zip_code") as string) || "",
+			ico: (formData.get("ico") as string) || "",
+			dic: (formData.get("dic") as string) || "",
+			company: (formData.get("company") as string) || "",
+			username: (formData.get("username") as string) || "",
 			allergies: formData.get("allergies") === "yes",
 			allergies_description:
 				formData.get("allergies") === "yes"
-					? formData.get("allergiesDescription")
+					? (formData.get("allergies_description") as string) || null
 					: null,
-			delivery_method: formData.get("deliveryMethod") as string,
-			payment_method: formData.get("paymentMethod") as string,
+			delivery_method: (formData.get("delivery_method") as string) || "",
+			payment_method: (formData.get("payment_method") as string) || "",
 			updated_at: new Date().toISOString()
 		};
 

@@ -3,8 +3,26 @@
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
 
+	interface CompleteRegistrationForm {
+		first_name?: string;
+		last_name?: string;
+		street?: string;
+		street_number?: string;
+		city?: string;
+		zip_code?: string;
+		telephone?: string;
+		allergies?: boolean;
+		allergies_description?: string;
+		delivery_method?: string;
+		payment_method?: string;
+		message?: {
+			success: boolean;
+			display: string;
+		};
+	}
+
 	export let data: PageData;
-	export let form: any; // Explicitně definujeme jako any, nebo by měl být správně typován
+	export let form: CompleteRegistrationForm | null;
 
 	let loading = false;
 	// Oprava přístupu k datům - přímý přístup k properties z form
