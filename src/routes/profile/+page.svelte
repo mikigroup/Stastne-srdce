@@ -95,7 +95,7 @@
                 />
               </div>
             </div>
-            <hr class="w-32" />
+            <hr class="w-32 hidden md:block" />
           </div>
 
           <!-- Existing fields -->
@@ -116,7 +116,7 @@
                 />
               </div>
             </div>
-            <hr class="w-32" />
+            <hr class="w-32 hidden md:block" />
           </div>
 
           <div class="my-2">
@@ -135,7 +135,7 @@
                 />
               </div>
             </div>
-            <hr class="w-32" />
+            <hr class="w-32 hidden md:block" />
           </div>
 
           <div class="my-2">
@@ -154,7 +154,7 @@
                 />
               </div>
             </div>
-            <hr class="w-32" />
+            <hr class="w-32 hidden md:block" />
           </div>
 
           <div class="flex justify-center mt-5" on:click={toggleVisible}>
@@ -188,7 +188,7 @@
 													placeholder="Ulice" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -206,7 +206,7 @@
 													placeholder="Číslo popisné" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -223,7 +223,7 @@
 													placeholder="Město" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -240,7 +240,7 @@
 													placeholder="PSČ" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -257,7 +257,7 @@
 													placeholder="Firma" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -274,7 +274,7 @@
 													placeholder="IČO" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 									<div class="my-2">
 										<div class="flex flex-col items-center md:flex-row">
@@ -291,7 +291,7 @@
 													placeholder="DIČ" />
 											</div>
 										</div>
-										<hr class="w-32" />
+										<hr class="w-32 hidden md:block" />
 									</div>
 								</div>
 							{/if}
@@ -326,7 +326,7 @@
                     </label>
                   </div>
                 </div>
-                <hr class="w-32" />
+                <hr class="w-32 hidden md:block" />
               </div>
 
               {#if allergies === "yes"}
@@ -350,7 +350,7 @@
                       </span>
                     </div>
                   </div>
-                  <hr class="w-32" />
+                  <hr class="w-32 hidden md:block" />
                 </div>
               {/if}
 
@@ -373,7 +373,7 @@
                     </select>
                   </div>
                 </div>
-                <hr class="w-32" />
+                <hr class="w-32 hidden md:block" />
               </div>
 
               <!-- Způsob platby -->
@@ -395,7 +395,7 @@
                     </select>
                   </div>
                 </div>
-                <hr class="w-32" />
+                <hr class="w-32 hidden md:block" />
               </div>
             </div>
           {/if}
@@ -426,7 +426,7 @@
   <!-- Orders section -->
 	<div class="max-w-screen-lg mx-auto mt-20 mb-10 rounded-lg overflow-hidden shadow-lg bg-white">
 		<div class="bg-gradient-to-r from-green-700 to-green-900 p-6">
-			<h1 class="text-4xl font-bold text-white text-center">
+			<h1 class="text-3xl font-bold text-white text-center">
 				Moje objednávky
 			</h1>
 		</div>
@@ -445,13 +445,13 @@
 			{:else}
 				<div class="bg-gray-50 rounded-lg p-3 mb-6 flex justify-between items-center">
 					<p class="text-gray-600 font-medium">Celkem objednávek: {orders.length}</p>
-					<div class="text-sm">
+			<!--		<div class="text-sm">
 						<select class="border rounded-md p-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
 							<option>Všechny objednávky</option>
 							<option>Nové</option>
 							<option>Vyřízené</option>
 						</select>
-					</div>
+					</div>-->
 				</div>
 
 				<div class="space-y-6">

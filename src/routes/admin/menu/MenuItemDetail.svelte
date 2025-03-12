@@ -71,7 +71,7 @@
 			</div>
 		</div>
 
-		<div class="form-control w-full mb-2 border rounded-xl mt-5">
+		<div class="form-control w-full mb-2 rounded-xl mt-5">
 			<label class="label">
 				<span class="label-text">Hlavní chod</span>
 			</label>
@@ -120,13 +120,14 @@
 	</div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 max-w-2xl mx-auto">
 	<div class="form-control w-full mb-2">
-		<label class="label">
+		<label class="label block">
 			<span class="label-text">Poznámky</span>
 		</label>
 		<textarea
-			class="textarea textarea-bordered"
+			class="textarea textarea-bordered w-full border border-black !rounded-md"
+			rows="4"
 			bind:value={menu.notes}></textarea>
 	</div>
 	<!--<div class="form-control w-full mb-2">
@@ -150,8 +151,17 @@
 </div>
 
 <style>
-    input {
+    input, textarea, select {
         border: solid 1px;
         border-radius: 20px;
+    }
+
+    .textarea {
+        min-height: 100px;
+    }
+
+    .label {
+        display: block;
+        margin-bottom: 0.5rem;
     }
 </style>
