@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+	import { slide } from 'svelte/transition';
   import { enhance } from "$app/forms";
   import type { SubmitFunction } from "@sveltejs/kit";
-  import { fade } from "svelte/transition";
 
   export let data;
   export let form;
@@ -78,7 +77,7 @@
       use:enhance={handleSubmit}
       bind:this={profileForm}
     >
-      <div class="max-w-4xl p-5 pb-2 mx-auto bg-white border rounded-lg lg:mx-auto">
+      <div class="max-w-4xl p-5 pb-2 mx-auto bg-white border rounded-lg lg:mx-auto border-gray-300">
         <div class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg">
           <div class="my-2">
             <div class="flex flex-col items-center md:flex-row">
@@ -425,68 +424,142 @@
   </div>
 
   <!-- Orders section -->
-  <div class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-    <h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
-      Objednávky
-    </h1>
-    <div>
-      {#if !orders || orders.length === 0}
-        <p>Žádné objednávky</p>
-      {:else}
-        <ul class="space-y-4">
-          {#each orders as order}
-            <li class="border p-4 rounded-lg odd:bg-gray-200 even:bg-gray-100">
-              <button
-                class="w-full text-left transition-all duration-300 ease-in-out"
-                class:underline={selectedOrderId === order.id}
-                class:text-xl={selectedOrderId === order.id}
-                on:click={() => toggleOrderDetails(order.id)}
-              >
-                Objednávka <strong>{order.order_number}</strong> zde dne {formatDate(order.created_at)}
-              </button>
-              {#if expandedOrders[order.id]}
-                <div class="border p-5 rounded-xl bg-white">
-                  <p>
-                    <strong>Celková cena:</strong>
-                    {order.total_price}
-                    {order.currency}
-                  </p>
-                  <p><strong>Stav:</strong> {order.state}</p>
-                </div>
-                <h3 class="mt-2">Položky:</h3>
-                {#each order.grouped_items as group}
-                  <div class="mb-4 border p-5 rounded-xl bg-white">
-                    <h4 class="font-semibold underline">
-                      Menu ze dne: {formatDate(group.date)}
-                    </h4>
-                    <p class="py-2">
-                      <strong>Polévka:</strong>
-                      {group.items[0].variant.menu.soup}
-                    </p>
-                    <ul class="list-disc pl-4">
-                      {#each group.items as item}
-                        <strong>Varianta:</strong>
-                        {item.variant.variant_number} - {item.variant.description}<br />
-                        <strong>Cena:</strong>
-                        {item.price}<br />
-                        <strong>Množství:</strong>
-                        {item.quantity}
-                        <br /> <br />
-                      {/each}
-                    </ul>
-                  </div>
-                {/each}
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      {/if}
-    </div>
-  </div>
+	<div class="max-w-screen-lg mx-auto mt-20 mb-10 rounded-lg overflow-hidden shadow-lg bg-white">
+		<div class="bg-gradient-to-r from-green-700 to-green-900 p-6">
+			<h1 class="text-4xl font-bold text-white text-center">
+				Moje objednávky
+			</h1>
+		</div>
+
+		<div class="p-6">
+			{#if !orders || orders.length === 0}
+				<div class="flex flex-col items-center justify-center p-12 text-gray-500">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+					</svg>
+					<p class="text-xl">Zatím nemáte žádné objednávky</p>
+					<a href="/jidelnicek" class="mt-4 bg-green-800 text-white py-2 px-6 rounded-full hover:bg-green-700 transition-colors font-medium">
+						Přejít na jídelníček
+					</a>
+				</div>
+			{:else}
+				<div class="bg-gray-50 rounded-lg p-3 mb-6 flex justify-between items-center">
+					<p class="text-gray-600 font-medium">Celkem objednávek: {orders.length}</p>
+					<div class="text-sm">
+						<select class="border rounded-md p-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+							<option>Všechny objednávky</option>
+							<option>Nové</option>
+							<option>Vyřízené</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="space-y-6">
+					{#each orders as order}
+						<div class="bg-white rounded-xl overflow-hidden shadow border border-gray-100 hover:shadow-md transition-shadow">
+							<div
+								class="flex justify-between items-center p-4 cursor-pointer"
+								class:bg-green-50={selectedOrderId === order.id}
+								on:click={() => toggleOrderDetails(order.id)}
+							>
+								<div class="flex items-center space-x-3">
+									<div class="bg-green-800 h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold">
+										#{order.order_number}
+									</div>
+									<div>
+										<div class="font-semibold">{formatDate(order.created_at)}</div>
+										<div class="text-sm text-gray-500">{order.total_price} {order.currency}</div>
+									</div>
+								</div>
+
+								<div class="flex items-center space-x-3">
+									<div class="px-3 py-1 rounded-full text-sm"
+											 class:bg-yellow-100={order.state === 'Nová'}
+											 class:text-yellow-800={order.state === 'Nová'}
+											 class:bg-green-100={order.state === 'Vyřízená'}
+											 class:text-green-800={order.state === 'Vyřízená'}
+									>
+										{order.state}
+									</div>
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 transition-transform" class:rotate-180={expandedOrders[order.id]} viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+									</svg>
+								</div>
+							</div>
+
+							{#if expandedOrders[order.id]}
+								<div class="border-t border-gray-100 p-5" transition:slide={{ duration: 300 }}>
+									<div class="grid md:grid-cols-3 gap-4 mb-4">
+										<div class="bg-gray-50 p-3 rounded-lg">
+											<div class="text-sm text-gray-500">Celková cena</div>
+											<div class="font-semibold text-lg">{order.total_price},-</div>
+										</div>
+										<div class="bg-gray-50 p-3 rounded-lg">
+											<div class="text-sm text-gray-500">Stav</div>
+											<div class="font-semibold text-lg">{order.state}</div>
+										</div>
+										<div class="bg-gray-50 p-3 rounded-lg">
+											<div class="text-sm text-gray-500">Číslo objednávky</div>
+											<div class="font-semibold text-lg">#{order.order_number}</div>
+										</div>
+									</div>
+
+									<h3 class="font-semibold text-lg mb-3 text-gray-800">Položky objednávky</h3>
+
+									<div class="space-y-4">
+										{#each order.grouped_items as group}
+											<div class="border border-gray-200 rounded-lg overflow-hidden">
+												<div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
+													<div class="font-medium">Menu ze dne: {formatDate(group.date)}</div>
+													<div class="text-sm text-gray-500">
+														{group.items.reduce((total, item) => total + parseInt(item.quantity), 0)} položek
+													</div>
+												</div>
+
+												<div class="p-4">
+													<div class="flex items-center mb-3">
+														<div class="h-6 w-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mr-2">
+															<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+																<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0V5z" clip-rule="evenodd" />
+															</svg>
+														</div>
+														<div class="font-medium">Polévka: {group.items[0].variant.menu.soup}</div>
+													</div>
+
+													<div class="space-y-3">
+														{#each group.items as item}
+															<div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+																<div class="grid md:grid-cols-4 gap-2">
+																	<div class="col-span-2">
+																		<div class="text-sm text-gray-500">Varianta</div>
+																		<div>{item.variant.variant_number}. {item.variant.description}</div>
+																	</div>
+																	<div>
+																		<div class="text-sm text-gray-500">Cena</div>
+																		<div class="font-medium">{item.price} Kč</div>
+																	</div>
+																	<div>
+																		<div class="text-sm text-gray-500">Množství</div>
+																		<div class="font-medium">{item.quantity} ks</div>
+																	</div>
+																</div>
+															</div>
+														{/each}
+													</div>
+												</div>
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
 </section>
 
 <style>
-  .input-field {
-    @apply w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600;
-  }
+
 </style>

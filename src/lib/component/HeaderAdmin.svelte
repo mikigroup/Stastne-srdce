@@ -108,13 +108,13 @@
 				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<ul
 					tabindex="0"
-					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-					<li><a href="/">Klientská část</a></li>
-					<li><a href={$ROUTES.ADMIN.BASE}>Nástěnka</a></li>
-					<li><a href="/admin/customer">Zákazníci</a></li>
-					<li><a href="/admin/order">Objednávky</a></li>
-					<li><a href="/admin/menu">Menu</a></li>
-					<li><a href="/admin/text">Texty</a></li>
+					class=" menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+					<li><a class="text-sm" href="/">Klientská část</a></li>
+					<li><a class="text-sm" href={$ROUTES.ADMIN.BASE}>Nástěnka</a></li>
+					<li><a class="text-sm" href="/admin/customer">Zákazníci</a></li>
+					<li><a class="text-sm" href="/admin/order">Objednávky</a></li>
+					<li><a class="text-sm" href="/admin/menu">Menu</a></li>
+					<li><a class="text-sm" href="/admin/text">Texty</a></li>
 				</ul>
 			</div>
 			<p class="text-xl">Malý LEO</p>
@@ -163,12 +163,12 @@
 							class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
 							<li>
 								<!-- svelte-ignore a11y-missing-attribute -->
-								<a href="/admin/settings" class="justify-between">
+								<a href="/admin/settings" class="justify-between text-sm">
 									Nastavení účtu
 									<span class="badge">Nový</span>
 								</a>
 							</li>
-							<li><a on:click={signOut} disabled={loading}>Odhlásit se</a></li>
+							<li><a class="text-sm" on:click={signOut} disabled={loading}>Odhlásit se</a></li>
 						</ul>
 					</div>
 				</div>
