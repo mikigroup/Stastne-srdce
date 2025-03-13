@@ -323,7 +323,7 @@
 								<button
 									on:click={() => (showModal = true)}
 									type="button"
-									class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black">
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-103">
 									<span>Potvrzení košíku</span>
 								</button>
 

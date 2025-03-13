@@ -13,7 +13,7 @@
 </svelte:head>
 
 <section>
-	<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26 lg:mt-10">
+	<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26">
 		<div class="">
 			<div
 				class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">

@@ -338,7 +338,7 @@
                     <div class="w-full basis-1/2">
                       <textarea
                         id="allergiesDescription"
-                        name="allergiesDescription"
+                        name="allergies_description"
                         bind:value={allergiesDescription}
                         maxlength="300"
                         class="w-full px-4 py-2 text-base text-center text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
@@ -362,12 +362,12 @@
                   </div>
                   <div class="w-full basis-1/2">
                     <select
-                      name="deliveryMethod"
+                      name="delivery_method"
                       bind:value={deliveryMethod}
                       class="w-full px-4 py-2 text-base text-center text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
                     >
                       <option value="">Vyberte způsob dodání</option>
-                      <option value="own">Vlastní nosič</option>
+                      <option value="vlastní">Vlastní nosič</option>
                       <option value="reBox">REkrabička (záloha 160 Kč za set/80 Kč za jednu)</option>
                       <option value="menuBox">Menu Box (12 Kč/kus)</option>
                     </select>
@@ -384,7 +384,7 @@
                   </div>
                   <div class="w-full basis-1/2">
                     <select
-                      name="paymentMethod"
+                      name="payment_method"
                       bind:value={paymentMethod}
                       class="w-full px-4 py-2 text-base text-center text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
                     >
