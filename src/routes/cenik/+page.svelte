@@ -32,27 +32,27 @@
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">Vyšetření na přístroji InBody</td>
               <td class="px-4 py-3">Detailní hodnocení tělesného složení člověka a konzultace výsledků, součást vstupního vyšetření při dlouhodobé péči</td>
-              <td class="px-4 py-3 text-right">700</td>
+              <td class="px-4 py-3 text-right">750</td>
             </tr>
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">Vyšetření Max Pulse Medicore</td>
               <td class="px-4 py-3">Vyšetření stavu a průchodnosti cév a aktivity vegetativního nervového systému plus konzultace výsledků</td>
-              <td class="px-4 py-3 text-right">700</td>
+              <td class="px-4 py-3 text-right">750</td>
             </tr>
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">Vyšetření InBody a Max Pulse</td>
               <td class="px-4 py-3">Provedení obou vyšetření a konzultace výsledků</td>
-              <td class="px-4 py-3 text-right">1 300</td>
+              <td class="px-4 py-3 text-right">1 400</td>
             </tr>
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">Jednotlivá konzultace obecná</td>
               <td class="px-4 py-3">Jakékoliv téma z oblasti výživy bez měření na přístroji InBody a vyšetření Max Pulse</td>
-              <td class="px-4 py-3 text-right">1 300</td>
+              <td class="px-4 py-3 text-right">1 600</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">1 200</td>
+              <td class="px-4 py-3 text-right">1 400</td>
             </tr>
           </tbody>
         </table>
@@ -77,72 +77,72 @@
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">5 konzultací, max. doba 3 měsíce s vyšetřením InBody</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 3x měření na přístroji InBody</td>
-              <td class="px-4 py-3 text-right">6 300</td>
+              <td class="px-4 py-3 text-right">7 500</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">5 900</td>
+              <td class="px-4 py-3 text-right">7 200</td>
             </tr>
 
             <!-- 5 konzultací s InBody a Max Pulse -->
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">5 konzultací, max. doba 3 měsíce s vyšetřeními InBody a Max Pulse</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 3x měření na přístroji InBody a 3x na Max Pulse</td>
-              <td class="px-4 py-3 text-right">8 200</td>
+              <td class="px-4 py-3 text-right">9 500</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">7 900</td>
+              <td class="px-4 py-3 text-right">9 200</td>
             </tr>
 
             <!-- 10 konzultací s InBody -->
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">10 konzultací, max. doba 8 měsíců s vyšetřením InBody</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 8x měření na přístroji InBody</td>
-              <td class="px-4 py-3 text-right">12 500</td>
+              <td class="px-4 py-3 text-right">14 800</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">11 600</td>
+              <td class="px-4 py-3 text-right">14 400</td>
             </tr>
 
             <!-- 10 konzultací s InBody a Max Pulse -->
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">10 konzultací, max. doba 8 měsíců s vyšetřením InBody a Max Pulse</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 8x měření na přístroji InBody a 5x na Max Pulse</td>
-              <td class="px-4 py-3 text-right">15 500</td>
+              <td class="px-4 py-3 text-right">18 200</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">14 700</td>
+              <td class="px-4 py-3 text-right">17 800</td>
             </tr>
 
             <!-- 20 konzultací s InBody -->
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">20 konzultací, max. doba 12 měsíců s vyšetřením InBody</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 18x měření na přístroji InBody</td>
-              <td class="px-4 py-3 text-right">25 200</td>
+              <td class="px-4 py-3 text-right">28 500</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">23 200</td>
+              <td class="px-4 py-3 text-right">28 000</td>
             </tr>
 
             <!-- 20 konzultací s InBody a Max Pulse -->
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">20 konzultací, max. doba 12 měsíců s vyšetřením InBody a Max Pulse</td>
               <td class="px-4 py-3">Snižování či zvyšování váhy, metabolická onemocnění, součástí je 18x měření na přístroji InBody a 10x na Max Pulse</td>
-              <td class="px-4 py-3 text-right">31 000</td>
+              <td class="px-4 py-3 text-right">35 500</td>
             </tr>
             <tr class="border-b hover:bg-gray-50 bg-gray-50">
               <td class="px-4 py-3 font-medium pl-8">Sleva</td>
               <td class="px-4 py-3">Stálí klienti, důchodci, děti a studenti do 18 let, ZTP</td>
-              <td class="px-4 py-3 text-right">29 900</td>
+              <td class="px-4 py-3 text-right">35 000</td>
             </tr>
           </tbody>
         </table>
@@ -176,12 +176,12 @@
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">Vytvoření jídelníčku</td>
               <td class="px-4 py-3">Na týden</td>
-              <td class="px-4 py-3 text-right">3 900</td>
+              <td class="px-4 py-3 text-right">4 500</td>
             </tr>
             <tr class="border-b hover:bg-gray-50">
               <td class="px-4 py-3 font-medium"></td>
               <td class="px-4 py-3">Na 14 dnů</td>
-              <td class="px-4 py-3 text-right">6 900</td>
+              <td class="px-4 py-3 text-right">8 000</td>
             </tr>
           </tbody>
         </table>
@@ -212,7 +212,7 @@
       </div>
 
       <div class="p-4 bg-gray-50 border-t italic text-sm">
-        <p>Ceny jsou uvedeny v Kč a jsou platné od 1.1.2025. Změna cen vyhrazena.</p>
+        <p>Ceny jsou uvedeny v Kč a jsou platné od 1.3.2025. Změna cen vyhrazena.</p>
       </div>
     </div>
 
