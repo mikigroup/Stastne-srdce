@@ -176,7 +176,6 @@
 		}
 	}
 
-	// Zpracování odeslání formuláře
 	const handleSubmit: SubmitFunction = ({ formData }) => {
 		updateHtmlFromEditor(); // Aktualizujeme html proměnnou před odesláním
 
@@ -193,12 +192,6 @@
 
 		if (!submittedPage) {
 			alert("Stránka je povinná");
-			return;
-		}
-
-		// Pro jídelníček nebo obedy není nadpis povinný
-		if (submittedPage !== "jidelnicek" && submittedPage !== "obedy" && !submittedTitle) {
-			alert("Název je povinný pro všechny stránky kromě jídelníčku");
 			return;
 		}
 
@@ -375,7 +368,7 @@
 						name="title"
 						type="text"
 						bind:value={title}
-						required={ selectedPage !== "hlavni"} />
+						 />
 				</div>
 				{/if}
 
@@ -439,7 +432,6 @@
 			<!-- Tlačítka a zpětná vazba -->
 			<div class="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<button
-					disabled={loading || !html || !selectedPage || (selectedPage !== "jidelnicek" && selectedPage !== "obedy" && !title)}
 					type="submit"
 					class="px-6 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
 					{loading ? "Ukládá se..." : "Uložit text"}

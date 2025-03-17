@@ -46,7 +46,7 @@
     </li>
 		  <li class="flex items-start gap-2">
         <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
-        <div>realizace přednášek na různá témata z oblasti výživy</div>
+        <div><strong>realizace přednášek na různá témata z oblasti výživy</strong></div>
     </li>
 
 
@@ -109,7 +109,7 @@
 					<div
 						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
 						{#if texts && texts.length > 0}
-							{#each texts as text}
+							{#each texts.filter(text => (text.title || text.text)) as text}
 								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
 									{#if text.title}
 										<h3
@@ -125,7 +125,7 @@
 									{/if}
 								</div>
 							{/each}
-						{:else if import.meta.env.DEV}
+						{:else}
 							<div class="col-span-full text-center text-gray-500">
 								Žádné texty k zobrazení
 							</div>

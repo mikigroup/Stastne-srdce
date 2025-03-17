@@ -72,33 +72,6 @@ export const actions: Actions = {
 			textLength: text?.length
 		});
 
-		// Základní validace
-		if (!text || !page) {
-			return fail(400, {
-				message: {
-					success: false,
-					display: "Text a stránka jsou povinné"
-				},
-				title,
-				text,
-				page,
-				position
-			});
-		}
-
-		// Nadpis je povinný jen u jiných stránek než jidelnicek/obedy
-		if (page !== "jidelnicek" && page !== "obedy" && !title) {
-			return fail(400, {
-				message: {
-					success: false,
-					display: "Nadpis je povinný pro všechny stránky kromě jídelníčku"
-				},
-				text,
-				page,
-				position
-			});
-		}
-
 		try {
 			// Připravení dat pro aktualizaci
 			const updateData = {
@@ -114,7 +87,12 @@ export const actions: Actions = {
 				.from("texts")
 				.select("id")
 				.eq("page", page)
+				.eq("position", updateData.position)
 				.maybeSingle();
+
+			if (updateData.title === undefined) {
+				updateData.title = ""; // Nastavíme prázdný řetězec místo undefined
+			}
 
 			let result;
 
