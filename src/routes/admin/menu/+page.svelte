@@ -334,28 +334,26 @@
 	</div>
 </section>
 
-<div class="flex justify-between mb-4">
-	<div class="dropdown">
-		<button class="btn btn-outline" tabindex="0">Sloupce</button>
-		<ul
-			tabindex="0"
-			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-			{#each $table.getAllLeafColumns() as column}
-				{#if column.id !== 'actions'}
-					<li>
-						<label>
-							<input
-								type="checkbox"
-								checked={column.getIsVisible()}
-								on:change={column.getToggleVisibilityHandler()}
-							/>
-							{columnNames[column.id] || column.id}
-						</label>
-					</li>
-				{/if}
-			{/each}
-		</ul>
-	</div>
+<div class="flex justify-end dropdown mb-4">
+	<button class="btn btn-outline" tabindex="0">Sloupce</button>
+	<ul
+		tabindex="0"
+		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
+		{#each $table.getAllLeafColumns() as column}
+			{#if column.id !== 'actions'}
+				<li>
+					<label>
+						<input
+							type="checkbox"
+							checked={column.getIsVisible()}
+							on:change={column.getToggleVisibilityHandler()}
+						/>
+						{columnNames[column.id] || column.id}
+					</label>
+				</li>
+			{/if}
+		{/each}
+	</ul>
 </div>
 
 {#key transitionKey}
@@ -460,7 +458,6 @@
 		</div>
 	</section>
 {/key}
-<div class="justify-end flex text-sm">Max. 50 položek na stránce</div>
 
 <style>
     .truncate {

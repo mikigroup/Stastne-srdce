@@ -25,7 +25,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.from("menu_versions")
 			.select("menu_id, date")
 			.gte("date", currentDateStr)
-			.is("valid_to", null); // Pouze aktivní verze
+			.is("valid_to", null)
+			.is("active", true);
 
 		if (versionsError) {
 			throw error(500, "Nepodařilo se najít budoucí menu");
@@ -35,6 +36,17 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const uniqueMenuIds = [
 			...new Set(futureVersions?.map((v) => v.menu_id) || [])
 		];
+
+		// Načteme menu s kontrolou, zda nejsou smazaná
+		const { data: menus, error: menusError } = await supabase
+			.from("menus")
+			.select("id")
+			.in("id", uniqueMenuIds)
+			.eq("deleted", false);
+
+		if (menusError) {
+			throw error(500, "Nepodařilo se načíst menu");
+		}
 
 		// Pro každé menu načteme kompletní data
 		const menuPromises = uniqueMenuIds.map((menuId) =>
