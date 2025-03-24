@@ -12,9 +12,10 @@ export const load: PageServerLoad = async ({
 
 	const page = parseInt(url.searchParams.get("page") || "1");
 	const searchQuery = url.searchParams.get("search") || "";
+	const sort = url.searchParams.get("sort") || "date_desc";
+	const itemsPerPage = parseInt(url.searchParams.get("itemsPerPage") || "50");
 
 	try {
-		// Use the new loadMenuList function
 		const {
 			menus: menusWithVersions,
 			totalItems,
@@ -23,8 +24,9 @@ export const load: PageServerLoad = async ({
 		} = await loadMenuList(supabase, {
 			page,
 			searchQuery,
-			sort: "date_desc",
-			showDeleted: false
+			sort: sort as "date_desc" | "date_asc",
+			showDeleted: false,
+			itemsPerPage
 		});
 
 		// 6. Získáme nastavení tabulky z profilu
@@ -46,8 +48,9 @@ export const load: PageServerLoad = async ({
 			totalPages,
 			totalItems,
 			itemsOnCurrentPage: menusWithVersions.length,
-			itemsPerPage: 10,
-			searchQuery
+			itemsPerPage, // Předáme do frontendu
+			searchQuery,
+			sort
 		};
 	} catch (error) {
 		console.error("Error in menu page server load:", error);

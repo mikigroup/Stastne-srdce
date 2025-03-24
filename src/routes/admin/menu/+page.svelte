@@ -32,7 +32,8 @@
 		totalItems,
 		itemsOnCurrentPage,
 		itemsPerPage,
-		searchQuery
+		searchQuery,
+		sort
 	} = data;
 	$: ({
 		session,
@@ -44,17 +45,17 @@
 		totalItems,
 		itemsOnCurrentPage,
 		itemsPerPage,
-		searchQuery
+		searchQuery,
+		sort
 	} = data);
 
 	let loading = false;
 	let searchInput = searchQuery;
-	let transitionKey = 0; // Pro klíčované přechody
+	let transitionKey = 0;
 
-	// Výchozí stav řazení - řadíme podle data
-	let sorting: SortingState = [
-		{ id: 'date', desc: true } // Výchozí řazení podle data sestupně
-	];
+	// Možnosti pro počet položek na stránce
+	const itemsPerPageOptions = [10, 25, 50, 100];
+	let selectedItemsPerPage = itemsPerPage;
 
 	// Navigate to new menu page
 	function newMenuPage() {
@@ -63,10 +64,10 @@
 
 	// Format date to Czech format (DD.MM.YYYY)
 	function formatDateToCzech(date: any) {
-		if (!date) return ""; // Return empty string if date is null or undefined
+		if (!date) return "";
 		const parts = date.split("-");
 		if (parts.length !== 3) {
-			return date; // Return original date if it's not in the expected format
+			return date;
 		}
 		const [year, month, day] = parts;
 		return `${day}.${month}.${year}`;
@@ -129,27 +130,11 @@
 		saveTableSettings(visibleColumns);
 	};
 
-	// Callback funkce pro aktualizaci řazení
-	const setSorting: OnChangeFn<SortingState> = updater => {
-		if (updater instanceof Function) {
-			sorting = updater(sorting);
-		} else {
-			sorting = updater;
-		}
-		options.update(old => ({
-			...old,
-			state: {
-				...old.state,
-				sorting,
-			},
-		}));
-	};
-
 	// Save table settings to user profile
 	async function saveTableSettings(columnVisibility: VisibilityState) {
 		if (session?.user.id == undefined) {
 			console.error("Uživatel není přihlášen");
-			return; // Exit if user is not logged in
+			return;
 		}
 
 		const { error } = await supabase
@@ -162,48 +147,22 @@
 		}
 	}
 
-	// Filter menus based on search query
-	$: filteredMenus = menus?.filter(
-		(menu) =>
-			searchQuery
-				? Object.values(menu).some((value) =>
-					// Check if any menu property includes the search query
-					value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-				) ||
-				menu.variants.some((variant) =>
-					// Check if any variant description includes the search query
-					variant.description
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase())
-				)
-				: true // If no search query, return all menus
-	);
-
 	// Define table columns with TanStack column definition
 	const columns: ColumnDef<any>[] = columnOrder.map(key => ({
 		accessorKey: key,
 		id: key,
 		header: columnNames[key],
-		// Nastavení velikostí sloupců - variants bude nejširší
 		size: key === 'variants' ? 400 :
 			key === 'soup' ? 150 :
 				key === 'date' ? 100 :
 					key === 'active' ? 80 : 100,
-		// Pro některé sloupce budeme používat speciální řazení
-		enableSorting: key !== 'variants', // Zakážeme řazení pro sloupce, které jsou pole
-		sortingFn: key === 'date'
-			? (rowA, rowB, columnId) => {
-				const dateA = new Date(rowA.original.currentVersion?.date || rowA.original.date);
-				const dateB = new Date(rowB.original.currentVersion?.date || rowB.original.date);
-				return dateA.getTime() - dateB.getTime();
-			}
-			: 'alphanumeric',
+		enableSorting: false, // Vypnuto, protože řadíme na serveru
 		cell: info => {
 			const value = info.getValue();
 			if (key === "date") {
 				return formatDateToCzech(value);
 			} else if (key === "variants") {
-				return value; // Zpracujeme v template
+				return value;
 			} else if (key === "active") {
 				return value ? "ANO" : "NE";
 			}
@@ -216,7 +175,7 @@
 		id: 'actions',
 		header: 'Editovat',
 		size: 80,
-		enableSorting: false, // Zakážeme řazení pro sloupec akcí
+		enableSorting: false,
 		cell: info => {
 			return {
 				id: info.row.original.id,
@@ -226,16 +185,13 @@
 
 	// Create table options
 	const options = writable<TableOptions<any>>({
-		data: filteredMenus || [],
+		data: menus || [],
 		columns,
 		state: {
 			columnVisibility: visibleColumns,
-			sorting, // Přidáme výchozí stav řazení
 		},
 		onColumnVisibilityChange: setColumnVisibility,
-		onSortingChange: setSorting, // Přidáme handler pro změnu řazení
 		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(), // Přidáme model pro řazení
 		enableColumnResizing: true,
 		columnResizeMode: 'onChange',
 		debugTable: false,
@@ -245,10 +201,10 @@
 	$: table = createSvelteTable(options);
 
 	// Update data when it changes
-	$: if (filteredMenus) {
+	$: if (menus) {
 		options.update(opts => ({
 			...opts,
-			data: filteredMenus,
+			data: menus,
 		}));
 	}
 
@@ -257,9 +213,8 @@
 		try {
 			loading = true;
 			if (currentPage > 1) {
-				// Check if we're not on the first page
 				transitionKey++;
-				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}&sort=${sort}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání předchozí stránky:", error);
@@ -273,9 +228,8 @@
 		try {
 			loading = true;
 			if (currentPage < totalPages) {
-				// Check if we're not on the last page
 				transitionKey++;
-				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}&sort=${sort}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání další stránky:", error);
@@ -288,12 +242,31 @@
 	async function handleSearch() {
 		loading = true;
 		try {
-			await goto(`?search=${searchInput}&page=1`);
+			await goto(`?search=${searchInput}&page=1&itemsPerPage=${selectedItemsPerPage}&sort=${sort}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání:", error);
 		} finally {
 			loading = false;
 		}
+	}
+
+	// Handle change of items per page
+	async function handleItemsPerPageChange() {
+		loading = true;
+		try {
+			// Reset to first page when changing items per page
+			await goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}&sort=${sort}`);
+		} catch (error) {
+			console.error("Chyba při změně počtu položek na stránce:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Handle sort change
+	function handleSort() {
+		const newSort = sort === 'date_desc' ? 'date_asc' : 'date_desc';
+		goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}&sort=${newSort}`);
 	}
 </script>
 
@@ -340,39 +313,53 @@
 			Další stránka
 		</button>
 	</div>
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
+	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4 gap-4">
 		<p>Celkový počet menu: {totalItems}</p>
+
+		<div class="flex items-center gap-2 text-nowrap">
+			<span>Položek na stránce:</span>
+			<select
+				class="select select-bordered select-sm"
+				bind:value={selectedItemsPerPage}
+				on:change={handleItemsPerPageChange}
+			>
+				{#each itemsPerPageOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+
 		<p>Stránka {currentPage} z {totalPages}</p>
 		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} menu</p>
 	</div>
 </section>
 
-<div class="flex justify-end dropdown mb-4">
-	<button class="btn btn-outline" tabindex="0">Sloupce</button>
-	<ul
-		tabindex="0"
-		class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
-		{#each $table.getAllLeafColumns() as column}
-			{#if column.id !== 'actions'}
-				<li>
-					<label>
-						<input
-							type="checkbox"
-							checked={column.getIsVisible()}
-							on:change={column.getToggleVisibilityHandler()}
-						/>
-						{columnNames[column.id] || column.id}
-					</label>
-				</li>
-			{/if}
-		{/each}
-	</ul>
+<div class="flex justify-between mb-4">
+	<div class="dropdown">
+		<button class="btn btn-outline" tabindex="0">Sloupce</button>
+		<ul
+			tabindex="0"
+			class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52">
+			{#each $table.getAllLeafColumns() as column}
+				{#if column.id !== 'actions'}
+					<li>
+						<label>
+							<input
+								type="checkbox"
+								checked={column.getIsVisible()}
+								on:change={column.getToggleVisibilityHandler()}
+							/>
+							{columnNames[column.id] || column.id}
+						</label>
+					</li>
+				{/if}
+			{/each}
+		</ul>
+	</div>
 </div>
 
 {#key transitionKey}
 	<section in:fade={{ duration: 300 }} out:fade={{ duration: 150 }}>
-		<!-- Sémantická tabulka používající TanStack Table -->
 		<div class="overflow-x-auto border border-gray-500 rounded-xl shadow-sm">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-300 border-b-gray-700 border">
@@ -383,28 +370,23 @@
 								class="px-4 py-3 uppercase tracking-wider {header.column.id === 'actions' ? 'text-right' : 'text-left'}"
 								style="width: {header.getSize()}px; position: relative;"
 							>
-								{#if !header.isPlaceholder && header.column.getCanSort()}
-									<!-- Řaditelné hlavičky -->
+								{#if header.column.id === 'date'}
 									<div
 										class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'} cursor-pointer select-none"
-										on:click={header.column.getToggleSortingHandler()}
+										on:click={handleSort}
 										role="button"
-										title="Seřadit podle {header.column.columnDef.header}"
+										title="Seřadit podle data"
 									>
 										{header.column.columnDef.header}
-										<!-- Indikátor řazení -->
 										<span class="ml-2">
-										{#if header.column.getIsSorted() === "asc"}
-											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>
-										{:else if header.column.getIsSorted() === "desc"}
-											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
-										{:else}
-											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down opacity-20"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-										{/if}
-									</span>
+											{#if sort === 'date_asc'}
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>
+											{:else}
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+											{/if}
+										</span>
 									</div>
 								{:else}
-									<!-- Neřaditelné hlavičky -->
 									<div class="flex {header.column.id === 'actions' ? 'justify-end' : 'items-center'}">
 										{header.column.columnDef.header}
 									</div>
@@ -432,7 +414,7 @@
 							</div>
 						</td>
 					</tr>
-				{:else if filteredMenus && filteredMenus.length > 0}
+				{:else if menus && menus.length > 0}
 					{#each $table.getRowModel().rows as row, index}
 						<tr
 							class="hover:bg-cyan-700 hover:text-white transition-colors {index % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}"
@@ -478,7 +460,7 @@
 		</div>
 	</section>
 {/key}
-<div class="justify-end flex text-sm">Max. 50 itemů na stránce</div>
+<div class="justify-end flex text-sm">Max. 50 položek na stránce</div>
 
 <style>
     .truncate {

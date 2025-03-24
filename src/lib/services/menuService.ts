@@ -680,41 +680,16 @@ export async function loadMenuList(
 			const dateB = new Date(b.date);
 
 			// Seřadit podle parametru sort
-			return sort === "date_desc"
-				? dateB.getTime() - dateA.getTime()
-				: dateA.getTime() - dateB.getTime();
+			return options.sort === "date_asc"
+				? dateA.getTime() - dateB.getTime()
+				: dateB.getTime() - dateA.getTime();
 		});
 
-		// Vypíšeme celkové seřazení pro debugging
-		console.log(
-			`Seřazení všech menu:`,
-			menusWithVersions.slice(0, 20).map((m) => ({
-				// Omezíme výpis na prvních 20 pro přehlednost
-				id: m.id,
-				date: m.date,
-				formattedDate: new Date(m.date).toISOString().split("T")[0]
-			}))
-		);
-
-		// Teprve po seřazení aplikujeme stránkování
 		const totalItems = menusWithVersions.length;
 		const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 		const startIndex = (page - 1) * itemsPerPage;
 		const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 		const paginatedMenus = menusWithVersions.slice(startIndex, endIndex);
-
-		console.log(
-			`Stránkování: ${startIndex} až ${endIndex} z ${totalItems} menu`
-		);
-
-		console.log(
-			`Menu na stránce ${page}:`,
-			paginatedMenus.map((m) => ({
-				id: m.id,
-				date: m.date,
-				formattedDate: new Date(m.date).toISOString().split("T")[0]
-			}))
-		);
 
 		return {
 			menus: paginatedMenus,
