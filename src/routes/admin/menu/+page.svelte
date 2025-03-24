@@ -163,12 +163,11 @@
 				return formatDateToCzech(value);
 			} else if (key === "variants") {
 				return value;
-			} else if (key === "active") {
-				return value ? "ANO" : "NE";
 			}
 			return value ?? "";
 		}
 	}));
+
 
 	// Přidáme sloupec "Upravit"
 	columns.push({
@@ -268,6 +267,8 @@
 		const newSort = sort === 'date_desc' ? 'date_asc' : 'date_desc';
 		goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}&sort=${newSort}`);
 	}
+
+	$: console.log('Menu data:', menus?.map(m => ({id: m.id, active: m.active})));
 </script>
 
 <svelte:head>
@@ -433,6 +434,8 @@
 										</div>
 									{:else if cell.column.id === "date"}
 										{formatDateToCzech(cell.getValue())}
+									{:else if cell.column.id === "active"}
+										{cell.getValue() ? "ANO" : "NE"}  <!-- Přidáno speciální formátování -->
 									{:else if cell.column.id === "actions"}
 										<div class="flex justify-end">
 											<a href="/admin/menu/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
