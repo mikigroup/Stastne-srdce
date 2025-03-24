@@ -75,13 +75,12 @@
 	// Převede pole variant na jednoduchý textový řetězec
 	function formatVariantsText(variants) {
 		if (!Array.isArray(variants) || variants.length === 0) {
-			return "Žádné varianty";
+			return ["Žádné varianty"];
 		}
 
 		return variants
 			.sort((a, b) => parseInt(a.variant_number) - parseInt(b.variant_number))
-			.map(v => `${v.variant_number}. ${v.description}`)
-			.join(" | ");
+			.map(v => `${v.variant_number}. ${v.description}`);
 	}
 
 	// Define column names and order
@@ -192,7 +191,13 @@
 					key === 'active' ? 80 : 100,
 		// Pro některé sloupce budeme používat speciální řazení
 		enableSorting: key !== 'variants', // Zakážeme řazení pro sloupce, které jsou pole
-		sortingFn: key === 'date' ? 'datetime' : 'alphanumeric',
+		sortingFn: key === 'date'
+			? (rowA, rowB, columnId) => {
+				const dateA = new Date(rowA.original.currentVersion?.date || rowA.original.date);
+				const dateB = new Date(rowB.original.currentVersion?.date || rowB.original.date);
+				return dateA.getTime() - dateB.getTime();
+			}
+			: 'alphanumeric',
 		cell: info => {
 			const value = info.getValue();
 			if (key === "date") {
@@ -290,6 +295,8 @@
 			loading = false;
 		}
 	}
+
+
 </script>
 
 <svelte:head>
@@ -439,8 +446,12 @@
 									style="width: {cell.column.getSize()}px;"
 								>
 									{#if cell.column.id === "variants"}
-										<div class="truncate max-w-full" title={formatVariantsText(cell.getValue())}>
-											{formatVariantsText(cell.getValue())}
+										<div class="variants-container">
+											{#each formatVariantsText(cell.getValue()) as variant, index}
+												<div class="variant-item">
+													{variant}{#if index < formatVariantsText(cell.getValue()).length - 1}<br>{/if}
+												</div>
+											{/each}
 										</div>
 									{:else if cell.column.id === "date"}
 										{formatDateToCzech(cell.getValue())}

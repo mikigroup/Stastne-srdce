@@ -401,7 +401,7 @@ export async function loadMenu(
 			throw variantsError;
 		}
 
-		console.log(`Načteno ${variants?.length || 0} variant:`, variants);
+		// console.log(`Načteno ${variants?.length || 0} variant:`, variants);
 
 		finalVariants = variants || [];
 
@@ -517,11 +517,97 @@ export async function loadMenu(
 						return aNum - bNum;
 					}) || []
 		};
-
 		console.log("Vracím formátované menu:", formattedMenu);
 		return formattedMenu;
 	} catch (error) {
 		console.error("Nečekaná chyba při načítání menu:", error);
+		throw error;
+	}
+}
+
+export async function loadMenuList(
+	supabase: SupabaseClient<Database>,
+	options: {
+		page?: number;
+		itemsPerPage?: number;
+		searchQuery?: string;
+		sort?: "date_desc" | "date_asc";
+	} = {}
+) {
+	try {
+		// Výchozí nastavení
+		const {
+			page = 1,
+			itemsPerPage = 20,
+			searchQuery = "",
+			sort = "date_desc"
+		} = options;
+
+		// Začátek a konec rozsahu pro stránkování
+		const start = (page - 1) * itemsPerPage;
+		const end = start + itemsPerPage - 1;
+
+		// Základní dotaz pro načtení menu
+		let query = supabase
+			.from("menu_versions")
+			.select(
+				`
+                *,
+                menu:menus(id),
+                variants:menu_variants(
+                    id,
+                    variant_number,
+                    description
+                )
+            `,
+				{ count: "exact" }
+			)
+			.order("date", { ascending: sort === "date_asc" });
+
+		// Přidání fulltextového vyhledávání, pokud je zadán search query
+		if (searchQuery) {
+			query = query.or(
+				`soup.ilike.%${searchQuery}%,` +
+					`notes.ilike.%${searchQuery}%,` +
+					`variants.description.ilike.%${searchQuery}%`
+			);
+		}
+
+		// Stránkování
+		query = query.range(start, end);
+
+		// Provedení dotazu
+		const { data, count, error } = await query;
+
+		if (error) {
+			console.error("Chyba při načítání seznamu menu:", error);
+			throw error;
+		}
+
+		// Formátování výsledků
+		const formattedMenus = data.map((version) => ({
+			id: version.menu.id,
+			date: version.date,
+			soup: version.soup,
+			active: version.active,
+			notes: version.notes,
+			type: version.type,
+			nutri: version.nutri,
+			variants: version.variants.map((variant) => ({
+				id: variant.id,
+				variant_number: variant.variant_number,
+				description: variant.description
+			}))
+		}));
+
+		return {
+			menus: formattedMenus,
+			totalItems: count || 0,
+			currentPage: page,
+			totalPages: Math.ceil((count || 0) / itemsPerPage)
+		};
+	} catch (error) {
+		console.error("Nečekaná chyba při načítání seznamu menu:", error);
 		throw error;
 	}
 }
