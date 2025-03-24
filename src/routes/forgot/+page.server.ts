@@ -41,7 +41,7 @@ export const actions: Actions = {
 		const email = formData.get("email") as string;
 
 		const { data: customer, error: customerError } = await supabase
-			.from("customers")
+			.from("profiles")
 			.select("id")
 			.eq("email", email)
 			.single();
