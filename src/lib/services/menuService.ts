@@ -545,25 +545,26 @@ export async function loadMenuList(
 			showDeleted = false
 		} = options;
 
-		// Složitější dotaz, který spojuje menus a menu_versions
-		let baseQuery = supabase.from("menu_versions").select(
-			`
-                *,
-                menu:menus(id, deleted)
-            `,
-			{ count: "exact" }
-		);
+		console.log(`--- Načítání menu - stránka ${page} ---`);
+		console.log(`Parametry:`, {
+			itemsPerPage,
+			searchQuery,
+			sort,
+			showDeleted
+		});
+
+		// Základní dotaz pro nalezení všech relevantních menu - BEZ STRÁNKOVÁNÍ
+		let baseQuery = supabase.from("menus").select("*");
 
 		// Přidání filtru pro deleted sloupec
 		if (!showDeleted) {
-			baseQuery = baseQuery.eq("menu.deleted", false);
+			baseQuery = baseQuery.eq("deleted", false);
 		}
-
-		// Řazení podle data verze menu
-		baseQuery = baseQuery.order("date", { ascending: sort === "date_asc" });
 
 		// Přidání fulltextového vyhledávání, pokud je zadán search query
 		if (searchQuery) {
+			console.log(`Provádím vyhledávání pro: ${searchQuery}`);
+
 			// Nejdřív získáme všechny menu_id z variant, které obsahují hledaný text
 			const { data: variantResults } = await supabase
 				.from("menu_variants")
@@ -571,85 +572,157 @@ export async function loadMenuList(
 				.ilike("description", `%${searchQuery}%`);
 
 			const menuIds = variantResults?.map((v) => v.menu_id) || [];
+			console.log(`Nalezená menu_id z variant:`, menuIds);
 
 			// Pak vytvoříme podmínku pro vyhledávání
 			if (menuIds.length > 0) {
 				baseQuery = baseQuery.or(
-					`soup.ilike.%${searchQuery}%,` +
-						`notes.ilike.%${searchQuery}%,` +
-						`menu.id.in.(${menuIds.join(",")})`
+					`id.in.(${menuIds.join(",")}),soup.ilike.%${searchQuery}%`
 				);
 			} else {
-				baseQuery = baseQuery.or(
-					`soup.ilike.%${searchQuery}%,` + `notes.ilike.%${searchQuery}%`
-				);
+				baseQuery = baseQuery.ilike("soup", `%${searchQuery}%`);
 			}
 		}
 
-		// Nejdřív získáme celkový počet výsledků
-		const { count } = await baseQuery;
-		const totalItems = count ?? 0;
-		const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+		// Načteme VŠECHNA menu odpovídající filtru bez stránkování
+		const { data: allMenus, error: menusError } = await baseQuery;
 
-		// Aplikujeme stránkování
-		const start = (page - 1) * itemsPerPage;
-		const { data: versions, error: versionsError } = await baseQuery.range(
-			start,
-			start + itemsPerPage - 1
-		);
-
-		if (versionsError) {
-			console.error("Error fetching menu versions:", versionsError);
-			throw versionsError;
+		if (menusError) {
+			console.error("Error fetching menus:", menusError);
+			throw menusError;
 		}
 
-		// Pro každou verzi menu připravíme kompletní data
+		console.log(`Celkový počet načtených menu: ${allMenus.length}`);
+
+		// Pro každé menu načteme aktuální verzi pomocí RPC funkce
 		const menusWithVersions = await Promise.all(
-			versions.map(async (version) => {
+			allMenus.map(async (menu) => {
 				try {
-					// Získáme varianty pro tuto verzi
+					// Použijeme RPC funkci pro získání aktuální verze menu
+					const { data: versionId, error: versionError } = await supabase.rpc(
+						"get_current_menu_version",
+						{ p_menu_id: menu.id }
+					);
+
+					if (versionError || versionId === null) {
+						console.warn(`Nenalezena verze pro menu ${menu.id}`);
+						return {
+							...menu,
+							variants: [],
+							currentVersion: null
+						};
+					}
+
+					// Načteme data aktuální verze menu
+					const { data: versionData, error: versionDataError } = await supabase
+						.from("menu_versions")
+						.select("*")
+						.eq("id", versionId)
+						.single();
+
+					if (versionDataError) {
+						console.error(
+							`Chyba načítání dat verze pro menu ${menu.id}:`,
+							versionDataError
+						);
+						return {
+							...menu,
+							variants: [],
+							currentVersion: null
+						};
+					}
+
+					// Získáme varianty pro aktuální verzi
 					const { data: variants, error: variantsError } = await supabase
 						.from("menu_variants")
 						.select("id, description, variant_number")
-						.eq("menu_id", version.menu.id)
-						.eq("menu_version_id", version.id)
+						.eq("menu_id", menu.id)
+						.eq("menu_version_id", versionId)
 						.order("variant_number");
 
 					if (variantsError) {
 						console.error(
-							`Chyba načítání variant pro menu ${version.menu.id}:`,
+							`Chyba načítání variant pro menu ${menu.id}:`,
 							variantsError
 						);
 					}
 
 					return {
-						id: version.menu.id,
-						deleted: version.menu.deleted,
-						date: version.date,
-						soup: version.soup,
-						active: version.active,
-						notes: version.notes,
-						type: version.type,
-						nutri: version.nutri,
+						...menu,
+						date: versionData.date,
+						soup: versionData.soup || menu.soup,
+						active: versionData.active ?? menu.active,
+						notes: versionData.notes || menu.notes,
+						type: versionData.type || menu.type,
+						nutri: versionData.nutri || menu.nutri,
 						variants: variants || [],
-						currentVersion: version
+						currentVersion: versionData
 					};
 				} catch (error) {
-					console.error(`Nečekaná chyba zpracování menu verze:`, error);
-					return null;
+					console.error(`Nečekaná chyba zpracování menu ${menu.id}:`, error);
+					return {
+						...menu,
+						variants: [],
+						currentVersion: null
+					};
 				}
 			})
 		);
 
-		// Odfiltrujeme případné null hodnoty
-		const filteredMenus = menusWithVersions.filter((menu) => menu !== null);
+		// Seřadit všechna menu podle nových dat z verzí
+		menusWithVersions.sort((a, b) => {
+			// Ošetřit případy, kdy datum chybí
+			if (!a.date) return 1;
+			if (!b.date) return -1;
+
+			// Převést řetězce data na objekty Date pro správné porovnání
+			const dateA = new Date(a.date);
+			const dateB = new Date(b.date);
+
+			// Seřadit podle parametru sort
+			return sort === "date_desc"
+				? dateB.getTime() - dateA.getTime()
+				: dateA.getTime() - dateB.getTime();
+		});
+
+		// Vypíšeme celkové seřazení pro debugging
+		console.log(
+			`Seřazení všech menu:`,
+			menusWithVersions.slice(0, 20).map((m) => ({
+				// Omezíme výpis na prvních 20 pro přehlednost
+				id: m.id,
+				date: m.date,
+				formattedDate: new Date(m.date).toISOString().split("T")[0]
+			}))
+		);
+
+		// Teprve po seřazení aplikujeme stránkování
+		const totalItems = menusWithVersions.length;
+		const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+		const startIndex = (page - 1) * itemsPerPage;
+		const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+		const paginatedMenus = menusWithVersions.slice(startIndex, endIndex);
+
+		console.log(
+			`Stránkování: ${startIndex} až ${endIndex} z ${totalItems} menu`
+		);
+
+		console.log(
+			`Menu na stránce ${page}:`,
+			paginatedMenus.map((m) => ({
+				id: m.id,
+				date: m.date,
+				formattedDate: new Date(m.date).toISOString().split("T")[0]
+			}))
+		);
 
 		return {
-			menus: filteredMenus,
+			menus: paginatedMenus,
 			totalItems,
 			currentPage: page,
 			totalPages,
-			itemsPerPage
+			itemsPerPage,
+			itemsOnCurrentPage: paginatedMenus.length
 		};
 	} catch (error) {
 		console.error("Nečekaná chyba při načítání seznamu menu:", error);

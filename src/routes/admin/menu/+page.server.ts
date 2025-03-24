@@ -24,7 +24,8 @@ export const load: PageServerLoad = async ({
 			page,
 			itemsPerPage: 10,
 			searchQuery,
-			sort: "date_desc"
+			sort: "date_desc",
+			showDeleted: false
 		});
 
 		// 6. Získáme nastavení tabulky z profilu
