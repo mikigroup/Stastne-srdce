@@ -478,6 +478,7 @@
 		</div>
 	</section>
 {/key}
+<div class="justify-end flex text-sm">Max. 50 itemů na stránce</div>
 
 <style>
     .truncate {

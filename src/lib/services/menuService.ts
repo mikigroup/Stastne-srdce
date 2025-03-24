@@ -539,7 +539,7 @@ export async function loadMenuList(
 		// Výchozí nastavení
 		const {
 			page = 1,
-			itemsPerPage = 20,
+			itemsPerPage = 50,
 			searchQuery = "",
 			sort = "date_desc",
 			showDeleted = false

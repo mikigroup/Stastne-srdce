@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({
 			totalPages
 		} = await loadMenuList(supabase, {
 			page,
-			itemsPerPage: 10,
 			searchQuery,
 			sort: "date_desc",
 			showDeleted: false
