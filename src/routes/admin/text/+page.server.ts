@@ -62,15 +62,6 @@ export const actions: Actions = {
 		const text = formData.get("text") as string;
 		const page = formData.get("page") as string;
 		const position = formData.get("position") as string;
-		const id = formData.get("id") as string;
-
-		console.log("Přijatá data:", {
-			id,
-			title,
-			page,
-			position,
-			textLength: text?.length
-		});
 
 		try {
 			// Připravení dat pro aktualizaci
@@ -82,53 +73,120 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString()
 			};
 
-			// Nejprve zkontrolujeme, zda již existuje text pro tuto stránku
-			const { data: existingTexts } = await supabase
-				.from("texts")
-				.select("id")
-				.eq("page", page)
-				.eq("position", updateData.position)
-				.maybeSingle();
+			// Speciální logika pro různé typy stránek
+			if (page === "hlavni") {
+				// Pro hlavní stránku musí být pozice vyplněna
+				if (!position) {
+					return fail(400, {
+						message: {
+							success: false,
+							display: "Pro hlavní stránku musí být vyplněna pozice"
+						}
+					});
+				}
 
-			if (updateData.title === undefined) {
-				updateData.title = ""; // Nastavíme prázdný řetězec místo undefined
-			}
+				// Vyhledání existujícího záznamu pro danou stránku a pozici
+				const { data: existingText, error: searchError } = await supabase
+					.from("texts")
+					.select("id")
+					.eq("page", page)
+					.eq("position", position)
+					.maybeSingle();
 
-			let result;
+				if (searchError) {
+					console.error("Chyba při hledání textu:", searchError);
+					return fail(500, {
+						message: {
+							success: false,
+							display: "Chyba při vyhledávání textu: " + searchError.message
+						}
+					});
+				}
 
-			if (id && id !== "0" && id !== "") {
-				// Používáme existující ID z formuláře
-				console.log("Aktualizuji text s ID:", id);
-				result = await supabase
+				// Pokud text pro danou stránku a pozici neexistuje, vrátíme chybu
+				if (!existingText) {
+					return fail(404, {
+						message: {
+							success: false,
+							display: `Nebyl nalezen text pro stránku ${page} a pozici ${position}`
+						}
+					});
+				}
+
+				// Aktualizace existujícího textu pro hlavní stránku
+				const { data: updatedText, error: updateError } = await supabase
 					.from("texts")
 					.update(updateData)
-					.eq("id", id)
+					.eq("id", existingText.id)
 					.select();
-			} else if (existingTexts?.id) {
-				// Aktualizujeme existující text pro tuto stránku
-				console.log(
-					"Aktualizuji existující text pro stránku:",
-					page,
-					"s ID:",
-					existingTexts.id
-				);
-				result = await supabase
+
+				if (updateError) {
+					console.error("Chyba při aktualizaci textu:", updateError);
+					return fail(500, {
+						message: {
+							success: false,
+							display: "Chyba při aktualizaci textu: " + updateError.message
+						}
+					});
+				}
+			} else if (page === "obedy" || page === "jidelnicek") {
+				// Pro stránky obedy a jidelnicek stačí jen text
+				const { data: existingText, error: searchError } = await supabase
 					.from("texts")
-					.update(updateData)
-					.eq("id", existingTexts.id)
+					.select("id")
+					.eq("page", page)
+					.maybeSingle();
+
+				if (searchError) {
+					console.error("Chyba při hledání textu:", searchError);
+					return fail(500, {
+						message: {
+							success: false,
+							display: "Chyba při vyhledávání textu: " + searchError.message
+						}
+					});
+				}
+
+				// Pokud text pro danou stránku neexistuje, vrátíme chybu
+				if (!existingText) {
+					return fail(404, {
+						message: {
+							success: false,
+							display: `Nebyl nalezen text pro stránku ${page}`
+						}
+					});
+				}
+
+				// Aktualizace existujícího textu pro stránky obedy/jidelnicek
+				const { data: updatedText, error: updateError } = await supabase
+					.from("texts")
+					.update({
+						text,
+						page,
+						updated_at: new Date().toISOString()
+					})
+					.eq("id", existingText.id)
 					.select();
+
+				if (updateError) {
+					console.error("Chyba při aktualizaci textu:", updateError);
+					return fail(500, {
+						message: {
+							success: false,
+							display: "Chyba při aktualizaci textu: " + updateError.message
+						}
+					});
+				}
 			} else {
-				// Výjimečně vytvoříme nový záznam, pokud žádný pro tuto stránku neexistuje
-				console.log("Vytvářím nový text pro stránku:", page);
-				result = await supabase.from("texts").insert(updateData).select();
+				// Pro jakékoli jiné stránky ponecháme původní logiku
+				return fail(400, {
+					message: {
+						success: false,
+						display: `Neplatná stránka: ${page}`
+					}
+				});
 			}
 
-			if (result.error) {
-				console.error("Supabase chyba:", result.error);
-				throw result.error;
-			}
-
-			console.log("Úspěch, vrácená data:", result.data);
 			return {
 				message: {
 					success: true,
