@@ -1,19 +1,24 @@
-<footer class="border rounded-lg mt-40 flex justify-center border-gray-300">
-	<div class="grid p-4 text-gray-500 md:grid-cols-5 md:mx-2 w-3/4">
-		<div class="grid col-span-2 text-sm">
-			<p>
-				Vytvořeno s
-				<a
-					class="items-center mt-3 text-sm sm:mt-0"
+<footer class="border rounded-lg mt-40 border-gray-300">
+	<div class="p-4 text-gray-500 w-full">
+		<div class="flex justify-between items-center">
+			<div class="text-sm">
+				<p>
+					Vytvořeno s
+					<a
+					class="items-center text-sm"
 					target="_blank"
 					href="https://www.malyleo.cz/"
 					><i class="fa fa-regular fa-hand-spock" /> MalyLeo™
-				</a>
-				- core1.0a
-			</p>
-		</div>
-		<div class="grid justify-end col-span-3 text-sm">
-			<p>Šťastné srdce s.r.o. 2022 - 2025</p>
+					</a>
+					- core1.0b
+				</p>
+			</div>
+			<div class="text-sm text-center hover:underline ">
+				<a href="/obchodni-podminky">Obchodní podmínky</a>
+			</div>
+			<div class="text-sm">
+				<p>Šťastné srdce s.r.o. 2022 - 2025</p>
+			</div>
 		</div>
 	</div>
 </footer>

@@ -177,15 +177,15 @@
 				<button
 					><a
 						href="/admin/signin"
-						class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
+						class="btn btn-outline mr-2 bg-cyan-600"
 						>Přihlásit</a
 					></button>
-				<button
+				<!--<button
 					><a
 						href="/admin/signup"
-						class="text-white bg-blue-700 mr-2 hover:bg-blue-800 rounded-lg px-5 py-2.5 text-center"
+						class="btn btn-outline"
 						>Registrovat</a
-					></button>
+					></button>-->
 			{/if}
 		</div>
 	</div>
