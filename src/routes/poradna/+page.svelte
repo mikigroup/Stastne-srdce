@@ -124,7 +124,7 @@
 						</div>
 					</div>
 					<p class="mb-6">
-						V poradně o vás budou pečovat <a href="" class="font-semibold !underline">Mgr. Bc. Kamila Kučerová</a> a <a href="" class="font-semibold !underline">Mgr. Martin Forejt, Ph.D.</a>
+						V poradně o vás budou pečovat <a href="/mgr-bc-kamila-kucerova" class="font-semibold !underline">Mgr. Bc. Kamila Kučerová</a> a <a href="/mgr-martin-forejt-phd" class="font-semibold !underline">Mgr. Martin Forejt, Ph.D.</a>
 					</p>
 
 					<div class="flex justify-center gap-6 my-10">
