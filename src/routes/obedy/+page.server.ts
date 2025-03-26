@@ -68,41 +68,20 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			return a.date.localeCompare(b.date);
 		});
 
-		// ===== UPRAVENÁ LOGIKA PRO ROZDĚLENÍ MENU DO TÝDNŮ =====
+		// Načteme pouze první max. 28 menu (4 týdny x 7 dní)
+		const limitedMenus = loadedMenus.slice(0, 28);
 
-		// Rozdělíme menu do týdnů po 7 dnech (počínaje aktuálním datem)
-		const weeks: Menu[][] = [[], [], [], []];
-
-		// Vytvoříme hraniční data pro rozdělení týdnů
-		const weekBoundaries: Date[] = [];
-		let tempDate = new Date(currentDate);
-
-		// Vytvoříme hraniční data pro 4 týdny
-		for (let i = 0; i < 4; i++) {
-			weekBoundaries.push(new Date(tempDate));
-			tempDate.setDate(tempDate.getDate() + 7);
-		}
-		// Přidáme ještě jedno hraniční datum pro poslední týden
-		weekBoundaries.push(new Date(tempDate));
-
-		// Rozdělíme menu do příslušných týdnů
-		for (const menu of loadedMenus) {
-			if (!menu.date) continue;
-
-			const menuDate = new Date(menu.date);
-
-			// Najdeme správný týden pro toto menu
-			for (let i = 0; i < 4; i++) {
-				if (menuDate >= weekBoundaries[i] && menuDate < weekBoundaries[i + 1]) {
-					weeks[i].push(menu);
-					break;
-				}
-			}
-		}
+		// Rozdělíme menu do skupin po různém počtu položek pro výběr uživatele
+		const menuGroups = {
+			7: limitedMenus.slice(0, 7), // 1 týden
+			14: limitedMenus.slice(0, 14), // 2 týdny
+			21: limitedMenus.slice(0, 21), // 3 týdny
+			28: limitedMenus // 4 týdny (všechno)
+		};
 
 		return {
-			menus: loadedMenus,
-			weeks: weeks,
+			menus: limitedMenus,
+			menuGroups,
 			startDate: currentDate.toISOString(),
 			endDate: new Date(
 				currentDate.getTime() + 27 * 24 * 60 * 60 * 1000

@@ -1,20 +1,29 @@
 <script lang="ts">
 	import { totalPiecesStore } from "$lib/stores/store";
-	import MenuWeekSelector from "./MenuWeekSelector.svelte";
+	import MenuCountSelector from "./MenuWeekSelector.svelte";
 	import MenuItem from "./MenuItem.svelte";
 	import { page } from "$app/stores";
+	import { writable } from "svelte/store";
 
 	export let data;
-	let { weeks, texts } = data;
-	let selectedWeek = 0;
-	let currentWeekMenus = weeks[0] || [];
+	let { menus, menuGroups, texts } = data;
+
+	// Dostupné volby počtu menu, které můžeme zobrazit
+	const menuCountOptions = [7, 14, 21, 28];
+
+	// Výchozí počet menu k zobrazení
+	let selectedMenuCount = 7;
+
+	// Store pro aktuálně vybraná menu
+	const currentMenus = writable(menuGroups[selectedMenuCount]);
+
+	// Aktualizace menu při změně vybraného počtu
+	function handleMenuCountSelect(event) {
+		selectedMenuCount = event.detail.count;
+		$currentMenus = menuGroups[selectedMenuCount];
+	}
 
 	$: totalPieces = $totalPiecesStore;
-
-	function handleWeekSelect(event) {
-		selectedWeek = event.detail.week;
-		currentWeekMenus = weeks[selectedWeek] || [];
-	}
 
 	function scrollToTop(event) {
 		event.preventDefault();
@@ -36,24 +45,24 @@
 			class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Obědy
 		</h1>
-		<div class="max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg ">
+		<div class="max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg">
 			{@html texts?.text || "Žádný text pro jídelníček není k dispozici."}
 		</div>
 
 		<div class="max-w-4xl mx-auto mt-5 bg-white border rounded-lg border-gray-400">
 			<div class="pb-10" id="menu-content">
-				<MenuWeekSelector
-					{weeks}
-					{selectedWeek}
-					on:select={handleWeekSelect} />
+				<MenuCountSelector
+					options={menuCountOptions}
+					selectedCount={selectedMenuCount}
+					on:select={handleMenuCountSelect} />
 
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
-					{#if currentWeekMenus.length > 0}
-						{#each currentWeekMenus as menu (menu.id)}
+					{#if $currentMenus && $currentMenus.length > 0}
+						{#each $currentMenus as menu (menu.id)}
 							<MenuItem {menu} />
 						{/each}
 					{:else}
-						<p>Žádný jídelníček nenalezen pro tento týden</p>
+						<p>Žádný jídelníček nenalezen</p>
 					{/if}
 				</div>
 			</div>
