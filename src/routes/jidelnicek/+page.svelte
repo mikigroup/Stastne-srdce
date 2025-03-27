@@ -90,27 +90,27 @@
 				class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 				Jídelníček
 			</h1>
-			<div class="max-w-4xl p-10 mx-auto bg-white border-2 rounded-lg ">
+			<div class="max-w-4xl p-10 mx-auto bg-white border-2 rounded-lg">
 				<h2 class="text-2xl text-center mt-5">
-					<strong
-						>Naši milí strávníci, od března 2025 budou tyto změny a novinky.</strong>
+					<strong>Naši milí strávníci, v dubnu 2025 nás čeká:</strong>
 				</h2>
 
 				<p class="mt-3">
 					<span class="underline"
-						>1. AKCE NA BŘEZEN: <strong
-							>Sleva 5 % z objednávky pro naše věrné strávníky</strong
+						>1. AKCE NA DUBEN: <strong
+							>Sleva 5 % z objednávky pro naše věrné strávníky POKRAČUJE</strong
 						></span
-					>, kteří si objednají na každý den v měsíci a zároveň na celý měsíc
-					dopředu (v březnu vaříme 20 dnů).
-					<br />
-					<br />
-					<strong>Sleva bude 140,8 Kč.</strong>
+					>, pokud si objednáte na každý den v měsíci a zároveň na celý měsíc
+					dopředu (v dubnu vaříme 19 dnů).
 					<br />
 					<br />
 					<span class="underline"
-						>2. <strong>Rekrabičky, jednorázový box, nosič?</strong></span>
-					<!--<strong>Děkujeme všem za důvěru a pochopení.</strong>-->
+						>2. <strong>Naše stránky přechází na nové prostředí.</strong></span>
+					Pokud budete mít se změnou nějaký problém, pište nebo volejte.
+					<br />
+					<br />
+					<span class="underline"
+						>3. <strong>Rekrabičky, jednorázový box, nosič?</strong></span>
 					<br />
 					<br />
 					a) nosič je pouze Váš a zodpovídáte si za něj. Je nutné ho označit jménem
@@ -131,39 +131,62 @@
 					<br />
 					<br />
 				</p>
+
 				<ul class="">
-					<strong> My fandíme Rekrabičce, protože:</strong>
+					<strong>My fandíme Rekrabičce, protože:</strong>
 					<li class="ml-4">- výborně těsní</li>
 					<li class="ml-4">
-						- šetří přírodu a je možné použít ji opakovaně, dát do mikrovlnky, do
-						myčky
+						- šetří přírodu a je možné použít ji opakovaně, dát do mikrovlnky,
+						do myčky
 					</li>
 					<li class="ml-4">- český výrobek</li>
 					<li class="ml-4">- strávník nemusí investovat do nákupu nosiče</li>
 					<li class="ml-4">- když se poničí, zdarma ji vyměníme</li>
 				</ul>
+
 				<p>
 					V případě zájmu o Rekrabičku nám volejte.
-					<br>
-					<br>
-					3. <span class="underline"><strong>Máme nové číslo účtu 273177960/0600.</strong></span> Prosíme o registrování změny. Platby v hotovosti přijímáme i nadále. Terminál nemáme. Faktury na vyžádání vystavujeme.
-					<br>
-					<br>
-					<span class="underline"><strong>4. Od 3.3.2025 otevíráme Poradnu prevence některých onemocnění a zdravého životního stylu.</strong></span> Máme vynikajícího odborníka, skvělou diagnostiku. Podrobnosti sdělíme telefonicky.
-					<br>
-					<br>
-					5. <strong>Přibývá strávníků s intolerancí či alergií na lepek, laktózu, mléčnou bílkovinu, česnek, kuřecí maso, rajčata, …………………… Pokud i Vás trápí tyto i další nevyjmenované zdravotní potíže volejte a domluvíme se co pro Vás můžeme udělat.</strong>
-					<br>
-					<br>
+					<br />
+					<br />
+					<span class="underline"
+						>4. <strong>Máme nové číslo účtu 273177960/0600.</strong></span>
+					Prosíme o registrování změny. Platby v hotovosti přijímáme i nadále.
+					Terminál nemáme. Fakturu vystavujeme pro každou platbu na účet,
+					faktury posíláme emailem, mají QR kód pro snadnou platbu. Prosíme o
+					zadávání variabilního symbolu.
+					<br />
+					<br />
+					<span class="underline"
+						><strong
+							>5. Od března provozujeme Poradnu prevence některých onemocnění a
+							zdravého životního stylu.</strong
+						></span>
+					Máme vynikajícího odborníka, skvělou diagnostiku. Podrobnosti sdělíme
+					telefonicky. Volejte 732 722 115.
+					<br />
+					<br />
+					<strong
+						>6. Přibývá strávníků s intolerancí či alergií na lepek, laktózu,
+						mléčnou bílkovinu, česnek, kuřecí maso, rajčata, …………………… Pokud i
+						Vás trápí tyto i další nevyjmenované zdravotní potíže volejte a
+						domluvíme se co pro Vás můžeme udělat.</strong>
+					<br />
+					<br />
 				</p>
+
 				<p class="text-center">
-					Kontaktujte nás na tel. <strong>724 448 377</strong>. Pokud se nám hned nedovoláte, pošlete SMS nebo nás kontaktujte na emailu <a href="mailto:stastnesrdcekk@seznam.cz"><strong>stastnesrdcekk@seznam.cz</strong></a> a my se Vám co nejdříve ozveme.
-					<br>
-					<br>
+					Kontaktujte nás na tel. <strong>724 448 377</strong>. Pokud se nám
+					hned nedovoláte, pošlete SMS nebo nás kontaktujte na emailu
+					<a href="mailto:stastnesrdcekk@seznam.cz"
+						><strong>stastnesrdcekk@seznam.cz</strong></a>
+					a my se Vám co nejdříve ozveme.
+					<br />
+					<br />
 					Na každého nového strávníka se těšíme.
-					<br>
-					<br>
-					<strong>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
+					<br />
+					<br />
+					<strong
+						>Všem strávníkům přejeme dobrou chuť a děkujeme za přízeň.</strong>
 				</p>
 
 				<br id="cilovyPrvek" />
