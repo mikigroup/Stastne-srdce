@@ -11,8 +11,10 @@
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 
 	export let data;
-	let { supabase, session, user } = data;
+	let { supabase, session, user  } = data;
 	$: ({ supabase, session, user } = data);
+
+	//console.log(settings)
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {

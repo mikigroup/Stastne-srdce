@@ -1,4 +1,15 @@
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
+import type {
+	AllSettings,
+	GeneralSettings,
+	SeoSettings,
+	ContactSettings,
+	SocialSettings,
+	AppearanceSettings,
+	BusinessSettings,
+	EmailSettings,
+	IntegrationSettings
+} from "$lib/services/settingsService";
 
 declare global {
 	namespace App {
@@ -11,18 +22,38 @@ declare global {
 			}>;
 			session: Session | null;
 			user: User | null;
-			cartItems: any[];
+			cartItems: Array<{
+				id: string;
+				product_id: string;
+				quantity: number;
+				// další položky košíku
+			}>;
 		}
+
 		interface PageData {
 			session: Session | null;
-			// interface Error {}
-			// interface PageState {}
-			// interface Platform {}
+			user: User | null;
+			settings: AllSettings;
+			generalSettings?: GeneralSettings;
+			seoSettings?: SeoSettings;
+			contactSettings?: ContactSettings;
+			socialSettings?: SocialSettings;
+			appearanceSettings?: AppearanceSettings;
+			businessSettings?: BusinessSettings;
+			emailSettings?: EmailSettings;
+			integrationSettings?: IntegrationSettings;
 		}
-		/*interface ImportMetaEnv {
+
+		// interface PageState {}
+		// interface Platform {}
+
+		// Typy pro prostředí (environment variables)
+		interface ImportMetaEnv {
 			VITE_BASE_URL: string;
 			VITE_APP_NAME: string;
-		}*/
+			VITE_SUPABASE_URL: string;
+			VITE_SUPABASE_ANON_KEY: string;
+		}
 	}
 }
 

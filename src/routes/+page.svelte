@@ -1,16 +1,18 @@
 <script lang="ts">
-	export let data;
-	let { texts } = data;
-	$: ({ texts } = data);
-	let src = "/android-chrome-192x192.png";
 
-	console.log(texts);
+	export let data;
+	let { texts, generalSettings } = data;
+	$: ({ texts  } = data);
+
+	console.log("Test hodnota:", generalSettings);
+	let src = "/android-chrome-192x192.png";
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Úvod</title>
+	<title>{generalSettings.shopName} - Úvod</title>
 	<meta name="description" content="Úvod" />
 </svelte:head>
+
 
 <section>
 	<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26">
