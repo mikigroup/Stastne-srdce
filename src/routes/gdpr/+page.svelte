@@ -1,5 +1,10 @@
+<script lang="ts">
+	export let data;
+
+	const { generalSettings } = data;
+</script>
 <svelte:head>
-	<title>Šťastné srdce - GDPR</title>
+	<title>{generalSettings.shopName} - GDPR</title>
 </svelte:head>
 
 <section class="">

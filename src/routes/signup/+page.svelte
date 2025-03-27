@@ -45,10 +45,12 @@
 	}
 
 	$: console.log("form:", form);
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Vytvoření nového účtu</title>
+	<title>{generalSettings.shopName} - Vytvoření nového účtu</title>
 	<meta name="description" content="Registrace nového účtu" />
 </svelte:head>
 

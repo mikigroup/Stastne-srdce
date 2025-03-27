@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - Mgr. Martin Forejt, Ph.D.</title>
+  <title>{generalSettings.shopName} - Mgr. Martin Forejt, Ph.D.</title>
   <meta name="description" content="Mgr. Martin Forejt, Ph.D. - odborný asistent Lékařské fakulty Masarykovy univerzity v Brně, výzkumník a specialista na výživu a preventivní lékařství." />
 </svelte:head>
 

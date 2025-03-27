@@ -86,10 +86,12 @@
 	onMount(() => {
 		getProfile();
 	});
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Košík</title>
+	<title>{generalSettings.shopName} - Košík</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
 

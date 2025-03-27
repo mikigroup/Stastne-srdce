@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { page } from "$app/stores";
+	export let data;
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Dietologická poradna</title>
+	<title>{generalSettings.shopName} - Dietologická poradna</title>
 	<meta name="description" content="Dietologická poradna vedená odborníky s dlouholetou praxí, zaměřená na změnu stravovacích návyků a řešení zdravotních problémů souvisejících s výživou." />
 </svelte:head>
 

@@ -1,40 +1,14 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import type { Actions } from "@sveltejs/kit";
 	export let form: Actions;
-
+	export let data;
 	let loading = false;
 
-	/* async function reset() {
-		if (!newPassword) {
-			message = "Zadejte heslo"
-			return
-		}
-
-		loading = true
-
-		try {
-			const { error } = await supabase.auth.updateUser({ password: newPassword })
-			if (error) {
-				throw error
-			}
-
-			messageSuc = "Heslo změněno."
-			goto("/obedy")
-		} catch (error) {
-			messageFalse = error.error_description || error.message
-		} finally {
-			loading = false
-		}
-	}
-
-	supabaseClient.auth.onAuthStateChange((state, session) => {
-		user.set(state === "PASSWORD_RECOVERY" && session.user)
-	}) */
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Reset hesla</title>
+	<title>{generalSettings.shopName} - Reset hesla</title>
 	<meta name="description" content="Reset" />
 </svelte:head>
 

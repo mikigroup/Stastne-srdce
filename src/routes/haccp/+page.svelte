@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  export let data;
+
+  const { generalSettings } = data;
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - HACCP</title>
+  <title>{generalSettings.shopName} - HACCP</title>
   <meta name="description" content="Služby v oblasti HACCP - vytvoření systému kontroly kritických bodů pro restaurace, vyvařovny, obchody a další gastronomické provozy." />
 </svelte:head>
 

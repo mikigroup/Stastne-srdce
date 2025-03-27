@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Mgr. Bc. Kamila Kučerová</title>
+	<title>{generalSettings.shopName} - Mgr. Bc. Kamila Kučerová</title>
 	<meta name="description" content="Mgr. Bc. Kamila Kučerová - dietoložka, zakladatelka Šťastného srdce a specialistka na zdravou výživu s 15 letou praxí." />
 </svelte:head>
 

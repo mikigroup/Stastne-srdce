@@ -13,7 +13,6 @@ import type {
 
 declare global {
 	namespace App {
-		// interface Error {}
 		interface Locals {
 			supabase: SupabaseClient;
 			safeGetSession: () => Promise<{
@@ -26,28 +25,14 @@ declare global {
 				id: string;
 				product_id: string;
 				quantity: number;
-				// další položky košíku
 			}>;
 		}
 
 		interface PageData {
 			session: Session | null;
 			user: User | null;
-			settings: AllSettings;
-			generalSettings?: GeneralSettings;
-			seoSettings?: SeoSettings;
-			contactSettings?: ContactSettings;
-			socialSettings?: SocialSettings;
-			appearanceSettings?: AppearanceSettings;
-			businessSettings?: BusinessSettings;
-			emailSettings?: EmailSettings;
-			integrationSettings?: IntegrationSettings;
 		}
 
-		// interface PageState {}
-		// interface Platform {}
-
-		// Typy pro prostředí (environment variables)
 		interface ImportMetaEnv {
 			VITE_BASE_URL: string;
 			VITE_APP_NAME: string;

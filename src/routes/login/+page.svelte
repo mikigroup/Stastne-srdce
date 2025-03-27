@@ -20,10 +20,12 @@
 			}
 		});
 	}
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Login</title>
+	<title>{generalSettings.shopName} - Login</title>
 	<meta name="description" content="Login" />
 </svelte:head>
 

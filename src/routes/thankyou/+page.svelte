@@ -63,10 +63,13 @@
 			day: 'numeric'
 		});
 	}
+	export let data;
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Děkujeme za objednávku</title>
+	<title>{generalSettings.shopName} - Děkujeme za objednávku</title>
 	<meta name="description" content="Děkujeme za objednávku" />
 </svelte:head>
 

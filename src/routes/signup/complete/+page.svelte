@@ -43,10 +43,12 @@
 			loading = false;
 		};
 	}
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Dokončení registrace</title>
+	<title>{generalSettings.shopName} - Dokončení registrace</title>
 	<meta name="description" content="Dokončení registrace" />
 </svelte:head>
 

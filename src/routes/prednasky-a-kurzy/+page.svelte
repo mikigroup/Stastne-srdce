@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { page } from "$app/stores";
+	export let data;
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Přednášky a kurzy</title>
+	<title>{generalSettings.shopName} - Přednášky a kurzy</title>
 	<meta name="description" content="Nabízíme odborné přednášky o výživě a zdravém životním stylu pro školy, zájmové skupiny a firmy, a také workshopy pro školní kuchyně." />
 </svelte:head>
 

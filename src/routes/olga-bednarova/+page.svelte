@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  export let data;
+
+  const { generalSettings } = data;
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - Olga Bednářová</title>
+  <title>{generalSettings.shopName} - Olga Bednářová</title>
   <meta name="description" content="Olga Bednářová - kuchařka Šťastného srdce, která od roku 2010 připravuje výživná a chutná jídla." />
 </svelte:head>
 

@@ -58,10 +58,12 @@
       loading = false;
     };
   };
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - Účet</title>
+  <title>{generalSettings.shopName} - Účet</title>
   <meta name="description" content="Účet" />
 </svelte:head>
 

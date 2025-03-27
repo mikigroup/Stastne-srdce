@@ -1,14 +1,17 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
 	export let form: Actions;
+	export let data;
+
 	let error = "",
 		message = "",
 		loading = false,
 		email = "";
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Zapomenuté heslo</title>
+	<title>{generalSettings.shopName} - Zapomenuté heslo</title>
 	<meta name="description" content="Zapomenuté heslo" />
 </svelte:head>
 

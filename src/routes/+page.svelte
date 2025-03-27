@@ -1,11 +1,13 @@
 <script lang="ts">
 
 	export let data;
-	let { texts, generalSettings } = data;
+	let { texts } = data;
 	$: ({ texts  } = data);
 
-	console.log("Test hodnota:", generalSettings);
+	const { generalSettings } = data;
+
 	let src = "/android-chrome-192x192.png";
+	console.log(data);
 </script>
 
 <svelte:head>

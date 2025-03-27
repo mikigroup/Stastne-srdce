@@ -31,10 +31,12 @@
 			.getElementById("menu-content")
 			?.scrollIntoView({ behavior: "smooth" });
 	}
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Obědy</title>
+	<title>{generalSettings.shopName} - Obědy</title>
 	<meta name="description" content="Obědy" />
 </svelte:head>
 

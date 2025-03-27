@@ -89,7 +89,7 @@
 </script>
 
 <nav class="m-2" data-sveltekit-preload-data="hover">
-	<div class="navbar rounded-2xl !py-0 bg-[#00adad] antialiased text-[#0A0A0A] ">
+	<div class="navbar rounded-2xl !py-0 bg-[#00adad] antialiased text-[#0A0A0A]">
 		<div class="navbar-start">
 			<div class="dropdown">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle">
@@ -153,36 +153,37 @@
 						<div
 							tabindex="0"
 							role="button"
-							class="btn btn-ghost btn-circle avatar">
+							class="btn btn-ghost btn-circle avatar hover:tooltip hover:tooltip-open hover:tooltip-left" data-tip="Nastavení">
 							<div class="w-10 rounded-full">
 								<img alt="Profile img" src="/spock-icon.jpg" />
 							</div>
 						</div>
-						<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 						<ul
 							tabindex="0"
 							class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-							<li>
+							<li class="">
 								<!-- svelte-ignore a11y-missing-attribute -->
-								<a href="/admin/settings" class="justify-between text-sm">
-									Nastavení účtu
+								<a href="/admin/settings" class="justify-between py-2 text-sm">
+									Účet
+								</a>
+							</li>
+							<!--<li>
+								<a href="/admin/site-setting" class="justify-between text-sm">
+									Stránky
 									<span class="badge">Nový</span>
 								</a>
+							</li>-->
+							<hr>
+							<li>
+								<a class="text-sm py-2" on:click={signOut} disabled={loading}
+									>Odhlásit se</a>
 							</li>
-								<li>
-								<a href="/admin/site-setting" class="justify-between text-sm">
-									Nastavení stránek
-								</a>
-							</li>
-							<li><a class="text-sm" on:click={signOut} disabled={loading}>Odhlásit se</a></li>
 						</ul>
 					</div>
 				</div>
 			{:else}
 				<button
-					><a
-						href="/admin/signin"
-						class="btn btn-outline mr-2 bg-cyan-600"
+					><a href="/admin/signin" class="btn btn-outline mr-2 bg-cyan-600"
 						>Přihlásit</a
 					></button>
 				<!--<button

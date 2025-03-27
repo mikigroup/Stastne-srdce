@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  export let data;
+
+  const { generalSettings } = data;
 </script>
 
 <svelte:head>
-  <title>Šťastné srdce - Ceník</title>
+  <title>{generalSettings.shopName} - Ceník</title>
   <meta name="description" content="Ceník nabízených služeb" />
 </svelte:head>
 
