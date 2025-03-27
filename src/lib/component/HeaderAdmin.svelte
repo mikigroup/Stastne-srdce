@@ -169,6 +169,11 @@
 									<span class="badge">Nový</span>
 								</a>
 							</li>
+								<li>
+								<a href="/admin/site-setting" class="justify-between text-sm">
+									Nastavení stránek
+								</a>
+							</li>
 							<li><a class="text-sm" on:click={signOut} disabled={loading}>Odhlásit se</a></li>
 						</ul>
 					</div>
