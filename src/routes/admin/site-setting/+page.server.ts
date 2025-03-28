@@ -78,23 +78,24 @@ export const actions: Actions = {
 			const updates = Object.entries(settingsData).map(async ([key, value]) => {
 				console.log(`Zpracovávám klíč: ${key}`);
 
-				// 4a. Find existing record
+				// 4a. Najdi existující záznam
 				const { data: existing, error: fetchError } = await supabase
 					.from("site_settings")
-					.select("id")
+					.select("id, key")
 					.eq("key", key)
 					.maybeSingle();
 
 				if (fetchError) throw fetchError;
 
-				// 4b. Prepare data for update
+				// 4b. Připrav typově bezpečná data
 				const recordData: SettingRecord = {
+					key: key,
 					value: value,
 					updated_at: new Date().toISOString(),
 					updated_by: session.user.id
 				};
 
-				// 4c. Execute operation
+				// 4c. Proveď operaci
 				if (existing?.id) {
 					console.log(`Updatuji existující záznam ID: ${existing.id}`);
 					return supabase
@@ -103,7 +104,7 @@ export const actions: Actions = {
 						.eq("id", existing.id);
 				} else {
 					console.log(`Vytvářím nový záznam pro klíč: ${key}`);
-					return supabase.from("site_settings").insert({ ...recordData, key });
+					return supabase.from("site_settings").insert(recordData);
 				}
 			});
 
