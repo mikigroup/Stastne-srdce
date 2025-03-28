@@ -193,10 +193,8 @@ function getDefaultSettings(): AllSettings {
 }
 
 // Vytvoření writable stores pro každou kategorii
-export const generalSettings = writable<GeneralSettings>(
-	getDefaultSettings().general
-);
-export const seoSettings = writable<SeoSettings>(getDefaultSettings().seo);
+export const generalSettings = writable<GeneralSettings>({} as GeneralSettings);
+export const seoSettings = writable<SeoSettings>({} as SeoSettings);
 export const contactSettings = writable<ContactSettings>(
 	getDefaultSettings().contact
 );
@@ -276,10 +274,25 @@ export async function loadAllSettings(
 			for (const item of data) {
 				const key = item.key as keyof AllSettings;
 				if (key in settings) {
-					settings[key] = { ...settings[key], ...item.value };
+					try {
+						// Podpora pro oba formáty - objekt i JSON string
+						const value =
+							typeof item.value === "string"
+								? JSON.parse(item.value)
+								: item.value;
+
+						settings[key] = { ...settings[key], ...value };
+					} catch (parseError) {
+						console.error(
+							`Chyba při parsování hodnoty pro ${key}:`,
+							parseError
+						);
+						continue;
+					}
 				}
 			}
 
+			// Aktualizace všech stores
 			generalSettings.set(settings.general);
 			seoSettings.set(settings.seo);
 			contactSettings.set(settings.contact);
@@ -305,42 +318,44 @@ export async function updateSettings<T extends keyof AllSettings>(
 	userId?: string
 ): Promise<boolean> {
 	try {
+		// Získání aktuálních hodnot
 		const { data: current } = await supabase
 			.from("site_settings")
 			.select("value")
 			.eq("key", category)
 			.single();
 
-		const updatedSettings = {
-			...(current?.value || getDefaultSettings()[category]),
-			...settings
-		};
+		// Sloučení nastavení
+		const currentValue = current?.value
+			? typeof current.value === "string"
+				? JSON.parse(current.value)
+				: current.value
+			: getDefaultSettings()[category];
 
-		const { error } = await supabase.from("site_settings").upsert({
-			key: category,
-			value: updatedSettings,
-			updated_at: new Date().toISOString(),
-			updated_by: userId
-		});
+		const updatedSettings = { ...currentValue, ...settings };
 
-		if (error) {
-			console.error(
-				`Chyba při ukládání nastavení kategorie ${category}:`,
-				error
-			);
-			return false;
-		}
+		// Uložení (s podporou obou formátů)
+		const { error } = await supabase.from("site_settings").upsert(
+			{
+				key: category,
+				value: updatedSettings, // Ukládáme přímo objekt
+				updated_at: new Date().toISOString(),
+				updated_by: userId
+			},
+			{
+				onConflict: "key"
+			}
+		);
 
+		if (error) throw error;
+
+		// Aktualizace store
 		const store = getStoreForCategory(category);
-		if (store) {
-			store.set(updatedSettings);
-		}
+		if (store) store.set(updatedSettings);
+
 		return true;
 	} catch (error) {
-		console.error(
-			`Neočekávaná chyba při ukládání nastavení kategorie ${category}:`,
-			error
-		);
+		console.error(`Chyba při ukládání nastavení ${category}:`, error);
 		return false;
 	}
 }

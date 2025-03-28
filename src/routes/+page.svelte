@@ -7,7 +7,7 @@
 	const { generalSettings } = data;
 
 	let src = "/android-chrome-192x192.png";
-	console.log(data);
+	// console.log(data);
 </script>
 
 <svelte:head>

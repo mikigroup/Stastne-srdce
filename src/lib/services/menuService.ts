@@ -385,7 +385,7 @@ export async function loadMenu(
 			.eq("menu_version_id", versionId)
 			.order("variant_number");
 
-		console.log(
+		/*console.log(
 			"SQL dotaz na varianty:",
 			JSON.stringify({
 				table: "menu_variants",
@@ -394,7 +394,7 @@ export async function loadMenu(
 					menu_version_id: versionId
 				}
 			})
-		);
+		);*/
 
 		if (variantsError) {
 			console.error("Chyba při načítání variant menu:", variantsError);
@@ -483,10 +483,10 @@ export async function loadMenu(
 							updatedVariantsError
 						);
 					} else {
-						console.log(
+						/*	console.log(
 							`Načteno ${updatedVariants?.length || 0} aktualizovaných variant:`,
 							updatedVariants
-						);
+						);*/
 						finalVariants = updatedVariants || [];
 					}
 				}
@@ -517,7 +517,7 @@ export async function loadMenu(
 						return aNum - bNum;
 					}) || []
 		};
-		console.log("Vracím formátované menu:", formattedMenu);
+		//	console.log("Vracím formátované menu:", formattedMenu);
 		return formattedMenu;
 	} catch (error) {
 		console.error("Nečekaná chyba při načítání menu:", error);
