@@ -19,7 +19,7 @@
 		}
 	}
 
-	let src = "/android-chrome-192x192.png";
+	let src = "/srdce.png";
 
 	const formatter = new Intl.DateTimeFormat("en", {
 		hour12: false,
@@ -49,11 +49,11 @@
 		<div class="grid grid-cols-2 px-4 m-2 mx-auto xl:grid-cols-3 max-w-8xl">
 			<!-- Logo a čas -->
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
-				<div class="grid grid-cols-2 w-80">
+				<div class="grid grid-cols-2 w-74">
 					<h1 class="grid items-center text-xl font-semibold">
 						<a href="/" class="hover:text-gray-600 transition-colors duration-200">{generalSettings.shopName}</a>
 					</h1>
-					<img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+					<img {src} alt="staste srdce" class="" width="22" height="22" />
 				</div>
 				<div class="grid justify-end w-44">
 					<time>{formatter.format($time)}</time>
