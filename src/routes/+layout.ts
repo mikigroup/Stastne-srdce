@@ -93,7 +93,6 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		settings,
 		generalSettings: settings.general,
 		seoSettings: settings.seo,
-		contactSettings: settings.contact,
-		test: "TEST"
+		contactSettings: settings.contact
 	};
 };

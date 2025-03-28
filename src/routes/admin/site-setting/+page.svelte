@@ -2,11 +2,12 @@
 	import { writable } from 'svelte/store';
 	import { fade, fly } from "svelte/transition";
 	import type { PageData } from './$types';
+	import { enhance } from "$app/forms";
 
 	export let data: PageData;
 
 	// Debug - check what data contains
-	console.log('Page data:', data);
+	// console.log('Page data:', data);
 
 	// Access supabase from data
 	const { supabase, settings } = data;
@@ -217,13 +218,18 @@
 
 				<!-- Action Buttons -->
 				<div class="mt-6 p-4 border-t border-gray-300 space-y-3">
-					<button
-						on:click={saveSettings}
+					<form method="POST" action="?/update" use:enhance>
+						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
+						<button
+							type="submit"
+							name="action"
+						value="update"
 						disabled={loading}
 						class="w-full btn btn-primary bg-green-800 text-white hover:bg-green-700"
-					>
+						>
 						{loading ? 'Ukládání...' : 'Uložit změny'}
-					</button>
+						</button>
+					</form>
 
 					<button
 						on:click={resetSettings}

@@ -40,6 +40,8 @@
 	let menuVisible = false;
 	let loading = false;
 	$: totalPieces = $totalPiecesStore;
+
+	const { generalSettings } = data;
 </script>
 
 <header class="fixed top-0 left-0 w-full bg-white z-10">
@@ -49,7 +51,7 @@
 			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
 				<div class="grid grid-cols-2 w-80">
 					<h1 class="grid items-center text-xl font-semibold">
-						<a href="/" class="hover:text-gray-600 transition-colors duration-200">Šťastné srdce</a>
+						<a href="/" class="hover:text-gray-600 transition-colors duration-200">{generalSettings.shopName}</a>
 					</h1>
 					<img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
 				</div>
