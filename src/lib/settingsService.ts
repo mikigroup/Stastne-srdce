@@ -193,10 +193,8 @@ function getDefaultSettings(): AllSettings {
 }
 
 // Vytvoření writable stores pro každou kategorii
-export const generalSettings = writable<GeneralSettings>(
-	getDefaultSettings().general
-);
-export const seoSettings = writable<SeoSettings>(getDefaultSettings().seo);
+export const generalSettings = writable<GeneralSettings>({} as GeneralSettings);
+export const seoSettings = writable<SeoSettings>({} as SeoSettings);
 export const contactSettings = writable<ContactSettings>(
 	getDefaultSettings().contact
 );
@@ -261,38 +259,37 @@ export async function loadAllSettings(
 	supabase: SupabaseClient
 ): Promise<AllSettings> {
 	try {
-		const settings = getDefaultSettings();
+		// Nezačínejte s výchozími hodnotami, ale s prázdným objektem
+		const loadedSettings: Partial<AllSettings> = {};
 
 		const { data, error } = await supabase
 			.from("site_settings")
 			.select("key, value");
 
-		if (error) {
-			console.error("Chyba při načítání nastavení:", error);
-			return settings;
-		}
+		if (error) throw error;
 
-		if (data) {
-			for (const item of data) {
+		if (data && data.length > 0) {
+			// Naplňte pouze hodnoty z databáze
+			data.forEach((item) => {
 				const key = item.key as keyof AllSettings;
-				if (key in settings) {
-					settings[key] = { ...settings[key], ...item.value };
-				}
-			}
+				loadedSettings[key] = item.value;
+			});
 
-			generalSettings.set(settings.general);
-			seoSettings.set(settings.seo);
-			contactSettings.set(settings.contact);
-			socialSettings.set(settings.social);
-			appearanceSettings.set(settings.appearance);
-			businessSettings.set(settings.business);
-			emailSettings.set(settings.email);
-			integrationSettings.set(settings.integrations);
+			// Aktualizujte store pouze s daty z DB
+			generalSettings.set(loadedSettings.general || {});
+			seoSettings.set(loadedSettings.seo || {});
+			// ... ostatní store
+		} else {
+			// Pokud DB nevrátí data, použijte výchozí hodnoty
+			const defaults = getDefaultSettings();
+			Object.entries(defaults).forEach(([key, value]) => {
+				loadedSettings[key as keyof AllSettings] = value;
+			});
 		}
 
-		return settings;
+		return loadedSettings as AllSettings;
 	} catch (error) {
-		console.error("Neočekávaná chyba při načítání nastavení:", error);
+		console.error("Chyba při načítání nastavení:", error);
 		return getDefaultSettings();
 	}
 }
