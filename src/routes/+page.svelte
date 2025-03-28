@@ -12,7 +12,9 @@
 
 <svelte:head>
 	<title>{generalSettings.shopName} - Úvod</title>
-	<meta name="description" content="Úvod" />
+	<meta
+		name="description"
+		content="Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost." />
 </svelte:head>
 
 

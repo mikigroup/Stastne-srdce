@@ -28,31 +28,6 @@
 	injectSpeedInsights();
 </script>
 
-<svelte:head>
-	<!-- Základní meta tagy -->
-	<title>{$page.data.seo?.title}</title>
-	<meta name="description" content={$page.data.seo?.description} />
-	<meta name="author" content={$page.data.seo?.author} />
-	<meta name="keywords" content={$page.data.seo?.keywords} />
-	<meta name="copyright" content={$page.data.seo?.copyright} />
-
-	<!-- OpenGraph -->
-	<meta property="og:title" content={$page.data.seo?.ogTitle} />
-	<meta property="og:description" content={$page.data.seo?.ogDescription} />
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content={$page.data.seo?.url} />
-	<meta property="og:locale" content="cs_CZ" />
-
-	<!-- Twitter -->
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={$page.data.seo?.twitterTitle} />
-	<meta name="twitter:description" content={$page.data.seo?.twitterDescription} />
-
-	<!-- Kanonická URL - důležité pro SEO -->
-	<link rel="canonical" href={$page.data.seo?.url + $page.url.pathname} />
-</svelte:head>
-
-
 <!-- <Header /> -->
 {#if !isAdminRoute}
 	<HeaderCustomer {data} />
