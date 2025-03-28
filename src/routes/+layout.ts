@@ -9,7 +9,21 @@ import {
 import { DEFAULT_SETTINGS, type AllSettings } from "$lib/settingsService";
 import type { LayoutLoad } from "./$types";
 
-export const load: LayoutLoad = async ({ data, depends, fetch }) => {
+type SEOData = {
+	title: string;
+	author: string;
+	description: string;
+	keywords: string;
+	copyright: string;
+	ogTitle: string;
+	ogDescription: string;
+	url: string;
+	twitterTitle: string;
+	twitterDescription: string;
+	googleAnalyticsId?: string;
+};
+
+export const load: LayoutLoad = async ({ data, depends, fetch, url }) => {
 	depends("supabase:auth");
 
 	const supabase = isBrowser()
@@ -93,6 +107,20 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		settings,
 		generalSettings: settings.general,
 		seoSettings: settings.seo,
-		contactSettings: settings.contact
+		contactSettings: settings.contact,
+		seo: {
+			title: `${settings.general.shopName} - ${settings.general.slogan}`,
+			author: settings.general.legalName,
+			description: settings.seo.metaDescription,
+			keywords: settings.seo.metaKeywords,
+			copyright: settings.general.legalName,
+			ogTitle: settings.seo.ogTitle || settings.seo.metaTitle,
+			ogDescription: settings.seo.ogDescription || settings.seo.metaDescription,
+			url: url.origin,
+			twitterTitle: settings.seo.twitterTitle || settings.seo.metaTitle,
+			twitterDescription:
+				settings.seo.twitterDescription || settings.seo.metaDescription,
+			googleAnalyticsId: settings.seo.googleAnalyticsId
+		} as SEOData
 	};
 };

@@ -6,7 +6,7 @@
 
 	const { generalSettings } = data;
 
-	let src = "/android-chrome-192x192.png";
+	let src = "/srdce.png";
 	// console.log(data);
 </script>
 
@@ -37,19 +37,19 @@
 		<ul>
    <ul class="space-y-2">
   <li class="flex items-start gap-2">
-    <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+    <img {src} alt="staste srdce" class="pt-1" width="22" height="22" />
     <div><a href="/obedy" class="hover:underline"><strong>kvalitní a zdravé obědy</strong></a> </div>
   </li>
 		 <li class="flex items-start gap-2">
-        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <img {src} alt="staste srdce" class="pt-1" width="22" height="22" />
         <div><strong>odborné poradenství v oblasti výživy a preventivního lékařství</strong></div>
     </li>
  <li class="flex items-start gap-2">
-        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <img {src} alt="staste srdce" class="pt-1" width="22" height="22" />
         <div><strong>vytvoření systému HACCP pro všechny provozy pracující s potravinami</strong></div>
     </li>
 		  <li class="flex items-start gap-2">
-        <img {src} alt="staste srdce" class="pt-1" width="20" height="20" />
+        <img {src} alt="staste srdce" class="pt-1" width="22" height="22" />
         <div><strong>realizace přednášek na různá témata z oblasti výživy</strong></div>
     </li>
 
