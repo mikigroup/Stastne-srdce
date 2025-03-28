@@ -37,9 +37,10 @@
 			{/each}
 		</select>
 	</div>
-
-	<!-- Desktop verze se záložkami -->
-	<div class="hidden md:flex items-center pl-0 mb-4 text-center border-b-0">
+<div class="py-2 my-2">
+	Počet dnů zobrazených na stránce
+</div>
+	<div class="hidden md:flex items-center pl-0 text-center border ">
 		{#each options as option}
 			<button
 				class="w-full px-6 py-3 text-xs font-medium leading-tight border-t-0 border-b-2 md:text-lg m-1
