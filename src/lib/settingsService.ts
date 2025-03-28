@@ -377,3 +377,76 @@ function getStoreForCategory<T extends keyof AllSettings>(
 
 	return stores[category] || null;
 }
+
+// Pomocná funkce pro získání default hodnot pro konkrétní sekci
+function getDefaultSection<T extends keyof AllSettings>(
+	section: T
+): AllSettings[T] {
+	return JSON.parse(JSON.stringify(DEFAULT_SETTINGS[section]));
+}
+
+// Funkce pro načtení konkrétní sekce nastavení
+export async function loadSettingsSection<T extends keyof AllSettings>(
+	supabase: SupabaseClient,
+	section: T
+): Promise<AllSettings[T]> {
+	try {
+		const { data, error } = await supabase
+			.from("site_settings")
+			.select("value")
+			.eq("key", section)
+			.single();
+
+		if (error || !data) {
+			console.log(`Používám default hodnoty pro sekci ${section}`);
+			return getDefaultSection(section);
+		}
+
+		// Podpora pro oba formáty (objekt i JSON string)
+		const value =
+			typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+
+		return { ...getDefaultSection(section), ...value };
+	} catch (error) {
+		console.error(`Chyba při načítání sekce ${section}:`, error);
+		return getDefaultSection(section);
+	}
+}
+
+// Funkce pro uložení jedné sekce
+export async function updateSettingsSection<T extends keyof AllSettings>(
+	supabase: SupabaseClient,
+	section: T,
+	data: Partial<AllSettings[T]>,
+	userId?: string
+): Promise<boolean> {
+	try {
+		// Načteme aktuální hodnoty
+		const current = await loadSettingsSection(supabase, section);
+		const updated = { ...current, ...data };
+
+		// Uložíme pouze tuto sekci
+		const { error } = await supabase.from("site_settings").upsert(
+			{
+				key: section,
+				value: updated,
+				updated_at: new Date().toISOString(),
+				updated_by: userId
+			},
+			{
+				onConflict: "key"
+			}
+		);
+
+		if (error) throw error;
+
+		// Aktualizujeme příslušný store
+		const store = getStoreForCategory(section);
+		if (store) store.set(updated);
+
+		return true;
+	} catch (error) {
+		console.error(`Chyba při ukládání sekce ${section}:`, error);
+		return false;
+	}
+}

@@ -1,5 +1,14 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+interface SettingRecord {
+	id?: number;
+	key: string;
+	value: any;
+	updated_at?: string;
+	updated_by?: string;
+}
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
@@ -29,7 +38,7 @@ export const actions: Actions = {
 		console.log("--- ZAČÁTEK AKCE UPDATE ---");
 		const startTime = Date.now();
 
-		// 1. Ověření session
+		// 1. Session verification
 		const { session } = await safeGetSession();
 		if (!session) {
 			console.error("Uživatel není přihlášen");
@@ -37,11 +46,17 @@ export const actions: Actions = {
 		}
 
 		try {
-			// 2. Zpracování vstupních dat
+			// 2. Process input data
 			const formData = await request.formData();
-			const settingsData = JSON.parse(
-				formData.get("settings")?.toString() || "{}"
-			);
+			const settingsJson = formData.get("settings")?.toString() || "{}";
+
+			let settingsData: Record<string, any>;
+			try {
+				settingsData = JSON.parse(settingsJson);
+			} catch (e) {
+				console.error("Neplatný JSON formát:", e);
+				return fail(400, { error: "Neplatný formát dat" });
+			}
 
 			console.log("Obdržená data:", {
 				user: session.user.id,
@@ -49,17 +64,21 @@ export const actions: Actions = {
 				timestamp: new Date().toISOString()
 			});
 
-			// 3. Validace dat
-			if (Object.keys(settingsData).length === 0) {
-				console.error("Prázdná data pro update");
-				return fail(400, { error: "Žádná data k uložení" });
+			// 3. Data validation
+			if (
+				!settingsData ||
+				typeof settingsData !== "object" ||
+				Array.isArray(settingsData)
+			) {
+				console.error("Prázdná nebo neplatná data pro update");
+				return fail(400, { error: "Žádná platná data k uložení" });
 			}
 
-			// 4. Příprava batch operací
+			// 4. Prepare batch operations
 			const updates = Object.entries(settingsData).map(async ([key, value]) => {
 				console.log(`Zpracovávám klíč: ${key}`);
 
-				// 4a. Najdi existující záznam
+				// 4a. Find existing record
 				const { data: existing, error: fetchError } = await supabase
 					.from("site_settings")
 					.select("id")
@@ -68,14 +87,14 @@ export const actions: Actions = {
 
 				if (fetchError) throw fetchError;
 
-				// 4b. Připrav data pro update
-				const recordData = {
+				// 4b. Prepare data for update
+				const recordData: SettingRecord = {
 					value: value,
 					updated_at: new Date().toISOString(),
 					updated_by: session.user.id
 				};
 
-				// 4c. Proveď operaci
+				// 4c. Execute operation
 				if (existing?.id) {
 					console.log(`Updatuji existující záznam ID: ${existing.id}`);
 					return supabase
@@ -88,12 +107,12 @@ export const actions: Actions = {
 				}
 			});
 
-			// 5. Provedení všech operací
+			// 5. Execute all operations
 			console.log("Provádím batch operací...");
 			const results = await Promise.all(updates);
 			const errors = results.filter((r) => r.error);
 
-			// 6. Zpracování výsledků
+			// 6. Process results
 			if (errors.length > 0) {
 				console.error("Chyby při ukládání:", errors);
 				return fail(500, {
@@ -109,13 +128,13 @@ export const actions: Actions = {
 			};
 		} catch (error) {
 			console.error("Kritická chyba:", {
-				error: error.message,
-				stack: error.stack,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
 				timestamp: new Date().toISOString()
 			});
 			return fail(500, {
 				error: "Interní chyba serveru",
-				details: error.message
+				details: error instanceof Error ? error.message : "Neznámá chyba"
 			});
 		}
 	}
