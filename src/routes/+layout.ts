@@ -91,8 +91,6 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		supabase,
 		user,
 		settings,
-		generalSettings: settings.general,
-		seoSettings: settings.seo,
-		contactSettings: settings.contact
+		generalSettings: settings.general
 	};
 };
