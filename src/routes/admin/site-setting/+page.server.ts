@@ -70,7 +70,7 @@ export const actions: Actions = {
 
 				// 4b. Připrav data pro update
 				const recordData = {
-					value: JSON.stringify(value),
+					value: value,
 					updated_at: new Date().toISOString(),
 					updated_by: session.user.id
 				};

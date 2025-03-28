@@ -259,37 +259,53 @@ export async function loadAllSettings(
 	supabase: SupabaseClient
 ): Promise<AllSettings> {
 	try {
-		// Nezačínejte s výchozími hodnotami, ale s prázdným objektem
-		const loadedSettings: Partial<AllSettings> = {};
+		const settings = getDefaultSettings();
 
 		const { data, error } = await supabase
 			.from("site_settings")
 			.select("key, value");
 
-		if (error) throw error;
-
-		if (data && data.length > 0) {
-			// Naplňte pouze hodnoty z databáze
-			data.forEach((item) => {
-				const key = item.key as keyof AllSettings;
-				loadedSettings[key] = item.value;
-			});
-
-			// Aktualizujte store pouze s daty z DB
-			generalSettings.set(loadedSettings.general || {});
-			seoSettings.set(loadedSettings.seo || {});
-			// ... ostatní store
-		} else {
-			// Pokud DB nevrátí data, použijte výchozí hodnoty
-			const defaults = getDefaultSettings();
-			Object.entries(defaults).forEach(([key, value]) => {
-				loadedSettings[key as keyof AllSettings] = value;
-			});
+		if (error) {
+			console.error("Chyba při načítání nastavení:", error);
+			return settings;
 		}
 
-		return loadedSettings as AllSettings;
+		if (data) {
+			for (const item of data) {
+				const key = item.key as keyof AllSettings;
+				if (key in settings) {
+					try {
+						// Podpora pro oba formáty - objekt i JSON string
+						const value =
+							typeof item.value === "string"
+								? JSON.parse(item.value)
+								: item.value;
+
+						settings[key] = { ...settings[key], ...value };
+					} catch (parseError) {
+						console.error(
+							`Chyba při parsování hodnoty pro ${key}:`,
+							parseError
+						);
+						continue;
+					}
+				}
+			}
+
+			// Aktualizace všech stores
+			generalSettings.set(settings.general);
+			seoSettings.set(settings.seo);
+			contactSettings.set(settings.contact);
+			socialSettings.set(settings.social);
+			appearanceSettings.set(settings.appearance);
+			businessSettings.set(settings.business);
+			emailSettings.set(settings.email);
+			integrationSettings.set(settings.integrations);
+		}
+
+		return settings;
 	} catch (error) {
-		console.error("Chyba při načítání nastavení:", error);
+		console.error("Neočekávaná chyba při načítání nastavení:", error);
 		return getDefaultSettings();
 	}
 }
@@ -302,42 +318,44 @@ export async function updateSettings<T extends keyof AllSettings>(
 	userId?: string
 ): Promise<boolean> {
 	try {
+		// Získání aktuálních hodnot
 		const { data: current } = await supabase
 			.from("site_settings")
 			.select("value")
 			.eq("key", category)
 			.single();
 
-		const updatedSettings = {
-			...(current?.value || getDefaultSettings()[category]),
-			...settings
-		};
+		// Sloučení nastavení
+		const currentValue = current?.value
+			? typeof current.value === "string"
+				? JSON.parse(current.value)
+				: current.value
+			: getDefaultSettings()[category];
 
-		const { error } = await supabase.from("site_settings").upsert({
-			key: category,
-			value: updatedSettings,
-			updated_at: new Date().toISOString(),
-			updated_by: userId
-		});
+		const updatedSettings = { ...currentValue, ...settings };
 
-		if (error) {
-			console.error(
-				`Chyba při ukládání nastavení kategorie ${category}:`,
-				error
-			);
-			return false;
-		}
+		// Uložení (s podporou obou formátů)
+		const { error } = await supabase.from("site_settings").upsert(
+			{
+				key: category,
+				value: updatedSettings, // Ukládáme přímo objekt
+				updated_at: new Date().toISOString(),
+				updated_by: userId
+			},
+			{
+				onConflict: "key"
+			}
+		);
 
+		if (error) throw error;
+
+		// Aktualizace store
 		const store = getStoreForCategory(category);
-		if (store) {
-			store.set(updatedSettings);
-		}
+		if (store) store.set(updatedSettings);
+
 		return true;
 	} catch (error) {
-		console.error(
-			`Neočekávaná chyba při ukládání nastavení kategorie ${category}:`,
-			error
-		);
+		console.error(`Chyba při ukládání nastavení ${category}:`, error);
 		return false;
 	}
 }
