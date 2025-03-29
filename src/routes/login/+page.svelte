@@ -114,7 +114,7 @@
 								<div class="flex ml-auto">
 									<a
 										href="/forgot"
-										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm hover:text-gray-700 hover:underline">
+										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm hover:text-gray-700 !hover:underline">
 										Zapoměli jste heslo?
 									</a>
 								</div>
