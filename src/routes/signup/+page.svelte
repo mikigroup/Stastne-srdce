@@ -57,7 +57,7 @@
 
 <section>
 	<div class="footer_fix">
-		<div class="flex flex-col max-w-md px-4 pb-2 mx-auto bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
+		<div class="flex flex-col max-w-md px-4 pb-2 mx-auto bg-white rounded-lg shadow pt-10 sm:px-6 md:px-8 lg:px-10 border border-gray-300 mt-20">
 			<div class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl">
 				Vytvoření nového účtu
 			</div>
