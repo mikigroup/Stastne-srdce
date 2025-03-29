@@ -7,18 +7,19 @@
 	$: ({ session, supabase } = data);
 
 	let loading = false;
+	let agreedToTerms = false;
 
-	// Handler pro zpracování formuláře podle dokumentace
 	function handleSubmit() {
+		if (!agreedToTerms) return; // zabrání odeslání, pokud není souhlas
+
 		loading = true;
 		return async ({ result, update }) => {
-			console.log('Form result:', result);  // Pro debugging
+			console.log('Form result:', result);
 
 			if (result.type === 'success' || result.type === 'failure') {
 				loading = false;
 			}
 
-			// Počkáme na aktualizaci formuláře
 			await update();
 		};
 	}
@@ -56,7 +57,7 @@
 
 <section>
 	<div class="footer_fix">
-		<div class="flex flex-col max-w-md px-4 pb-2 mx-auto bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10">
+		<div class="flex flex-col max-w-md px-4 pb-2 mx-auto bg-white rounded-lg shadow pt-7 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 			<div class="self-center mb-2 text-3xl font-light text-gray-800 sm:text-2xl">
 				Vytvoření nového účtu
 			</div>
@@ -135,15 +136,40 @@
 							/>
 						</div>
 					</div>
+					<div class="my-8 py-4 h-24">
+						<label class="flex items-center">
+							<input
+								type="checkbox"
+								bind:checked={agreedToTerms}
+								class="mr-2 rounded text-green-800 focus:ring-green-800"
+							/>
+							<span class="text-sm text-gray-700 text-base">Souhlas s obchodními podmínkami</span>
+						</label>
+						{#if !agreedToTerms}
+							<p class="mt-1 text-xs text-red-600 text-base font-semibold ">
+								Pro dokončení registrace je nutné souhlasit s obchodními podmínkami
+							</p>
+						{/if}
+					</div>
 
 					<!-- Submit button -->
 					<div class="flex w-full my-4">
 						<button
 							type="submit"
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-							disabled={loading}
+							disabled={loading || !agreedToTerms}
 						>
-							{loading ? "Probíhá registrace..." : "Registrovat"}
+						{#if loading}
+			<span class="inline-flex items-center justify-center">
+				<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+				</svg>
+				Probíhá registrace...
+			</span>
+						{:else}
+							Registrovat
+						{/if}
 						</button>
 					</div>
 
@@ -168,7 +194,7 @@
 
 		<!-- Google auth -->
 		<div class="form-widget">
-			<div class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
+			<div class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 				<button
 					on:click={signInWithGoogle}
 					disabled={loading}
