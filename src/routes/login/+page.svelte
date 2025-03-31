@@ -147,7 +147,7 @@
 									disabled={loading}
 									id="btn-success"
 									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
+									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-gray-600">
 									<img src="/google.svg" alt="" width="40" height="40" />
 								</button>
 							</div>
