@@ -5,9 +5,9 @@
 				<a href="/obchodni-podminky" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Obchodní podmínky
 				</a>
-				<a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+			<!--	<a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Ochrana osobních údajů
-				</a>
+				</a>-->
 				<a href="/alergeny" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Alergeny
 				</a>

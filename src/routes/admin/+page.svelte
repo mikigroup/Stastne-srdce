@@ -12,6 +12,7 @@
 	import { goto } from "$app/navigation";
 	import DateRangeSelector from "$lib/component/DateRangeSelector.svelte";
 	import { onMount } from "svelte";
+	import { ROUTES } from "$lib/stores/store";
 
 	Chart.register(
 		Title,
@@ -153,6 +154,8 @@
 			}
 		]
 	};
+
+
 </script>
 
 <svelte:head>
@@ -167,7 +170,8 @@
 
 	<!-- Horní statistické karty -->
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-		<div class="card bg-base-100 shadow-xl border border-gray-300">
+		<div class="card bg-base-100 shadow-xl border border-gray-300 hover:transform hover:scale-103 transition-transform duration-300">
+			<a href="{$ROUTES.ADMIN.ORDER.LIST}" class="">
 			<div class="card-body">
 				<h2 class="card-title">Objednávky</h2>
 				<p class="text-4xl font-bold">{currentRangeOrders}</p>
@@ -175,6 +179,7 @@
 					{currentDateRange || "Aktuální měsíc"}
 				</p>
 			</div>
+			</a>
 		</div>
 
 		<div class="card bg-base-100 shadow-xl border border-gray-300">
@@ -187,7 +192,8 @@
 			</div>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl border border-gray-300">
+		<a href="{$ROUTES.ADMIN.CUSTOMER.LIST}" class="">
+		<div class="card bg-base-100 shadow-xl border border-gray-300 hover:transform hover:scale-103 transition-transform duration-300">
 			<div class="card-body">
 				<h2 class="card-title">Noví zákazníci</h2>
 				<p class="text-4xl font-bold">{currentRangeCustomers}</p>
@@ -196,6 +202,7 @@
 				</p>
 			</div>
 		</div>
+		</a>
 	</div>
 
 	<!-- Sekce dnešních objednávek -->

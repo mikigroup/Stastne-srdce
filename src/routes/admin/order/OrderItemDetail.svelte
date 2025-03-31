@@ -84,12 +84,13 @@
 					type="text"
 					placeholder="DD-MM-YYYY"
 					autocomplete="off"
-					class="input input-bordered w-full"
+					class="input input-bordered w-full !border-white !text-black"
+					readonly
+					disabled
 					class:input-error={!isValidDate}
 					bind:value={formattedDate}
 					on:input={handleDateInput} />
 			</div>
-
 			<div class="form-control w-full mb-2">
 				<label class="label">
 					<span class="label-text">Stav</span>
