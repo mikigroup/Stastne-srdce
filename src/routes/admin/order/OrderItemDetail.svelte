@@ -103,8 +103,8 @@
 				</select>
 			</div>
 
-			<div class="collapse">
-				<input type="checkbox" />
+			<div class="border-black collapse collapse-plus">
+			<input type="checkbox" checked="checked" />
 				<div class="collapse-title text-lg font-medium">Platební údaje</div>
 				<div class="collapse-content">
 					<div class="form-control w-full mb-2">

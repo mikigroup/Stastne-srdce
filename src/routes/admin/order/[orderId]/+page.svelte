@@ -271,8 +271,8 @@
 								</tr>
 							{/each}
 							</tbody>
-							<tfoot>
-								<tr class="grid grid-cols-3 gap-4">
+														<tfoot>
+								<tr class="grid grid-cols-2 gap-4 ">
 									<th colspan="4"></th>
 									<th class="text-right">
 										Celkem cena: {order.order_items.reduce(
