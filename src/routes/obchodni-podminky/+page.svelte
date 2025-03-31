@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { fly } from "svelte/transition";
+	export let data;
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
@@ -23,11 +26,13 @@
 
 				<section class="mb-8">
 					<h2 class="text-2xl font-bold text-gray-800 mb-4">2. Kontakty na prodávajícího</h2>
-					<p>Šťastné srdce s.r.o., Potoční 16, 790 84 MIKULOVICE,<br />
-						IČO: 21300674, DIČ: CZ21300674<br />
-						TEL: +420 724 448 377<br />
-						Email: stastnesrdcekk@seznam.cz<br />
-						Internetové stránky: www.stastnesrdce.cz</p>
+					<p>Šťastné srdce s.r.o. <br>
+						Potoční 16, 790 84<br>
+						Mikulovice<br>
+						IČO: 21300674, DIČ: CZ21300674<br /><br>
+						+420 724 448 377<br />
+						stastnesrdcekk@seznam.cz<br />
+						www.stastnesrdce.cz</p>
 				</section>
 
 				<section class="mb-8">
