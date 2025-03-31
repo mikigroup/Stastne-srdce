@@ -17,6 +17,8 @@
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
+	import { ROUTES } from "$lib/stores/store";
+	import { formatDateToCzech } from "$lib/date";
 
 	export let data;
 
@@ -55,17 +57,7 @@
 	];
 
 	function newOrderPage() {
-		goto("/admin/order/neworder");
-	}
-
-	function formatDateToCzech(date) {
-		if (!date) return ""; //
-		const parts = date.split("-");
-		if (parts.length !== 3) {
-			return date;
-		}
-		const [year, month, day] = parts;
-		return `${day}.${month}.${year}`;
+		goto($ROUTES.ORDER.NEW);
 	}
 
 	function formatPayState(pay_state: boolean) {

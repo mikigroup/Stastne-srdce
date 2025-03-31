@@ -18,6 +18,7 @@
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
+	import { formatDateToCzech } from "$lib/date";
 
 	export let data;
 
@@ -60,17 +61,6 @@
 	// Navigate to new menu page
 	function newMenuPage() {
 		goto($ROUTES.ADMIN.MENU.NEW);
-	}
-
-	// Format date to Czech format (DD.MM.YYYY)
-	function formatDateToCzech(date: any) {
-		if (!date) return "";
-		const parts = date.split("-");
-		if (parts.length !== 3) {
-			return date;
-		}
-		const [year, month, day] = parts;
-		return `${day}.${month}.${year}`;
 	}
 
 	// Převede pole variant na jednoduchý textový řetězec

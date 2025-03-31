@@ -3,6 +3,7 @@
 	import { fly } from "svelte/transition";
 	import OrderItemDetail from "../OrderItemDetail.svelte";
 	import { ROUTES } from "$lib/stores/store";
+	import { formatDateToCzech } from "$lib/date"
 
 	export let data;
 	let { session, supabase, order } = data;
@@ -128,16 +129,6 @@
 
 	async function back() {
 		await goto($ROUTES.ADMIN.ORDER.LIST);
-	}
-
-	function formatDateToCzech(date: string) {
-		if (!date) return "";
-		const parts = date.split("-");
-		if (parts.length !== 3) {
-			return date;
-		}
-		const [year, month, day] = parts;
-		return `${day}.${month}.${year}`;
 	}
 </script>
 

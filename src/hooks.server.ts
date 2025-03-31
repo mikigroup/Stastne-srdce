@@ -59,17 +59,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	// Root section logic
-	else {
-		if (!event.locals.session && event.url.pathname.startsWith("/private")) {
-			throw redirect(303, "/login");
-		}
-
-		if (event.locals.session && event.url.pathname === "/login") {
-			throw redirect(303, "/");
-		}
-	}
-
 	return resolve(event);
 };
 
