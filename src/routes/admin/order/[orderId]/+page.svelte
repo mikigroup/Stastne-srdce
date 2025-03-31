@@ -216,9 +216,11 @@
 				<div class="border-black p-4 border shadow-xl rounded-lg">
 					<div class="font-medium text-lg mb-4">Položky objednávky</div>
 
-					<div class="overflow-x-auto">
-						<table class="table table-zebra w-full">
-							<thead>
+					<!-- Desktop verze (tabulka) -->
+					<div class="hidden md:block">
+						<div class="overflow-x-auto">
+							<table class="table table-zebra w-full">
+								<thead>
 								<tr class="grid grid-cols-12 gap-4">
 									<th>Výběr</th>
 									<th>Pořadí</th>
@@ -227,67 +229,117 @@
 									<th>Množství</th>
 									<th>Cena</th>
 								</tr>
-							</thead>
-							<tbody>
-							{#each order.order_items as item, i}
-								<tr class="hover grid grid-cols-12 gap-4">
-									<td>
-										<label>
-											<input type="checkbox" class="checkbox" />
-										</label>
-									</td>
-									<td>
-										{i + 1}
-									</td>
-									<td>
-										<!-- Použijeme datum z verze menu, pokud je k dispozici -->
-										{#if item.menuVersionData}
-											{formatDateToCzech(item.menuVersionData.date)}
-										{:else}
-											{formatDateToCzech(item.variant_id.menu_id.date)}
-										{/if}
-									</td>
-									<td class="col-span-7">
-										<div class="flex items-center space-x-3">
-											<div>
-												<div class="font-bold">
-													{item.variant_id.description}
-												</div>
-												<div class="text-sm opacity-50">{item.price} Kč</div>
-												<div class="text-sm opacity-50">
-													Varianta {item.variant_id.variant_number}
-												</div>
-												<!-- Zobrazíme polévku z verze menu, pokud je k dispozici -->
-												{#if item.menuVersionData}
+								</thead>
+								<tbody>
+								{#each order.order_items as item, i}
+									<tr class="hover grid grid-cols-12 gap-4">
+										<td>
+											<label>
+												<input type="checkbox" class="checkbox" />
+											</label>
+										</td>
+										<td>{i + 1}</td>
+										<td>
+											{#if item.menuVersionData}
+												{formatDateToCzech(item.menuVersionData.date)}
+											{:else}
+												{formatDateToCzech(item.variant_id.menu_id.date)}
+											{/if}
+										</td>
+										<td class="col-span-7">
+											<div class="flex items-center space-x-3">
+												<div>
+													<div class="font-bold">{item.variant_id.description}</div>
+													<div class="text-sm opacity-50">{item.price} Kč</div>
 													<div class="text-sm opacity-50">
-														Polévka: {item.menuVersionData.soup}
+														Varianta {item.variant_id.variant_number}
 													</div>
-												{/if}
+													{#if item.menuVersionData}
+														<div class="text-sm opacity-50">
+															Polévka: {item.menuVersionData.soup}
+														</div>
+													{/if}
+												</div>
 											</div>
-										</div>
-									</td>
-									<td>{item.quantity}</td>
-									<td>{item.quantity * item.price} Kč</td>
-								</tr>
-							{/each}
-							</tbody>
-														<tfoot>
-								<tr class="grid grid-cols-2 gap-4 ">
+										</td>
+										<td>{item.quantity}</td>
+										<td>{item.quantity * item.price} Kč</td>
+									</tr>
+								{/each}
+								</tbody>
+								<tfoot>
+								<tr class="grid grid-cols-2 gap-4">
 									<th colspan="4"></th>
 									<th class="text-right">
 										Celkem cena: {order.order_items.reduce(
-											(sum, item) => sum + item.quantity * item.price,
-											0
-										)} Kč
+										(sum, item) => sum + item.quantity * item.price,
+										0
+									)} Kč
 										<br />
 										Celkový počet: {order.order_items.reduce(
-											(sum, item) => sum + item.quantity,
-											0
-										)}
+										(sum, item) => sum + item.quantity,
+										0
+									)}
 									</th>
 								</tr>
-							</tfoot>
-						</table>
+								</tfoot>
+							</table>
+						</div>
+					</div>
+
+					<!-- Mobilní verze (karty) -->
+					<div class="md:hidden space-y-4">
+						{#each order.order_items as item, i}
+							<div class="border-b border-gray-200 pb-4 last:border-0">
+								<div class="flex justify-between items-start">
+									<div class="flex items-center space-x-2">
+										<input type="checkbox" class="checkbox" />
+										<span class="font-medium">{i + 1}.</span>
+									</div>
+									<span class="text-gray-600">
+                        {#if item.menuVersionData}
+                            {formatDateToCzech(item.menuVersionData.date)}
+                        {:else}
+                            {formatDateToCzech(item.variant_id.menu_id.date)}
+                        {/if}
+                    </span>
+								</div>
+
+								<div class="mt-2 pl-7">
+									<div class="font-bold">{item.variant_id.description}</div>
+									<div class="text-sm text-gray-600">
+										Varianta {item.variant_id.variant_number} • {item.price} Kč
+									</div>
+									{#if item.menuVersionData}
+										<div class="text-sm text-gray-600">
+											Polévka: {item.menuVersionData.soup}
+										</div>
+									{/if}
+								</div>
+
+								<div class="mt-2 pl-7 flex justify-between">
+									<div><span class="font-medium">Množství:</span> {item.quantity}</div>
+									<div><span class="font-medium">Cena:</span> {item.quantity * item.price} Kč</div>
+								</div>
+							</div>
+						{/each}
+
+						<div class="mt-6 pt-4 border-t border-gray-200">
+							<div class="text-right">
+								<div class="font-medium">
+									Celkem cena: {order.order_items.reduce(
+									(sum, item) => sum + item.quantity * item.price,
+									0
+								)} Kč
+								</div>
+								<div class="font-medium">
+									Celkový počet: {order.order_items.reduce(
+									(sum, item) => sum + item.quantity,
+									0
+								)}
+								</div>
+							</div>
+						</div>
 					</div>
 
 					<div class="mt-4">
