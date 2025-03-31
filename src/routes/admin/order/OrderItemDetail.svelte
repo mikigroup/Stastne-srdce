@@ -199,7 +199,7 @@
 					class="input input-bordered w-full"
 					bind:value={customer_last_name} />
 			</div>
-			<div class="collapse">
+			<!--<div class="collapse">
 				<input type="checkbox" />
 				<div class="collapse-title text-lg font-medium">
 					Další fakturační údaje
@@ -241,13 +241,13 @@
 							bind:value={customer_telephone} />
 					</div>
 				</div>
-			</div>
+			</div>-->
 		</div>
 	</div>
 </div>
 
 <!--Dodací adresa-->
-<div>
+<!--<div>
 	<div
 		class="border-black collapse collapse-plus bg-base-200 p-5 border shadow-xl rounded-lg">
 		<input type="checkbox" />
@@ -304,4 +304,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</div>-->
