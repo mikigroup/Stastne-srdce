@@ -3,6 +3,7 @@ import type { Actions } from "./$types";
 import nodemailer from "nodemailer";
 import * as yup from "yup";
 import type { FormData } from "$lib/types/form";
+import { PRIVATE_seznam_key } from "$env/static/private";
 
 const contactSchema = yup.object({
 	email: yup
@@ -30,7 +31,7 @@ const transporter = nodemailer.createTransport({
 	secure: true,
 	auth: {
 		user: "info@stastnesrdce.cz",
-		pass: "#QFUtwxDsQW5LEDT"
+		pass: PRIVATE_seznam_key
 	}
 });
 
