@@ -502,7 +502,7 @@
 										</div>
 										<div class="bg-gray-50 p-3 rounded-lg">
 											<div class="text-sm text-gray-500">Číslo objednávky</div>
-											<div class="font-semibold text-lg">#{order.order_number}</div>
+											<div class="font-semibold text-lg">{order.order_number}</div>
 										</div>
 									</div>
 
