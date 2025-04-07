@@ -95,7 +95,7 @@
 							<span class="text-sm">{#if totalPieces}<strong>{totalPieces}</strong>{/if}</span>
 						</a>
 						<a href="/profile" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
-						<button on:click={signOut} disabled={loading} class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
+						 <button on:click={signOut} disabled={loading} id="signOut" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
 					</div>
 				{:else}
 					<!-- Desktop nav for guests -->

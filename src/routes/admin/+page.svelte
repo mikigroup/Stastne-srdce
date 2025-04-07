@@ -13,6 +13,7 @@
 	import DateRangeSelector from "$lib/component/DateRangeSelector.svelte";
 	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/stores/store";
+	import { page } from "$app/stores";
 
 	Chart.register(
 		Title,
@@ -31,6 +32,19 @@
 	$: todayOrders = data.todayOrders || [];
 	$: todayOrdersCount = data.todayOrdersCount || 0;
 	$: todayOrdersTotal = data.todayOrdersTotal || 0;
+	$: {
+		if ($page.url) {
+			const params = $page.url.searchParams;
+			const start = params.get('startDate');
+			const end = params.get('endDate');
+
+			if (start && end) {
+				startDate = start;
+				endDate = end;
+				filterDataByDateRange();
+			}
+		}
+	}
 
 	// Filtered data based on selected date range
 	let filteredOrders = [];
@@ -44,15 +58,29 @@
 		const now = new Date();
 		startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 		endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+
+		// Update URL with default range
+		goto(`?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
+			keepFocus: true,
+			replaceState: true,
+			noScroll: true
+		});
+
 		filterDataByDateRange();
-	});
+	})
 
 	function handleRangeChange(event) {
 		const { startDate: start, endDate: end, formattedRange } = event.detail;
 		startDate = start;
 		endDate = end;
 		currentDateRange = formattedRange;
-		filterDataByDateRange();
+
+		// Update URL with new date range
+		goto(`?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`, {
+			keepFocus: true,
+			replaceState: true,
+			noScroll: true
+		});
 	}
 
 	function filterDataByDateRange() {
