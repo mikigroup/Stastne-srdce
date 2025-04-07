@@ -2,17 +2,20 @@
 	<div class="max-w-7xl mx-auto px-4 py-6">
 		<div class="flex flex-col md:flex-row justify-between items-center gap-4">
 			<div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 md:pb-0">
-				<a href="/obchodni-podminky" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+				<a href="/obchodni-podminky" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Obchodní podmínky
 				</a>
 			<!--	<a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Ochrana osobních údajů
 				</a>-->
-				<a href="/alergeny" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+				<a href="/alergeny" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Alergeny
 				</a>
-				<a href="/kontakt" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+				<a href="/kontakt" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Kontakt
+				</a>
+				<a href="/gdpr" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+					GDRP
 				</a>
 			</div>
 
