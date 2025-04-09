@@ -8,7 +8,7 @@
 			<!--	<a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Ochrana osobních údajů
 				</a>-->
-				<!--<a href="/alergeny" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+				<!--<a href="/alergeny" class=" text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Alergeny
 				</a>-->
 				<a href="/kontakt" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
