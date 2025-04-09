@@ -364,18 +364,26 @@ export async function updateSettings<T extends keyof AllSettings>(
 function getStoreForCategory<T extends keyof AllSettings>(
 	category: T
 ): Writable<AllSettings[T]> | null {
-	const stores = {
-		general: generalSettings,
-		seo: seoSettings,
-		contact: contactSettings,
-		social: socialSettings,
-		appearance: appearanceSettings,
-		business: businessSettings,
-		email: emailSettings,
-		integrations: integrationSettings
-	};
-
-	return stores[category] || null;
+	switch (category) {
+		case "general":
+			return generalSettings as unknown as Writable<AllSettings[T]>;
+		case "seo":
+			return seoSettings as unknown as Writable<AllSettings[T]>;
+		case "contact":
+			return contactSettings as unknown as Writable<AllSettings[T]>;
+		case "social":
+			return socialSettings as unknown as Writable<AllSettings[T]>;
+		case "appearance":
+			return appearanceSettings as unknown as Writable<AllSettings[T]>;
+		case "business":
+			return businessSettings as unknown as Writable<AllSettings[T]>;
+		case "email":
+			return emailSettings as unknown as Writable<AllSettings[T]>;
+		case "integrations":
+			return integrationSettings as unknown as Writable<AllSettings[T]>;
+		default:
+			return null;
+	}
 }
 
 // Pomocná funkce pro získání default hodnot pro konkrétní sekci
