@@ -130,8 +130,8 @@
 								id="password"
 								name="password"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
-								placeholder="Heslo (min 6 znaků)"
-								minlength="6"
+								placeholder="Heslo (min 8 znaků)"
+								minlength="8"
 								required
 							/>
 						</div>
@@ -152,7 +152,7 @@
 								name="repassword"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
 								placeholder="Potvrzení hesla"
-								minlength="6"
+								minlength="8"
 								required
 							/>
 						</div>
@@ -164,7 +164,7 @@
 								bind:checked={agreedToTerms}
 								class="mr-2 rounded text-green-800 focus:ring-green-800"
 							/>
-							<span class="text-sm text-gray-700 text-base">Souhlas s obchodními podmínkami</span>
+							<span class="text-sm text-gray-700 text-base hover:underline"><a href="/obchodni-podminky">Souhlas s obchodními podmínkami</a></span>
 						</label>
 						{#if !agreedToTerms}
 							<p class="mt-1 text-xs text-red-600 text-base font-semibold ">
@@ -223,13 +223,13 @@
 				>
 					<img src="/google.svg" alt="Přihlásit přes Google" width="40" height="40" />
 				</button>
-				<button
+				<!--<button
 					on:click={signInWithFacebook}
 					disabled={loading}
 					class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-gray-600"
 				>
 					<img src="/facebook.svg" alt="Přihlásit přes Facebook" width="40" height="40" />
-				</button>
+				</button>-->
 			</div>
 		</div>
 
