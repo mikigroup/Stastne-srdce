@@ -8,9 +8,9 @@
 			<!--	<a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Ochrana osobních údajů
 				</a>-->
-				<a href="/alergeny" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
+				<!--<a href="/alergeny" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Alergeny
-				</a>
+				</a>-->
 				<a href="/kontakt" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Kontakt
 				</a>
@@ -31,7 +31,7 @@
 					<a href="https://www.malyleo.cz/" target="_blank" class="text-sm flex items-center">
 						<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo™
 					</a>
-					<span class="text-gray-400 text-xs">core1.0b</span>
+					<span class="text-gray-400 text-xs">core1.0c</span>
 				</div>
 			<p>Tento web používá cookies pro lepší uživatelský zážitek.</p>
 		</div>
