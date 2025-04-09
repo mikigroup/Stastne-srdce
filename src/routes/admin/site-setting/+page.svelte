@@ -263,17 +263,6 @@
 
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Právní název</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.general.legalName}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
 									<span class="label-text">Krátký název</span>
 								</label>
 								<input
@@ -283,7 +272,7 @@
 								/>
 							</div>
 
-							<div class="form-control">
+							<!--<div class="form-control">
 								<label class="label">
 									<span class="label-text">Slogan</span>
 								</label>
@@ -292,7 +281,7 @@
 									bind:value={$editableSettings.general.slogan}
 									class="input input-bordered w-full"
 								/>
-							</div>
+							</div>-->
 						</div>
 					</div>
 				{/if}
@@ -365,6 +354,17 @@
 				{#if activeTab === 'contact' && $editableSettings.contact}
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Kontaktní údaje</h2>
+
+						<div class="form-control">
+					<label class="label">
+						<span class="label-text">Právní název</span>
+					</label>
+					<input
+						type="text"
+						bind:value={$editableSettings.general.legalName}
+						class="input input-bordered w-full"
+					/>
+				</div>
 
 						<div class="space-y-4">
 							<div class="form-control">
