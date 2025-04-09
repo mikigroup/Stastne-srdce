@@ -26,11 +26,9 @@
 
 		settingsData.forEach((item: any) => {
 			try {
-				// Check if value is already an object
 				if (typeof item.value === 'object' && item.value !== null) {
 					structured[item.key] = item.value;
 				}
-				// Check if value is a JSON string
 				else if (typeof item.value === 'string') {
 					structured[item.key] = item.value ? JSON.parse(item.value) : {};
 				}
@@ -175,6 +173,23 @@
 			setTimeout(() => {
 				showMessage = false;
 			}, 3000);
+		}
+	}
+
+	// Add phone contact
+	function addPhoneContact() {
+		if (!$editableSettings.contact?.phoneContacts) {
+			$editableSettings.contact = { ...$editableSettings.contact, phoneContacts: [] };
+		}
+		$editableSettings.contact.phoneContacts.push({ name: '', phone: '' });
+		$editableSettings = $editableSettings;
+	}
+
+	// Remove phone contact
+	function removePhoneContact(index: number) {
+		if ($editableSettings.contact?.phoneContacts && $editableSettings.contact.phoneContacts.length > index) {
+			$editableSettings.contact.phoneContacts.splice(index, 1);
+			$editableSettings = $editableSettings;
 		}
 	}
 </script>
@@ -644,7 +659,58 @@
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Firemní údaje</h2>
 
-						<div class="space-y-4">
+						<div class="space-y-4 grid grid-cols-3 gap-2">
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Název firmy</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.companyName}
+									class="input input-bordered w-full"
+								/>
+							</div>
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Ulice</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.street}
+									class="input input-bordered w-full"
+								/>
+							</div>
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Číslo ulice</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.streetNumber}
+									class="input input-bordered w-full"
+								/>
+							</div>
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">PSČ</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.zipCode}
+									class="input input-bordered w-full"
+								/>
+							</div>
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Město</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.city}
+									class="input input-bordered w-full"
+								/>
+							</div>
+
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">IČO</span>
@@ -675,6 +741,43 @@
 									type="text"
 									bind:value={$editableSettings.business.bankAccount}
 									class="input input-bordered w-full"
+								/>
+							</div>
+
+							<!-- V záložce kontakt -->
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Hlavní telefon</span>
+								</label>
+								<input
+									type="tel"
+									bind:value={$editableSettings.contact.phone}
+									class="input input-bordered w-full"
+									placeholder="Hlavní kontaktní telefon"
+								/>
+							</div>
+
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Telefon 1</span>
+								</label>
+								<input
+									type="tel"
+									bind:value={$editableSettings.contact.phone1}
+									class="input input-bordered w-full"
+									placeholder="Další telefonní kontakt"
+								/>
+							</div>
+
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Telefon 2</span>
+								</label>
+								<input
+									type="tel"
+									bind:value={$editableSettings.contact.phone2}
+									class="input input-bordered w-full"
+									placeholder="Další telefonní kontakt"
 								/>
 							</div>
 
