@@ -7,6 +7,13 @@ export type ProfileData = {
 	last_name: string;
 	avatar_url: string;
 	telephone: string;
+	company?: string;
+	ico?: string;
+	dic?: string;
+	street?: string;
+	street_number?: string;
+	city?: string;
+	zip_code?: string;
 };
 
 /*export type RezcalendarData = {
@@ -28,7 +35,7 @@ export const load: PageServerLoad = async ({
 }): Promise<LoadData> => {
 	const { data: profiles, error: profilesError } = await supabase
 		.from("profiles")
-		.select(`username, first_name, last_name, avatar_url, telephone`)
+		.select("*")
 		.eq("id", session?.user.id)
 		.single();
 
@@ -57,6 +64,13 @@ export type ActionData = {
 	firstName?: string;
 	avatarUrl?: string;
 	telephone?: string;
+	company?: string;
+	ico?: string;
+	dic?: string;
+	street?: string;
+	street_number?: string;
+	city?: string;
+	zip_code?: string;
 };
 
 export const actions: Actions = {
@@ -67,6 +81,13 @@ export const actions: Actions = {
 		const username = formData.get("username") as string;
 		const avatarUrl = formData.get("avatarUrl") as string;
 		const telephone = formData.get("telephone") as string;
+		const company = formData.get("company") as string;
+		const ico = formData.get("ico") as string;
+		const dic = formData.get("dic") as string;
+		const street = formData.get("street") as string;
+		const street_number = formData.get("street_number") as string;
+		const city = formData.get("city") as string;
+		const zip_code = formData.get("zip_code") as string;
 
 		try {
 			const { error } = await supabase.from("profiles").upsert({
@@ -75,6 +96,13 @@ export const actions: Actions = {
 				last_name,
 				username,
 				telephone,
+				company,
+				ico,
+				dic,
+				street,
+				street_number,
+				city,
+				zip_code,
 				avatar_url: avatarUrl,
 				updated_at: new Date()
 			});
@@ -94,7 +122,14 @@ export const actions: Actions = {
 				username,
 				firstName: first_name,
 				avatarUrl,
-				telephone
+				telephone,
+				company,
+				ico,
+				dic,
+				street,
+				street_number,
+				city,
+				zip_code
 			});
 		}
 	}
