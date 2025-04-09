@@ -1,3 +1,4 @@
+/*
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import {
@@ -236,3 +237,4 @@ export const actions: Actions = {
 		}
 	}
 };
+*/

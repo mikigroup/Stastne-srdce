@@ -1,3 +1,4 @@
+<!--
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
@@ -49,7 +50,7 @@
 
 		<h1 class="text-2xl font-bold">Vytvoření faktury</h1>
 
-		<div class="w-20"><!-- Placeholder --></div>
+		<div class="w-20">&lt;!&ndash; Placeholder &ndash;&gt;</div>
 	</div>
 
 	{#if hasInvoice}
@@ -60,7 +61,7 @@
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-			<!-- Informace o objednávce -->
+			&lt;!&ndash; Informace o objednávce &ndash;&gt;
 			<div class="bg-gray-50 p-4 rounded-lg border">
 				<h2 class="text-lg font-semibold mb-3">Informace o objednávce</h2>
 
@@ -96,7 +97,7 @@
 				</div>
 			</div>
 
-			<!-- Informace o zákazníkovi -->
+			&lt;!&ndash; Informace o zákazníkovi &ndash;&gt;
 			<div class="bg-gray-50 p-4 rounded-lg border">
 				<h2 class="text-lg font-semibold mb-3">Zákazník</h2>
 
@@ -136,7 +137,7 @@
 			</div>
 		</div>
 
-		<!-- Položky objednávky -->
+		&lt;!&ndash; Položky objednávky &ndash;&gt;
 		<div class="mb-6">
 			<h2 class="text-lg font-semibold mb-3">Položky faktury</h2>
 
@@ -180,7 +181,7 @@
 			</div>
 		</div>
 
-		<!-- Formulář pro vytvoření faktury -->
+		&lt;!&ndash; Formulář pro vytvoření faktury &ndash;&gt;
 		<form
 			method="POST"
 			action="?/createInvoice"
@@ -228,4 +229,4 @@
 					{#if loading}
 						<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4
+							<path class="opacity-75" fill="currentColor" d="M4-->
