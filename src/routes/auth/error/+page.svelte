@@ -1,34 +1,36 @@
 <script>
 	import { page } from "$app/stores";
 
-	// Získání chybové zprávy a dalších detailů z URL
-	const errorType = $page.url.searchParams.get("error") || "neznámá_chyba";
-	const errorMessage = $page.url.searchParams.get("message") || "Došlo k nespecifikované chybě při ověřování";
+	// Získání chybových informací z URL
+	const errorCode = $page.url.searchParams.get("error_code");
+	const errorMessage = $page.url.searchParams.get("error_message") || "Ověření se nezdařilo";
+	const errorType = $page.url.searchParams.get("error_type");
 
-	// Mapování kódů chyb na uživatelsky přívětivé zprávy
-	const errorMessages = {
-		"verification_error": "Ověření e-mailu selhalo",
-		"verify_exception": "Chyba při zpracování ověření",
-		"global_exception": "Nastala neočekávaná chyba",
-		"chybejici_parametry": "V odkazu chybí potřebné parametry",
-		"neocekavana_chyba": "Došlo k neočekávané chybě",
-		"verification_failed": "Ověření se nezdařilo"
-	};
+	let userFriendlyMessage = "";
 
-	const userFriendlyError = errorMessages[errorType] || "Chyba při ověřování";
+	// Poskytnutí uživatelsky přívětivých zpráv podle typu chyby
+	if (errorCode === "401") {
+		userFriendlyMessage = "Odkaz pro ověření již vypršel. Zkuste si znovu vyžádat nový odkaz.";
+	} else if (errorCode === "invalid_token") {
+		userFriendlyMessage = "Neplatný odkaz pro ověření. Zkuste si znovu vyžádat nový odkaz.";
+	} else if (errorType === "exception") {
+		userFriendlyMessage = "Při zpracování ověření došlo k neočekávané chybě. Zkuste to znovu později nebo kontaktujte podporu.";
+	} else {
+		userFriendlyMessage = "Váš odkaz pro ověření nemohl být zpracován. Zkuste si vyžádat nový.";
+	}
 </script>
 
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
 	<div class="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
 		<h1 class="text-2xl font-bold text-red-600 mb-4">Chyba ověření</h1>
-		<p class="text-gray-700 mb-2"><strong>{userFriendlyError}</strong></p>
-		<p class="text-gray-600 mb-4">{errorMessage}</p>
 
-		<div class="bg-yellow-50 border-yellow-100 p-3 rounded-md mb-6">
-			<p class="text-yellow-800">
-				Váš odkaz pro ověření může být neplatný nebo vypršel. Zkuste požádat o nový odkaz pro ověření.
-			</p>
-		</div>
+		<p class="text-gray-700 mb-4">{userFriendlyMessage}</p>
+
+		{#if errorMessage}
+			<div class="bg-gray-50 border border-gray-200 rounded-md p-3 mb-6">
+				<p class="text-gray-600 text-sm">{errorMessage}</p>
+			</div>
+		{/if}
 
 		<div class="flex flex-col sm:flex-row gap-4">
 			<a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
