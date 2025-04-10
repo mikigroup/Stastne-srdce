@@ -1,47 +1,44 @@
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types";
 
-export const GET = async ({ url, locals: { supabase } }) => {
+export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get("token_hash");
-	const type = url.searchParams.get("type");
+	const type = url.searchParams.get("type") as EmailOtpType | null;
+	const next = url.searchParams.get("next") ?? "/";
+
+	const redirectTo = new URL(url);
+	redirectTo.pathname = next;
+	redirectTo.searchParams.delete("token_hash");
+	redirectTo.searchParams.delete("type");
 
 	if (!token_hash || !type) {
-		return redirect(303, "/auth/error?code=missing_params");
+		redirectTo.pathname = "/auth/error";
+		redirectTo.searchParams.append("error", "missing_token_or_type");
+		return redirect(303, redirectTo);
 	}
 
-	try {
-		const { error } = await supabase.auth.verifyOtp({
-			type,
-			token_hash,
-			options: {
-				redirectTo: "https://stastnesrdce.cz/auth/callback"
-			}
-		});
+	const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
 
-		if (error) throw error;
-
-		// Explicitní získání session po ověření
-		const {
-			data: { session },
-			error: sessionError
-		} = await supabase.auth.getSession();
-
-		if (sessionError || !session) {
-			throw new Error("Session not created after verification");
-		}
-
-		// Přesměrování s dodatečnou cookie pro klienta
-		const redirectTo = type === "signup" ? "/signup/complete" : "/";
-		const response = new Response(null, {
-			status: 302,
-			headers: {
-				Location: redirectTo,
-				"Set-Cookie": `sb-auth-redirect=${redirectTo}; Path=/; HttpOnly; SameSite=Lax`
-			}
-		});
-
-		return response;
-	} catch (error) {
-		console.error("Verification failed:", error);
-		return redirect(303, `/auth/error?code=verification_failed&type=${type}`);
+	if (error) {
+		redirectTo.pathname = "/auth/error";
+		redirectTo.searchParams.append("error", error.message);
+		return redirect(303, redirectTo);
 	}
+
+	redirectTo.searchParams.delete("next");
+
+	if (type === "signup") {
+		redirectTo.pathname = "/admin/complete";
+		redirectTo.searchParams.append("success", "signup");
+	} else if (type === "recovery") {
+		redirectTo.pathname = "/reset";
+		redirectTo.searchParams.append("token", token_hash);
+	} else {
+		redirectTo.pathname = "/auth/error";
+		redirectTo.searchParams.append("error", "invalid_type");
+		return redirect(303, redirectTo);
+	}
+
+	return redirect(303, redirectTo);
 };
