@@ -1,6 +1,13 @@
 import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 
+// Definujeme typovou strukturu pro business nastavení
+interface BusinessSettings {
+	paymentMethods?: string[];
+	deliveryOptions?: string[];
+	[key: string]: any;
+}
+
 export const load: PageServerLoad = async ({
 	locals: { supabase },
 	params
@@ -8,20 +15,40 @@ export const load: PageServerLoad = async ({
 	const id = params.orderId;
 
 	try {
+		// Načtení nastavení webu pro získání platebních metod a způsobů doručení
+		const { data: siteSettings, error: settingsError } = await supabase
+			.from("site_settings")
+			.select("*")
+			.eq("key", "business")
+			.single();
+
+		let businessSettings: BusinessSettings = {};
+		if (!settingsError && siteSettings?.value) {
+			try {
+				// Pokud je hodnota string, parsujeme ji, jinak použijeme přímo objekt
+				businessSettings =
+					typeof siteSettings.value === "string"
+						? JSON.parse(siteSettings.value)
+						: siteSettings.value;
+			} catch (e) {
+				console.error("Chyba při parsování business nastavení:", e);
+			}
+		}
+
 		// Načtení objednávky se všemi daty pomocí *
 		const { data: order, error: orderError } = await supabase
 			.from("orders")
 			.select(
 				`
-        *,
-        order_items(
-          *,
-          variant_id(
-            *,
-            menu_id(*)
-          )
-        )
-        `
+				*,
+				order_items(
+					*,
+					variant_id(
+						*,
+						menu_id(*)
+					)
+				)
+				`
 			)
 			.eq("id", id)
 			.single();
@@ -57,8 +84,21 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
+		// Získání platebních metod a způsobů doručení z nastavení
+		// Použijeme operátor optional chaining a default hodnoty pro případ, že vlastnosti neexistují
+		const paymentMethods = Array.isArray(businessSettings?.paymentMethods)
+			? businessSettings.paymentMethods
+			: ["Hotově", "Převodem"];
+
+		const deliveryOptions = Array.isArray(businessSettings?.deliveryOptions)
+			? businessSettings.deliveryOptions
+			: ["Osobní odběr", "Rozvoz"];
+
 		return {
-			order
+			order,
+			paymentMethods,
+			deliveryOptions,
+			businessSettings
 		};
 	} catch (err) {
 		console.error("Error fetching order details:", err);
