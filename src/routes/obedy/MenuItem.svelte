@@ -84,9 +84,13 @@
 			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
 			{#each menu.variants as variant (variant.id)}
 				<div class="border rounded-2xl p-5 mb-4 border-gray-400 bg-white">
+					<!--<div
+						class="rounded-3xl border w-3 px-4.5 py-1 flex justify-center bg-white mb-2">
+							{variant.variant_number}
+						</div>-->
 					<div class="p-2 text-lg">
 						<div>
-							{variant.description}
+							{variant.variant_number}. {variant.description}
 						</div>
 						<div class="mt-4">
 							<p class="text-xs text-gray-600">
