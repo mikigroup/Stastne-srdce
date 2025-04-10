@@ -20,19 +20,21 @@
 			}
 		});
 	}
+
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Login</title>
+	<title>{generalSettings.shopName} - Login</title>
 	<meta name="description" content="Login" />
 </svelte:head>
 
 <section class="footer_fix">
 	<div class="">
 		<form method="POST" class="" action="?/handleLogin">
-			<div class="pt-20 form-widget">
+			<div class="pt-10 form-widget">
 				<div
-					class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-20 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10">
+					class="flex flex-col w-full max-w-md px-4 py-8 mx-auto mt-10 bg-white rounded-lg shadow sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 					{#if $page.data.session}
 						<div class="flex w-full text-xl">
 							<p>Jste přihlášeni.</p>
@@ -108,11 +110,11 @@
 										placeholder="Heslo" />
 								</div>
 							</div>
-							<div class="flex items-center mb-6 -mt-4">
+							<div class="flex items-center mb-6 my-4">
 								<div class="flex ml-auto">
 									<a
 										href="/forgot"
-										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm hover:text-gray-700">
+										class="inline-flex text-xs font-thin text-gray-500 sm:text-sm hover:text-gray-700 !hover:underline">
 										Zapoměli jste heslo?
 									</a>
 								</div>
@@ -137,7 +139,7 @@
 				{#if !$page.data.session}
 					<div class="form-widget">
 						<div
-							class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10">
+							class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 							<div class="">
 								<button
 									on:click={signInWithGoogle}
@@ -145,7 +147,7 @@
 									disabled={loading}
 									id="btn-success"
 									type="submit"
-									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-green-800">
+									class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-gray-600">
 									<img src="/google.svg" alt="" width="40" height="40" />
 								</button>
 							</div>

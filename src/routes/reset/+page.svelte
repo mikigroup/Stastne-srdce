@@ -1,40 +1,14 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import type { Actions } from "@sveltejs/kit";
 	export let form: Actions;
-
+	export let data;
 	let loading = false;
 
-	/* async function reset() {
-		if (!newPassword) {
-			message = "Zadejte heslo"
-			return
-		}
-
-		loading = true
-
-		try {
-			const { error } = await supabase.auth.updateUser({ password: newPassword })
-			if (error) {
-				throw error
-			}
-
-			messageSuc = "Heslo změněno."
-			goto("/jidelnicek")
-		} catch (error) {
-			messageFalse = error.error_description || error.message
-		} finally {
-			loading = false
-		}
-	}
-
-	supabaseClient.auth.onAuthStateChange((state, session) => {
-		user.set(state === "PASSWORD_RECOVERY" && session.user)
-	}) */
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Reset hesla</title>
+	<title>{generalSettings.shopName} - Reset hesla</title>
 	<meta name="description" content="Reset" />
 </svelte:head>
 
@@ -88,15 +62,14 @@
 						id="btn-success"
 						type="submit"
 						class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-						Nastavit heslo
+						{loading ? "Měnim heslo..." : "Změna hesla"}
 					</button>
-
-					{#if form?.message}
-						<div class="flex w-full p-2 my-4 border rounded-lg">
-							<p class="error">{form.message.display}</p>
-						</div>
-					{/if}
 				</div>
+				{#if form?.message}
+					<div class="flex w-full p-2 my-4 border rounded-lg">
+						<p class="error">{form.message.display}</p>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</form>

@@ -1,189 +1,206 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
-  const { session } = await safeGetSession();
+interface OrderItem {
+	id: string;
+	price: number;
+	quantity: number;
+	variant: {
+		id: string;
+		variant_number: string;
+		description: string;
+		menu: {
+			id: string;
+			date: string;
+			soup: string;
+		};
+	};
+}
 
-  if (!session) {
-    throw redirect(303, "/");
-  }
+interface Order {
+	id: string;
+	created_at: string;
+	// Další vlastnosti objednávky
+	order_items: OrderItem[];
+	grouped_items?: Array<{ date: string; items: OrderItem[] }>;
+}
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("username, first_name, last_name, telephone, street, street_number, city, ico, dic, company")
-    .eq("id", session.user.id)
-    .single();
+interface GroupedItems {
+	[date: string]: OrderItem[];
+}
 
-  if (error) {
-    console.error("Error fetching profile:", error);
-  } else {
-    // console.log("TEST:", profile);
-  }
+export const load: PageServerLoad = async ({
+	locals: { supabase, safeGetSession }
+}) => {
+	const { session } = await safeGetSession();
+	if (!session) {
+		throw redirect(303, "/");
+	}
 
-  return { session, profile };
+	// Načtení profilu včetně nových polí
+	const { data: profile, error: profileError } = await supabase
+		.from("profiles")
+		.select(
+			`
+     *,
+     allergies,
+     allergies_description,
+     delivery_method,
+     payment_method
+   `
+		)
+		.eq("id", session.user.id)
+		.single();
+
+	if (profileError) {
+		console.error("Error fetching profile:", profileError);
+	}
+
+	// Načtení objednávek s detaily
+	const { data: orders, error: ordersError } = await supabase
+		.from("orders")
+		.select(
+			`
+     *,
+     order_items: order_items (
+       id,
+       price,
+       quantity,
+       variant: menu_variants (
+         id,
+         variant_number,
+         description,
+         menu: menus (
+           id,
+           date,
+           soup
+         )
+       )
+     )
+   `
+		)
+		.eq("user_id", session.user.id)
+		.order("created_at", { ascending: false });
+
+	if (ordersError) {
+		console.error("Error fetching orders:", ordersError);
+	} else if (orders) {
+		// Group order items by menu date
+		orders.forEach((order: Order) => {
+			const groupedItems: GroupedItems = {};
+
+			order.order_items.forEach((item) => {
+				const date = item.variant.menu.date;
+				if (!groupedItems[date]) {
+					groupedItems[date] = [];
+				}
+				groupedItems[date].push(item);
+			});
+
+			order.grouped_items = Object.entries(groupedItems).map(
+				([date, items]) => ({ date, items })
+			);
+		});
+	}
+
+	return {
+		session,
+		profile,
+		orders: orders || []
+	};
 };
 
 export const actions: Actions = {
-  update: async ({ request, locals: { supabase, safeGetSession } }) => {
-  const formData = await request.formData()
-	let first_name = formData.get("first_name") as string
-	let last_name = formData.get("last_name") as string
-	let telephone = formData.get("telephone") as string
-	let street = formData.get("street") as string
-	let street_number =formData.get("street_number") as string 
-	let city = formData.get("city") as string
-	let ico = formData.get("ico") as string
-	let dic = formData.get("dic") as string
-  let company = formData.get("company") as string  
-	let username = formData.get("username") as string
-  const { session } = await safeGetSession()
+	update: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const formData = await request.formData();
+		const { session } = await safeGetSession();
 
-/* 	    console.log('Form data in action:', {
-      first_name,
-      last_name,
-      telephone,
-      street,
-      street_number,
-      city,
-      ico,
-      dic,
-      company,
-      username
-    });
- */
-    const { error } = await supabase.from("profiles").upsert({
-      id: session?.user.id,
-      first_name,
-			last_name,
-			telephone,
-			street,
-			street_number,
-			city,
-			ico,
-			dic,
-			company,
-      username,   
-      updated_at: new Date(),
-    })
-
-    if (error) {
-      return fail(500, {
-      first_name,
-			last_name,
-			telephone,
-			street,
-			street_number,
-			city,
-			ico,
-			dic,
-			company,
-      username,                 
-      })    }
-
-    return {
-      first_name,
-			last_name,
-			telephone,
-			street,
-			street_number,
-			city,
-			ico,
-			dic,
-			company,
-      username,      
-    }
-  },
-};
-
-
-
-/* export const actions: Actions = {
-	updateProfile: async (event) => {
-		const session = await event.locals.getSession();
 		if (!session) {
-			throw error(401, "Unauthorized");
-		}
-
-		const profileForm = await superValidate(event, profileSchema, {
-			id: "profile"
-		});
-
-		if (!profileForm.valid) {
-			return fail(400, {
-				profileForm
+			return fail(401, {
+				message: {
+					success: false,
+					display: "Pro aktualizaci profilu se musíte přihlásit"
+				}
 			});
 		}
 
-		const { error: profileError } = await event.locals.supabase
-			.from("profiles")
-			.update(profileForm.data)
-			.eq("id", session.user.id);
-
-		if (profileError) {
-			return setError(profileForm, null, "Error updating your profile.");
+		// Definice typu pro data profilu
+		interface ProfileData {
+			id: string;
+			first_name: string;
+			last_name: string;
+			telephone: string;
+			street: string;
+			street_number: string;
+			city: string;
+			zip_code: string;
+			ico: string;
+			dic: string;
+			company: string;
+			username: string;
+			allergies: boolean;
+			allergies_description: string | null;
+			delivery_method: string;
+			payment_method: string;
+			updated_at: string;
 		}
 
-		return {
-			profileForm
+		// Získání dat z formuláře
+		const profileData: ProfileData = {
+			id: session.user.id,
+			first_name: (formData.get("first_name") as string) || "",
+			last_name: (formData.get("last_name") as string) || "",
+			telephone: (formData.get("telephone") as string) || "",
+			street: (formData.get("street") as string) || "",
+			street_number: (formData.get("street_number") as string) || "",
+			city: (formData.get("city") as string) || "",
+			zip_code: (formData.get("zip_code") as string) || "",
+			ico: (formData.get("ico") as string) || "",
+			dic: (formData.get("dic") as string) || "",
+			company: (formData.get("company") as string) || "",
+			username: (formData.get("username") as string) || "",
+			allergies: formData.get("allergies") === "yes",
+			allergies_description:
+				formData.get("allergies") === "yes"
+					? (formData.get("allergies_description") as string) || null
+					: null,
+			delivery_method: (formData.get("delivery_method") as string) || "",
+			payment_method: (formData.get("payment_method") as string) || "",
+			updated_at: new Date().toISOString()
 		};
-	},
-	updateEmail: async (event) => {
-		const session = await event.locals.getSession();
-		if (!session) {
-			throw error(401, "Unauthorized");
-		}
 
-		const emailForm = await superValidate(event, emailSchema, {
-			id: "email"
-		});
-
-		if (!emailForm.valid) {
+		// Validace povinných polí
+		if (!profileData.first_name || !profileData.last_name) {
 			return fail(400, {
-				emailForm
+				message: {
+					success: false,
+					display: "Jméno a příjmení jsou povinná pole"
+				},
+				...profileData
 			});
 		}
 
-		const { error: emailError } = await event.locals.supabase.auth.updateUser({
-			email: emailForm.data.email
-		});
+		// Uložení do databáze
+		const { error } = await supabase.from("profiles").upsert(profileData);
 
-		if (emailError) {
-			return setError(emailForm, "email", "Error updating your email.");
-		}
-
-		return {
-			emailForm
-		};
-	},
-	updatePassword: async (event) => {
-		const session = await event.locals.getSession();
-		if (!session) {
-			throw error(401, "Unauthorized");
-		}
-
-		const passwordForm = await superValidate(event, passwordSchema, {
-			id: "password"
-		});
-
-		if (!passwordForm.valid) {
-			return fail(400, {
-				passwordForm
+		if (error) {
+			console.error("Error updating profile:", error);
+			return fail(500, {
+				message: {
+					success: false,
+					display: "Chyba při ukládání profilu"
+				},
+				...profileData
 			});
 		}
 
-		if (passwordForm.data.password !== passwordForm.data.passwordConfirm) {
-			return setError(passwordForm, "passwordConfirm", "Passwords must match");
-		}
-
-		const { error: passwordError } = await event.locals.supabase.auth.updateUser({
-			password: passwordForm.data.password
-		});
-
-		if (passwordError) {
-			return setError(passwordForm, null, "Error updating your password");
-		}
+		// Úspěšná aktualizace
 		return {
-			passwordForm
+			message: {
+				success: true,
+				display: "Profil byl úspěšně aktualizován"
+			},
+			...profileData
 		};
 	}
-}; */
+} satisfies Actions;

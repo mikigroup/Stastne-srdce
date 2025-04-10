@@ -1,18 +1,14 @@
-import type { LayoutServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
-import type { Actions } from "./$types";
+import type { LayoutServerLoad } from "./$types";
 
 export const load = (async ({ url, locals: { safeGetSession } }) => {
-  const { session, user } = await safeGetSession();
+	const { session, user } = await safeGetSession();
+	if (!user && url.pathname === "/kosik") {
+		throw redirect(303, "/prihlaseni?redirect=/kosik"); // 303 pro GET request + přidáme redirect URL
+	}
 
-if (!user && url.pathname === "/kosik") {  
-    throw redirect(302, "/");
-  }
-
-  return {
-    session,
-    user,
-  }
-}) satisfies LayoutServerLoad
-
-
+	return {
+		session,
+		user
+	};
+}) satisfies LayoutServerLoad;
