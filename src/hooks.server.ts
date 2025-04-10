@@ -4,7 +4,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
 
 const supabase: Handle = async ({ event, resolve }) => {
-	// Vylepšená inicializace Supabase clienta
+	// Inicializace Supabase clienta s rozšířeným cookie managementem
 	event.locals.supabase = createServerClient(PRIVATE_SBUrl, PRIVATE_SBKey, {
 		cookies: {
 			get: (key) => event.cookies.get(key),
@@ -14,7 +14,8 @@ const supabase: Handle = async ({ event, resolve }) => {
 					path: "/",
 					secure: process.env.NODE_ENV === "production",
 					sameSite: "lax",
-					httpOnly: true
+					httpOnly: true,
+					maxAge: 60 * 60 * 24 * 7 // 7 dní
 				});
 			},
 			remove: (key, options) => {
@@ -26,42 +27,43 @@ const supabase: Handle = async ({ event, resolve }) => {
 		}
 	});
 
-	// Vylepšená session management funkce
+	// Vylepšená funkce pro získání session s podporou PKCE
 	event.locals.safeGetSession = async () => {
-		const {
-			data: { session },
-			error: sessionError
-		} = await event.locals.supabase.auth.getSession();
+		try {
+			const {
+				data: { session },
+				error: sessionError
+			} = await event.locals.supabase.auth.getSession();
 
-		if (sessionError || !session) {
-			return { session: null, user: null };
-		}
-
-		const {
-			data: { user },
-			error: userError
-		} = await event.locals.supabase.auth.getUser();
-
-		if (userError) {
-			console.error("User error:", userError);
-			return { session: null, user: null };
-		}
-
-		// Pro PKCE flow - dodatečná validace
-		if (session?.access_token?.startsWith("pkce_")) {
-			try {
-				const {
-					data: { user: pkceUser }
-				} = await event.locals.supabase.auth.getUser(session.access_token);
-				if (!pkceUser) throw new Error("PKCE user not found");
-				return { session, user: pkceUser };
-			} catch (pkceError) {
-				console.error("PKCE validation failed:", pkceError);
+			if (sessionError || !session) {
+				console.error("Session error:", sessionError);
 				return { session: null, user: null };
 			}
-		}
 
-		return { session, user };
+			// Speciální ošetření pro PKCE flow
+			if (session?.access_token?.startsWith("pkce_")) {
+				const {
+					data: { user }
+				} = await event.locals.supabase.auth.getUser(session.access_token);
+				return { session, user };
+			}
+
+			// Standardní flow
+			const {
+				data: { user },
+				error: userError
+			} = await event.locals.supabase.auth.getUser();
+
+			if (userError) {
+				console.error("User error:", userError);
+				return { session: null, user: null };
+			}
+
+			return { session, user };
+		} catch (error) {
+			console.error("Unexpected auth error:", error);
+			return { session: null, user: null };
+		}
 	};
 
 	return resolve(event, {
@@ -72,16 +74,17 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
+	// Získání aktuální session
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;
 
-	// Povolení registračního callbacku bez session
+	// Povolení callback URL bez ověření session
 	if (event.url.pathname === "/auth/callback") {
 		return resolve(event);
 	}
 
-	// Původní admin logika
+	// Ochranná logika pro admin sekci
 	if (event.url.pathname.startsWith("/admin")) {
 		if (!event.locals.session && event.url.pathname !== "/admin/signin") {
 			throw redirect(303, "/admin/signin");
