@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types";
-	import { goto } from "$app/navigation";
 
-	interface CompleteRegistrationForm {
+	export let data: PageData;
+	export let form: {
 		first_name?: string;
 		last_name?: string;
 		street?: string;
@@ -19,27 +19,21 @@
 			success: boolean;
 			display: string;
 		};
-	}
-
-	export let data: PageData;
-	export let form: CompleteRegistrationForm | null;
+	} = {};
 
 	let loading = false;
-	// Oprava přístupu k datům - přímý přístup k properties z form
-	let allergies = form?.allergies === true ? "yes" : "no";
+	let allergies = form?.allergies ? "yes" : "no";
 	let allergiesDescription = form?.allergies_description || "";
 	let deliveryMethod = form?.delivery_method || "";
 	let paymentMethod = form?.payment_method || "";
 
+	function toggleAllergies(value: string) {
+		allergies = value;
+	}
+
 	function handleSubmit() {
 		loading = true;
 		return async ({ result }) => {
-			if (result.type === 'success') {
-				loading = false;
-				await goto('/profile');
-				return;
-			}
-
 			loading = false;
 		};
 	}
@@ -163,7 +157,8 @@
 								type="radio"
 								name="allergies"
 								value="no"
-								bind:group={allergies}
+								checked={allergies === "no"}
+								on:change={() => toggleAllergies("no")}
 								class="mr-2"
 							/>
 							Ne
@@ -173,7 +168,8 @@
 								type="radio"
 								name="allergies"
 								value="yes"
-								bind:group={allergies}
+								checked={allergies === "yes"}
+								on:change={() => toggleAllergies("yes")}
 								class="mr-2"
 							/>
 							Ano
@@ -182,17 +178,17 @@
 
 					{#if allergies === "yes"}
 						<div class="flex flex-col">
-              <textarea
-								name="allergies_description"
-								bind:value={allergiesDescription}
-								maxlength="300"
-								placeholder="Popište vaše alergie (max 300 znaků)"
-								class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
-								rows="3"
-							></textarea>
+            <textarea
+							name="allergies_description"
+							bind:value={allergiesDescription}
+							maxlength="300"
+							placeholder="Popište vaše alergie (max 300 znaků)"
+							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+							rows="3"
+						></textarea>
 							<span class="text-sm text-gray-500 mt-1">
-                Zbývá {300 - (allergiesDescription?.length || 0)} znaků
-              </span>
+                Zbývá {300 - allergiesDescription.length} znaků
+            </span>
 						</div>
 					{/if}
 				</div>
@@ -210,8 +206,8 @@
 								<input
 									type="radio"
 									name="delivery_method"
-									{value}
-									bind:group={deliveryMethod}
+									value={value}
+									checked={deliveryMethod === value}
 									class="mr-2"
 									required
 								/>
@@ -234,8 +230,8 @@
 								<input
 									type="radio"
 									name="payment_method"
-									{value}
-									bind:group={paymentMethod}
+									value={value}
+									checked={paymentMethod === value}
 									class="mr-2"
 									required
 								/>
@@ -266,4 +262,4 @@
 			</form>
 		</div>
 	</div>
-	</section>
+</section>
