@@ -24,7 +24,7 @@
 	$: contact = settings?.contact || {};
 	$: business = settings?.business || {};
 
-	const key = "6Ldvac0ZAAAAAFmtvwilkJ3MOD4IGou9KjhRglIo";
+	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
 	const State = {
 		idle: "idle",
 		requesting: "requesting",
