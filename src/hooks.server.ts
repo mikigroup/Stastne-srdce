@@ -9,21 +9,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 		cookies: {
 			get: (key) => event.cookies.get(key),
 			set: (key, value, options) => {
-				event.cookies.set(key, value, {
-					...options,
-					path: "/",
-					secure: true, // POVINNÉ - i pro localhost
-					sameSite: "lax", // Důležité pro cross-site
-					httpOnly: true // Bezpečnostní opatření
-				});
+				event.cookies.set(key, value, { ...options, path: "/" });
 			},
 			remove: (key, options) => {
-				event.cookies.delete(key, {
-					...options,
-					path: "/",
-					secure: true,
-					sameSite: "lax"
-				});
+				event.cookies.delete(key, { ...options, path: "/" });
 			}
 		}
 	});
