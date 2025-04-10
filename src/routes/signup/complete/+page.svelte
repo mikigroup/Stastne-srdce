@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types";
+	import { goto } from "$app/navigation";
 
 	export let data: PageData;
 	export let form: {
@@ -34,6 +35,9 @@
 	function handleSubmit() {
 		loading = true;
 		return async ({ result }) => {
+			if (result.type === 'success') {
+				await goto('/profile');
+			}
 			loading = false;
 		};
 	}
