@@ -464,13 +464,12 @@
 								class:bg-green-50={selectedOrderId === order.id}
 								on:click={() => toggleOrderDetails(order.id)}
 							>
-								<div class="flex items-center space-x-3">
-									<div class="bg-green-800 h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold">
-										#{order.order_number}
+								<div class="flex items-center space-x-3 gap-4">
+									<div class="flex items-center justify-center font-semibold">
+										{order.order_number}
 									</div>
-									<div>
-										<div class="font-semibold">{formatDate(order.created_at)}</div>
-										<div class="text-sm text-gray-500">{order.total_price} {order.currency}</div>
+									<div class="gap-4 flex">
+										<span class="font-semibold">{formatDate(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
 									</div>
 								</div>
 
