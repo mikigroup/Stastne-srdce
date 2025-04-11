@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" dir="ltr">
+<html lang="cs" dir="ltr" data-theme="light">
 	<head>
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,16 +48,6 @@
 				src="https://kit.fontawesome.com/e5ce1babf6.js"
 				crossorigin="anonymous"></script>
 
-		<script>     // Vynucení světlého režimu bez ohledu na systémová nastavení
-		localStorage.theme = "dark";
-		document.documentElement.classList.add("dark");
-		document.documentElement.classList.remove("light");
-
-		// Přímé ovlivnění barevného schématu prohlížeče
-		const meta = document.createElement('meta');
-		meta.name = 'color-scheme';
-		meta.content = 'light';
-		document.head.appendChild(meta);</script>
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() {

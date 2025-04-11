@@ -61,7 +61,7 @@
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="items-center hidden text-center border-2 rounded-full xl:grid xl:grid-cols-6 bg-slate-50 border-green-700">
+			<div class="items-center hidden text-center border-2 rounded-full xl:grid xl:grid-cols-6 bg-slate-50 border-green-700 ">
 				<div class="border-r-2 border-green-700">
 					<a href="/" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">O nás</a>
 				</div>
