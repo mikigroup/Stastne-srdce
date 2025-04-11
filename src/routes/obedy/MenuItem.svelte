@@ -73,11 +73,11 @@
 		<p class="text-lg p-2">Polévka</p>
 		<div class="p-5 border rounded-2xl border-gray-400 bg-white">
 			<p class="p-2 text-lg">{menu.soup}</p>
-			<div class="mt-2 p-2">
+			<!--<div class="mt-2 p-2">
 				<p class="text-xs text-gray-600">
 					Alergeny: <span title={getAllergenTooltip(menu.allergens)} class="font-medium cursor-help">{formatAllergens(menu.allergens)}</span>
 				</p>
-			</div>
+			</div>-->
 		</div>
 
 		<div class="py-2 text-lg rounded-2xl">
@@ -92,11 +92,11 @@
 						<div>
 							{variant.variant_number}. {variant.description}
 						</div>
-						<div class="mt-4">
+				<!--		<div class="mt-4">
 							<p class="text-xs text-gray-600">
 								Alergeny: <span title={getAllergenTooltip(variant.allergens)} class="font-medium cursor-help">{formatAllergens(variant.allergens)}</span>
 							</p>
-						</div>
+						</div>-->
 					</div>
 					{#if !$page.data.session}
 						<a href="/login" class="flex justify-end pt-2">

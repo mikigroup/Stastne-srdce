@@ -41,8 +41,8 @@
 	<div class="" />
 {/if}
 
-<main>
-	<slot class="mt-10 container mx-auto" />
+<main class="">
+	<slot class="mt-10 container mx-auto " />
 </main>
 
 <GDPR cookieName="gdpr" />

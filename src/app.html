@@ -48,7 +48,16 @@
 				src="https://kit.fontawesome.com/e5ce1babf6.js"
 				crossorigin="anonymous"></script>
 
+		<script>     // Vynucení světlého režimu bez ohledu na systémová nastavení
+		localStorage.theme = "dark";
+		document.documentElement.classList.add("dark");
+		document.documentElement.classList.remove("light");
 
+		// Přímé ovlivnění barevného schématu prohlížeče
+		const meta = document.createElement('meta');
+		meta.name = 'color-scheme';
+		meta.content = 'light';
+		document.head.appendChild(meta);</script>
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() {
@@ -65,7 +74,7 @@
     })(window, document, "clarity", "script", "m1hmvdxofy");
 </script>-->
 	</head>
-	<body>
+	<body class="dark:bg-white">
 		<div style="display: contents">%sveltekit.body%</div>
 		<script
 			src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"

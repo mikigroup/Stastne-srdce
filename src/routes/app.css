@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @import "@fontsource/fira-mono";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
 	font-family:
