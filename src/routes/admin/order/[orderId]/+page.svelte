@@ -173,7 +173,7 @@
 	<section>
 		<div class="bg-base-100">
 			<div class="py-6 px-4">
-				<h2 class="text-2xl font-bold mb-6">Objednávka</h2>
+				<h2 class="text-2xl font-bold mb-6">Objednávka - {order?.order_number ?? ""}</h2>
 
 				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
 					<OrderItemDetail
@@ -212,9 +212,10 @@
 						<div class="overflow-x-auto">
 							<table class="table table-zebra w-full">
 								<thead>
-								<tr class="grid grid-cols-12 gap-4">
-									<th>Výběr</th>
-									<th>Pořadí</th>
+								<tr class="grid grid-cols-11 gap-4">
+									<!--<th>Výběr</th>-->
+									<!--<th>Pořadí</th>-->
+									<th>Varianta</th>
 									<th>Datum</th>
 									<th class="col-span-7">Název</th>
 									<th>Množství</th>
@@ -223,19 +224,20 @@
 								</thead>
 								<tbody>
 								{#each order.order_items as item, i}
-									<tr class="hover grid grid-cols-12 gap-4">
-										<td>
+									<tr class="hover grid grid-cols-11 gap-4">
+										<!--<td>
 											<label>
 												<input type="checkbox" class="checkbox" />
 											</label>
-										</td>
-										<td>{i + 1}</td>
-										<td>
+										</td>-->
+									<!--	<td>{i + 1}</td>-->
+										<td><span class="border rounded-4xl py-1.5 px-3 bg-slate-300"><strong>{item.variant_id.variant_number}</strong></span></td>
+										<td><strong>
 											{#if item.menuVersionData}
 												{formatDateToCzech(item.menuVersionData.date)}
 											{:else}
 												{formatDateToCzech(item.variant_id.menu_id.date)}
-											{/if}
+											{/if}</strong>
 										</td>
 										<td class="col-span-7">
 											<div class="flex items-center space-x-3">

@@ -86,7 +86,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			7: limitedMenus.slice(0, 7),
 			14: limitedMenus.slice(0, 14),
 			21: limitedMenus.slice(0, 21),
-			28: limitedMenus
+			28: limitedMenus,
+			70: limitedMenus.slice(0, 70)
 		};
 
 		console.log(

@@ -89,8 +89,8 @@
 							{variant.variant_number}
 						</div>-->
 					<div class="p-2 text-lg">
-						<div>
-							{variant.variant_number}. {variant.description}
+						<div class="flex col-2 items-start">
+							<div class="border rounded-3xl py-1 px-3 bg-slate-200">{variant.variant_number}</div><div class="ml-4"> {variant.description}</div>
 						</div>
 				<!--		<div class="mt-4">
 							<p class="text-xs text-gray-600">

@@ -4,9 +4,9 @@
 	export let date = "";
 	export let isValidDate = true;
 	export let selectedPaymentMethod = "";
-	export let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
+	export let paymentMethodOptions = ["Hotovost", "Faktura vystavena"];
 	export let selectedOrderState = "";
-	export let orderStateOptions = ["Nová", "Expedovaná", "Vyfakturovaná"];
+	export let orderStateOptions = ["Nevyřízena", "Vyřízena", "Storno"];
 	export let selectedCurrency = "";
 	export let currencyOptions = ["CZK", "EUR", "USD"];
 	export let selectedShippingMethod = "";
@@ -14,7 +14,6 @@
 	export let isPaid = false;
 
 	// Fakturační údaje
-
 	export let customer_email = "";
 	export let customer_first_name = "";
 	export let customer_last_name = "";
@@ -121,7 +120,7 @@
 						</select>
 					</div>
 
-					<div class="form-control w-full mb-2">
+					<!--<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Měna</span>
 						</label>
@@ -132,9 +131,9 @@
 								<option value={currency}>{currency}</option>
 							{/each}
 						</select>
-					</div>
+					</div>-->
 
-					<div class="form-control w-full mb-2">
+					<!--<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Doprava</span>
 						</label>
@@ -145,9 +144,9 @@
 								<option value={method}>{method}</option>
 							{/each}
 						</select>
-					</div>
+					</div>-->
 
-					<div class="form-control w-full mb-2">
+					<!--<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Stav platby</span>
 						</label>
@@ -155,7 +154,7 @@
 							<option value={false}>Neuhrazena</option>
 							<option value={true}>Uhrazena</option>
 						</select>
-					</div>
+					</div>-->
 				</div>
 			</div>
 		</div>
