@@ -181,6 +181,16 @@
 			</div>
 			<div class="form-control w-full mb-2">
 				<label class="label">
+					<span class="label-text">Telefon</span>
+				</label>
+				<input
+					type="text"
+					placeholder="Jméno"
+					class="input input-bordered w-full"
+					bind:value={customer_telephone} />
+			</div>
+			<div class="form-control w-full mb-2">
+				<label class="label">
 					<span class="label-text">Jméno</span>
 				</label>
 				<input

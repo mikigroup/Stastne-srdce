@@ -138,7 +138,7 @@ export const actions: Actions = {
 			const orderData = {
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
-				state: "Nová",
+				state: "Nevyřízena",
 				date: new Date().toISOString(),
 				customer_first_name: customer.first_name,
 				customer_last_name: customer.last_name,
@@ -154,7 +154,7 @@ export const actions: Actions = {
 				total_price: totalPrice,
 				currency: "CZK",
 				pay_state: false,
-				pay_method: "Hotově",
+				pay_method: null,
 				shipping_method: "Rozvoz"
 			};
 
