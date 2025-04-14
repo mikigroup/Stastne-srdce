@@ -1,22 +1,31 @@
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
-	// Get date range parameters if provided
-	const startDate = url.searchParams.get("startDate") || getStartOfMonth();
-	const endDate = url.searchParams.get("endDate") || getEndOfMonth();
+	// Helper function to format date as YYYY-MM-DD
+	const formatDate = (date: Date): string => {
+		return date.toISOString().split("T")[0];
+	};
 
-	// Get today's date range for today's orders
-	const todayStart = new Date();
-	todayStart.setHours(0, 0, 0, 0);
-	const todayEnd = new Date();
-	todayEnd.setHours(23, 59, 59, 999);
+	// Get date range parameters if provided, formatted as YYYY-MM-DD
+	const startDateParam = url.searchParams.get("startDate");
+	const endDateParam = url.searchParams.get("endDate");
 
-	// Fetch all orders within date range
+	const startDate = startDateParam
+		? formatDate(new Date(startDateParam))
+		: formatDate(getStartOfMonth());
+	const endDate = endDateParam
+		? formatDate(new Date(endDateParam))
+		: formatDate(getEndOfMonth());
+
+	// Get today's date in YYYY-MM-DD format
+	const today = formatDate(new Date());
+
+	// Fetch all orders within date range (using date field)
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
 		.select("*")
-		.gte("created_at", startDate)
-		.lte("created_at", endDate)
+		.gte("created_at", startDate) // Removed .toISOString() since startDate is already formatted
+		.lte("created_at", endDate) // Removed .toISOString() here too
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
@@ -30,12 +39,12 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		};
 	}
 
-	// Fetch customers within date range
+	// Fetch customers within date range (using created_at timestamp)
 	const { data: customers, error: customersError } = await supabase
 		.from("profiles")
 		.select("*")
-		.gte("created_at", startDate)
-		.lte("created_at", endDate)
+		.gte("created_at", `${startDate}T00:00:00Z`) // Add time component for timestamp
+		.lte("created_at", `${endDate}T23:59:59Z`)
 		.order("created_at", { ascending: true });
 
 	if (customersError) {
@@ -49,13 +58,12 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		};
 	}
 
-	// Fetch today's orders specifically
+	// Fetch today's orders using exact date match
 	const { data: todayOrders, error: todayOrdersError } = await supabase
 		.from("orders")
 		.select("*")
-		.gte("created_at", todayStart.toISOString())
-		.lte("created_at", todayEnd.toISOString())
-		.order("created_at", { ascending: false });
+		.eq("date", today) // Exact match for today's date
+		.order("order_number", { ascending: false });
 
 	if (todayOrdersError) {
 		console.error("Error fetching today's orders:", todayOrdersError);
@@ -83,21 +91,13 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	};
 };
 
-// Helper functions for default date ranges
-function getStartOfMonth(): string {
+// Helper functions for default date ranges (return Date objects)
+function getStartOfMonth(): Date {
 	const now = new Date();
-	return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+	return new Date(now.getFullYear(), now.getMonth(), 1);
 }
 
-function getEndOfMonth(): string {
+function getEndOfMonth(): Date {
 	const now = new Date();
-	return new Date(
-		now.getFullYear(),
-		now.getMonth() + 1,
-		0,
-		23,
-		59,
-		59,
-		999
-	).toISOString();
+	return new Date(now.getFullYear(), now.getMonth() + 1, 0);
 }
