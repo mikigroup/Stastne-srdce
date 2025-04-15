@@ -29,7 +29,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	redirectTo.searchParams.delete("next");
 
 	if (type === "signup") {
-		redirectTo.pathname = "/admin/signup/complete";
+		redirectTo.pathname = "/signup/complete";
 		redirectTo.searchParams.append("success", "signup");
 	} else if (type === "recovery") {
 		redirectTo.pathname = "/reset";
