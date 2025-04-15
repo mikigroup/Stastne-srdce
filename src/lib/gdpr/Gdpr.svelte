@@ -240,7 +240,7 @@
     }
 
     .cookie-privacy-link a {
-        color: #00adad;
+        color: #000000;
         text-decoration: underline;
     }
 
@@ -271,12 +271,12 @@
     }
 
     .cookie-btn-accept {
-        background-color: #00adad;
+        background-color: #15803d;
         color: white;
     }
 
     .cookie-btn-accept:hover {
-        background-color: #008f8f;
+        background-color: #166534;
     }
 
     .cookie-btn-settings {
@@ -298,12 +298,12 @@
     }
 
     .cookie-btn-accept-selected {
-        background-color: #00adad;
+        background-color: #94a3b8;
         color: white;
     }
 
     .cookie-btn-accept-selected:hover {
-        background-color: #008f8f;
+        background-color: #64748b;
     }
 
     .cookie-btn-close {
@@ -394,7 +394,7 @@
     }
 
     input:checked + .cookie-slider {
-        background-color: #00adad;
+        background-color: #15803d;
     }
 
     input:checked + .cookie-slider:before {
@@ -413,7 +413,7 @@
         right: 1.5rem;
         width: 3rem;
         height: 3rem;
-        background-color: #00adad;
+        background-color: #e2e8f0;
         color: white;
         border-radius: 50%;
         display: flex;
@@ -427,7 +427,7 @@
     }
 
     .cookie-btn-toggle:hover {
-        background-color: #008f8f;
+        background-color: #15803d;
         transform: scale(1.05);
     }
 
