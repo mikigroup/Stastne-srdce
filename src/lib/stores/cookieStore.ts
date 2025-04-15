@@ -20,7 +20,7 @@ export const defaultCookieCategories: CookieConsentConfig = {
 		label: "Preferenční",
 		description:
 			"Cookies pro ukládání vašich preferencí, např. jazyk, velikost písma apod.",
-		value: true,
+		value: false,
 		required: false
 	},
 	statistics: {
@@ -28,7 +28,7 @@ export const defaultCookieCategories: CookieConsentConfig = {
 		label: "Statistické",
 		description:
 			"Pomáhají nám pochopit, jak návštěvníci používají náš web prostřednictvím anonymních statistik.",
-		value: true,
+		value: false,
 		required: false
 	},
 	marketing: {
