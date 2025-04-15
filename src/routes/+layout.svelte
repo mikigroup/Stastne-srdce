@@ -132,22 +132,17 @@
 	visible={showBanner}
 	showEditIcon={true}
 	on:show={() => {
-    console.log('Event show triggered');
     /*showBanner = true;*/
   }}
 	on:accept-all={() => {
-    console.log('Event accept-all triggered');
     cookieStore.acceptAll();
     showBanner = false;
-    console.log('showBanner set to false:', showBanner);
   }}
 	on:reject-all={() => {
-    console.log('Event reject-all triggered');
     cookieStore.rejectAll();
     showBanner = false;
   }}
 	on:accept-selection={() => {
-    console.log('Event accept-selection triggered');
     cookieStore.saveSelection();
     showBanner = false;
   }}

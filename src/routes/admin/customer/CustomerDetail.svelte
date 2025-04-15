@@ -2,14 +2,40 @@
 	import { goto } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
+	import type { Database } from "$lib/database.types";
 
-	export let data;
-	export let customer = null; // If null, we're creating a new customer
+	// Definice typů pro data zákazníka
+	type Customer = Database["public"]["Tables"]["profiles"]["Row"];
+
+	// Definice typů pro vlastnosti komponenty
+	interface ComponentProps {
+		data: {
+			supabase: any; // Ideálně by zde mělo být SupabaseClient<Database>
+			session: {
+				user: {
+					id: string;
+					email: string;
+				};
+			} | null;
+		};
+		customer?: Customer | null;
+	}
+
+	// Definice typů pro chyby při ukládání
+	interface ApiError {
+		message: string;
+		code?: string;
+		details?: string;
+	}
+
+	// Props a explicitní typizace
+	export let data: ComponentProps["data"];
+	export let customer: ComponentProps["customer"] = null; // If null, we're creating a new customer
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
 
-	// State variables
+	// State variables s typizací
 	let loading = false;
 	let updateMessage = "";
 
@@ -27,15 +53,36 @@
 	let website: string = customer?.website ?? "";
 	let username: string = customer?.username ?? "";
 	let email: string = customer?.email ?? "";
-	let allergies: string = customer?.allergies === true ? "yes" : "no";
+	let allergies: "yes" | "no" = customer?.allergies === true ? "yes" : "no";
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
 
-	async function saveCustomer() {
+	// Definice typu pro customerData
+	type CustomerData = {
+		first_name: string;
+		last_name: string;
+		telephone: string;
+		street: string;
+		city: string;
+		street_number: string;
+		zip_code: string;
+		email: string;
+		ico: string;
+		dic: string;
+		company: string;
+		website: string;
+		username: string;
+		allergies: boolean;
+		allergies_description: string | null;
+		delivery_method: string;
+		payment_method: string;
+	};
+
+	async function saveCustomer(): Promise<void> {
 		try {
 			loading = true;
-			const customerData = {
+			const customerData: CustomerData = {
 				first_name,
 				last_name,
 				telephone,
@@ -50,7 +97,7 @@
 				website,
 				username,
 				allergies: allergies === "yes",
-				allergies_description,
+				allergies_description: allergies === "yes" ? allergies_description : null,
 				delivery_method,
 				payment_method
 			};
@@ -67,28 +114,30 @@
 				updateMessage = "Zákazník úspěšně uložen!";
 			} else {
 				// Create new customer
-				const { user } = session;
+				if (!session?.user?.id) {
+					throw new Error("Uživatel není přihlášen");
+				}
+
 				const { error } = await supabase
 					.from("customers")
 					.insert({
 						...customerData,
-						id: user?.id
+						id: session.user.id
 					});
 
 				if (error) throw error;
 				goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
 			}
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Chyba při ukládání:", error);
-				alert(error.message);
-			}
+			const apiError = error as ApiError;
+			console.error("Chyba při ukládání:", apiError);
+			alert(apiError.message || "Došlo k chybě při ukládání zákazníka");
 		} finally {
 			loading = false;
 		}
 	}
 
-	async function deleteCustomer() {
+	async function deleteCustomer(): Promise<void> {
 		if (!customer?.id) return;
 
 		try {
@@ -101,16 +150,15 @@
 			if (error) throw error;
 			await goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Error deleting customer:", error);
-				alert(error.message);
-			}
+			const apiError = error as ApiError;
+			console.error("Error deleting customer:", apiError);
+			alert(apiError.message || "Došlo k chybě při mazání zákazníka");
 		} finally {
 			loading = false;
 		}
 	}
 
-	function back() {
+	function back(): void {
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
 </script>
