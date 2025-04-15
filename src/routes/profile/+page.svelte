@@ -474,14 +474,14 @@
 								</div>
 
 								<div class="flex items-center space-x-3">
-									<div class="px-3 py-1 rounded-full text-sm"
-											 class:bg-yellow-100={order.state === 'Nová'}
-											 class:text-yellow-800={order.state === 'Nová'}
-											 class:bg-green-100={order.state === 'Vyřízená'}
-											 class:text-green-800={order.state === 'Vyřízená'}
-									>
-										{order.state}
-									</div>
+									<!--		<div class="px-3 py-1 rounded-full text-sm"
+													 class:bg-yellow-100={order.state === 'Nová'}
+													 class:text-yellow-800={order.state === 'Nová'}
+													 class:bg-green-100={order.state === 'Vyřízená'}
+													 class:text-green-800={order.state === 'Vyřízená'}
+											>
+												{order.state}
+											</div>-->
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 transition-transform" class:rotate-180={expandedOrders[order.id]} viewBox="0 0 20 20" fill="currentColor">
 										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
 									</svg>
@@ -495,10 +495,10 @@
 											<div class="text-sm text-gray-500">Celková cena</div>
 											<div class="font-semibold text-lg">{order.total_price},-</div>
 										</div>
-										<div class="bg-gray-50 p-3 rounded-lg">
+										<!--<div class="bg-gray-50 p-3 rounded-lg">
 											<div class="text-sm text-gray-500">Stav</div>
 											<div class="font-semibold text-lg">{order.state}</div>
-										</div>
+										</div>-->
 										<div class="bg-gray-50 p-3 rounded-lg">
 											<div class="text-sm text-gray-500">Číslo objednávky</div>
 											<div class="font-semibold text-lg">{order.order_number}</div>

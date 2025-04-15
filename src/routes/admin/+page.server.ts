@@ -1,45 +1,31 @@
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
-	// Helper function to get start/end of day in local time (Europe/Prague)
-	const getLocalDayRange = () => {
+	// Helper function to get last 24 hours in local time (Europe/Prague)
+	const getLast24HoursRange = () => {
 		const now = new Date();
 		const start = new Date(now);
-		start.setHours(0, 0, 0, 0);
+		start.setHours(now.getHours() - 24); // 24 hours ago
 
-		const end = new Date(now);
-		end.setHours(23, 59, 59, 999);
-
-		return { start, end };
+		return { start, end: now };
 	};
 
-	// Helper function to format date as YYYY-MM-DD
-	const formatDate = (date: Date): string => {
-		return date.toISOString().split("T")[0];
+	// Helper function to format date as ISO string
+	const formatDateToISO = (date: Date): string => {
+		return date.toISOString();
 	};
 
-	// Get date range parameters if provided
-	const startDateParam = url.searchParams.get("startDate");
-	const endDateParam = url.searchParams.get("endDate");
+	// Use last 24 hours range by default
+	const { start, end } = getLast24HoursRange();
+	const startDate = formatDateToISO(start);
+	const endDate = formatDateToISO(end);
 
-	// Use provided dates or default to current day range
-	const { start: defaultStart, end: defaultEnd } = getLocalDayRange();
-	const startDate = startDateParam ? new Date(startDateParam) : defaultStart;
-	const endDate = endDateParam ? new Date(endDateParam) : defaultEnd;
-
-	// Convert to start/end of day in local time
-	startDate.setHours(0, 0, 0, 0);
-	endDate.setHours(23, 59, 59, 999);
-
-	// Get today's date in YYYY-MM-DD format
-	const today = formatDate(new Date());
-
-	// Fetch all orders within date range (UTC comparison)
+	// Fetch orders from last 24 hours
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
 		.select("*")
-		.gte("created_at", startDate.toISOString())
-		.lte("created_at", endDate.toISOString())
+		.gte("created_at", startDate)
+		.lte("created_at", endDate)
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
@@ -47,18 +33,18 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		return {
 			orders: [],
 			customers: [],
-			todayOrders: [],
-			todayOrdersCount: 0,
-			todayOrdersTotal: 0
+			last24hOrders: [],
+			last24hOrdersCount: 0,
+			last24hOrdersTotal: 0
 		};
 	}
 
-	// Fetch customers within date range (UTC comparison)
+	// Fetch customers from last 24 hours
 	const { data: customers, error: customersError } = await supabase
 		.from("profiles")
 		.select("*")
-		.gte("created_at", startDate.toISOString())
-		.lte("created_at", endDate.toISOString())
+		.gte("created_at", startDate)
+		.lte("created_at", endDate)
 		.order("created_at", { ascending: true });
 
 	if (customersError) {
@@ -66,30 +52,22 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		return {
 			orders: orders || [],
 			customers: [],
-			todayOrders: [],
-			todayOrdersCount: 0,
-			todayOrdersTotal: 0
+			last24hOrders: [],
+			last24hOrdersCount: 0,
+			last24hOrdersTotal: 0
 		};
 	}
 
-	// Fetch today's orders
-	const { data: todayOrders, error: todayOrdersError } = await supabase
-		.from("orders")
-		.select("*")
-		.gte("created_at", startDate.toISOString())
-		.lte("created_at", endDate.toISOString())
-		.order("order_number", { ascending: false });
-
-	// Calculate today's statistics
-	const todayOrdersCount = todayOrders?.length || 0;
-	const todayOrdersTotal =
-		todayOrders?.reduce((sum, order) => sum + (order.total_price || 0), 0) || 0;
+	// Calculate statistics for last 24 hours
+	const last24hOrdersCount = orders?.length || 0;
+	const last24hOrdersTotal =
+		orders?.reduce((sum, order) => sum + (order.total_price || 0), 0) || 0;
 
 	return {
 		orders: orders || [],
 		customers: customers || [],
-		todayOrders: todayOrders || [],
-		todayOrdersCount,
-		todayOrdersTotal
+		last24hOrders: orders || [], // All orders are from last 24h now
+		last24hOrdersCount,
+		last24hOrdersTotal
 	};
 };
