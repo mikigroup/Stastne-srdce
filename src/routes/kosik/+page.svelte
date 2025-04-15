@@ -88,6 +88,8 @@
 	});
 
 	const { generalSettings } = data;
+
+	
 </script>
 
 <svelte:head>
