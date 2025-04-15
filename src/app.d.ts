@@ -28,6 +28,11 @@ declare global {
 			}>;
 		}
 
+		interface Window {
+			dataLayer: any[];
+			fbq: any;
+		}
+
 		interface PageData {
 			session: Session | null;
 			user: User | null;
