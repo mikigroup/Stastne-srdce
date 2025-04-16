@@ -211,6 +211,7 @@ function createTotalPiecesStore() {
 
 export const totalPiecesStore = createTotalPiecesStore();
 
+// Routes configuration
 export const ROUTES = readable({
 	ADMIN: {
 		BASE: "/admin",

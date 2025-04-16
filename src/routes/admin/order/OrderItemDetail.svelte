@@ -4,9 +4,9 @@
 	export let date = "";
 	export let isValidDate = true;
 	export let selectedPaymentMethod = "";
-	export let paymentMethodOptions = ["Hotovost", "Faktura vystavena"];
+	export let paymentMethodOptions = ["Hotovost", "Faktura"];
 	export let selectedOrderState = "";
-	export let orderStateOptions = ["Nevyřízena", "Vyřízena", "Storno"];
+	export let orderStateOptions = ["Nová", "Expedovaná", "Stornovaná"];
 	export let selectedCurrency = "";
 	export let currencyOptions = ["CZK", "EUR", "USD"];
 	export let selectedShippingMethod = "";

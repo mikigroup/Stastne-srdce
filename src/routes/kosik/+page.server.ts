@@ -138,7 +138,7 @@ export const actions: Actions = {
 			const orderData = {
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
-				state: "Nevyřízena",
+				state: "Nová",
 				date: new Date().toISOString(),
 				customer_first_name: customer.first_name,
 				customer_last_name: customer.last_name,
