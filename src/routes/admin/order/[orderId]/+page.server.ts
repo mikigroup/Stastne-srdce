@@ -66,26 +66,43 @@ export const load: PageServerLoad = async ({
 		for (let i = 0; i < order.order_items.length; i++) {
 			const item = order.order_items[i];
 
-			// Pokud položka má verzi menu, načteme ji
-			if (item.menu_version_id) {
-				const { data: menuVersion, error: versionError } = await supabase
-					.from("menu_versions")
-					.select("*")
-					.eq("id", item.menu_version_id)
-					.single();
+			// Pokud položka má menu_id, načteme poslední platnou verzi menu
+			if (item.variant_id.menu_id) {
+				const { data: versionId, error: versionIdError } = await supabase.rpc(
+					"get_current_menu_version",
+					{ p_menu_id: item.variant_id.menu_id.id }
+				);
 
-				if (versionError) {
-					console.error("Error fetching menu version:", versionError);
-					// Pokračujeme bez verze
-				} else if (menuVersion) {
-					// Přidáme data verze menu k položce
-					order.order_items[i].menuVersionData = menuVersion;
+				if (versionIdError) {
+					console.error(
+						"Chyba při získávání poslední validní verze menu:",
+						versionIdError
+					);
+					continue;
+				}
+
+				// Pokud máme platnou verzi menu, načteme její data
+				if (versionId) {
+					const { data: menuVersion, error: menuVersionError } = await supabase
+						.from("menu_versions")
+						.select("*")
+						.eq("id", versionId)
+						.single();
+
+					if (menuVersionError) {
+						console.error(
+							"Chyba při získávání dat poslední validní verze menu:",
+							menuVersionError
+						);
+					} else if (menuVersion) {
+						// Připojíme data verze menu k položce objednávky
+						order.order_items[i].menuVersionData = menuVersion;
+					}
 				}
 			}
 		}
 
 		// Získání platebních metod a způsobů doručení z nastavení
-		// Použijeme operátor optional chaining a default hodnoty pro případ, že vlastnosti neexistují
 		const paymentMethods = Array.isArray(businessSettings?.paymentMethods)
 			? businessSettings.paymentMethods
 			: ["Hotově", "Převodem"];
