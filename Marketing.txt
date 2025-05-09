@@ -1,0 +1,229 @@
+Pokud váš produkt je podobný platformám jako ObjednámJídlo.cz a ObjednavkaObedu.cz, pak se řadíte do kategorie online objednávkových systémů pro restaurace a jídelny, které umožňují:
+
+Virtuální jídelní lístky s denní nabídkou,
+
+Online objednávání (na místo/rozvoz),
+
+Správu uživatelů a objednávek,
+
+Propojení s provozovnami (restaurace, jídelny, kavárny).
+
+Zde je detailní srovnání a konkurence, na kterou byste se měli zaměřit:
+
+1. Přímá konkurence (stejný model)
+a) ObjednámJídlo.cz
+Zaměření: Menší restaurace, jídelny, kavárny.
+
+Funkce:
+
+Online objednávání + platba,
+
+QR kódové menu,
+
+Mobilní verze.
+
+Nevýhody:
+
+Omezený branding (restaurace si mohou přidat logo, ale systém je jednotný).
+
+b) ObjednavkaObedu.cz
+Zaměření: Denní menu, firemní obědy.
+
+Funkce:
+
+Přehled jídelen v okolí,
+
+Možnost objednání na čas.
+
+Nevýhody:
+
+Méně moderní design,
+
+Žádné API pro vlastní integrace.
+
+c) Restu.cz
+Objednávání z restaurací (konkurence DameJídlo/Wolt), ale některé podniky používají jejich systém pro vlastní web.
+
+2. Nepřímá konkurence (alternativní řešení)
+a) Jídelny.cz
+Větší pokrytí, ale zaměřeno na veřejné jídelny, ne na restaurace.
+
+b) FoodPicker
+Český SaaS pro restaurace (objednávání + pokladna).
+
+c) Gastrofix
+Pokladní systém s modulem pro online objednávání.
+
+3. Co vás odlišuje od konkurence?
+Vaše výhody (SvelteKit + Supabase):
+✅ Plně custom FE/BE – Konkurence většinou nabízí jen jednotné SaaS řešení.
+✅ Moderní stack – Konkurence často používá zastaralé technologie (PHP, jQuery).
+✅ Flexibilita – Můžete nabídnout unikátní funkce (např. předobjednávky na týden, integrace s firemními benefity).
+
+4. Na koho se zaměřit?
+Cílová skupina:
+Malé restaurace a jídelny – Kteří chtějí jednoduchý, ale brandovaný objednávkový systém.
+
+Firemní stravování – Např. nabídka obědů pro zaměstnance s interním přihlašováním.
+
+Školní jídelny – Pokud umožňujete hromadné objednávání.
+
+Slabiny konkurence, které můžete využít:
+Omezený branding (konkurence nabízí generické šablony).
+
+Chybějící API (např. ObjednavkaObedu.cz neumožňuje integraci s cizím systémem).
+
+Zastaralý design (většina řešení vypadá jako z roku 2010).
+
+5. Akční kroky
+Analyzujte konkurenční funkce – Podívejte se, co nabízejí, a přidejte něco navíc (např. rezervace stolů, platbu benefity).
+
+Zdůrazněte své výhody – "Vlastní moderní systém na míru, ne generický template."
+
+Cílení na nespokojené zákazníky konkurence – Např. restaurace, které chtějí lepší design nebo integrace.
+
+Shrnutí
+Nejbližší konkurenti:
+
+ObjednámJídlo.cz (pro restaurace),
+
+ObjednavkaObedu.cz (pro jídelny).
+
+Vaše příležitost:
+
+Lepší UX/UI (SvelteKit = rychlost + moderní design),
+
+Vlastní branding (což konkurence nenabízí),
+
+Otevřenější integrace (Supabase umožňuje propojení s čímkoli).
+
+Pokud chcete, mohu pomoct s benchmarkingem konkrétních funkcí nebo návrhem unikátních selling points. 😊
+
+
+
+---
+
+
+
+Skvělé! Teď, když mám kompletní kontext (vaše stránky MalyLeo.cz a specifika vašeho systému), můžeme se zaměřit na konkrétní strategii, jak oslovit více zákazníků (zejména vývařovny bez restaurací) a jak se odlišit od konkurence.
+
+1. Hlavní rozdíly oproti konkurenci (ObjednámJídlo.cz, ObjednavkaObedu.cz)
+Kritérium	MalyLeo.cz	Konkurence (ObjednámJídlo, ObjednavkaObedu)
+Cílová skupina	Vývařovny, menší kuchyně bez restaurace	Restaurace, jídelny s vlastním provozem
+Brandování	✅ 100% na míru (FE i BE)	❌ Šablony (omezené úpravy)
+Funkce pro vývařovny	✅ Alergie, rekrabičky, typ platby	❌ Chybí specializace
+Cenový model	✅ Fixní měsíční poplatek	⚠️ Často % z obratu + měsíční poplatek
+Technologie	✅ SvelteKit + Supabase (rychlé, moderní)	❌ Často PHP/jQuery (zastaralé)
+→ Vaše výhoda: Jste jediní na trhu, kdo cílí přímo na vývařovny a cateringové kuchyně s plně custom řešením.
+
+2. Problémy vývařoven, které řešíte (a konkurence ne)
+Vaši klienti (vývařovny, firemní kuchyně) potřebují:
+
+Sledování alergenů – Rodiče/klienti vyplní alergeny při registraci.
+
+Výběr obalů (rekrabičky, jednorázové boxy).
+
+Flexibilní platby (stravenky, hotovost, převod).
+
+Hromadné objednávky (např. pro školy nebo firmy).
+
+Proč to konkurence neumí?
+
+Jejich systémy jsou stavěné na restaurace, ne na vývařovny.
+
+Nemají pole pro speciální požadavky (alergie, obaly).
+
+3. Jak to lépe prodat? (USP pro vývařovny)
+🎯 Hlavní sdělení:
+„Váš objednávkový systém přímo pro vývařovny – žádné zbytečné funkce, jen to, co potřebujete.“
+
+📌 Konkrétní argumenty:
+„Ušetříte čas s hromadnými objednávkami“
+
+Na rozdíl od restaurací řešíte větší objemy (školy, firmy). MalyLeo umí:
+
+Hromadné importy strávníků (Excel/CSV).
+
+Automatické součty (kolik kg jídla připravit).
+
+„Žádné zapomenuté alergeny“
+
+Systém automaticky upozorní kuchaře, pokud někdo objednal jídlo s alergenem.
+
+„Rekrabičky nebo jednorázové obaly? Každý si vybere.“
+
+Zákazníci mohou při objednávce zvolit typ obalu.
+
+„Platby na míru“
+
+Nabízíte stravenky, hotovost, převod – konkurence často podporuje jen kartu online.
+
+4. Kam oslovit další klienty?
+a) Cílovky:
+Firemní vývařovny (kuchyně pro zaměstnance).
+
+Školní jídelny (hlavně menší školy, které nemají IT oddělení).
+
+Cateringové služby (rozvoz obědů do firem).
+
+b) Kde je hledat?
+Facebook skupiny:
+
+„Provozovatelé školních jídelen“
+
+„Catering a rozvoz jídel“
+
+Partneři:
+
+Dodavatelé obalů (např. Krabičky.cz).
+
+Dodavatelé potravin pro školy (Makro, Bidfood).
+
+SEO články:
+
+„Jak vybrat objednávkový systém pro vývařovnu?“
+
+„Jak digitalizovat školní jídelnu?“
+
+5. Vylepšení webu (konkrétní tipy)
+🚀 1. Přidejte případovou studii
+Váš současný klient (vývařovna) – kolik času ušetřil, jaké funkce využívá.
+
+Příklad:
+
+„Vývařovna U Peštů díky MalyLeo snížila administrativu o 70 %.“
+
+💡 2. Demo pro vývařovny
+Interaktivní demo (třeba video), kde ukážete:
+
+Jak kuchař přidá jídelníček.
+
+Jak rodič vyplní alergeny.
+
+Jak se generují reporty.
+
+💰 3. Kalkulačka úspor
+Upravte stávající kalkulačku pro vývařovny:
+
+„Kolik ušetříte oproti papírovým objednávkám?“
+
+📢 4. Testimonials
+Vložte reference od vašeho současného klienta:
+
+„MalyLeo nám vyřešil problém s alergeny – konečně víme, kdo co nesmí!“
+
+6. Akční plán – první kroky
+Upravte hlavní stránku – Zdůrazněte, že jste specialista na vývařovny.
+
+Natočte 1minutové video – Ukázka, jak systém funguje pro kuchyně.
+
+Oslovte 10 vývařoven – Nabídněte jim zkušební verzi zdarma.
+
+Přidejte článek na blog – „Proč vývařovny potřebují jiný systém než restaurace?“
+
+Shrnutí: Proč vyhrátete?
+Jediní na trhu s řešením přímo pro vývařovny.
+
+Custom systém – Žádné šablony, vše na míru.
+
+Funkce, které konkurence nemá (alergie, rekrabičky, hromadné objednávky).
