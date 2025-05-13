@@ -4,6 +4,7 @@
 	import OrderItemDetail from "../OrderItemDetail.svelte";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech } from "$lib/date"
+	import FakturoidButton from "./FakturoidButton.svelte";
 
 	export let data;
 	let { session, supabase, order } = data;
@@ -130,6 +131,15 @@
 	async function back() {
 		await goto($ROUTES.ADMIN.ORDER.LIST);
 	}
+
+	let invoiceCreated = false;
+	let invoiceUrl = '';
+
+	function handleInvoiceSuccess(event: CustomEvent) {
+		invoiceCreated = true;
+		invoiceUrl = event.detail.invoice_url;
+		updateMessage = `Faktura vytvořena: <a href="${invoiceUrl}" target="_blank" class="link">Zobrazit fakturu</a>`;
+	}
 </script>
 
 <div
@@ -140,7 +150,7 @@
 			<button on:click={back} class="btn btn-outline">Zpět</button>
 			{#if updateMessage}
 				<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-					{updateMessage}
+					{@html updateMessage}
 				</div>
 			{/if}
 			<div class="flex flex-col gap-2 md:flex-row">
@@ -164,6 +174,11 @@
 						Smazat
 					</button>
 				</div>
+				<FakturoidButton
+					{order}
+					{loading}
+					{session}
+					on:success={handleInvoiceSuccess} />
 			</div>
 		</div>
 	</section>
