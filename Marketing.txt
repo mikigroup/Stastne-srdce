@@ -1,4 +1,6 @@
-Pokud váš produkt je podobný platformám jako ObjednámJídlo.cz a ObjednavkaObedu.cz, pak se řadíte do kategorie online objednávkových systémů pro restaurace a jídelny, které umožňují:
+Pokud váš produkt je podobný platformám jako objednamjidlo.cz a objednavkaobedu.cz, www.vezumenu.cz pak se řadíte do kategorie online objednávkových systémů pro restaurace a jídelny, které umožňují:
+Do porovnání jsem nebral větší systémy pro větší firmy a jídelny, které kombinují docházky, obědy přes čipy a další funkce pro podnikové řešení.
+
 
 Virtuální jídelní lístky s denní nabídkou,
 
@@ -227,3 +229,97 @@ Jediní na trhu s řešením přímo pro vývařovny.
 Custom systém – Žádné šablony, vše na míru.
 
 Funkce, které konkurence nemá (alergie, rekrabičky, hromadné objednávky).
+
+-----
+
+
+# MalyLeo - Objednávkový systém pro vývařovny s rozvozem  
+*Moderní řešení na míru bez provizí a s plnou kontrolou nad daty*  
+
+## 🔍 Analýza konkurence  
+### Hlavní konkurenti na trhu:  
+1. **DámeJídlo**  
+   - **Výhody:** Obrovská uživatelská základna, rozsáhlý rozvoz  
+   - **Nevýhody:** 25-30% provize, restaurace ztrácí kontrolu nad zákazníky  
+   - **Cílová skupina:** Všechny restaurace s rozvozem  
+
+2. **ObjednámJídlo.cz**  
+   - **Výhody:** Fixní cena, jednoduché rozhraní  
+   - **Nevýhody:** Zastaralá technologie, omezené možnosti brandování  
+   - **Cílová skupina:** Menší restaurace a bistra  
+
+3. **VezuMenu.cz**  
+   - **Výhody:** Integrovaný rozvoz, modernější design  
+   - **Nevýhody:** Stále omezené možnosti přizpůsobení  
+   - **Cílová skupina:** Restaurace s vlastním rozvozem  
+
+## 🏆 Proč zvolit MalyLeo?  
+| Kritérium          | MalyLeo                | Konkurence           |  
+|--------------------|------------------------|----------------------|  
+| **Brandování**     | ✅ 100% na míru        | ❌ Šablony           |  
+| **Provize**        | ❌ Žádné               | ✅ Až 30% (DámeJídlo)|  
+| **Specializace**   | ✅ Vývařovny+rozvoz    | ❌ Univerzální       |  
+| **Technologie**    | ✅ SvelteKit+Supabase  | ⚠️ PHP/jQuery       |  
+
+## 🚀 Klíčové výhody  
+▸ **Alergie a speciální požadavky** - Systém automaticky upozorní kuchyň na alergeny  
+▸ **Výběr obalů** - Zákazníci volí mezi rekrabičkami a jednorázovými obaly  
+▸ **Hromadné objednávky** - Ideální pro školy a firmy  
+▸ **Vlastní rozvoz** - Integrace s vaší logistikou  
+
+## 💰 Cenové balíčky  
+```mermaid
+pie
+    title Distribuce cen
+    "Základní (499 Kč/měs)": 30
+    "Rozšířený (999 Kč/měs)": 50
+    "Business (1790 Kč/měs)": 20🔍 Klíčové zjištění:
+DameJidlo.cz je největší konkurent v rozvozovém byznysu, ale:
+
+Restaurace ztrácejí kontrolu nad zákazníky (data jsou vlastněná DámeJídlem).
+
+Vysoké provize (až 30 %!).
+
+ObjednámJídlo.cz a VezuMenu.cz jsou lepší pro vlastní branding, ale:
+
+Nemají specializaci pro vývařovny (alergie, obaly, hromadné objednávky).
+
+🚀 Vaše příležitost: Proč vás vývařovny potřebují?
+1. „Ušetříte až 30 % na provizích oproti DámeJídlu“
+Nabídněte předvídatelné měsíční náklady (žádné procenta z obratu).
+
+2. „Váš rozvoz, vaši zákazníci, vaše data“
+Na rozdíl od DámeJídla si udržíte plnou kontrolu nad zákazníky.
+
+3. „Systém přímo pro vývařovny“
+Alergie: Zákazníci vyplní alergeny při objednávce.
+
+Obaly: Možnost výběru mezi rekrabičkami a jednorázovými boxy.
+
+Hromadné objednávky: Ideální pro školy/firmy.
+
+📌 Akční strategie pro rozvozové vývařovny:
+Cílený marketing:
+
+Oslovte vývařovny, které už spolupracují s DámeJídlem, ale jsou nespokojené s provizemi.
+
+Nabídněte migrační bonus (např. první měsíc zdarma).
+
+Funkční demo:
+
+Vytvořte videoprůvodce, jak váš systém řeší:
+
+Přehled alergenů v objednávkách.
+
+Optimalizaci rozvozových tras.
+
+Partneři pro rozvoz:
+
+Spolupracujte s místními rozvozovými službami (nezávislými na DámeJídlu).
+
+🎯 Shrnutí: Proč uspějete?
+Niche specializace: Vývařovny s rozvozem nemají na trhu dobré řešení.
+
+Technologická výhoda: Rychlý a integrovatelný systém.
+
+Spravedlivý cenový model: Žádné skryté provize.
