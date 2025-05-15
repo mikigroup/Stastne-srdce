@@ -47,7 +47,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	return redirect(303, redirectTo);
 };
 
-export const GET = async ({ url, cookies }) => {
+/*export const GET = async ({ url, cookies }) => {
 	const code = url.searchParams.get("code");
 	const state = url.searchParams.get("state");
 	const savedState = cookies.get("oauth_state");
@@ -96,4 +96,4 @@ export const GET = async ({ url, cookies }) => {
 		console.error("Token exchange failed:", error);
 		throw redirect(303, "/?error=auth_failed");
 	}
-};
+};*/

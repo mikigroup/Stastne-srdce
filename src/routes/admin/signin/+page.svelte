@@ -24,13 +24,13 @@
 		});
 	}
 
-	if (form?.message?.success) {
+/*	if (form?.message?.success) {
 		onMount(() => {
 			setTimeout(() => {
 				goto("/admin");
 			}, 3000);
 		});
-	}
+	}*/
 </script>
 
 <svelte:head>

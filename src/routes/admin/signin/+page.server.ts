@@ -1,4 +1,3 @@
-// +page.server.ts
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { type Provider } from "@supabase/supabase-js";
@@ -23,17 +22,15 @@ export const actions: Actions = {
 		});
 
 		if (error) {
-			console.error(error);
 			return fail(400, {
 				email,
 				message: {
 					success: false,
-					display:
-						"Neplatné přihlašovací údaje. Zkontrolujte prosím e-mail a heslo."
+					display: "Neplatné přihlašovací údaje. Zkontrolujte e-mail a heslo."
 				}
 			});
-		} else {
-			return { message: { success: true } };
 		}
+
+		throw redirect(303, "/admin");
 	}
 };

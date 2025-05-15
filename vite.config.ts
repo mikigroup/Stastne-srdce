@@ -14,10 +14,10 @@ export default defineConfig({
 		}),
 		tailwindcss(),
 		sveltekit()
-	],
-	server: {
+	]
+	/*server: {
 		host: "mystastnesrdce.local",
 		port: 5173,
 		strictPort: true
-	}
+	}*/
 });
