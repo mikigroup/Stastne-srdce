@@ -14,6 +14,11 @@ export function validateProfileForInvoicing(profile: {
   company?: string | null;
   ico?: string | null;
   dic?: string | null;
+  telephone?: string | null;
+  allergies?: boolean | null;
+  allergies_description?: string | null;
+  delivery_method?: string | null;
+  payment_method?: string | null;
 }): ProfileValidationResult {
   const missingFields: string[] = [];
   
@@ -25,7 +30,10 @@ export function validateProfileForInvoicing(profile: {
     { field: profile.street_number, name: 'Číslo popisné' },
     { field: profile.city, name: 'Město' },
     { field: profile.zip_code, name: 'PSČ' },
-    { field: profile.email, name: 'Email' }
+    { field: profile.email, name: 'Email' },
+    { field: profile.telephone, name: 'Telefon' },
+    { field: profile.delivery_method, name: 'Způsob dodání' },
+    { field: profile.payment_method, name: 'Způsob platby' }
   ];
 
   // Check required fields
@@ -42,6 +50,13 @@ export function validateProfileForInvoicing(profile: {
     }
   }
 
+  // Check allergies description if allergies is true
+  if (profile.allergies === true) {
+    if (!profile.allergies_description || profile.allergies_description.trim() === '') {
+      missingFields.push('Popis alergií');
+    }
+  }
+
   return {
     isComplete: missingFields.length === 0,
     missingFields
@@ -53,5 +68,5 @@ export function getProfileValidationMessage(validationResult: ProfileValidationR
     return '';
   }
 
-  return `Pro vytvoření faktury je nutné doplnit následující údaje: ${validationResult.missingFields.join(', ')}`;
+  return `${validationResult.missingFields.join(', ')}.`;
 } 

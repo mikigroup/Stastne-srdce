@@ -9,7 +9,7 @@
   let { session, supabase, profile, orders } = data;
   $: ({ session, supabase, profile, orders } = data);
 
-  let visible: boolean = false;
+  let visible: boolean = true;
   let expandedOrders: { [key: string]: boolean } = {};
   let selectedOrderId: string | null = null;
 
@@ -95,7 +95,7 @@
     {#if profileValidationMessage}
       <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p class="text-yellow-800">
-          <span class="font-medium">Upozornění:</span> {profileValidationMessage}
+          <span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
         </p>
       </div>
     {/if}
@@ -107,7 +107,7 @@
       use:enhance={handleSubmit}
       bind:this={profileForm}
     >
-      <div class="max-w-4xl p-5 pb-2 mx-auto bg-white border rounded-lg lg:mx-auto border-gray-300">
+      <div class="p-5 pb-2 mx-auto bg-white border rounded-lg lg:mx-auto border-gray-300">
         <div class="mb-8 text-xl font-light text-center text-gray-500 lg:mb-16 dark:text-gray-400 md:text-lg">
           <div class="my-2">
             <div class="flex flex-col items-center md:flex-row">
@@ -187,17 +187,17 @@
             <hr class="w-32 hidden md:block" />
           </div>
 
-          <div class="flex justify-center mt-5" on:click={toggleVisible}>
+        <!-- <div class="flex justify-center mt-5" on:click={toggleVisible}>
             {#if visible}
               <div><p class="w-24 cursor-pointer">Méně</p></div>
             {:else}
               <div>
-                <p class="w-36 cursor-pointer lg:tooltip" data-tip="Klikni pro více informací">
-                  Více informací
-                </p>
+                <a href="/profile" class="w-36 cursor-pointer lg:tooltip" data-tip="Klikni pro více informací">
+                  Nastavení profilu
+                </a>
               </div>
             {/if}
-          </div>
+          </div> --> 
 
           {#if visible}
             <div class="flex flex-col my-2">

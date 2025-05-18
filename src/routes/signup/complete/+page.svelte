@@ -81,7 +81,7 @@
 			{#if profileValidationMessage}
 				<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
 					<p class="text-yellow-800">
-						<span class="font-medium">Upozornění:</span> {profileValidationMessage}
+						<span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
 					</p>
 				</div>
 			{/if}

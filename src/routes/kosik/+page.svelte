@@ -13,6 +13,9 @@
 	let { session, supabase } = data;
 	let loading = false;
 	let showModal = false;
+	let isSubmitting = false;
+	let errorMessage = '';
+
 	$: ({ session, supabase } = data);
 
 	// Store subscriptions
@@ -60,11 +63,10 @@
 		}
 	}
 
-	let isSubmitting = false;
-
 	function handleSubmit() {
 		if (isSubmitting) return;
 		isSubmitting = true;
+		errorMessage = '';
 
 		return async ({ result, update }) => {
 			try {
@@ -72,9 +74,14 @@
 					const data = result.data;
 					if (data.redirectUrl) {
 						window.location.href = data.redirectUrl;
+						return;
 					}
-				} else {
-					await update();
+				}
+				
+				await update();
+				
+				if (result.type === 'failure' || (form && !form.success)) {
+					errorMessage = form?.message || 'Došlo k chybě při zpracování objednávky.';
 				}
 			} finally {
 				isSubmitting = false;
@@ -109,6 +116,7 @@
 				action="?/sendOrder"
 				use:enhance={handleSubmit}
 				class="space-y-4">
+				<input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
 				<div
 					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 					<h1
@@ -330,6 +338,12 @@
 									<strong>{totalPrice} Kč</strong>
 								</p>
 							</div>
+
+							{#if errorMessage}
+								<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+									<p class="text-red-700">{@html errorMessage}</p>
+								</div>
+							{/if}
 
 							<div class="m-5">
 								<button

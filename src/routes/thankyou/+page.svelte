@@ -1,59 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { CartItemsStore, totalPiecesStore } from "$lib/stores/store";
+	import { CartItemsStore } from "$lib/stores/store";
 	import { page } from "$app/stores";
 
-	// Proměnné pro souhrn objednávky
-	let cartItems = [];
-	let totalPrice = 0;
-	let totalPieces = 0;
-	let orderNumber = '';
-	let isDataLoaded = false;
-
-	onMount(() => {
-		// Získání dat z URL nebo z form akce
-		const urlParams = new URLSearchParams(window.location.search);
-		const orderIdFromUrl = urlParams.get('order');
-
-		// Pokud máme data z formuláře po zpracování objednávky
-		if ($page.form?.success && $page.form?.orderId) {
-			orderNumber = $page.form.orderId.toString();
-		} else if (orderIdFromUrl) {
-			orderNumber = orderIdFromUrl;
-		} else {
-			orderNumber = 'N/A';
-		}
-
-		// Načtení dat z košíku PŘED jeho vyčištěním
-		cartItems = $CartItemsStore;
-		totalPieces = $totalPiecesStore;
-
-		// Výpočet celkové ceny z košíku
-		totalPrice = cartItems.reduce((sum, item) => {
-			if (!item?.variants?.length) return sum;
-			return (
-				sum +
-				item.variants.reduce(
-					(variantSum, variant) =>
-						variantSum + (variant.price || 0) * (variant.quantity || 0),
-					0
-				)
-			);
-		}, 0);
-
-		// Označíme, že data byla načtena
-		isDataLoaded = true;
-
-		// Vyčištění košíku POUZE po úspěšném zobrazení souhrnu
-		// a s dostatečným zpožděním, aby se data stihla použít
-		setTimeout(() => {
-			CartItemsStore.clear();
-			console.log("Košík byl vyčištěn po zobrazení souhrnu objednávky");
-		}, 1500); // Delší zpoždění pro jistotu
-	});
+	export let data;
+	const { order, profileValidation } = data;
 
 	// Funkce pro formátování data
-	function formatDate(dateString) {
+	function formatDate(dateString: string) {
 		if (!dateString) return '';
 		const date = new Date(dateString);
 		return date.toLocaleDateString('cs-CZ', {
@@ -63,7 +17,14 @@
 			day: 'numeric'
 		});
 	}
-	export let data;
+
+	onMount(() => {
+		// Vyčištění košíku po úspěšném zobrazení souhrnu
+		setTimeout(() => {
+			CartItemsStore.clear();
+			console.log("Košík byl vyčištěn po zobrazení souhrnu objednávky");
+		}, 1500);
+	});
 
 	const { generalSettings } = data;
 </script>
@@ -77,14 +38,23 @@
 	<div class="flex flex-col items-center pt-5 mb-8">
 		<h1 class="text-3xl md:text-4xl font-bold text-green-800 mb-2">Děkujeme za objednávku!</h1>
 		<p class="text-xl md:text-2xl">Vaše jídlo bylo úspěšně objednáno</p>
-		{#if orderNumber !== 'N/A'}
-			<p class="mt-2 text-lg">Číslo objednávky: <strong>{orderNumber}</strong></p>
+		{#if order.order_number}
+			<p class="mt-2 text-lg">Číslo objednávky: <strong>{order.order_number}</strong></p>
 		{/if}
 		<p class="text-sm mt-2">Potvrzení bylo zasláno na Váš e-mail</p>
 
-		{#if $page.form?.message}
-			<div class="mt-4 p-3 rounded-lg {$page.form.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-				{$page.form.message}
+		{#if !profileValidation.isComplete}
+			<div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+				<p class="font-medium">Upozornění: Váš profil není kompletní</p>
+				<p class="text-sm mt-1">Pro budoucí objednávky prosím doplňte následující údaje:</p>
+				<ul class="list-disc list-inside text-sm mt-2">
+					{#each profileValidation.missingFields as field}
+						<li>{field}</li>
+					{/each}
+				</ul>
+				<a href="/profile" class="inline-block mt-3 text-sm text-green-700 hover:text-green-800 underline">
+					Upravit profil
+				</a>
 			</div>
 		{/if}
 	</div>
@@ -93,80 +63,42 @@
 	<div class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-3xl mx-auto">
 		<h2 class="text-xl font-semibold mb-4 text-green-700 border-b pb-2">Souhrn objednávky</h2>
 
-		{#if cartItems.length === 0}
-			<div class="py-4">
-				{#if orderNumber !== 'N/A' && totalPieces > 0}
-					<!-- Zobrazíme alespoň souhrnné informace, když nemáme detaily -->
-					<div class="text-center mb-4">
-						<p class="text-gray-600 mb-2">Děkujeme za Vaši objednávku!</p>
-						<p class="text-gray-500 text-sm">Detaily objednávky byly zaslány na Váš e-mail</p>
-					</div>
-
-					<div class="bg-green-50 rounded-lg p-4 mt-6">
-						<div class="flex justify-between font-bold text-lg text-green-800">
-							<div>Celkem:</div>
-							<div class="text-right">
-								<div>{totalPieces} ks</div>
-								<div>{totalPrice} Kč</div>
+		{#if order.order_items && order.order_items.length > 0}
+			<div class="space-y-4">
+				{#each order.order_items as item}
+					<div class="border-b pb-4">
+						<div class="flex justify-between items-center pl-4 py-1">
+							<div class="max-w-lg">
+								{#if item.variant_id?.menu_id}
+									<div class="font-medium text-gray-800">
+										{formatDate(item.variant_id.menu_id.date)}
+									</div>
+									<div class="text-gray-600 pl-2 mb-2">
+										Polévka: {item.variant_id.menu_id.soup}
+									</div>
+								{/if}
+								<span class="text-gray-800">{item.variant_id?.variant_number}.</span>
+								<span class="text-gray-600">{item.variant_id?.description}</span>
+							</div>
+							<div class="text-right flex-shrink-0">
+								<div>{item.quantity} ks</div>
+								<div class="font-medium">{item.price * item.quantity} Kč</div>
 							</div>
 						</div>
-					</div>
-				{:else}
-					<p class="text-gray-600 text-center">Děkujeme za Vaši objednávku!</p>
-				{/if}
-			</div>
-		{:else}
-			<div class="space-y-4">
-				{#each cartItems as item}
-					<div class="border-b pb-4">
-						<div class="font-medium text-gray-800">{formatDate(item.date)}</div>
-						<div class="text-gray-600 pl-2 mb-2">Polévka: {item.soup}</div>
-
-						{#each item.variants as variant}
-							<div class="flex justify-between items-center pl-4 py-1">
-								<div class="max-w-lg">
-									<span class="text-gray-800">{variant.variant_number}.</span>
-									<span class="text-gray-600">{variant.description}</span>
-								</div>
-								<div class="text-right flex-shrink-0">
-									<div>{variant.quantity} ks</div>
-									<div class="font-medium">{variant.price * variant.quantity} Kč</div>
-								</div>
-							</div>
-						{/each}
 					</div>
 				{/each}
 
 				<div class="flex justify-between pt-4 font-bold text-lg text-green-800">
 					<div>Celkem:</div>
 					<div class="text-right">
-						<div>{totalPieces} ks</div>
-						<div>{totalPrice} Kč</div>
+						<div>{order.total_pieces} ks</div>
+						<div>{order.total_price} Kč</div>
 					</div>
 				</div>
 			</div>
+		{:else}
+			<p class="text-gray-600 text-center">Detaily objednávky byly zaslány na Váš e-mail</p>
 		{/if}
-	</div>
-
-	<!-- Animace poděkování -->
-	<div class="letter-container relative h-60 mb-8">
-		<div class="letter-image">
-			<div class="animated-mail">
-				<div class="back-fold"></div>
-				<div class="letter">
-					<div class="letter-border"></div>
-					<div class="letter-title"></div>
-					<div class="letter-context"></div>
-					<div class="letter-stamp">
-						<div class="letter-stamp-inner"></div>
-					</div>
-				</div>
-				<div class="top-fold"></div>
-				<div class="body"></div>
-				<div class="left-fold"></div>
-			</div>
-			<div class="shadow"></div>
-		</div>
 	</div>
 
 	<!-- Odkaz zpět do jídelníčku -->
@@ -175,68 +107,6 @@
 			Zpět na obědy
 		</a>
 	</div>
-
-	<!-- Animované vlny na pozadí -->
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		xmlns:xlink="http://www.w3.org/1999/xlink"
-		version="1.1"
-		id="Calque_1"
-		x="0px"
-		y="0px"
-		viewBox="0 0 1300 550"
-		style="enable-background:new 0 0 1300 550;"
-		xml:space="preserve">
-		<path
-			class="st1"
-			d="M 0 250 C 600 450 650 100 1300 250 L 1300 550 L 0 550 L 0 250">
-			<animate
-				attributeName="d"
-				dur="5s"
-				begin="1s"
-				values="M 0 250 C 600 450 650 100 1300 250 L 1300 550 L 0 550 L 0 250;
-                M 0 250 C 600 100 650 450 1300 250 L 1300 550 L 0 550 L 0 250;
-				M 0 250 C 600 450 650 100 1300 250 L 1300 550 L 0 550 L 0 250"
-				repeatCount="indefinite" />
-		</path>
-
-		<path
-			class="st1"
-			d="M 0 250 C 600 100 650 450 1300 250 L 1300 550 L 0 550 L 0 250">
-			<animate
-				attributeName="d"
-				dur="5s"
-				values="M 0 250 C 600 100 650 450 1300 250 L 1300 550 L 0 550 L 0 250;
-                M 0 250 C 600 450 650 100 1300 250 L 1300 550 L 0 550 L 0 250;
-				M 0 250 C 600 100 650 450 1300 250 L 1300 550 L 0 550 L 0 250"
-				repeatCount="indefinite" />
-		</path>
-
-		<path
-			class="st1"
-			d="M 0 250 C 950 350 950 150 1300 250 L 1300 550 L 0 550 L 0 250">
-			<animate
-				attributeName="d"
-				dur="5s"
-				begin="2s"
-				values="M 0 250 C 950 350 950 150 1300 250 L 1300 550 L 0 550 L 0 250;
-                M 0 250 C 350 150 350 350 1300 250 L 1300 550 L 0 550 L 0 250;
-				M 0 250 C 950 350 950 150 1300 250 L 1300 550 L 0 550 L 0 250"
-				repeatCount="indefinite" />
-		</path>
-
-		<path
-			class="st1"
-			d="M 0 250 C 350 150 350 350 1300 250 L 1300 550 L 0 550 L 0 250">
-			<animate
-				attributeName="d"
-				dur="5s"
-				values="M 0 250 C 350 150 350 350 1300 250 L 1300 550 L 0 550 L 0 250;
-                M 0 250 C 950 350 950 150 1300 250 L 1300 550 L 0 550 L 0 250;
-				M 0 250 C 350 150 350 350 1300 250 L 1300 550 L 0 550 L 0 250"
-				repeatCount="indefinite" />
-		</path>
-	</svg>
 </div>
 
 <style>
