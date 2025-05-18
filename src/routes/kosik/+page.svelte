@@ -12,9 +12,14 @@
 
 	let { session, supabase } = data;
 	let loading = false;
-	let showModal = false;
+	let modal: Modal;
 	let isSubmitting = false;
 	let errorMessage = '';
+	let submissionId = crypto.randomUUID();
+	let orderDetails = {
+		totalPieces: 0,
+		totalPrice: 0
+	};
 
 	$: ({ session, supabase } = data);
 
@@ -63,30 +68,15 @@
 		}
 	}
 
-	function handleSubmit() {
+	function handleSubmit(e: Event) {
+		e.preventDefault(); // Zastavíme výchozí odeslání formuláře
 		if (isSubmitting) return;
-		isSubmitting = true;
-		errorMessage = '';
-
-		return async ({ result, update }) => {
-			try {
-				if (result.type === 'success') {
-					const data = result.data;
-					if (data.redirectUrl) {
-						window.location.href = data.redirectUrl;
-						return;
-					}
-				}
-				
-				await update();
-				
-				if (result.type === 'failure' || (form && !form.success)) {
-					errorMessage = form?.message || 'Došlo k chybě při zpracování objednávky.';
-				}
-			} finally {
-				isSubmitting = false;
-			}
+		
+		orderDetails = {
+			totalPieces,
+			totalPrice
 		};
+		modal?.show();
 	}
 
 	function truncateText(text: string, maxLength: number) {
@@ -114,9 +104,41 @@
 			<form
 				method="POST"
 				action="?/sendOrder"
-				use:enhance={handleSubmit}
+				use:enhance={({ formData }) => {
+					isSubmitting = true;
+					errorMessage = '';
+					modal?.close();
+					
+					return async ({ result }) => {
+						console.log('Form action result:', result);
+						
+						if (result.type === 'success' && result.data?.success) {
+							console.log('Order successful, clearing cart...');
+							CartItemsStore.clear();
+							
+							const orderId = result.data?.orderId;
+							if (!orderId) {
+								console.error('Missing order ID in response:', result);
+								errorMessage = 'Chyba: Číslo objednávky není k dispozici';
+								modal?.show();
+								return;
+							}
+							
+							const redirectUrl = `/thankyou?order=${orderId}`;
+							console.log('Redirecting to:', redirectUrl);
+							await goto(redirectUrl, { replaceState: true });
+						} else {
+							console.error('Order submission error:', result);
+							errorMessage = result.data?.message || 'Došlo k chybě při zpracování objednávky.';
+							modal?.show();
+						}
+						
+						isSubmitting = false;
+					};
+				}}
 				class="space-y-4">
 				<input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
+				<input type="hidden" name="submissionId" value={submissionId} />
 				<div
 					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 					<h1
@@ -374,4 +396,20 @@
 			</div>
 		{/if}
 	</section>
+
+	<Modal 
+		bind:this={modal} 
+		on:close={() => modal?.close()}
+		on:confirm={() => {
+			const form = document.querySelector('form');
+			if (form) {
+				form.requestSubmit();
+			}
+		}}
+	>
+		<div class="space-y-4">
+			<p>Celkový počet jídel: <strong>{totalPieces} ks</strong></p>
+			<p>Celková cena: <strong>{totalPrice} Kč</strong></p>
+		</div>
+	</Modal>
 </main>
