@@ -2,6 +2,7 @@
 	import { slide } from 'svelte/transition';
   import { enhance } from "$app/forms";
   import type { SubmitFunction } from "@sveltejs/kit";
+  import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
 
   export let data;
   export let form;
@@ -52,6 +53,8 @@
   let deliveryMethod: string = profile?.delivery_method ?? "";
   let paymentMethod: string = profile?.payment_method ?? "";
 
+  let profileValidationMessage = '';
+
   const handleSubmit: SubmitFunction = () => {
     loading = true;
     return async () => {
@@ -60,6 +63,22 @@
   };
 
 	const { generalSettings } = data;
+
+  $: {
+    const validationResult = validateProfileForInvoicing({
+      first_name,
+      last_name,
+      street,
+      street_number,
+      city,
+      zip_code,
+      email: session?.user?.email,
+      company,
+      ico,
+      dic
+    });
+    profileValidationMessage = getProfileValidationMessage(validationResult);
+  }
 </script>
 
 <svelte:head>
@@ -72,6 +91,15 @@
     <h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
       Profil účtu
     </h1>
+
+    {#if profileValidationMessage}
+      <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p class="text-yellow-800">
+          <span class="font-medium">Upozornění:</span> {profileValidationMessage}
+        </p>
+      </div>
+    {/if}
+
     <form
       class="form-widget"
       method="post"

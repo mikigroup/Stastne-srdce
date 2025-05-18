@@ -134,40 +134,45 @@ export const actions: Actions = {
 
 			console.log("Získány údaje zákazníka:", customer);
 
-			// Vytvoření objednávky
-			const orderData = {
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-				state: "Nová",
-				date: new Date().toISOString(),
-				customer_first_name: customer.first_name,
-				customer_last_name: customer.last_name,
-				customer_street: customer.street,
-				customer_street_number: customer.street_number,
-				customer_city: customer.city,
-				customer_zip_code: customer.zip_code,
-				customer_telephone: customer.telephone,
-				customer_email: email,
-				user_id: session?.user?.id,
-				note,
-				total_pieces: totalPieces,
-				total_price: totalPrice,
-				currency: "CZK",
-				pay_state: false,
-				pay_method: null,
-				shipping_method: "Rozvoz"
-			};
-
-			console.log("Pokus o vytvoření objednávky s daty:", orderData);
-
-			const { data: insertedOrder, error: insertError } = await supabase
-				.from("orders")
-				.insert(orderData)
-				.select("*")
-				.single();
+			// Start a transaction
+			const { data: insertedOrder, error: insertError } = await supabase.rpc('create_order', {
+				p_user_id: session?.user?.id,
+				p_created_at: new Date().toISOString(),
+				p_date: new Date().toISOString(),
+				p_customer_first_name: customer.first_name,
+				p_customer_last_name: customer.last_name,
+				p_customer_street: customer.street,
+				p_customer_street_number: customer.street_number,
+				p_customer_city: customer.city,
+				p_customer_zip_code: customer.zip_code,
+				p_customer_telephone: customer.telephone,
+				p_customer_email: email,
+				p_note: note,
+				p_total_pieces: totalPieces,
+				p_total_price: totalPrice,
+				p_currency: "CZK",
+				p_pay_state: false,
+				p_shipping_method: "Rozvoz",
+				p_order_items: cartItems.flatMap(item => 
+					item.variants.map(variant => ({
+						variant_id: variant.id,
+						price: variant.price,
+						quantity: variant.quantity
+					}))
+				)
+			});
 
 			if (insertError) {
 				console.error("Chyba při vytváření objednávky:", insertError);
+				
+				// Check if this is a duplicate order error
+				if (insertError.message?.includes('duplicate key value violates unique constraint "prevent_duplicate_orders"')) {
+					return {
+						success: false,
+						message: "Tato objednávka již byla vytvořena. Prosím obnovte stránku a zkontrolujte své objednávky."
+					};
+				}
+				
 				throw insertError;
 			}
 
@@ -178,55 +183,23 @@ export const actions: Actions = {
 
 			console.log("Úspěšně vytvořena objednávka:", insertedOrder);
 
-			// Příprava položek objednávky - zpracování všech verzí menu nejprve
-			const orderItemsPromises = cartItems.flatMap((item) =>
-				item.variants.map(async (variant) => {
-					const menuVersionId = await getCurrentMenuVersionId(
-						variant.id,
-						supabase
-					);
-
-					return {
-						order_id: insertedOrder.id,
-						variant_id: variant.id,
-						price: variant.price,
-						quantity: variant.quantity,
-						created_at: new Date().toISOString(),
-						updated_at: new Date().toISOString()
-					};
-				})
-			);
-
-			// Počkáme na vyřešení všech promises a získáme položky s verzemi menu
-			const orderItems = await Promise.all(orderItemsPromises);
-
-			console.log("Pokus o vytvoření položek objednávky:", orderItems);
-
-			const { error: itemsError } = await supabase
-				.from("order_items")
-				.insert(orderItems);
-
-			if (itemsError) {
-				console.error("Chyba při vytváření položek objednávky:", itemsError);
-				throw itemsError;
+			try {
+				// Odeslání emailu
+				await sendOrderConfirmationEmail(
+					email,
+					insertedOrder.order_number.toString(),
+					cartItems,
+					totalPrice,
+					totalPieces,
+					note
+				);
+			} catch (emailError) {
+				console.error("Chyba při odesílání potvrzovacího emailu:", emailError);
+				// Continue even if email fails - the order was created successfully
 			}
-
-			console.log("Úspěšně vytvořeny položky objednávky");
-
-			// Odeslání emailu
-			await sendOrderConfirmationEmail(
-				email,
-				insertedOrder.order_number.toString(),
-				cartItems,
-				totalPrice,
-				totalPieces,
-				note
-			);
 
 			console.log("Proces vytvoření objednávky dokončen");
 
-			// Místo přesměrování vrátíme úspěšný výsledek
-			// na klientské straně pak provedeme přesměrování
 			return {
 				success: true,
 				message: "Objednávka byla úspěšně vytvořena.",

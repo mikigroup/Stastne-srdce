@@ -60,20 +60,24 @@
 		}
 	}
 
-	function handleOrderSubmit() {
-		return async ({ result }) => {
-			if (result.type === "success") {
-				// Zkontroluje, zda máme redirectUrl ve výsledku
-				if (result.data?.redirectUrl) {
-					// Použije window.location pro přesměrování s uchováním košíku v localStorage
-					window.location.href = result.data.redirectUrl;
+	let isSubmitting = false;
+
+	function handleSubmit() {
+		if (isSubmitting) return;
+		isSubmitting = true;
+
+		return async ({ result, update }) => {
+			try {
+				if (result.type === 'success') {
+					const data = result.data;
+					if (data.redirectUrl) {
+						window.location.href = data.redirectUrl;
+					}
 				} else {
-					// Původní chování - vyčistit košík a přejít na děkovnou stránku
-					CartItemsStore.clear();
-					await goto("/thankyou");
+					await update();
 				}
-			} else {
-				console.error("Chyba při odesílání objednávky - page", result.error);
+			} finally {
+				isSubmitting = false;
 			}
 		};
 	}
@@ -100,7 +104,11 @@
 <main>
 	<section>
 		{#if $page.data.session}
-			<form method="POST" action="?/sendOrder" use:enhance={handleOrderSubmit}>
+			<form
+				method="POST"
+				action="?/sendOrder"
+				use:enhance={handleSubmit}
+				class="space-y-4">
 				<div
 					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 					<h1
@@ -325,26 +333,22 @@
 
 							<div class="m-5">
 								<button
-									on:click={() => (showModal = true)}
-									type="button"
-									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-103">
-									<span>Potvrzení košíku</span>
+									type="submit"
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+									disabled={isSubmitting || cartItems.length === 0}
+								>
+									{#if isSubmitting}
+										<span class="inline-flex items-center">
+											<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+												<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+											</svg>
+											Odesílám objednávku...
+										</span>
+									{:else}
+										Odeslat objednávku
+									{/if}
 								</button>
-
-								<Modal bind:showModal>
-									<input
-										type="hidden"
-										name="cartItems"
-										value={JSON.stringify(cartItems)} />
-									<div>
-										<input
-											formaction="?/sendOrder"
-											type="submit"
-											class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black"
-											value={loading ? "Odesílá se..." : "Odeslat"}
-											disabled={loading} />
-									</div>
-								</Modal>
 							</div>
 						</div>
 					{/if}
