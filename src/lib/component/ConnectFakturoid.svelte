@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getAccessToken } from '$lib/fakturoidAuth';
-    import { supabase } from '$lib/supabase';
+    import { supabase, ensureEnvironmentVariables } from '$lib/supabase';
     import { onMount } from 'svelte';
 
     let loading = false;
@@ -11,6 +11,9 @@
         try {
             loading = true;
             error = null;
+            
+            // Kontrola proměnných prostředí
+            ensureEnvironmentVariables();
             
             const session = await supabase.auth.getSession();
             if (!session.data.session?.user) {
