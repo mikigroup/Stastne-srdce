@@ -24,7 +24,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	try {
 		await handleCallback(supabase as TypedSupabaseClient, code, state);
-		
+
 		// Redirect to admin dashboard with success message
 		throw redirect(303, "/admin/settings?status=fakturoid_connected");
 	} catch (err) {

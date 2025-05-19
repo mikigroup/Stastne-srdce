@@ -56,10 +56,10 @@
         margin: auto;
         max-height: 90vh;
         overflow-y: auto;
-        position: fixed;        
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        position: fixed;
+        left: 40%;
+        top: 20px; /* Změna z 50% na pevnou hodnotu */
+        transform: translateX(-50%); /* Odstraněn vertikální posun */
         min-width: 320px;
         background: white;
     }
@@ -71,11 +71,11 @@
     }
     @keyframes zoom {
         from {
-            transform: translate(-50%, -50%) scale(0.95);
+            transform: translateX(-50%) scale(0.95); /* Odstraněn vertikální posun */
             opacity: 0;
         }
         to {
-            transform: translate(-50%, -50%) scale(1);
+            transform: translateX(-50%) scale(1); /* Odstraněn vertikální posun */
             opacity: 1;
         }
     }
