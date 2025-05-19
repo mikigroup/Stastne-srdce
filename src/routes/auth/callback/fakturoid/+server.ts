@@ -1,57 +1,52 @@
-import { redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import {
-	FAKTUROID_CLIENT_ID,
-	FAKTUROID_CLIENT_SECRET
-} from "$env/static/private";
+import { supabase } from "$lib/supabaseClient";
+import { handleCallback } from "$lib/fakturoidAuth";
+import type { TypedSupabaseClient } from "$lib/types/supabase";
 
-export const GET: RequestHandler = async ({ url, cookies }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	const code = url.searchParams.get("code");
 	const state = url.searchParams.get("state");
-	const savedState = cookies.get("oauth_state");
+	const session = await supabase.auth.getSession();
+	const customerId = session.data.session?.user?.id;
 
-	// Ověření state parametru
-	if (!code || !state || state !== savedState) {
-		throw redirect(303, "/?error=invalid_auth");
+	if (!code || !state) {
+		throw error(400, {
+			message: "Missing required OAuth parameters",
+		});
+	}
+
+	if (!customerId) {
+		throw error(401, {
+			message: "Unauthorized - User not logged in",
+		});
 	}
 
 	try {
-		// Získání access tokenu
-		const tokenResponse = await fetch(
-			"https://app.fakturoid.cz/api/v3/oauth/token",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Basic ${Buffer.from(`${FAKTUROID_CLIENT_ID}:${FAKTUROID_CLIENT_SECRET}`).toString("base64")}`
-				},
-				body: JSON.stringify({
-					grant_type: "authorization_code",
-					code,
-					redirect_uri: import.meta.env.VITE_FAKTUROID_REDIRECT_URI // Ujisti se, že tato proměnná je správná
-				})
+		await handleCallback(supabase as TypedSupabaseClient, code, state);
+		
+		// Redirect to admin dashboard with success message
+		throw redirect(303, "/admin/settings?status=fakturoid_connected");
+	} catch (err) {
+		console.error("Fakturoid callback failed:", err);
+		
+		// Handle specific error cases
+		if (err instanceof Error) {
+			if (err.message.includes("Invalid or expired state")) {
+				throw error(400, {
+					message: "Invalid or expired authentication state",
+				});
 			}
-		);
+			if (err.message.includes("Token exchange failed")) {
+				throw error(400, {
+					message: "Failed to exchange authorization code for access token",
+				});
+			}
+		}
 
-		const tokenData = await tokenResponse.json();
-
-		// Uložení tokenů do secure cookies
-		cookies.set("fakturoid_access_token", tokenData.access_token, {
-			path: "/",
-			secure: process.env.NODE_ENV === "production",
-			httpOnly: true,
-			maxAge: tokenData.expires_in
+		// Generic error fallback
+		throw error(500, {
+			message: "Failed to connect Fakturoid account",
 		});
-
-		cookies.set("fakturoid_refresh_token", tokenData.refresh_token, {
-			path: "/",
-			secure: process.env.NODE_ENV === "production",
-			httpOnly: true
-		});
-
-		throw redirect(303, "/?auth=success");
-	} catch (error) {
-		console.error("Token exchange failed:", error);
-		throw redirect(303, "/?error=auth_failed");
 	}
 };
