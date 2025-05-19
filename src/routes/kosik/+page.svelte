@@ -15,7 +15,6 @@
 	let modal: Modal;
 	let isSubmitting = false;
 	let errorMessage = '';
-	let submissionId = crypto.randomUUID();
 	let orderDetails = {
 		totalPieces: 0,
 		totalPrice: 0
@@ -150,7 +149,6 @@
 				}}
 				class="space-y-4">
 				<input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
-				<input type="hidden" name="submissionId" value={submissionId} />
 				<div
 					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 					<h1

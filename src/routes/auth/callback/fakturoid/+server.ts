@@ -1,8 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { supabase } from "$lib/supabaseClient";
-import { handleCallback } from "$lib/fakturoidAuth";
-import type { TypedSupabaseClient } from "$lib/types/supabase";
+import { supabase } from "$lib/supabase";
+import { getAccessToken } from "$lib/fakturoidAuth";
 
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const code = url.searchParams.get("code");
@@ -23,27 +22,15 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	try {
-		await handleCallback(supabase as TypedSupabaseClient, code, state);
-
+		// Pro Fakturoid používáme client credentials flow, proto nepotřebujeme kód
+		// Jednoduše získáme token a uložíme informaci o úspěšném připojení
+		await getAccessToken();
+		
 		// Redirect to admin dashboard with success message
 		throw redirect(303, "/admin/settings?status=fakturoid_connected");
 	} catch (err) {
 		console.error("Fakturoid callback failed:", err);
 		
-		// Handle specific error cases
-		if (err instanceof Error) {
-			if (err.message.includes("Invalid or expired state")) {
-				throw error(400, {
-					message: "Invalid or expired authentication state",
-				});
-			}
-			if (err.message.includes("Token exchange failed")) {
-				throw error(400, {
-					message: "Failed to exchange authorization code for access token",
-				});
-			}
-		}
-
 		// Generic error fallback
 		throw error(500, {
 			message: "Failed to connect Fakturoid account",

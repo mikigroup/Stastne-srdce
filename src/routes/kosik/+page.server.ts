@@ -37,7 +37,6 @@ export const actions: Actions = {
 			const formData = await request.formData();
 			const note = formData.get("note") as string;
 			const cartItemsStr = formData.get("cartItems");
-			const submissionId = formData.get("submissionId") as string;
 
 			if (!cartItemsStr) {
 				return {
@@ -45,28 +44,6 @@ export const actions: Actions = {
 					type: 'failure',
 					message: "Košík je prázdný."
 				};
-			}
-
-			// Check for duplicate submission
-			if (submissionId) {
-				const { data: existingSubmission } = await supabase
-					.from('order_submissions')
-					.select('id')
-					.eq('submission_id', submissionId)
-					.single();
-
-				if (existingSubmission) {
-					return {
-						success: false,
-						type: 'failure',
-						message: "Tato objednávka již byla zpracována."
-					};
-				}
-
-				// Record the submission
-				await supabase
-					.from('order_submissions')
-					.insert([{ submission_id: submissionId, user_id: session.user.id }]);
 			}
 
 			const cartItems = JSON.parse(cartItemsStr as string);

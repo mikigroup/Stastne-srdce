@@ -57,7 +57,7 @@
         max-height: 90vh;
         overflow-y: auto;
         position: fixed;
-        left: 40%;
+        left: 35%;
         top: 20px; /* Změna z 50% na pevnou hodnotu */
         transform: translateX(-50%); /* Odstraněn vertikální posun */
         min-width: 320px;

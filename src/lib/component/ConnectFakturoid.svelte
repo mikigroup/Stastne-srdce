@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { getAuthUrl } from '$lib/fakturoidAuth';
-    import { supabase } from '$lib/supabaseClient';
+    import { getAccessToken } from '$lib/fakturoidAuth';
+    import { supabase } from '$lib/supabase';
     import { onMount } from 'svelte';
 
     let loading = false;
@@ -17,8 +17,11 @@
                 throw new Error('Nejste přihlášen/a');
             }
 
-            const authUrl = await getAuthUrl(supabase, session.data.session.user.id);
-            window.location.href = authUrl;
+            // Místo přesměrování na URL s autorizací rovnou získáme token
+            // (Client credentials flow místo OAuth redirect flow)
+            await getAccessToken();
+            isConnected = true;
+            
         } catch (err) {
             error = err instanceof Error ? err.message : 'Nepodařilo se připojit k Fakturoidu';
         } finally {
@@ -27,15 +30,13 @@
     }
 
     onMount(async () => {
-        const session = await supabase.auth.getSession();
-        if (session.data.session?.user) {
-            const { data } = await supabase
-                .from('fakturoid_tokens')
-                .select('id')
-                .eq('customer_id', session.data.session.user.id)
-                .single();
-            
-            isConnected = !!data;
+        try {
+            // Zkusíme získat token, což ověří, zda jsme připojeni
+            await getAccessToken();
+            isConnected = true;
+        } catch (err) {
+            // Tiché selhání - nejsme připojeni
+            isConnected = false;
         }
     });
 </script>
