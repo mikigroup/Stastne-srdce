@@ -140,6 +140,10 @@
 		invoiceUrl = event.detail.invoice_url;
 		updateMessage = `Faktura vytvořena: <a href="${invoiceUrl}" target="_blank" class="link">Zobrazit fakturu</a>`;
 	}
+
+	async function createInvoice() {
+		await goto(`/admin/order/${orderId}/create-invoice`);
+	}
 </script>
 
 <div
@@ -174,11 +178,18 @@
 						Smazat
 					</button>
 				</div>
-				<FakturoidButton
-					{order}
-					{loading}
-					{session}
-					on:success={handleInvoiceSuccess} />
+				<div>
+					<button
+						class="btn btn-primary"
+						disabled={loading || order?.fakturoid_data?.invoice_id}
+						on:click={createInvoice}>
+						{#if order?.fakturoid_data?.invoice_id}
+							Faktura vytvořena
+						{:else}
+							Vytvořit fakturu
+						{/if}
+					</button>
+				</div>				
 			</div>
 		</div>
 	</section>

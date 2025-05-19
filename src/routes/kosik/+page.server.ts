@@ -1,5 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
-import type { Actions } from "./$types";
+import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 
@@ -13,231 +13,192 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-interface MenuVariant {
-	id: string;
-	variant_number: string;
-	description: string;
-	price: number;
-	quantity: number;
-}
-
-interface CartItem {
-	id: string;
-	date: string;
-	soup: string;
-	variants: MenuVariant[];
-}
-
-// Funkce pro získání aktuální verze menu pro variantu
-async function getCurrentMenuVersionId(variantId: string, supabase: any) {
-	try {
-		// Nejprve zjistíme, ke kterému menu patří varianta
-		const { data: variant, error: variantError } = await supabase
-			.from("menu_variants")
-			.select("menu_id, menu_version_id")
-			.eq("id", variantId)
-			.single();
-
-		if (variantError) {
-			console.error("Chyba při získávání informací o variantě:", variantError);
-			return null;
-		}
-
-		// Pokud má varianta již přiřazenou verzi menu, vrátíme ji
-		if (variant.menu_version_id) {
-			return variant.menu_version_id;
-		}
-
-		// Jinak získáme aktuální verzi menu pomocí RPC funkce
-		const { data: versionId, error: versionError } = await supabase.rpc(
-			"get_current_menu_version",
-			{ p_menu_id: variant.menu_id }
-		);
-
-		if (versionError) {
-			console.error("Chyba při získávání aktuální verze menu:", versionError);
-			return null;
-		}
-
-		return versionId;
-	} catch (error) {
-		console.error("Nečekaná chyba při získávání verze menu:", error);
-		return null;
-	}
-}
-
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, safeGetSession } }) => {
+	sendOrder: async ({ request, locals: { supabase, safeGetSession } }: RequestEvent) => {
 		const session = await safeGetSession();
 		if (!session) {
-			throw redirect(303, "/login");
+			return {
+				success: false,
+				type: 'failure',
+				message: "Pro vytvoření objednávky se musíte přihlásit."
+			};
 		}
 
 		const email = session?.user?.email;
 		if (!email) {
-			throw error(400, "Email uživatele není k dispozici");
-		}
-
-		const formData = await request.formData();
-		const note = formData.get("note") as string;
-		const cartItems = JSON.parse(
-			formData.get("cartItems") as string
-		) as CartItem[];
-
-		if (cartItems.length === 0) {
 			return {
 				success: false,
-				message: "Košík je prázdný. Nelze vytvořit objednávku."
+				type: 'failure',
+				message: "Email uživatele není k dispozici"
 			};
 		}
 
-		// Výpočet celkové ceny a kusů
-		let totalPrice = 0;
-		let totalPieces = 0;
-
-		const items = cartItems.map((item: CartItem) => {
-			const itemTotalPieces = item.variants.reduce(
-				(sum, variant) => sum + variant.quantity,
-				0
-			);
-			const itemTotalPrice = item.variants.reduce(
-				(sum, variant) => sum + variant.price * variant.quantity,
-				0
-			);
-
-			totalPrice += itemTotalPrice;
-			totalPieces += itemTotalPieces;
-
-			return {
-				...item,
-				totalPieces: itemTotalPieces,
-				totalPrice: itemTotalPrice
-			};
-		});
-
 		try {
-			console.log("Začátek procesu vytváření objednávky");
+			const formData = await request.formData();
+			const note = formData.get("note") as string;
+			const cartItemsStr = formData.get("cartItems");
+			const submissionId = formData.get("submissionId") as string;
 
-			// Získání údajů zákazníka
+			if (!cartItemsStr) {
+				return {
+					success: false,
+					type: 'failure',
+					message: "Košík je prázdný."
+				};
+			}
+
+			// Check for duplicate submission
+			if (submissionId) {
+				const { data: existingSubmission } = await supabase
+					.from('order_submissions')
+					.select('id')
+					.eq('submission_id', submissionId)
+					.single();
+
+				if (existingSubmission) {
+					return {
+						success: false,
+						type: 'failure',
+						message: "Tato objednávka již byla zpracována."
+					};
+				}
+
+				// Record the submission
+				await supabase
+					.from('order_submissions')
+					.insert([{ submission_id: submissionId, user_id: session.user.id }]);
+			}
+
+			const cartItems = JSON.parse(cartItemsStr as string);
+			const totalPieces = cartItems.reduce(
+				(sum: number, item: any) =>
+					sum +
+					item.variants.reduce(
+						(variantSum: number, variant: any) =>
+							variantSum + (variant.quantity || 0),
+						0
+					),
+				0
+			);
+
+			const totalPrice = cartItems.reduce(
+				(sum: number, item: any) =>
+					sum +
+					item.variants.reduce(
+						(variantSum: number, variant: any) =>
+							variantSum + (variant.price || 0) * (variant.quantity || 0),
+						0
+					),
+				0
+			);
+
+			// Get customer data
 			const { data: customer, error: customerError } = await supabase
 				.from("profiles")
-				.select(
-					"first_name, last_name, street, street_number, city, zip_code, telephone"
-				)
-				.eq("id", session?.user?.id)
+				.select("first_name, last_name, street, street_number, city, zip_code, telephone")
+				.eq("id", session.user.id)
 				.single();
 
 			if (customerError) {
-				console.error("Chyba při získávání údajů zákazníka:", customerError);
-				throw customerError;
+				console.error("Chyba při načítání dat zákazníka:", customerError);
+				return {
+					success: false,
+					type: 'failure',
+					message: "Nepodařilo se načíst data zákazníka."
+				};
 			}
 
-			console.log("Získány údaje zákazníka:", customer);
-
-			// Vytvoření objednávky
-			const orderData = {
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-				state: "Nová",
-				date: new Date().toISOString(),
-				customer_first_name: customer.first_name,
-				customer_last_name: customer.last_name,
-				customer_street: customer.street,
-				customer_street_number: customer.street_number,
-				customer_city: customer.city,
-				customer_zip_code: customer.zip_code,
-				customer_telephone: customer.telephone,
-				customer_email: email,
-				user_id: session?.user?.id,
-				note,
-				total_pieces: totalPieces,
-				total_price: totalPrice,
-				currency: "CZK",
-				pay_state: false,
-				pay_method: null,
-				shipping_method: "Rozvoz"
-			};
-
-			console.log("Pokus o vytvoření objednávky s daty:", orderData);
-
-			const { data: insertedOrder, error: insertError } = await supabase
-				.from("orders")
-				.insert(orderData)
-				.select("*")
-				.single();
-
-			if (insertError) {
-				console.error("Chyba při vytváření objednávky:", insertError);
-				throw insertError;
-			}
-
-			if (!insertedOrder) {
-				console.error("Objednávka byla vytvořena, ale nebyla vrácena data");
-				throw new Error("Objednávka nebyla vytvořena");
-			}
-
-			console.log("Úspěšně vytvořena objednávka:", insertedOrder);
-
-			// Příprava položek objednávky - zpracování všech verzí menu nejprve
-			const orderItemsPromises = cartItems.flatMap((item) =>
-				item.variants.map(async (variant) => {
-					const menuVersionId = await getCurrentMenuVersionId(
-						variant.id,
-						supabase
-					);
-
-					return {
-						order_id: insertedOrder.id,
+			// Create order using the stored procedure
+			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
+				p_user_id: session.user.id,
+				p_created_at: new Date().toISOString(),
+				p_date: new Date().toISOString(),
+				p_customer_first_name: customer.first_name || '',
+				p_customer_last_name: customer.last_name || '',
+				p_customer_street: customer.street || '',
+				p_customer_street_number: customer.street_number || '',
+				p_customer_city: customer.city || '',
+				p_customer_zip_code: customer.zip_code || '',
+				p_customer_telephone: customer.telephone || '',
+				p_customer_email: email,
+				p_note: note,
+				p_total_pieces: totalPieces,
+				p_total_price: totalPrice,
+				p_currency: "CZK",
+				p_pay_state: false,
+				p_shipping_method: "Rozvoz",
+				p_order_items: cartItems.flatMap((item: any) =>
+					item.variants.map((variant: any) => ({
 						variant_id: variant.id,
 						price: variant.price,
-						quantity: variant.quantity,
-						created_at: new Date().toISOString(),
-						updated_at: new Date().toISOString()
-					};
-				})
-			);
+						quantity: variant.quantity
+					}))
+				)
+			});
 
-			// Počkáme na vyřešení všech promises a získáme položky s verzemi menu
-			const orderItems = await Promise.all(orderItemsPromises);
-
-			console.log("Pokus o vytvoření položek objednávky:", orderItems);
-
-			const { error: itemsError } = await supabase
-				.from("order_items")
-				.insert(orderItems);
-
-			if (itemsError) {
-				console.error("Chyba při vytváření položek objednávky:", itemsError);
-				throw itemsError;
+			if (orderError) {
+				console.error("Chyba při vytváření objednávky:", orderError);
+				return {
+					success: false,
+					type: 'failure',
+					message: "Chyba při vytváření objednávky.",
+					error: orderError.message
+				};
 			}
 
-			console.log("Úspěšně vytvořeny položky objednávky");
+			if (!orderArray || !Array.isArray(orderArray) || orderArray.length === 0) {
+				console.error("Objednávka nebyla vytvořena - žádná data nebyla vrácena");
+				return {
+					success: false,
+					type: 'failure',
+					message: "Objednávku se nepodařilo vytvořit - zkuste to prosím znovu"
+				};
+			}
 
-			// Odeslání emailu
-			await sendOrderConfirmationEmail(
-				email,
-				insertedOrder.order_number.toString(),
-				cartItems,
-				totalPrice,
-				totalPieces,
-				note
-			);
+			const order = orderArray[0]; // Bereme první (a jediný) prvek pole
 
-			console.log("Proces vytvoření objednávky dokončen");
+			// Only send email after successful order creation
+			try {
+				await sendOrderConfirmationEmail(
+					email,
+					order.order_number?.toString() || order.id,
+					cartItems,
+					totalPrice,
+					totalPieces,
+					note
+				);
+			} catch (emailError) {
+				console.error("Chyba při odesílání potvrzovacího emailu:", emailError);
+				// Don't fail the order if just email fails
+			}
 
-			// Místo přesměrování vrátíme úspěšný výsledek
-			// na klientské straně pak provedeme přesměrování
+			// Get the order details
+			const orderId = order.order_number || order.id;
+			console.log('Created order:', orderArray);
+
+			if (!orderId) {
+				console.error("Missing order ID:", orderArray);
+				return {
+					success: false,
+					type: 'failure',
+					message: "Chyba při vytváření objednávky - chybí číslo objednávky."
+				};
+			}
+
+			// Return a properly structured response with the actual order number
 			return {
 				success: true,
+				type: 'success',
 				message: "Objednávka byla úspěšně vytvořena.",
-				orderId: insertedOrder.order_number,
-				redirectUrl: `/thankyou?order=${insertedOrder.order_number}`
+				orderId: orderId,
+				redirectUrl: `/thankyou?order=${orderId}`
 			};
 		} catch (error) {
-			console.error("Chyba při vytváření objednávky:", error);
+			console.error("Chyba při zpracování objednávky:", error);
 			return {
 				success: false,
-				message: "Při vytváření objednávky došlo k chybě.",
+				type: 'failure',
+				message: "Při zpracování objednávky došlo k chybě.",
 				error: error instanceof Error ? error.message : "Neznámá chyba"
 			};
 		}
@@ -248,7 +209,7 @@ export const actions: Actions = {
 async function sendOrderConfirmationEmail(
 	email: string,
 	orderId: string,
-	items: CartItem[],
+	items: any[],
 	totalPrice: number,
 	totalPieces: number,
 	note: string

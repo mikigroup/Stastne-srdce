@@ -1,4 +1,3 @@
-/*
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import {
@@ -81,15 +80,15 @@ export const load: PageServerLoad = async ({
 			throw error(404, "Profil zákazníka nenalezen");
 		}
 
-		// Kontrola, zda již faktura byla vytvořena (podle meta údajů v objednávce)
-		const hasInvoice = order.meta?.fakturoid_invoice_id;
+		// Kontrola, zda již faktura byla vytvořena
+		const hasInvoice = order.fakturoid_data?.invoice_id;
 
 		return {
 			order,
 			profile,
 			hasInvoice: hasInvoice || false,
-			invoiceId: order.meta?.fakturoid_invoice_id || null,
-			invoiceNumber: order.meta?.fakturoid_invoice_number || null
+			invoiceId: order.fakturoid_data?.invoice_id || null,
+			invoiceNumber: order.fakturoid_data?.invoice_number || null
 		};
 	} catch (err) {
 		console.error("Chyba při načítání dat:", err);
@@ -135,12 +134,12 @@ export const actions: Actions = {
 			}
 
 			// 2. Kontrola, zda faktura už nebyla vytvořena
-			if (order.meta?.fakturoid_invoice_id) {
+			if (order.fakturoid_data?.invoice_id) {
 				return fail(400, {
 					success: false,
 					message: "Pro tuto objednávku již byla faktura vytvořena",
-					invoiceId: order.meta.fakturoid_invoice_id,
-					invoiceNumber: order.meta.fakturoid_invoice_number
+					invoiceId: order.fakturoid_data.invoice_id,
+					invoiceNumber: order.fakturoid_data.invoice_number
 				});
 			}
 
@@ -168,11 +167,11 @@ export const actions: Actions = {
 			const { error: updateError } = await supabase
 				.from("orders")
 				.update({
-					meta: {
-						...order.meta,
-						fakturoid_invoice_id: invoice.id,
-						fakturoid_invoice_number: invoice.number,
-						fakturoid_created_at: new Date().toISOString()
+					fakturoid_data: {
+						invoice_id: invoice.id,
+						invoice_number: invoice.number,
+						invoice_url: invoice.html_url,
+						created_at: new Date().toISOString()
 					}
 				})
 				.eq("id", orderId);
@@ -237,4 +236,3 @@ export const actions: Actions = {
 		}
 	}
 };
-*/

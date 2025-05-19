@@ -2,6 +2,7 @@
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
+	import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
 
 	export let data: PageData;
 	export let form: {
@@ -20,6 +21,9 @@
 			success: boolean;
 			display: string;
 		};
+		company?: string;
+		ico?: string;
+		dic?: string;
 	} = {};
 
 	let loading = false;
@@ -27,6 +31,7 @@
 	let allergiesDescription = form?.allergies_description || "";
 	let deliveryMethod = form?.delivery_method || "";
 	let paymentMethod = form?.payment_method || "";
+	let profileValidationMessage = '';
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -43,6 +48,22 @@
 	}
 
 	const { generalSettings } = data;
+
+	$: {
+		const validationResult = validateProfileForInvoicing({
+			first_name: form?.first_name ?? '',
+			last_name: form?.last_name ?? '',
+			street: form?.street ?? '',
+			street_number: form?.street_number ?? '',
+			city: form?.city ?? '',
+			zip_code: form?.zip_code ?? '',
+			email: data.session?.user?.email,
+			company: form?.company ?? '',
+			ico: form?.ico ?? '',
+			dic: form?.dic ?? ''
+		});
+		profileValidationMessage = getProfileValidationMessage(validationResult);
+	}
 </script>
 
 <svelte:head>
@@ -56,6 +77,14 @@
 			<div class="self-center mb-6 text-3xl font-light text-gray-800 sm:text-2xl">
 				Dokončení registrace
 			</div>
+
+			{#if profileValidationMessage}
+				<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+					<p class="text-yellow-800">
+						<span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
+					</p>
+				</div>
+			{/if}
 
 			<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
 				<!-- Osobní údaje -->
