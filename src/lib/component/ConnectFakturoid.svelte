@@ -1,4 +1,3 @@
-<!-- ConnectFakturoid.svelte -->
 <script lang="ts">
     import { getAuthUrl } from '$lib/fakturoidAuth';
     import { supabase } from '$lib/supabaseClient';
