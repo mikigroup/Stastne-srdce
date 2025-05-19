@@ -2,7 +2,7 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/database.types';
+import type { Database } from '$lib/types/database.types';
 
 interface OrderItem {
 	id: string;

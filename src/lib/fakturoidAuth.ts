@@ -2,6 +2,8 @@ import {
 	FAKTUROID_CLIENT_ID,
 	FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
+import { supabase } from "./supabase";
+import type { FakturoidToken } from "./types/fakturoid";
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
@@ -44,7 +46,7 @@ export async function getAccessToken() {
 			throw new Error(`Fakturoid API error: ${response.status} - ${errorText}`);
 		}
 
-		const data = await response.json();
+		const data = await response.json() as FakturoidToken;
 		console.log('Successfully received access token');
 
 		// Token expiruje za 2 hodiny (7200 sekund)

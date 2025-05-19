@@ -2,48 +2,8 @@ import { getAccessToken } from "../fakturoidAuth";
 import { FAKTUROID_ACCOUNT_SLUG } from "$env/static/private";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
-
-// Rozhraní pro odpověď z Fakturoidu
-interface FakturoidInvoice {
-	id: string;
-	number: string;
-	subject_id: string;
-	total: number;
-	html_url: string;
-}
-
-// Rozhraní pro vytvoření kontaktu
-interface FakturoidContact {
-	name: string;
-	street: string;
-	city: string;
-	zip: string;
-	email: string;
-	phone?: string;
-	registration_no?: string; // IČO
-	vat_no?: string; // DIČ
-}
-
-// Rozhraní pro řádek faktury
-interface FakturoidLine {
-	name: string;
-	quantity: number;
-	unit_price: number;
-	vat_rate: number;
-}
-
-// Rozhraní pro vytvoření faktury
-interface FakturoidInvoiceCreate {
-	subject_id: string;
-	lines: FakturoidLine[];
-	due: number;
-	issued_on?: string;
-	note?: string;
-	currency?: string;
-	payment_method?: string;
-	language?: string;
-	vat_price_mode?: string;
-}
+import { supabase } from "$lib/supabase";
+import type { FakturoidContact, FakturoidInvoice, FakturoidInvoiceCreate, FakturoidLine } from "$lib/types/fakturoid";
 
 const API_BASE = "https://app.fakturoid.cz/api/v3";
 

@@ -1,4 +1,4 @@
-import type { Database } from "$lib/database.types";
+import type { Database } from "$lib/types/database.types";
 
 export type MenuAllergen = Database["public"]["Tables"]["allergens"]["Row"];
 export type MenuIngredient = Database["public"]["Tables"]["ingredients"]["Row"];
