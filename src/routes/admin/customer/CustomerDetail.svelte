@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
 
 	// Definice typů pro data zákazníka
 	type Customer = Database["public"]["Tables"]["profiles"]["Row"];

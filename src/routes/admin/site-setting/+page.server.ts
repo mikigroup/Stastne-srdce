@@ -1,6 +1,12 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { 
+	getDefaultZakazkySettings, 
+	getDefaultDopravaSettings, 
+	getDefaultProductSettings, 
+	getDefaultGeneralSettings
+} from "$lib/services/eshopSettingsService";
 
 interface SettingRecord {
 	id?: number;
@@ -18,7 +24,7 @@ export const load: PageServerLoad = async ({
 	if (!session) throw redirect(303, "/login");
 
 	console.log("Načítám nastavení z DB...");
-	const { data: settings, error } = await supabase
+	const { data: existingSettings, error } = await supabase
 		.from("site_settings")
 		.select("*");
 
@@ -27,11 +33,67 @@ export const load: PageServerLoad = async ({
 		return fail(500, { error: "Nepodařilo se načíst nastavení" });
 	}
 
+	// Příprava seznamu stránek pro nastavení
+	const { data: pagesData } = await supabase
+		.rpc('get_routes')
+		.eq('is_admin', false);
+
+	let pages = ['hlavni'];
+	if (pagesData) {
+		pages = [...new Set(['hlavni', ...pagesData])];
+	}
+
+	// Kontrola a přidání chybějících nastavení
+	await ensureSettingsExist(supabase, existingSettings || []);
+
+	// Znovu načtení nastavení po možném přidání výchozích hodnot
+	const { data: settings } = await supabase
+		.from('site_settings')
+		.select('*');
+
 	return {
 		...(await parent()),
-		settings: settings || []
+		settings,
+		pages
 	};
 };
+
+// Funkce pro kontrolu existence všech potřebných nastavení a jejich doplnění
+async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: SettingRecord[]) {
+	const requiredSettings = [
+		{ key: 'general', defaultValue: getDefaultGeneralSettings() },
+		{ key: 'seo', defaultValue: {} },
+		{ key: 'contact', defaultValue: {} },
+		{ key: 'social', defaultValue: {} },
+		{ key: 'appearance', defaultValue: {} },
+		{ key: 'business', defaultValue: {} },
+		{ key: 'email', defaultValue: {} },
+		{ key: 'integrations', defaultValue: {} },
+		{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
+		{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
+		{ key: 'products', defaultValue: getDefaultProductSettings() }
+	];
+
+	for (const setting of requiredSettings) {
+		const exists = existingSettings.some(s => s.key === setting.key);
+		
+		if (!exists) {
+			console.log(`Adding default value for missing setting: ${setting.key}`);
+			const { error } = await supabase
+				.from('site_settings')
+				.insert({
+					key: setting.key,
+					value: JSON.stringify(setting.defaultValue),
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString()
+				});
+			
+			if (error) {
+				console.error(`Error adding default value for ${setting.key}:`, error);
+			}
+		}
+	}
+}
 
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, safeGetSession } }) => {

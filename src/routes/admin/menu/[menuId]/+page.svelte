@@ -4,7 +4,7 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,

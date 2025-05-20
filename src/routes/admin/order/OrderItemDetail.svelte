@@ -4,13 +4,13 @@
 	export let date = "";
 	export let isValidDate = true;
 	export let selectedPaymentMethod = "";
-	export let paymentMethodOptions = ["Hotovost", "Faktura"];
+	export let paymentMethods = ["Hotovost", "Faktura"];
 	export let selectedOrderState = "";
-	export let orderStateOptions = ["Nová", "Expedovaná", "Stornovaná"];
+	export let orderStates = ["Nová", "Expedovaná", "Stornovaná"];
 	export let selectedCurrency = "";
-	export let currencyOptions = ["CZK", "EUR", "USD"];
+	export let currencies = ["CZK", "EUR", "USD"];
 	export let selectedShippingMethod = "";
-	export let shippingMethodOptions = ["Osobní odběr", "Kurýr", "Česká pošta"];
+	export let shippingMethods = ["Osobní odběr", "Kurýr", "Česká pošta"];
 	export let isPaid = false;
 
 	// Fakturační údaje
@@ -97,7 +97,7 @@
 				<select
 					class="select select-bordered w-full"
 					bind:value={selectedOrderState}>
-					{#each orderStateOptions as state}
+					{#each orderStates as state}
 						<option value={state}>{state}</option>
 					{/each}
 				</select>
@@ -114,39 +114,39 @@
 						<select
 							class="select select-bordered w-full"
 							bind:value={selectedPaymentMethod}>
-							{#each paymentMethodOptions as method}
+							{#each paymentMethods as method}
 								<option value={method}>{method}</option>
 							{/each}
 						</select>
 					</div>
 
-					<!--<div class="form-control w-full mb-2">
+					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Měna</span>
 						</label>
 						<select
 							class="select select-bordered w-full"
 							bind:value={selectedCurrency}>
-							{#each currencyOptions as currency}
+							{#each currencies as currency}
 								<option value={currency}>{currency}</option>
 							{/each}
 						</select>
-					</div>-->
+					</div>
 
-					<!--<div class="form-control w-full mb-2">
+					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Doprava</span>
 						</label>
 						<select
 							class="select select-bordered w-full"
 							bind:value={selectedShippingMethod}>
-							{#each shippingMethodOptions as method}
+							{#each shippingMethods as method}
 								<option value={method}>{method}</option>
 							{/each}
 						</select>
-					</div>-->
+					</div>
 
-					<!--<div class="form-control w-full mb-2">
+					<div class="form-control w-full mb-2">
 						<label class="label">
 							<span class="label-text">Stav platby</span>
 						</label>
@@ -154,7 +154,7 @@
 							<option value={false}>Neuhrazena</option>
 							<option value={true}>Uhrazena</option>
 						</select>
-					</div>-->
+					</div>
 				</div>
 			</div>
 		</div>

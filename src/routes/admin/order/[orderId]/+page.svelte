@@ -7,8 +7,8 @@
 	import FakturoidButton from "./FakturoidButton.svelte";
 
 	export let data;
-	let { session, supabase, order } = data;
-	$: ({ session, supabase, order } = data);
+	let { session, supabase, order, eshopSettings } = data;
+	$: ({ session, supabase, order, eshopSettings } = data);
 
 	let loading = false;
 	let date: string = order?.date ?? "";
@@ -41,6 +41,18 @@
 	let delivery_telephone: string = order?.delivery_telephone ?? "";
 
 	let updateMessage = "";
+
+	// Získáme seznam stavů objednávek
+	$: orderStates = eshopSettings?.orderStates?.map(state => state.name) || ['Nová', 'Zpracovává se', 'Dokončená', 'Zrušená'];
+
+	// Získáme seznam měn
+	$: currencies = eshopSettings?.currencies?.map(currency => currency.code) || ['CZK'];
+
+	// Získáme seznam způsobů doručení
+	$: shippingMethods = eshopSettings?.shippingMethods?.map(method => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+
+	// Získáme seznam platebních metod
+	$: paymentMethods = eshopSettings?.paymentMethods?.map(method => method.name) || ['Hotově', 'Kartou', 'Převodem'];
 
 	async function updateOrder() {
 		try {
@@ -144,6 +156,14 @@
 	async function createInvoice() {
 		await goto(`/admin/order/${orderId}/create-invoice`);
 	}
+
+	// Získáme barvu pro stav objednávky
+	function getOrderStateColor(stateName) {
+		if (!eshopSettings?.orderStates) return '#9ca3af';
+		
+		const state = eshopSettings.orderStates.find(state => state.name === stateName);
+		return state ? state.color : '#9ca3af';
+	}
 </script>
 
 <div
@@ -226,7 +246,12 @@
 						bind:delivery_street_number
 						bind:delivery_city
 						bind:delivery_zip_code
-						bind:delivery_telephone />
+						bind:delivery_telephone 
+						orderStates={orderStates}
+						paymentMethods={paymentMethods}
+						currencies={currencies}
+						shippingMethods={shippingMethods}
+					/>
 				</div>
 
 				<!--Položky:-->

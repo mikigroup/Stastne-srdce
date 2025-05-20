@@ -1,7 +1,7 @@
 <script lang="ts">
 	import TagSelector from "./TagSelector.svelte";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
 	import { page } from "$app/stores";
 	import type { Menu, MenuAllergen, MenuIngredient } from "$lib/services/menuService";
 

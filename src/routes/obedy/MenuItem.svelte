@@ -2,7 +2,7 @@
 	import { CartItemsStore, type CartItem } from "$lib/stores/store";
 	import { page } from "$app/stores";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
 
 	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 

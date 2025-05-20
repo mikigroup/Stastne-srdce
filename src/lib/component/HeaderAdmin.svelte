@@ -167,12 +167,12 @@
 									Účet
 								</a>
 							</li>
-							<!--<li>
+							<li>
 								<a href="/admin/site-setting" class="justify-between text-sm">
 									Stránky
-									<span class="badge">Nový</span>
+									<span class="badge">Nastavení</span>
 								</a>
-							</li>-->
+							</li>
 							<hr>
 							<li>
 								<a class="text-sm py-2" on:click={signOut} disabled={loading}

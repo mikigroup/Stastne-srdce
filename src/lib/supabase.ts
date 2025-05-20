@@ -11,8 +11,8 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VI
 
 // Vytvoříme klienta i bez proměnných (budou kontrolovány při volání)
 export const supabase = createClient<Database & { public: FakturoidTables }>(
-    supabaseUrl || 'https://placeholder-url.supabase.co',
-    supabaseAnonKey || 'placeholder-key',
+    supabaseUrl,
+    supabaseAnonKey,
     {
         auth: {
             autoRefreshToken: true,
