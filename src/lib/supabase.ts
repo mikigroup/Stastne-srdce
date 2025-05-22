@@ -1,32 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types/database.types';
 import type { FakturoidTables } from './types/fakturoid';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
 // Rozšíření typu Database o Fakturoid tabulky
 export type TypedSupabaseClient = ReturnType<typeof createClient<Database & { public: FakturoidTables }>>;
 
-// Získání URL a klíče ze správných zdrojů na základě prostředí
+// Vytvoření Supabase klienta pomocí veřejných proměnných
 function getSupabaseCredentials() {
-    // V prohlížeči použijeme import.meta.env, v Node.js process.env
-    const url = typeof window !== 'undefined' 
-        ? import.meta.env.VITE_SUPABASE_URL 
-        : process.env.VITE_SUPABASE_URL;
-    
-    const key = typeof window !== 'undefined'
-        ? import.meta.env.VITE_SUPABASE_ANON_KEY
-        : process.env.VITE_SUPABASE_ANON_KEY;
+    const url = PUBLIC_SUPABASE_URL;
+    const key = PUBLIC_SUPABASE_ANON_KEY;
     
     if (!url || !key) {
         console.error('Supabase credentials not found in environment variables');
-        // V produkčním prostředí použít alternativní strategii nebo vyhodit chybu
-        // V vývojovém prostředí můžeme použít dummy hodnoty pro inicializaci
-        if (process.env.NODE_ENV === 'development') {
-            return { 
-                url: 'https://example.supabase.co', 
-                key: 'dummy-key-for-development-only'
-            };
-        }
-        throw new Error('Missing Supabase environment variables');
+        throw new Error('Missing Supabase environment variables (PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)');
     }
     
     return { url, key };
