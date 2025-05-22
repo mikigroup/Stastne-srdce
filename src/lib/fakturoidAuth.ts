@@ -1,6 +1,6 @@
 import {
-	FAKTUROID_CLIENT_ID,
-	FAKTUROID_CLIENT_SECRET
+	PRIVATE_FAKTUROID_CLIENT_ID,
+	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
 import { supabase } from "./supabase";
 import type { FakturoidToken } from "./types/fakturoid";
@@ -18,7 +18,7 @@ export async function getAccessToken() {
 	}
 
 	try {
-		const authString = `${FAKTUROID_CLIENT_ID}:${FAKTUROID_CLIENT_SECRET}`;
+		const authString = `${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`;
 		const base64Auth = Buffer.from(authString).toString("base64");
 		
 		console.log('Making request to Fakturoid OAuth endpoint...');

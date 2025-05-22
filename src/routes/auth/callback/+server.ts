@@ -2,8 +2,8 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import {
-	FAKTUROID_CLIENT_ID,
-	FAKTUROID_CLIENT_SECRET
+	PRIVATE_FAKTUROID_CLIENT_ID,
+	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
@@ -65,7 +65,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Basic ${Buffer.from(`${FAKTUROID_CLIENT_ID}:${FAKTUROID_CLIENT_SECRET}`).toString("base64")}`
+					Authorization: `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString("base64")}`
 				},
 				body: JSON.stringify({
 					grant_type: "authorization_code",

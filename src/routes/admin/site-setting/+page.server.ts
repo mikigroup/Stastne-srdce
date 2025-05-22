@@ -84,7 +84,6 @@ async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: S
 				.insert({
 					key: setting.key,
 					value: JSON.stringify(setting.defaultValue),
-					created_at: new Date().toISOString(),
 					updated_at: new Date().toISOString()
 				});
 			

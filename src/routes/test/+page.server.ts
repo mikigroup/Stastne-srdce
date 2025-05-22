@@ -1,9 +1,9 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import {
-	FAKTUROID_CLIENT_ID,
-	FAKTUROID_CLIENT_SECRET,
-	FAKTUROID_ACCOUNT_SLUG
+	PRIVATE_FAKTUROID_CLIENT_ID,
+	PRIVATE_FAKTUROID_CLIENT_SECRET,
+	PRIVATE_FAKTUROID_ACCOUNT_SLUG
 } from "$env/static/private";
 
 // Funkce pro získání přístupového tokenu pomocí Client Credentials Flow
@@ -13,7 +13,7 @@ async function getAccessToken() {
 	try {
 		// Vytvoření Basic auth hlavičky: Base64(client_id:client_secret)
 		const basicAuth = Buffer.from(
-			`${FAKTUROID_CLIENT_ID}:${FAKTUROID_CLIENT_SECRET}`
+			`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`
 		).toString("base64");
 
 		const response = await fetch(tokenUrl, {
@@ -60,10 +60,10 @@ export const load: PageServerLoad = async ({ fetch: fetchWithCookie, url }) => {
 		const { access_token, token_type } = tokenData;
 
 		// Sestavení URL pro Fakturoid API
-		const apiUrl = `https://app.fakturoid.cz/api/v3/accounts/${FAKTUROID_ACCOUNT_SLUG}/invoices.json?page=${page}`;
+		const apiUrl = `https://app.fakturoid.cz/api/v3/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices.json?page=${page}`;
 
 		// Vlastní funkce fetch, abychom mohli lépe zachytit a logovat chyby
-		const customFetch = async (url, options) => {
+		const customFetch = async (url: string, options: RequestInit) => {
 			const response = await fetchWithCookie(url, options);
 
 			if (!response.ok) {
@@ -154,17 +154,18 @@ export const load: PageServerLoad = async ({ fetch: fetchWithCookie, url }) => {
 				resetTime
 			}
 		};
-	} catch (err) {
+	} catch (err: unknown) {
 		// Zpracování chyb
 		console.error("Chyba při načítání faktur z Fakturoid:", err);
 
-		if (err.status) {
-			throw error(err.status, err.message);
+		if (err instanceof Error && 'status' in err) {
+			const apiError = err as Error & { status: number, message: string };
+			throw error(apiError.status, apiError.message);
 		} else {
 			throw error(
 				500,
 				"Chyba při komunikaci s Fakturoid API: " +
-					(err.message || "Neznámá chyba")
+					((err instanceof Error) ? err.message : "Neznámá chyba")
 			);
 		}
 	}

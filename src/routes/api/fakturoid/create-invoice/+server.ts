@@ -1,8 +1,9 @@
 import { json, type RequestHandler } from "@sveltejs/kit";
 import {
-	FAKTUROID_CLIENT_ID,
-	FAKTUROID_CLIENT_SECRET
+	PRIVATE_FAKTUROID_CLIENT_ID,
+	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
+import { getAccessToken } from "$lib/fakturoidAuth";
 
 export const POST: RequestHandler = async ({
 	request,
@@ -41,11 +42,14 @@ export const POST: RequestHandler = async ({
 		if (error) throw error;
 		if (!order) throw new Error("Order not found");
 
+		// Získáme access token pro Fakturoid API
+		const accessToken = await getAccessToken();
+
 		// 2. Připravit data pro fakturu
 		const invoiceData = {
 			subject_id: null, // Budeme hledat nebo vytvoříme nového
 			subject_custom_id: order.customer_email,
-			lines: order.order_items.map((item) => ({
+			lines: order.order_items.map((item: any) => ({
 				name: item.variant_id.description,
 				quantity: item.quantity,
 				unit_price: item.price,

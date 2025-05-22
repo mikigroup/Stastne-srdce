@@ -17,7 +17,7 @@
 			document.cookie = `oauth_state=${state}; path=/; max-age=300`;
 
 			const authUrl = new URL('https://app.fakturoid.cz/api/v3/oauth');
-			authUrl.searchParams.append('client_id', import.meta.env.VITE_FAKTUROID_CLIENT_ID);
+			authUrl.searchParams.append('client_id', import.meta.env.VITE_PRIVATE_FAKTUROID_CLIENT_ID);
 			authUrl.searchParams.append('redirect_uri', import.meta.env.VITE_FAKTUROID_REDIRECT_URI);
 			authUrl.searchParams.append('response_type', 'code');
 			authUrl.searchParams.append('state', state);
@@ -32,7 +32,10 @@
 
 	// Po načtení zkontrolovat stav autentizace
 	if (browser) {
-		$page.url.searchParams.get('error') && (error = $page.url.searchParams.get('error'));
+		const errorParam = $page.url.searchParams.get('error');
+		if (errorParam) {
+			error = errorParam;
+		}
 		$page.url.searchParams.get('auth') === 'success' && (authStatus = 'authenticated');
 	}
 </script>
