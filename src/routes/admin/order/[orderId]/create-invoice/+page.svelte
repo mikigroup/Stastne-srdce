@@ -3,9 +3,19 @@
 	import { goto } from '$app/navigation';
 	import { fly, fade } from 'svelte/transition';
 	import type { PageData } from './$types';
+	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 
-	export let data: PageData;
-	export let form;
+	export let data: {
+		fakturoidAuthUrl: string;
+		fakturoidState: string;
+	} & {
+		order: any;
+		profile: any; 
+		hasInvoice: boolean;
+		invoiceId: string;
+		invoiceNumber: string;
+	};
 
 	let { order, profile, hasInvoice, invoiceId, invoiceNumber } = data;
 	$: ({ order, profile, hasInvoice, invoiceId, invoiceNumber } = data);
@@ -13,6 +23,8 @@
 	let loading = false;
 	let sendEmail = true;
 	let markPaid = false;
+	let authStatus = 'idle';
+	let error = '';
 
 	async function goBack() {
 		await goto(`/admin/order/${order.id}`);
@@ -237,3 +249,5 @@
 		</form>
 	{/if}
 </div>
+
+<FakturoidButton {data} />

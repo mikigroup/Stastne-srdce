@@ -5,10 +5,20 @@
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech } from "$lib/date"
 	import FakturoidButton from "./FakturoidButton.svelte";
+	import { onMount } from 'svelte';
 
 	export let data;
+	console.log("====== ORDER PAGE CLIENT INIT ======");
+	console.log("Received data keys:", Object.keys(data || {}));
+
 	let { session, supabase, order, eshopSettings } = data;
 	$: ({ session, supabase, order, eshopSettings } = data);
+
+	console.log("Order exists:", !!order);
+	if (order) {
+		console.log("Order has date:", !!order.date);
+		console.log("Order properties:", Object.keys(order));
+	}
 
 	let loading = false;
 	let date: string = order?.date ?? "";
@@ -164,6 +174,31 @@
 		const state = eshopSettings.orderStates.find(state => state.name === stateName);
 		return state ? state.color : '#9ca3af';
 	}
+
+	onMount(() => {
+		console.log("====== ORDER PAGE CLIENT MOUNTED ======");
+		console.log("Order data available at mount:", !!order);
+		
+		// Detailní inspekce order_items pro zjištění chybějícího menu_id
+		if (order && order.order_items) {
+			console.log("Number of order items:", order.order_items.length);
+			
+			order.order_items.forEach((item, index) => {
+				console.log(`Item ${index + 1}:`);
+				console.log(`  - variant_id exists:`, !!item.variant_id);
+				
+				if (item.variant_id) {
+					console.log(`  - variant_id:`, item.variant_id);
+					console.log(`  - menu_id exists:`, !!item.variant_id.menu_id);
+					
+					if (item.variant_id.menu_id) {
+						console.log(`  - menu_id:`, item.variant_id.menu_id);
+						console.log(`  - date exists:`, !!item.variant_id.menu_id.date);
+					}
+				}
+			});
+		}
+	});
 </script>
 
 <div
@@ -222,36 +257,42 @@
 				<h2 class="text-2xl font-bold mb-6">Objednávka - {order?.order_number ?? ""}</h2>
 
 				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-					<OrderItemDetail
-						{order}
-						{formattedDate}
-						date={order?.date}
-						{isValidDate}
-						bind:selectedPaymentMethod
-						bind:selectedOrderState
-						bind:selectedCurrency
-						bind:selectedShippingMethod
-						bind:isPaid
-						bind:customer_email
-						bind:customer_first_name
-						bind:customer_last_name
-						bind:customer_street
-						bind:customer_street_number
-						bind:customer_city
-						bind:customer_zip_code
-						bind:customer_telephone
-						bind:delivery_first_name
-						bind:delivery_last_name
-						bind:delivery_street
-						bind:delivery_street_number
-						bind:delivery_city
-						bind:delivery_zip_code
-						bind:delivery_telephone 
-						orderStates={orderStates}
-						paymentMethods={paymentMethods}
-						currencies={currencies}
-						shippingMethods={shippingMethods}
-					/>
+					{#if order}
+						<OrderItemDetail
+							{order}
+							{formattedDate}
+							date={order?.date}
+							{isValidDate}
+							bind:selectedPaymentMethod
+							bind:selectedOrderState
+							bind:selectedCurrency
+							bind:selectedShippingMethod
+							bind:isPaid
+							bind:customer_email
+							bind:customer_first_name
+							bind:customer_last_name
+							bind:customer_street
+							bind:customer_street_number
+							bind:customer_city
+							bind:customer_zip_code
+							bind:customer_telephone
+							bind:delivery_first_name
+							bind:delivery_last_name
+							bind:delivery_street
+							bind:delivery_street_number
+							bind:delivery_city
+							bind:delivery_zip_code
+							bind:delivery_telephone 
+							orderStates={orderStates}
+							paymentMethods={paymentMethods}
+							currencies={currencies}
+							shippingMethods={shippingMethods}
+						/>
+					{:else}
+						<div class="p-4 bg-gray-100 rounded-lg text-center">
+							<p class="text-gray-600">Načítání dat objednávky...</p>
+						</div>
+					{/if}
 				</div>
 
 				<!--Položky:-->
@@ -286,8 +327,12 @@
 										<td><strong>
 											{#if item.menuVersionData}
 												{formatDateToCzech(item.menuVersionData.date)}
-											{:else}
+											{:else if item.variant_id?.menu_id?.date}
 												{formatDateToCzech(item.variant_id.menu_id.date)}
+											{:else if item.variant_id?.menu_version_id?.date}
+												{formatDateToCzech(item.variant_id.menu_version_id.date)}
+											{:else}
+												N/A
 											{/if}</strong>
 										</td>
 										<td class="col-span-7">
@@ -341,12 +386,16 @@
 										<span class="font-medium">{i + 1}.</span>
 									</div>
 									<span class="text-gray-600">
-                        {#if item.menuVersionData}
-                            {formatDateToCzech(item.menuVersionData.date)}
-                        {:else}
-                            {formatDateToCzech(item.variant_id.menu_id.date)}
-                        {/if}
-                    </span>
+										{#if item.menuVersionData}
+											{formatDateToCzech(item.menuVersionData.date)}
+										{:else if item.variant_id?.menu_id?.date}
+											{formatDateToCzech(item.variant_id.menu_id.date)}
+										{:else if item.variant_id?.menu_version_id?.date}
+											{formatDateToCzech(item.variant_id.menu_version_id.date)}
+										{:else}
+											N/A
+										{/if}
+									</span>
 								</div>
 
 								<div class="mt-2 pl-7">

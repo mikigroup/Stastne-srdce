@@ -70,7 +70,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 				body: JSON.stringify({
 					grant_type: "authorization_code",
 					code,
-					redirect_uri: import.meta.env.VITE_FAKTUROID_REDIRECT_URI
+					redirect_uri: import.meta.env.VITE_PRIVATE_FAKTUROID_REDIRECT_URI
 				})
 			}
 		);

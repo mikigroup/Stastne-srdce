@@ -2,27 +2,22 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 
+	// Přijímání dat z serveru
+	export let data;
+
 	let authStatus = 'idle';
 	let error = '';
 
-	async function startAuth() {
+	function startAuth() {
 		if (!browser) return;
 
 		authStatus = 'loading';
 		error = '';
 
 		try {
-			// Generování náhodného state parametru
-			const state = crypto.randomUUID();
-			document.cookie = `oauth_state=${state}; path=/; max-age=300`;
-
-			const authUrl = new URL('https://app.fakturoid.cz/api/v3/oauth');
-			authUrl.searchParams.append('client_id', import.meta.env.VITE_PRIVATE_FAKTUROID_CLIENT_ID);
-			authUrl.searchParams.append('redirect_uri', import.meta.env.VITE_FAKTUROID_REDIRECT_URI);
-			authUrl.searchParams.append('response_type', 'code');
-			authUrl.searchParams.append('state', state);
-
-			window.location.href = authUrl.toString();
+			// Použít URL vygenerovanou na serveru
+			document.cookie = `oauth_state=${data.fakturoidState}; path=/; max-age=300`;
+			window.location.href = data.fakturoidAuthUrl;
 		} catch (err) {
 			authStatus = 'error';
 			error = 'Failed to start authentication';
