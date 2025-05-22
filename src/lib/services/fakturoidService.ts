@@ -1,8 +1,7 @@
 import { getAccessToken } from "../fakturoidAuth";
-import { FAKTUROID_ACCOUNT_SLUG } from "$env/static/private";
+import { PRIVATE_FAKTUROID_ACCOUNT_SLUG } from "$env/static/private";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
-import { supabase } from "$lib/supabase";
 import type { FakturoidContact, FakturoidInvoice, FakturoidInvoiceCreate, FakturoidLine } from "$lib/types/fakturoid";
 
 const API_BASE = "https://app.fakturoid.cz/api/v3";
@@ -21,7 +20,7 @@ export async function getInvoices(page = 1) {
 	const headers = await getHeaders();
 	
 	const response = await fetch(
-		`${API_BASE}/accounts/${FAKTUROID_ACCOUNT_SLUG}/invoices.json?page=${page}`,
+		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices.json?page=${page}`,
 		{ headers }
 	);
 
@@ -42,7 +41,7 @@ export async function createInvoiceFromOrder(order: Order, profile: Profile): Pr
 
 		// 1. Vytvoření nebo aktualizace kontaktu
 		const contactResponse = await fetch(
-			`${API_BASE}/accounts/${FAKTUROID_ACCOUNT_SLUG}/subjects.json`,
+			`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/subjects.json`,
 			{
 				method: 'POST',
 				headers,
@@ -77,7 +76,7 @@ export async function createInvoiceFromOrder(order: Order, profile: Profile): Pr
 
 		// 3. Vytvoření faktury
 		const invoiceResponse = await fetch(
-			`${API_BASE}/accounts/${FAKTUROID_ACCOUNT_SLUG}/invoices.json`,
+			`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices.json`,
 			{
 				method: 'POST',
 				headers,
@@ -111,7 +110,7 @@ export async function sendInvoiceEmail(invoiceId: string): Promise<void> {
 	const headers = await getHeaders();
 
 	const response = await fetch(
-		`${API_BASE}/accounts/${FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/message.json`,
+		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/message.json`,
 		{
 			method: 'POST',
 			headers
@@ -128,7 +127,7 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
 	const headers = await getHeaders();
 
 	const response = await fetch(
-		`${API_BASE}/accounts/${FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/fire.json`,
+		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/fire.json`,
 		{
 			method: 'POST',
 			headers,

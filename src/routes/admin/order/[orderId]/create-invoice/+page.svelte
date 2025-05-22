@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { fly, fade } from 'svelte/transition';
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 
@@ -16,6 +16,8 @@
 		invoiceId: string;
 		invoiceNumber: string;
 	};
+
+	export let form: ActionData | null = null;
 
 	let { order, profile, hasInvoice, invoiceId, invoiceNumber } = data;
 	$: ({ order, profile, hasInvoice, invoiceId, invoiceNumber } = data);
@@ -32,7 +34,7 @@
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result, update }) => {
+		return async ({ result, update }: { result: any, update: () => Promise<void> }) => {
 			await update();
 
 			if (result.type === 'success') {
@@ -249,5 +251,3 @@
 		</form>
 	{/if}
 </div>
-
-<FakturoidButton {data} />
