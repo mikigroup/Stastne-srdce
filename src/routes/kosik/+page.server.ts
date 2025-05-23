@@ -2,6 +2,7 @@ import { error, redirect } from "@sveltejs/kit";
 import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
+import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -72,8 +73,8 @@ export const actions: Actions = {
 			// Get customer data
 			const { data: customer, error: customerError } = await supabase
 				.from("profiles")
-				.select("first_name, last_name, street, street_number, city, zip_code, telephone")
-				.eq("id", session.user.id)
+				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
+				.eq("id", session.user?.id!)
 				.single();
 
 			if (customerError) {
@@ -85,9 +86,23 @@ export const actions: Actions = {
 				};
 			}
 
+			// Validate customer data - add email to validation
+			const validationResult = validateProfileForInvoicing({
+				...customer,
+				email: email
+			});
+			
+			if (!validationResult.isComplete) {
+				return {
+					success: false,
+					type: 'failure',
+					message: `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`
+				};
+			}
+
 			// Create order using the stored procedure
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
-				p_user_id: session.user.id,
+				p_user_id: session.user?.id!,
 				p_created_at: new Date().toISOString(),
 				p_date: new Date().toISOString(),
 				p_customer_first_name: customer.first_name || '',
@@ -276,7 +291,7 @@ async function sendOrderConfirmationEmail(
                 <p>🥣 <strong>Polévka:</strong> ${item.soup}</p>
                 ${item.variants
 									.map(
-										(variant) => `
+										(variant: any) => `
                     <div class="variant">
                         <p><strong>${variant.variant_number}.</strong> ${variant.description}</p>
                         <p>Množství: ${variant.quantity} ks</p>

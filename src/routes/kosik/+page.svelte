@@ -6,6 +6,7 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
+	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
 
 	export let data;
 	export let form: Actions;
@@ -19,6 +20,7 @@
 		totalPieces: 0,
 		totalPrice: 0
 	};
+	let profileData: any = null;
 
 	$: ({ session, supabase } = data);
 
@@ -45,20 +47,17 @@
 
 		try {
 			loading = true;
-			let first_name: string;
-			let last_name: string;
 
 			const { data: customerData, error } = await supabase
 				.from("profiles")
-				.select("first_name, last_name")
+				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
 				.eq("id", session.user.id)
 				.single();
 
 			if (error && error.code !== "406") throw error;
 
 			if (customerData) {
-				first_name = customerData.first_name;
-				last_name = customerData.last_name;
+				profileData = customerData;
 			}
 		} catch (error) {
 			console.error("Error fetching profile:", error);
@@ -75,6 +74,22 @@
 			console.log('Already submitting, returning');
 			return;
 		}
+
+		// Validace profilu před zobrazením modálu
+		if (profileData && session?.user?.email) {
+			const validationResult = validateProfileForInvoicing({
+				...profileData,
+				email: session.user.email
+			});
+
+			if (!validationResult.isComplete) {
+				errorMessage = `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`;
+				return;
+			}
+		} else {
+			errorMessage = 'Nepodařilo se načíst údaje z profilu. Zkuste stránku obnovit.';
+			return;
+		}
 		
 		orderDetails = {
 			totalPieces,
@@ -82,7 +97,7 @@
 		};
 		console.log('Order details set:', orderDetails);
 		
-		// Vyčistíme případnou chybovou zprávu
+		// Vyčistíme případnou chybovou zprávu, protože validace prošla
 		errorMessage = '';
 		
 		// Zobrazíme modální okno pro potvrzení
@@ -411,7 +426,7 @@
 	<Modal 
 		bind:this={modal} 
 		on:close={() => {
-			errorMessage = '';
+			// Nepotřebujeme čistit errorMessage zde, protože validační chyby se zobrazují před modálem
 			if (modal) modal.close();
 		}}
 		on:confirm={() => {
