@@ -169,8 +169,7 @@
 							</li>
 							<li>
 								<a href="/admin/site-setting" class="justify-between text-sm">
-									Stránky
-									<span class="badge">Nastavení</span>
+									Nastavení									
 								</a>
 							</li>
 							<hr>
