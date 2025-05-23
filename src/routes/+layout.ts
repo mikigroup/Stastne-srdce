@@ -4,7 +4,7 @@ import {
 	isBrowser,
 	parse
 } from "@supabase/ssr";
-// import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 // import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
 import { DEFAULT_SETTINGS, type AllSettings } from "$lib/settingsService";
 import type { LayoutLoad } from "./$types";
@@ -14,8 +14,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 
 	const supabase = isBrowser()
 		? createBrowserClient(
-				import.meta.env.VITE_PRIVATE_SBUrl,
-				import.meta.env.VITE_PRIVATE_SBKey,
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
 				{
 					global: {
 						fetch
@@ -29,8 +29,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 				}
 			)
 		: createServerClient(
-				import.meta.env.VITE_PRIVATE_SBUrl,
-				import.meta.env.VITE_PRIVATE_SBKey,
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
 				{
 					global: {
 						fetch

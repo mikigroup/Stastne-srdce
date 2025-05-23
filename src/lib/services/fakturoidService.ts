@@ -35,6 +35,59 @@ export async function getInvoices(page = 1) {
 	};
 }
 
+// Pomocná funkce pro formátování názvu položky
+function formatItemName(item: any): string {
+	// Zkusíme získat datum z různých možných míst ve struktuře
+	let menuDate = null;
+	
+	// Priorita: menu_id > menu_version_id > jiné možnosti
+	if (item.variant_id?.menu_id?.date) {
+		menuDate = item.variant_id.menu_id.date;
+	} else if (item.variant_id?.menu_version_id?.date) {
+		menuDate = item.variant_id.menu_version_id.date;
+	} else if (item.menuVersionData?.date) {
+		menuDate = item.menuVersionData.date;
+	}
+	
+	// Získání čísla varianty
+	const variantNumber = item.variant_id?.variant_number || item.variant?.variant_number;
+	
+	// Formátování data do českého formátu
+	let formattedDate = '';
+	if (menuDate) {
+		try {
+			const date = new Date(menuDate);
+			if (!isNaN(date.getTime())) {
+				formattedDate = date.toLocaleDateString('cs-CZ', {
+					day: 'numeric',
+					month: 'numeric', 
+					year: 'numeric'
+				});
+			}
+		} catch (e) {
+			console.warn('Chyba při formátování data:', e);
+		}
+	}
+	
+	// Sestavení názvu - pouze datum, "Menu" a číslo
+	let itemName = '';
+	
+	// Přidáme datum pokud máme
+	if (formattedDate) {
+		itemName += `${formattedDate} `;
+	}
+	
+	// Přidáme "Menu" a číslo
+	if (variantNumber) {
+		itemName += `Menu ${variantNumber}`;
+	} else {
+		itemName += 'Menu';
+	}
+	
+	// Fallback pokud nemáme žádné údaje
+	return itemName || 'Položka objednávky';
+}
+
 export async function createInvoiceFromOrder(order: Order, profile: Profile): Promise<FakturoidInvoice> {
 	try {
 		const headers = await getHeaders();
@@ -65,9 +118,9 @@ export async function createInvoiceFromOrder(order: Order, profile: Profile): Pr
 
 		const contact = await contactResponse.json();
 
-		// 2. Příprava řádků faktury
+		// 2. Příprava řádků faktury s upraveným názvem
 		const lines = order.order_items.map(item => ({
-			name: item.variant_id.description || 'Položka objednávky',
+			name: formatItemName(item),
 			quantity: item.quantity,
 			unit_price: item.price,
 			vat_rate: 0, // Nastaveno na 0, protože nejsme plátci DPH

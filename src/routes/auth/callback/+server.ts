@@ -3,7 +3,8 @@ import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import {
 	PRIVATE_FAKTUROID_CLIENT_ID,
-	PRIVATE_FAKTUROID_CLIENT_SECRET
+	PRIVATE_FAKTUROID_CLIENT_SECRET,
+	PRIVATE_FAKTUROID_REDIRECT_URI
 } from "$env/static/private";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
@@ -70,7 +71,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 				body: JSON.stringify({
 					grant_type: "authorization_code",
 					code,
-					redirect_uri: import.meta.env.VITE_PRIVATE_FAKTUROID_REDIRECT_URI
+					redirect_uri: PRIVATE_FAKTUROID_REDIRECT_URI
 				})
 			}
 		);

@@ -28,11 +28,13 @@ export const load: PageServerLoad = async ({
         *,
         order_items(
           *,
-          variant:menu_variants(
+          variant_id:menu_variants(
             id,
             variant_number,
             description,
-            price
+            price,
+            menu_id:menus(id, date),
+            menu_version_id:menu_versions(id, date)
           )
         )
       `
@@ -117,11 +119,13 @@ export const actions: Actions = {
           *,
           order_items(
             *,
-            variant:menu_variants(
+            variant_id:menu_variants(
               id,
               variant_number, 
               description,
-              price
+              price,
+              menu_id:menus(id, date),
+              menu_version_id:menu_versions(id, date)
             )
           )
         `
