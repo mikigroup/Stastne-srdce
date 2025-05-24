@@ -6,6 +6,15 @@
 
 	export let data: PageData;
 
+	type FormData = {
+		message?: {
+			success: boolean;
+			display: string;
+		};
+	};
+
+	export let form: FormData | null = null;
+
 	// Debug - check what data contains
 	// console.log('Page data:', data);
 
