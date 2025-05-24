@@ -5,6 +5,7 @@
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
+	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,
@@ -131,50 +132,38 @@
 		if (!dateString) return 'N/A';
 		return new Date(dateString).toLocaleDateString('cs-CZ');
 	}
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			onClick: updateMenu,
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: loading ? 'Maže se...' : 'Smazat menu',
+			onClick: softDeleteMenu,
+			variant: 'danger' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
-<div class="bg-white rounded-lg shadow-md p-6" in:fly={{ y: 50, duration: 500 }}>
-	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<h2 class="text-xl font-semibold">
-			Detail menu <span class="text-lg text-gray-600">{formatDate(menu?.date)}</span>
-		</h2>
-		<div class="flex gap-2">
-			<button 
-				on:click={back} 
-				class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-				Zpět
-			</button>
-			<button
-				disabled={loading}
-				on:click={updateMenu}
-				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
-				{loading ? 'Ukládá se...' : 'Uložit změny'}
-			</button>
-			<button
-				disabled={loading}
-				on:click={softDeleteMenu}
-				class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors">
-				{loading ? 'Maže se...' : 'Smazat menu'}
-			</button>
-		</div>
-	</div>
-
-	{#if updateMessage}
-		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
-			{updateMessage}
-		</div>
-	{/if}
-
-	{#if errorMessage}
-		<div class="mb-4 p-3 bg-red-100 border border-red-200 text-red-800 rounded">
-			{errorMessage}
-		</div>
-	{/if}
+<AdminPageLayout
+	title="Detail menu"
+	subtitle="{formatDate(menu?.date)}"
+	backUrl="/admin/menu"
+	{actions}
+	successMessage={updateMessage}
+	errorMessage={errorMessage}
+	{loading}>
 
 	<!-- Menu content -->
 	<MenuItemDetail
 		bind:menu
 		{allAllergens}
 		{allIngredients} />
-</div>
+</AdminPageLayout>

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech } from "$lib/date"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
+	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");
@@ -177,6 +177,30 @@
 		return formatDateToCzech(date);
 	}
 
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			onClick: updateOrder,
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: order?.fakturoid_data?.invoice_id ? 'Faktura vytvořena' : 'Vytvořit fakturu',
+			onClick: createInvoice,
+			variant: 'secondary' as const,
+			disabled: loading || order?.fakturoid_data?.invoice_id
+		},
+		{
+			label: loading ? 'Maže se...' : 'Smazat',
+			onClick: deleteOrder,
+			variant: 'danger' as const,
+			loading,
+			disabled: loading
+		}
+	];
+
 	onMount(() => {
 		console.log("====== ORDER PAGE CLIENT MOUNTED ======");
 		console.log("Order data available at mount:", !!order);
@@ -203,48 +227,13 @@
 	});
 </script>
 
-<div class="bg-white rounded-lg shadow-md p-6" in:fly={{ y: 50, duration: 500 }}>
-	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<h2 class="text-xl font-semibold">
-			Detail objednávky <span class="text-2xl">#{order?.order_number ?? ""}</span>
-		</h2>
-		<div class="flex gap-2">
-			<button 
-				on:click={back} 
-				class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-				Zpět
-			</button>
-			<button
-				disabled={loading}
-				on:click={updateOrder}
-				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
-				{loading ? 'Ukládá se...' : 'Uložit změny'}
-			</button>
-			<button
-				class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
-				disabled={loading || order?.fakturoid_data?.invoice_id}
-				on:click={createInvoice}>
-				{#if order?.fakturoid_data?.invoice_id}
-					Faktura vytvořena
-				{:else}
-					Vytvořit fakturu
-				{/if}
-			</button>
-			<button
-				disabled={loading}
-				on:click={deleteOrder}
-				class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors">
-				Smazat
-			</button>
-		</div>
-	</div>
-
-	{#if updateMessage}
-		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
-			{@html updateMessage}
-		</div>
-	{/if}
+<AdminPageLayout
+	title="Detail objednávky"
+	subtitle="#{order?.order_number ?? ''}"
+	backUrl={$ROUTES.ADMIN.ORDER.LIST}
+	{actions}
+	successMessage={updateMessage}
+	{loading}>
 
 	{#if order}
 		<!-- Základní informace ve dvou sloupcích -->
@@ -576,4 +565,4 @@
 			<p class="text-gray-600">Načítání dat objednávky...</p>
 		</div>
 	{/if}
-</div>
+</AdminPageLayout>

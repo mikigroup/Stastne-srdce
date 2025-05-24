@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
+	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,
@@ -140,10 +140,6 @@
 		}
 	}
 
-	async function back() {
-		await goto("/admin/menu");
-	}
-
 	function handleUpdate(event: CustomEvent<Menu>) {
 		console.log(
 			"handleUpdate called with:",
@@ -152,40 +148,26 @@
 		newMenu = event.detail;
 		console.log("newMenu after update:", JSON.stringify(newMenu, null, 2));
 	}
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Vytváří se...' : 'Vytvořit menu',
+			onClick: createMenu,
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
-<div class="bg-white rounded-lg shadow-md p-6" in:fly={{ y: 50, duration: 500 }}>
-	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<h2 class="text-xl font-semibold">
-			Nové menu
-		</h2>
-		<div class="flex gap-2">
-			<button 
-				on:click={back} 
-				class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-				Zpět
-			</button>
-			<button
-				disabled={loading}
-				on:click={createMenu}
-				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
-				{loading ? 'Vytváří se...' : 'Vytvořit menu'}
-			</button>
-		</div>
-	</div>
-
-	{#if updateMessage}
-		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
-			{updateMessage}
-		</div>
-	{/if}
-
-	{#if errorMessage}
-		<div class="mb-4 p-3 bg-red-100 border border-red-200 text-red-800 rounded">
-			{errorMessage}
-		</div>
-	{/if}
+<AdminPageLayout
+	title="Nové menu"
+	backUrl="/admin/menu"
+	{actions}
+	successMessage={updateMessage}
+	errorMessage={errorMessage}
+	{loading}>
 
 	<!-- Menu content -->
 	<MenuItemDetail
@@ -193,7 +175,7 @@
 		{allAllergens}
 		{allIngredients}
 		on:update={handleUpdate} />
-</div>
+</AdminPageLayout>
 
 <style>
 </style>
