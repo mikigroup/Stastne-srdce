@@ -15,8 +15,8 @@
             // Kontrola proměnných prostředí
             ensureEnvironmentVariables();
             
-            const session = await supabase.auth.getSession();
-            if (!session.data.session?.user) {
+            const session = await supabase.auth.getUser();
+            if (!session.data.user) {
                 throw new Error('Nejste přihlášen/a');
             }
 

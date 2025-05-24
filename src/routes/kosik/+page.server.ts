@@ -16,8 +16,8 @@ const transporter = nodemailer.createTransport({
 
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }: RequestEvent) => {
-		const session = await safeGetSession();
-		if (!session) {
+		const { session, user } = await safeGetSession();
+		if (!session || !user) {
 			return {
 				success: false,
 				type: 'failure',
@@ -25,7 +25,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const email = session?.user?.email;
+		const email = user.email;
 		if (!email) {
 			return {
 				success: false,
@@ -74,7 +74,7 @@ export const actions: Actions = {
 			const { data: customer, error: customerError } = await supabase
 				.from("profiles")
 				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
-				.eq("id", session.user?.id!)
+				.eq("id", user.id)
 				.single();
 
 			if (customerError) {
@@ -102,7 +102,7 @@ export const actions: Actions = {
 
 			// Create order using the stored procedure
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
-				p_user_id: session.user?.id!,
+				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
 				p_date: new Date().toISOString(),
 				p_customer_first_name: customer.first_name || '',

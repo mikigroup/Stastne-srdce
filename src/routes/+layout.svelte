@@ -18,8 +18,9 @@
 	//console.log(settings)
 
 	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
-			if (newSession?.expires_at !== session?.expires_at) {
+		const { data } = supabase.auth.onAuthStateChange((event) => {
+			// Při jakékoli změně auth stavu znovu načteme data bezpečně
+			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
 				invalidate("supabase:auth");
 			}
 		});

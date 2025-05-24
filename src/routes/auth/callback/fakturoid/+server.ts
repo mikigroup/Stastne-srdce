@@ -10,8 +10,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		
 		const code = url.searchParams.get("code");
 		const state = url.searchParams.get("state");
-		const session = await supabase.auth.getSession();
-		const customerId = session.data.session?.user?.id;
+		const session = await supabase.auth.getUser();
+		const customerId = session.data.user?.id;
 
 		if (!code || !state) {
 			throw error(400, {

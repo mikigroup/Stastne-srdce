@@ -11,7 +11,7 @@
 	export let data;
 	export let form: Actions;
 
-	let { session, supabase } = data;
+	let { session, supabase, user } = data;
 	let loading = false;
 	let modal: Modal;
 	let isSubmitting = false;
@@ -22,7 +22,7 @@
 	};
 	let profileData: any = null;
 
-	$: ({ session, supabase } = data);
+	$: ({ session, supabase, user } = data);
 
 	// Store subscriptions
 	let cartItems: any[] = [];
@@ -43,7 +43,7 @@
 	}, 0);
 
 	async function getProfile() {
-		if (!session?.user?.id) return;
+		if (!user?.id) return;
 
 		try {
 			loading = true;
@@ -51,7 +51,7 @@
 			const { data: customerData, error } = await supabase
 				.from("profiles")
 				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
-				.eq("id", session.user.id)
+				.eq("id", user.id)
 				.single();
 
 			if (error && error.code !== "406") throw error;
@@ -76,10 +76,10 @@
 		}
 
 		// Validace profilu před zobrazením modálu
-		if (profileData && session?.user?.email) {
+		if (profileData && user?.email) {
 			const validationResult = validateProfileForInvoicing({
 				...profileData,
-				email: session.user.email
+				email: user.email
 			});
 
 			if (!validationResult.isComplete) {

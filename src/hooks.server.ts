@@ -18,6 +18,8 @@ const supabase: Handle = async ({ event, resolve }) => {
 	});
 
 	event.locals.safeGetSession = async () => {
+		// Poznámka: getSession() zde je bezpečné, protože následně ověřujeme
+		// autenticitu uživatele kontaktováním Auth serveru přes getUser()
 		const {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
@@ -25,6 +27,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 			return { session: null, user: null };
 		}
 
+		// Bezpečné ověření uživatele - kontaktuje Auth server
 		const {
 			data: { user },
 			error

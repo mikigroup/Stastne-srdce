@@ -43,13 +43,18 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 				}
 			);
 
+	// Nejdříve získáme session
 	const {
 		data: { session }
 	} = await supabase.auth.getSession();
 
+	// Bezpečné ověření uživatele - kontaktuje Auth server pro ověření autenticity
 	const {
 		data: { user }
 	} = await supabase.auth.getUser();
+
+	// Použijeme session pouze pokud user je ověřený
+	const safeSession = user ? session : null;
 
 	// Načtení nastavení
 	const loadSettings = async (): Promise<AllSettings> => {
@@ -87,7 +92,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	const settings = await loadSettings();
 
 	return {
-		session,
+		session: safeSession,
 		supabase,
 		user,
 		settings,

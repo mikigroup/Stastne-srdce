@@ -13,7 +13,7 @@
 			const { data: profile, error } = await supabase
 				.from("profiles")
 				.select("first_name")
-				.eq("id", session.user.id)
+				.eq("id", user.id)
 				.single();
 			if (error) {
 				console.error("Error fetching profile:", error);
