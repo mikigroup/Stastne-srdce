@@ -1,5 +1,5 @@
-<script>
-	import { page } from "$app/state";
+<script lang="ts">
+	import { page } from "$app/stores";
 </script>
 
 <section class="bg-white">
@@ -7,7 +7,7 @@
 		<div class="max-w-screen-sm mx-auto text-center">
 			<h1
 				class="mb-4 font-extrabold tracking-tight text-7xl lg:text-9xl text-primary-600">
-				{$page.status}: {$page.error.message}
+				{$page.status}{#if $page.error?.message}: {$page.error.message}{/if}
 			</h1>
 			<p
 				class="mb-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">

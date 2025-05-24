@@ -11,6 +11,22 @@ import type {
 	IntegrationSettings
 } from "$lib/services/settingsService";
 
+// Přidáváme typy pro $app/stores
+declare module "$app/stores" {
+	import type { Readable } from "svelte/store";
+	
+	export interface Page {
+		url: URL;
+		params: Record<string, string>;
+		status: number;
+		error: Error | null;
+		data: App.PageData;
+		form: any;
+	}
+
+	export const page: Readable<Page>;
+}
+
 declare global {
 	namespace App {
 		interface Locals {
