@@ -1,7 +1,6 @@
 import { sentrySvelteKit } from "@sentry/sveltekit";
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
-import tailwindcss from "@tailwindcss/vite";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -14,7 +13,6 @@ export default defineConfig({
 				authToken: process.env.SENTRY_AUTH_TOKEN
 			}
 		}),
-		tailwindcss(),
 		sveltekit()
 	],
 	server: {
