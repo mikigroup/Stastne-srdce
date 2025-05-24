@@ -23,8 +23,8 @@
 	$: ({ order, profile, hasInvoice, invoiceId, invoiceNumber } = data);
 
 	let loading = false;
-	let sendEmail = true;
-	let markPaid = false;
+	let sendEmail = false;
+	let markPaid = true;
 	let authStatus = 'idle';
 	let error = '';
 

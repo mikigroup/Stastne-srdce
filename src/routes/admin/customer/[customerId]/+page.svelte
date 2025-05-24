@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CustomerDetail from "../CustomerDetail.svelte";
+	import { goto } from "$app/navigation";
 	export let data: any;
 	
 	// Destructuring dat ze serveru
@@ -40,11 +41,32 @@
 		};
 		return colorMap[color] || colorMap.gray;
 	}
+
+	// Navigační funkce
+	async function back() {
+		await goto("/admin/customer");
+	}
 </script>
 
 <svelte:head>
 	<title>LEO - Zákazník</title>
 </svelte:head>
+
+<!-- Hlavička stránky -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+	<div class="flex items-center justify-between">
+		<h2 class="text-xl font-semibold">
+			Detail zákazníka <span class="text-lg text-gray-600">{customer?.first_name ?? ""} {customer?.last_name ?? ""}</span>
+		</h2>
+		<div class="flex gap-2">
+			<button 
+				on:click={back} 
+				class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+				Zpět
+			</button>
+		</div>
+	</div>
+</div>
 
 <CustomerDetail data={{ supabase, session }} {customer} />
 

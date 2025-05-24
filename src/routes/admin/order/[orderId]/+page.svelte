@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { fly } from "svelte/transition";
-	import OrderItemDetail from "../OrderItemDetail.svelte";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech } from "$lib/date"
 	import FakturoidButton from "./FakturoidButton.svelte";
@@ -53,16 +52,20 @@
 	let updateMessage = "";
 
 	// Získáme seznam stavů objednávek
-	$: orderStates = eshopSettings?.orderStates?.map(state => state.name) || ['Nová', 'Zpracovává se', 'Dokončená', 'Zrušená'];
+	$: orderStates = eshopSettings?.orderStates?.map((state: any) => state.name) || ['Nová', 'Zpracovává se', 'Dokončená', 'Zrušená'];
 
 	// Získáme seznam měn
-	$: currencies = eshopSettings?.currencies?.map(currency => currency.code) || ['CZK'];
+	$: currencies = eshopSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
 
 	// Získáme seznam způsobů doručení
-	$: shippingMethods = eshopSettings?.shippingMethods?.map(method => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+	$: shippingMethods = eshopSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
 
 	// Získáme seznam platebních metod
-	$: paymentMethods = eshopSettings?.paymentMethods?.map(method => method.name) || ['Hotově', 'Kartou', 'Převodem'];
+	$: paymentMethods = eshopSettings?.paymentMethods?.map((method: any) => method.name) || ['Hotově', 'Kartou', 'Převodem'];
+
+	// Vypočítáme celkovou cenu
+	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
+	$: totalItems = order?.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
 
 	async function updateOrder() {
 		try {
@@ -142,8 +145,6 @@
 		}
 	}
 
-	let isValidDate: boolean = true;
-
 	function formatSupabaseDate(inputDate: string) {
 		if (!inputDate) return "";
 		const [year, month, day] = inputDate.split("-");
@@ -154,25 +155,26 @@
 		await goto($ROUTES.ADMIN.ORDER.LIST);
 	}
 
-	let invoiceCreated = false;
-	let invoiceUrl = '';
-
-	function handleInvoiceSuccess(event: CustomEvent) {
-		invoiceCreated = true;
-		invoiceUrl = event.detail.invoice_url;
-		updateMessage = `Faktura vytvořena: <a href="${invoiceUrl}" target="_blank" class="link">Zobrazit fakturu</a>`;
-	}
-
 	async function createInvoice() {
 		await goto(`/admin/order/${orderId}/create-invoice`);
 	}
 
 	// Získáme barvu pro stav objednávky
-	function getOrderStateColor(stateName) {
+	function getOrderStateColor(stateName: any) {
 		if (!eshopSettings?.orderStates) return '#9ca3af';
 		
-		const state = eshopSettings.orderStates.find(state => state.name === stateName);
+		const state = eshopSettings.orderStates.find((state: any) => state.name === stateName);
 		return state ? state.color : '#9ca3af';
+	}
+
+	// Formátovací funkce
+	function formatPrice(price: number): string {
+		return `${price.toLocaleString('cs-CZ')}\u00A0Kč`;
+	}
+
+	function formatDate(date: string): string {
+		if (!date) return 'N/A';
+		return formatDateToCzech(date);
 	}
 
 	onMount(() => {
@@ -183,7 +185,7 @@
 		if (order && order.order_items) {
 			console.log("Number of order items:", order.order_items.length);
 			
-			order.order_items.forEach((item, index) => {
+			order.order_items.forEach((item: any, index: number) => {
 				console.log(`Item ${index + 1}:`);
 				console.log(`  - variant_id exists:`, !!item.variant_id);
 				
@@ -201,247 +203,377 @@
 	});
 </script>
 
-<div
-	class="relative p-5 overflow-x-auto shadow-lg sm:rounded-lg border"
-	in:fly={{ y: 50, duration: 500 }}>
-	<section>
-		<div class="flex justify-between items-center mb-4">
-			<button on:click={back} class="btn btn-outline">Zpět</button>
-			{#if updateMessage}
-				<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-					{@html updateMessage}
+<div class="bg-white rounded-lg shadow-md p-6" in:fly={{ y: 50, duration: 500 }}>
+	<!-- Header -->
+	<div class="flex items-center justify-between mb-6">
+		<h2 class="text-xl font-semibold">
+			Detail objednávky <span class="text-2xl">#{order?.order_number ?? ""}</span>
+		</h2>
+		<div class="flex gap-2">
+			<button 
+				on:click={back} 
+				class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+				Zpět
+			</button>
+			<button
+				disabled={loading}
+				on:click={updateOrder}
+				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
+				{loading ? 'Ukládá se...' : 'Uložit změny'}
+			</button>
+			<button
+				class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+				disabled={loading || order?.fakturoid_data?.invoice_id}
+				on:click={createInvoice}>
+				{#if order?.fakturoid_data?.invoice_id}
+					Faktura vytvořena
+				{:else}
+					Vytvořit fakturu
+				{/if}
+			</button>
+			<button
+				disabled={loading}
+				on:click={deleteOrder}
+				class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors">
+				Smazat
+			</button>
+		</div>
+	</div>
+
+	{#if updateMessage}
+		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
+			{@html updateMessage}
+		</div>
+	{/if}
+
+	{#if order}
+		<!-- Základní informace ve dvou sloupcích -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+			<!-- Základní údaje objednávky -->
+			<div class="space-y-4">
+				<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Základní údaje</h3>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Číslo objednávky</label>
+						<input
+							type="text"
+							readonly
+							disabled
+							value={order?.order_number ?? ""}
+							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Datum</label>
+						<input
+							type="text"
+							readonly
+							disabled
+							value={formattedDate}
+							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
+					</div>
 				</div>
-			{/if}
-			<div class="flex flex-col gap-2 md:flex-row">
-				<div>
-					<button
-						value={loading ? "Nahrává se..." : "Změněno"}
-						disabled={loading}
-						type="submit"
-						on:click={updateOrder}
-						class="btn btn-outline">
-						Upravit
-					</button>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Stav objednávky</label>
+						<select
+							bind:value={selectedOrderState}
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+							{#each orderStates as state}
+								<option value={state}>{state}</option>
+							{/each}
+						</select>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Stav platby</label>
+						<select 
+							bind:value={isPaid}
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+							<option value={false}>Neuhrazena</option>
+							<option value={true}>Uhrazena</option>
+						</select>
+					</div>
 				</div>
-				<div>
-					<button
-						class="invisible w-full p-4 px-5 border rounded-xl hover:bg-slate-100"
-						value={loading ? "Nahrává se..." : "Update"}
-						disabled={loading}
-						type="submit"
-						on:click={deleteOrder}>
-						Smazat
-					</button>
+			</div>
+
+			<!-- Osobní údaje zákazníka -->
+			<div class="space-y-4">
+				<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Kontaktní údaje</h3>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+						<input
+							type="email"
+							bind:value={customer_email}
+							disabled
+							placeholder="Email zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+						<input
+							type="tel"
+							bind:value={customer_telephone}
+							placeholder="Telefon zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
 				</div>
-				<div>
-					<button
-						class="btn btn-primary"
-						disabled={loading || order?.fakturoid_data?.invoice_id}
-						on:click={createInvoice}>
-						{#if order?.fakturoid_data?.invoice_id}
-							Faktura vytvořena
-						{:else}
-							Vytvořit fakturu
-						{/if}
-					</button>
-				</div>				
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
+						<input
+							type="text"
+							bind:value={customer_first_name}
+							placeholder="Jméno zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
+						<input
+							type="text"
+							bind:value={customer_last_name}
+							placeholder="Příjmení zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+				</div>
 			</div>
 		</div>
-	</section>
 
-	<div class="divider"></div>
-
-	<section>
-		<div class="bg-base-100">
-			<div class="py-6 px-4">
-				<h2 class="text-2xl font-bold mb-6">Objednávka - {order?.order_number ?? ""}</h2>
-
-				<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-					{#if order}
-						<OrderItemDetail
-							{order}
-							{formattedDate}
-							date={order?.date}
-							{isValidDate}
-							bind:selectedPaymentMethod
-							bind:selectedOrderState
-							bind:selectedCurrency
-							bind:selectedShippingMethod
-							bind:isPaid
-							bind:customer_email
-							bind:customer_first_name
-							bind:customer_last_name
-							bind:customer_street
-							bind:customer_street_number
-							bind:customer_city
-							bind:customer_zip_code
-							bind:customer_telephone
-							bind:delivery_first_name
-							bind:delivery_last_name
-							bind:delivery_street
-							bind:delivery_street_number
-							bind:delivery_city
-							bind:delivery_zip_code
-							bind:delivery_telephone 
-							orderStates={orderStates}
-							paymentMethods={paymentMethods}
-							currencies={currencies}
-							shippingMethods={shippingMethods}
-						/>
-					{:else}
-						<div class="p-4 bg-gray-100 rounded-lg text-center">
-							<p class="text-gray-600">Načítání dat objednávky...</p>
-						</div>
-					{/if}
-				</div>
-
-				<!--Položky:-->
-				<div class="border-black p-4 border shadow-xl rounded-lg">
-					<div class="font-medium text-lg mb-4">Položky objednávky</div>
-
-					<!-- Desktop verze (tabulka) -->
-					<div class="hidden md:block">
-						<div class="overflow-x-auto">
-							<table class="table table-zebra w-full">
-								<thead>
-								<tr class="grid grid-cols-11 gap-4">
-									<!--<th>Výběr</th>-->
-									<!--<th>Pořadí</th>-->
-									<th>Varianta</th>
-									<th>Datum</th>
-									<th class="col-span-7">Název</th>
-									<th>Množství</th>
-									<th>Cena</th>
-								</tr>
-								</thead>
-								<tbody>
-								{#each order.order_items as item, i}
-									<tr class="hover grid grid-cols-11 gap-4">
-										<!--<td>
-											<label>
-												<input type="checkbox" class="checkbox" />
-											</label>
-										</td>-->
-									<!--	<td>{i + 1}</td>-->
-										<td><span class="border rounded-4xl py-1.5 px-3 bg-slate-300"><strong>{item.variant_id.variant_number}</strong></span></td>
-										<td><strong>
-											{#if item.menuVersionData}
-												{formatDateToCzech(item.menuVersionData.date)}
-											{:else if item.variant_id?.menu_id?.date}
-												{formatDateToCzech(item.variant_id.menu_id.date)}
-											{:else if item.variant_id?.menu_version_id?.date}
-												{formatDateToCzech(item.variant_id.menu_version_id.date)}
-											{:else}
-												N/A
-											{/if}</strong>
-										</td>
-										<td class="col-span-7">
-											<div class="flex items-center space-x-3">
-												<div>
-													<div class="font-bold">{item.variant_id.description}</div>
-													<div class="text-sm opacity-50">{item.price} Kč</div>
-													<div class="text-sm opacity-50">
-														Varianta {item.variant_id.variant_number}
-													</div>
-													{#if item.menuVersionData}
-														<div class="text-sm opacity-50">
-															Polévka: {item.menuVersionData.soup}
-														</div>
-													{/if}
-												</div>
-											</div>
-										</td>
-										<td>{item.quantity}</td>
-										<td>{item.quantity * item.price} Kč</td>
-									</tr>
+		<!-- Doplňující informace ve třech sloupcích -->
+		<div class="pt-6 border-t border-gray-200">
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+				<!-- Platební údaje -->
+				<div class="space-y-4">
+					<h4 class="font-medium text-gray-900">Platební údaje</h4>
+					<div class="space-y-3">
+						<div>
+							<label class="block text-sm text-gray-600 mb-1">Způsob platby</label>
+							<select
+								bind:value={selectedPaymentMethod}
+								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								{#each paymentMethods as method}
+									<option value={method}>{method}</option>
 								{/each}
-								</tbody>
-								<tfoot>
-								<tr class="grid grid-cols-2 gap-4">
-									<th colspan="4"></th>
-									<th class="text-right">
-										Celkem cena: {order.order_items.reduce(
-										(sum, item) => sum + item.quantity * item.price,
-										0
-									)} Kč
-										<br />
-										Celkový počet: {order.order_items.reduce(
-										(sum, item) => sum + item.quantity,
-										0
-									)}
-									</th>
-								</tr>
-								</tfoot>
-							</table>
+							</select>
+						</div>
+						<div class="grid grid-cols-2 gap-2">
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Měna</label>
+								<select
+									bind:value={selectedCurrency}
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+									{#each currencies as currency}
+										<option value={currency}>{currency}</option>
+									{/each}
+								</select>
+							</div>
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Celkem</label>
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50 font-medium">
+									{formatPrice(totalPrice)}
+								</div>
+							</div>
 						</div>
 					</div>
+				</div>
 
-					<!-- Mobilní verze (karty) -->
-					<div class="md:hidden space-y-4">
-						{#each order.order_items as item, i}
-							<div class="border-b border-gray-200 pb-4 last:border-0">
-								<div class="flex justify-between items-start">
-									<div class="flex items-center space-x-2">
-										<input type="checkbox" class="checkbox" />
-										<span class="font-medium">{i + 1}.</span>
-									</div>
-									<span class="text-gray-600">
+				<!-- Doručení -->
+				<div class="space-y-4">
+					<h4 class="font-medium text-gray-900">Způsob doručení</h4>
+					<div class="space-y-3">
+						<div>
+							<label class="block text-sm text-gray-600 mb-1">Doprava</label>
+							<select
+								bind:value={selectedShippingMethod}
+								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								{#each shippingMethods as method}
+									<option value={method}>{method}</option>
+								{/each}
+							</select>
+						</div>
+						<div class="grid grid-cols-2 gap-2">
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Položek</label>
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
+									{totalItems} ks
+								</div>
+							</div>
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Cena/ks</label>
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
+									{totalItems > 0 ? formatPrice(Math.round(totalPrice / totalItems)) : '0 Kč'}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Adresa -->
+				<div class="space-y-4">
+					<h4 class="font-medium text-gray-900">Fakturační adresa</h4>
+					<div class="space-y-3">
+						<div class="grid grid-cols-3 gap-2">
+							<div class="col-span-2">
+								<label class="block text-sm text-gray-600 mb-1">Ulice</label>
+								<input
+									type="text"
+									bind:value={customer_street}
+									placeholder="Ulice"
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+							</div>
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Číslo</label>
+								<input
+									type="text"
+									bind:value={customer_street_number}
+									placeholder="Č.p."
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+							</div>
+						</div>
+						<div class="grid grid-cols-2 gap-2">
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">Město</label>
+								<input
+									type="text"
+									bind:value={customer_city}
+									placeholder="Město"
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+							</div>
+							<div>
+								<label class="block text-sm text-gray-600 mb-1">PSČ</label>
+								<input
+									type="text"
+									bind:value={customer_zip_code}
+									placeholder="PSČ"
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Položky objednávky -->
+		<div class="pt-6 border-t border-gray-200">
+			<h3 class="text-lg font-medium text-gray-900 mb-4">Položky objednávky</h3>
+			
+			<!-- Desktop verze (tabulka) -->
+			<div class="hidden md:block bg-white rounded-lg border overflow-hidden">
+				<div class="overflow-x-auto">
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead class="bg-gray-50">
+							<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Varianta</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Název</th>
+								<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Množství</th>
+								<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cena/ks</th>
+								<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Celkem</th>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							{#each order.order_items as item, i}
+								<tr class="hover:bg-gray-50">
+									<td class="px-6 py-4 whitespace-nowrap">
+										<span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-md font-medium bg-blue-100 text-blue-800">
+											{item.variant_id.variant_number}
+										</span>
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 										{#if item.menuVersionData}
-											{formatDateToCzech(item.menuVersionData.date)}
+											{formatDate(item.menuVersionData.date)}
 										{:else if item.variant_id?.menu_id?.date}
-											{formatDateToCzech(item.variant_id.menu_id.date)}
+											{formatDate(item.variant_id.menu_id.date)}
 										{:else if item.variant_id?.menu_version_id?.date}
-											{formatDateToCzech(item.variant_id.menu_version_id.date)}
+											{formatDate(item.variant_id.menu_version_id.date)}
 										{:else}
 											N/A
 										{/if}
-									</span>
-								</div>
+									</td>
+									<td class="px-6 py-4">
+										<div class="text-sm font-medium text-gray-900">{item.variant_id.description}</div>
+										{#if item.menuVersionData}
+											<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
+										{/if}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+										{item.quantity}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+										{formatPrice(item.price)}
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+										{formatPrice(item.quantity * item.price)}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+						<tfoot class="bg-gray-50">
+							<tr>
+								<td colspan="5" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
+									Celkem:
+								</td>
+								<td class="px-6 py-4 text-right text-lg font-bold text-gray-900">
+									{formatPrice(totalPrice)}
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
 
-								<div class="mt-2 pl-7">
-									<div class="font-bold">{item.variant_id.description}</div>
-									<div class="text-sm text-gray-600">
-										Varianta {item.variant_id.variant_number} • {item.price} Kč
-									</div>
-									{#if item.menuVersionData}
-										<div class="text-sm text-gray-600">
-											Polévka: {item.menuVersionData.soup}
-										</div>
-									{/if}
-								</div>
+			<!-- Mobilní verze (karty) -->
+			<div class="md:hidden space-y-4">
+				{#each order.order_items as item, i}
+					<div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+						<div class="flex justify-between items-start mb-3">
+							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+								Varianta {item.variant_id.variant_number}
+							</span>
+							<span class="text-sm font-medium text-gray-600">
+								{#if item.menuVersionData}
+									{formatDate(item.menuVersionData.date)}
+								{:else if item.variant_id?.menu_id?.date}
+									{formatDate(item.variant_id.menu_id.date)}
+								{:else if item.variant_id?.menu_version_id?.date}
+									{formatDate(item.variant_id.menu_version_id.date)}
+								{:else}
+									N/A
+								{/if}
+							</span>
+						</div>
 
-								<div class="mt-2 pl-7 flex justify-between">
-									<div><span class="font-medium">Množství:</span> {item.quantity}</div>
-									<div><span class="font-medium">Cena:</span> {item.quantity * item.price} Kč</div>
-								</div>
+						<div class="mb-3">
+							<div class="font-medium text-gray-900">{item.variant_id.description}</div>
+							{#if item.menuVersionData}
+								<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
+							{/if}
+						</div>
+
+						<div class="flex justify-between items-center text-sm">
+							<div class="flex gap-4">
+								<span><span class="font-medium">Množství:</span> {item.quantity}</span>
+								<span><span class="font-medium">Cena/ks:</span> {formatPrice(item.price)}</span>
 							</div>
-						{/each}
-
-						<div class="mt-6 pt-4 border-t border-gray-200">
-							<div class="text-right">
-								<div class="font-medium">
-									Celkem cena: {order.order_items.reduce(
-									(sum, item) => sum + item.quantity * item.price,
-									0
-								)} Kč
-								</div>
-								<div class="font-medium">
-									Celkový počet: {order.order_items.reduce(
-									(sum, item) => sum + item.quantity,
-									0
-								)}
-								</div>
-							</div>
+							<div class="font-medium">{formatPrice(item.quantity * item.price)}</div>
 						</div>
 					</div>
+				{/each}
 
-					<div class="mt-4">
-						<div class="text-sm text-gray-500">
-							Počet položek: {order.order_items.length}
-						</div>
+				<div class="bg-gray-50 rounded-lg p-4 mt-4">
+					<div class="flex justify-between items-center">
+						<span class="font-medium">Celkový počet položek: {totalItems}</span>
+						<span class="text-lg font-bold">{formatPrice(totalPrice)}</span>
 					</div>
 				</div>
 			</div>
 		</div>
-	</section>
+	{:else}
+		<div class="p-8 text-center">
+			<p class="text-gray-600">Načítání dat objednávky...</p>
+		</div>
+	{/if}
 </div>
