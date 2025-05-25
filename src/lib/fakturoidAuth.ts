@@ -5,59 +5,58 @@ import {
 import { supabase } from "./supabase";
 import type { FakturoidToken } from "./types/fakturoid";
 
-let cachedToken: { access_token: string; expires_at: number } | null = null;
+let cachedToken: string | null = null;
+let tokenExpiry: number | null = null;
 
-export async function getAccessToken() {
+export async function getAccessToken(): Promise<string | null> {
 	// Debug log
 	console.log('Attempting to get access token...');
 	
-	// Pokud máme platný token v cache, vrátíme ho
-	if (cachedToken && cachedToken.expires_at > Date.now()) {
+	// Check if we have a cached token that's still valid
+	if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
 		console.log('Using cached token');
-		return cachedToken.access_token;
+		return cachedToken;
 	}
-
+	
 	try {
-		const authString = `${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`;
-		const base64Auth = Buffer.from(authString).toString("base64");
+		// Get environment variables
+		const clientId = PRIVATE_FAKTUROID_CLIENT_ID;
+		const clientSecret = PRIVATE_FAKTUROID_CLIENT_SECRET;
 		
 		console.log('Making request to Fakturoid OAuth endpoint...');
 		
-		const response = await fetch("https://app.fakturoid.cz/api/v3/oauth/token", {
-			method: "POST",
+		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
+			method: 'POST',
 			headers: {
-				"Accept": "application/json",
-				"Content-Type": "application/x-www-form-urlencoded",
-				"Authorization": `Basic ${base64Auth}`,
-				"User-Agent": "StastneSrdce (info@stastnesrdce.cz)"
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)'
 			},
 			body: new URLSearchParams({
-				grant_type: "client_credentials"
-			}).toString()
+				grant_type: 'client_credentials',
+				client_id: clientId,
+				client_secret: clientSecret,
+				scope: 'read write'
+			})
 		});
-
+		
 		if (!response.ok) {
 			const errorText = await response.text();
-			console.error('Fakturoid API Error:', {
-				status: response.status,
-				statusText: response.statusText,
-				error: errorText
-			});
-			throw new Error(`Fakturoid API error: ${response.status} - ${errorText}`);
+			console.error('OAuth request failed:', response.status, errorText);
+			return null;
 		}
-
-		const data = await response.json() as FakturoidToken;
+		
+		const data = await response.json();
+		
+		// Cache the token
+		cachedToken = data.access_token;
+		// Set expiry to 90% of the actual expiry time for safety
+		tokenExpiry = Date.now() + (data.expires_in * 1000 * 0.9);
+		
 		console.log('Successfully received access token');
-
-		// Token expiruje za 2 hodiny (7200 sekund)
-		cachedToken = {
-			access_token: data.access_token,
-			expires_at: Date.now() + (data.expires_in * 1000) - 300000 // 5 minut rezerva
-		};
-
-		return data.access_token;
+		return cachedToken;
+		
 	} catch (error) {
-		console.error('Error getting Fakturoid access token:', error);
-		throw error;
+		console.error('Error getting access token:', error);
+		return null;
 	}
 }

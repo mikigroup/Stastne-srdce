@@ -47,9 +47,6 @@
 		}
 	});
 
-	// Debug - check what data contains
-	// console.log('Page data:', data);
-
 	// Get settings from data
 	let settings = data.settings;
 	$: settings = data.settings;

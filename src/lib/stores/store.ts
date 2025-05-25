@@ -143,8 +143,6 @@ function createCartStore() {
 		},
 		removeItem: (itemId: string, variantId: string) => {
 			update((items) => {
-				console.log(`Removing item: ${itemId}, variant: ${variantId}`);
-
 				const newItems = items
 					.map((item) => {
 						if (item.id === itemId) {
@@ -159,8 +157,6 @@ function createCartStore() {
 						return item;
 					})
 					.filter((item) => item.variants.length > 0);
-
-				console.log("Items after removal:", newItems);
 
 				// Sort by date and save
 				const sortedItems = sortByDate(newItems);

@@ -21,8 +21,6 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			String(currentDate.getDate()).padStart(2, "0")
 		].join("-");
 
-		console.log("Aktuální datum pro filtrování:", currentDateStr);
-
 		// Načtení verzí menu pouze pro budoucí data (včetně dnešního, pokud je před 17:00)
 		const { data: futureVersions, error: versionsError } = await supabase
 			.from("menu_versions")
@@ -61,6 +59,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const loadedMenus = (await Promise.all(menuPromises))
 			.filter(Boolean)
 			.filter((menu) => {
+				if (!menu.date) return false;
 				const menuDate = new Date(menu.date);
 				return menuDate > currentDate;
 			});
@@ -89,11 +88,6 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			28: limitedMenus,
 			70: limitedMenus.slice(0, 70)
 		};
-
-		console.log(
-			"Vrácená menu:",
-			limitedMenus.map((m) => m.date)
-		);
 
 		return {
 			menus: limitedMenus,
