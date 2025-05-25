@@ -15,6 +15,8 @@
 		hasInvoice: boolean;
 		invoiceId: string;
 		invoiceNumber: string;
+		isFromCurrentAccount?: boolean;
+		currentFakturoidAccount?: string;
 	};
 
 	export let form: ActionData | null = null;

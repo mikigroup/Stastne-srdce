@@ -1,16 +1,11 @@
 export interface OrderItem {
     id: string;
+    order_id: string;
+    variant_id: string;
     quantity: number;
     price: number;
-    variant_id: {
-        id: string;
-        description: string;
-        variant_number: string;
-        menu_id: {
-            id: string;
-            date: string;
-        }
-    }
+    subtotal: number;
+    description?: string;
 }
 
 export interface Order {
@@ -37,5 +32,13 @@ export interface Order {
         fakturoid_invoice_number?: string;
         fakturoid_created_at?: string;
     };
+    // Multi-account Fakturoid data
+    fakturoid_data?: {
+        invoice_id: string;
+        invoice_number: string;
+        invoice_url?: string;
+        created_at: string;
+        account_id: string; // ID účtu který fakturu vytvořil
+    } | null;
     order_items: OrderItem[];
 } 
