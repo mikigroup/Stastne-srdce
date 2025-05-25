@@ -1,19 +1,9 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
-export type ProfileData = {
-	username: string;
+export type ProfileData = {	
 	first_name: string;
-	last_name: string;
-	avatar_url: string;
-	telephone: string;
-	company?: string;
-	ico?: string;
-	dic?: string;
-	street?: string;
-	street_number?: string;
-	city?: string;
-	zip_code?: string;
+	last_name: string;	
 };
 
 /*export type RezcalendarData = {

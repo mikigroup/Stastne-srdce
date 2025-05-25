@@ -8,12 +8,38 @@ import {
 	getDefaultGeneralSettings
 } from "$lib/services/eshopSettingsService";
 
+// Výchozí nastavení pro integrace
+function getDefaultIntegrationsSettings() {
+	return {
+		// Fakturoid OAuth
+		fakturoidEnabled: false,
+		fakturoidConnected: false,
+		fakturoidAccountName: '',
+		fakturoidSubdomain: '',
+		fakturoidDefaultLanguage: 'cz',
+		fakturoidAutoCreateInvoices: false,
+		fakturoidInvoiceDueDays: 14,
+		fakturoidDefaultPaymentMethod: 'bank',
+		fakturoidSendInvoiceEmail: false,
+		fakturoidInvoiceNote: '',
+		
+		// Google Analytics
+		googleAnalyticsEnabled: false,
+		googleAnalyticsTrackingId: '',
+		
+		// Facebook Pixel
+		facebookPixelEnabled: false,
+		facebookPixelId: ''
+	};
+}
+
 interface SettingRecord {
 	id?: number;
 	key: string;
 	value: any;
 	updated_at?: string;
 	updated_by?: string;
+	user_id?: string;
 }
 
 export const load: PageServerLoad = async ({
@@ -68,7 +94,7 @@ async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: S
 		{ key: 'appearance', defaultValue: {} },
 		{ key: 'business', defaultValue: {} },
 		{ key: 'email', defaultValue: {} },
-		{ key: 'integrations', defaultValue: {} },
+		{ key: 'integrations', defaultValue: getDefaultIntegrationsSettings() },
 		{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
 		{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
 		{ key: 'products', defaultValue: getDefaultProductSettings() }
@@ -153,7 +179,8 @@ export const actions: Actions = {
 					key: key,
 					value: value,
 					updated_at: new Date().toISOString(),
-					updated_by: session.user.id
+					updated_by: session.user.id,
+					user_id: session.user.id
 				};
 
 				// 4c. Proveď operaci
@@ -198,6 +225,137 @@ export const actions: Actions = {
 				error: "Interní chyba serveru",
 				details: error instanceof Error ? error.message : "Neznámá chyba"
 			});
+		}
+	},
+
+	testFakturoidOAuth: async ({ locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			throw redirect(303, "/login");
+		}
+
+		try {
+			// Importujeme getAccessToken z fakturoidAuth
+			const { getAccessToken } = await import('$lib/fakturoidAuth');
+			
+			// Pokusíme se získat OAuth token
+			const accessToken = await getAccessToken();
+			
+			if (!accessToken) {
+				return fail(400, { 
+					error: "Nepodařilo se získat OAuth token. Zkontrolujte prosím konfiguraci." 
+				});
+			}
+
+			// Test připojení k Fakturoid API pomocí OAuth tokenu
+			const response = await fetch('https://app.fakturoid.cz/api/v3/user.json', {
+				headers: {
+					'Authorization': `Bearer ${accessToken}`,
+					'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('Fakturoid OAuth API error:', response.status, errorText);
+				
+				if (response.status === 401) {
+					return fail(401, { 
+						error: "OAuth token není platný. Zkuste se znovu přihlásit." 
+					});
+				} else {
+					return fail(response.status, { 
+						error: `Chyba API: ${response.status} - ${errorText}` 
+					});
+				}
+			}
+
+			const userData = await response.json();
+			
+			return {
+				success: true,
+				message: `OAuth připojení úspěšné! Připojen jako: ${userData.email}`,
+				userInfo: {
+					email: userData.email,
+					name: userData.name
+				}
+			};
+
+		} catch (error) {
+			console.error("Chyba při testování Fakturoid OAuth:", error);
+			return fail(500, {
+				error: "Chyba při testování OAuth připojení",
+				details: error instanceof Error ? error.message : "Neznámá chyba"
+			});
+		}
+	},
+
+	disconnectFakturoid: async ({ locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			throw redirect(303, "/login");
+		}
+
+		try {
+			// Načteme existující integrations nastavení
+			const { data: existingSettings, error: fetchError } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'integrations')
+				.maybeSingle();
+
+			if (fetchError) {
+				console.error('Error fetching existing settings:', fetchError);
+				return fail(500, { error: 'Nepodařilo se načíst nastavení' });
+			}
+
+			// Sloučíme existující nastavení s odpojením Fakturoid
+			let integrationsData = {};
+			if (existingSettings?.value) {
+				try {
+					integrationsData = typeof existingSettings.value === 'string' 
+						? JSON.parse(existingSettings.value) 
+						: existingSettings.value;
+				} catch (e) {
+					console.error('Error parsing existing integrations:', e);
+				}
+			}
+
+			// Odpojíme Fakturoid
+			const updatedIntegrations = {
+				...integrationsData,
+				fakturoidEnabled: false,
+				fakturoidConnected: false,
+				fakturoidAccountName: ''
+			};
+
+			// Uložíme aktualizovaná nastavení
+			const { error: updateError } = await supabase
+				.from('site_settings')
+				.upsert({
+					key: 'integrations',
+					value: JSON.stringify(updatedIntegrations),
+					updated_at: new Date().toISOString(),
+					updated_by: session.user.id,
+					user_id: session.user.id
+				}, {
+					onConflict: 'key'
+				});
+
+			if (updateError) {
+				console.error('Error updating settings:', updateError);
+				return fail(500, { error: 'Nepodařilo se odpojit Fakturoid' });
+			}
+
+			return {
+				success: true,
+				message: 'Fakturoid byl úspěšně odpojeno'
+			};
+
+		} catch (error) {
+			console.error("Error disconnecting Fakturoid:", error);
+			return fail(500, { error: 'Chyba při odpojování Fakturoid' });
 		}
 	}
 };

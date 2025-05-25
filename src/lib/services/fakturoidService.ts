@@ -1,56 +1,358 @@
-import { getAccessToken } from "../fakturoidAuth";
-import { PRIVATE_FAKTUROID_ACCOUNT_SLUG } from "$env/static/private";
-import type { Order } from "$lib/types/order";
-import type { Profile } from "$lib/types/profile";
-import type { FakturoidContact, FakturoidInvoice, FakturoidInvoiceCreate, FakturoidLine } from "$lib/types/fakturoid";
-
-const API_BASE = "https://app.fakturoid.cz/api/v3";
-
-// Pomocná funkce pro vytvoření hlaviček
-async function getHeaders() {
-	const token = await getAccessToken();
-	return {
-		"Authorization": `Bearer ${token}`,
-		"Content-Type": "application/json",
-		"User-Agent": "StastneSrdce (info@stastnesrdce.cz)"
-	};
+export interface FakturoidConfig {
+	enabled: boolean;
+	connected: boolean;
+	accountName?: string;
+	subdomain?: string;
+	defaultLanguage?: string;
+	autoCreateInvoices?: boolean;
+	invoiceDueDays?: number;
+	defaultPaymentMethod?: string;
+	sendInvoiceEmail?: boolean;
+	invoiceNote?: string;
 }
 
-export async function getInvoices(page = 1) {
-	const headers = await getHeaders();
-	
-	const response = await fetch(
-		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices.json?page=${page}`,
-		{ headers }
-	);
+export interface FakturoidAccount {
+	id: number;
+	name: string;
+	email: string;
+	subdomain: string;
+	phone?: string;
+	web?: string;
+	currency: string;
+}
 
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+export interface FakturoidInvoice {
+	id?: number;
+	number?: string;
+	subject_id: number;
+	currency: string;
+	language: string;
+	due: string;
+	issued_on: string;
+	taxable_fulfillment_due?: string;
+	note?: string;
+	footer_note?: string;
+	payment_method: string;
+	order_number?: string;
+	lines: FakturoidInvoiceLine[];
+}
+
+export interface FakturoidInvoiceLine {
+	name: string;
+	quantity: number;
+	unit_price: number;
+	unit_name?: string;
+	vat_rate?: number;
+}
+
+export interface FakturoidSubject {
+	id?: number;
+	name: string;
+	email?: string;
+	phone?: string;
+	street?: string;
+	city?: string;
+	zip?: string;
+	country?: string;
+	registration_no?: string;
+	vat_no?: string;
+	bank_account?: string;
+}
+
+export class FakturoidService {
+	private config: FakturoidConfig;
+
+	constructor(config: FakturoidConfig) {
+		this.config = config;
+	}
+
+	/**
+	 * Základní HTTP request wrapper
+	 */
+	private async request(endpoint: string, options: RequestInit = {}) {
+		// Importujeme getAccessToken z fakturoidAuth
+		const { getAccessToken } = await import('$lib/fakturoidAuth');
+		const accessToken = await getAccessToken();
+		
+		const url = `https://app.fakturoid.cz/api/v3${endpoint}`;
+		
+		const headers = {
+			'Authorization': `Bearer ${accessToken}`,
+			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+			'Content-Type': 'application/json',
+			...options.headers
+		};
+
+		const response = await fetch(url, {
+			...options,
+			headers
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			throw new Error(`Fakturoid API error ${response.status}: ${errorText}`);
+		}
+
+		return response.json();
+	}
+
+	/**
+	 * Test připojení k Fakturoid API
+	 */
+	async testConnection(): Promise<FakturoidAccount> {
+		return await this.request('/user.json');
+	}
+
+	/**
+	 * Vytvořit fakturu z objednávky (hlavní metoda)
+	 */
+	async createInvoiceFromOrder(orderData: {
+		customer: {
+			name: string;
+			email: string;
+			phone?: string;
+			address?: {
+				street?: string;
+				city?: string;
+				zip?: string;
+				country?: string;
+			};
+		};
+		orderNumber: string;
+		items: Array<{
+			name: string;
+			quantity: number;
+			price: number;
+			vat?: number;
+		}>;
+		currency?: string;
+		note?: string;
+	}): Promise<FakturoidInvoice> {
+		// Vytvoříme nebo najdeme kontakt
+		const subject = await this.createOrFindSubject({
+			name: orderData.customer.name,
+			email: orderData.customer.email,
+			phone: orderData.customer.phone,
+			street: orderData.customer.address?.street,
+			city: orderData.customer.address?.city,
+			zip: orderData.customer.address?.zip,
+			country: orderData.customer.address?.country || 'CZ'
+		});
+
+		// Připravíme položky faktury
+		const lines: FakturoidInvoiceLine[] = orderData.items.map(item => ({
+			name: item.name,
+			quantity: item.quantity,
+			unit_price: item.price,
+			unit_name: 'ks',
+			vat_rate: item.vat || 21
+		}));
+
+		// Vytvoříme fakturu
+		const invoiceData: Partial<FakturoidInvoice> = {
+			subject_id: subject.id!,
+			currency: orderData.currency || 'CZK',
+			language: this.config.defaultLanguage || 'cz',
+			due: new Date(Date.now() + (this.config.invoiceDueDays || 14) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+			issued_on: new Date().toISOString().split('T')[0],
+			payment_method: this.config.defaultPaymentMethod || 'bank',
+			order_number: orderData.orderNumber,
+			note: orderData.note || this.config.invoiceNote || '',
+			lines
+		};
+
+		return await this.createInvoice(invoiceData as FakturoidInvoice);
+	}
+
+	/**
+	 * Vytvořit nebo najít kontakt (subjekt)
+	 */
+	private async createOrFindSubject(subjectData: FakturoidSubject): Promise<FakturoidSubject> {
+		// Nejdříve zkusíme najít existující kontakt podle emailu
+		if (subjectData.email) {
+			const subjects = await this.request(`/subjects.json?email=${encodeURIComponent(subjectData.email)}`);
+			if (subjects.length > 0) {
+				return subjects[0];
+			}
+		}
+
+		// Pokud nenajdeme, vytvoříme nový
+		return await this.request('/subjects.json', {
+			method: 'POST',
+			body: JSON.stringify({ subject: subjectData })
+		});
+	}
+
+	/**
+	 * Vytvořit fakturu
+	 */
+	private async createInvoice(invoiceData: FakturoidInvoice): Promise<FakturoidInvoice> {
+		const response = await this.request('/invoices.json', {
+			method: 'POST',
+			body: JSON.stringify({ invoice: invoiceData })
+		});
+
+		// Pokud je povoleno automatické odeslání emailu
+		if (this.config.sendInvoiceEmail && response.id) {
+			await this.sendInvoiceEmail(response.id);
+		}
+
+		return response;
+	}
+
+	/**
+	 * Poslat fakturu emailem
+	 */
+	private async sendInvoiceEmail(invoiceId: number): Promise<void> {
+		await this.request(`/invoices/${invoiceId}/message.json`, {
+			method: 'POST',
+			body: JSON.stringify({ 
+				message: {
+					email: true
+				}
+			})
+		});
+	}
+}
+
+/**
+ * Factory funkce pro vytvoření Fakturoid service instance
+ */
+export function createFakturoidService(config: FakturoidConfig): FakturoidService {
+	return new FakturoidService(config);
+}
+
+/**
+ * Helper pro získání Fakturoid konfigurace ze site settings
+ */
+export function getFakturoidConfigFromSettings(settings: any): FakturoidConfig | null {
+	const integrations = settings?.integrations;
+	
+	if (!integrations?.fakturoidEnabled || !integrations?.fakturoidConnected) {
+		return null;
 	}
 
 	return {
-		data: await response.json(),
-		headers: Object.fromEntries(response.headers.entries())
+		enabled: integrations.fakturoidEnabled,
+		connected: integrations.fakturoidConnected,
+		accountName: integrations.fakturoidAccountName,
+		subdomain: integrations.fakturoidSubdomain,
+		defaultLanguage: integrations.fakturoidDefaultLanguage || 'cz',
+		autoCreateInvoices: integrations.fakturoidAutoCreateInvoices || false,
+		invoiceDueDays: integrations.fakturoidInvoiceDueDays || 14,
+		defaultPaymentMethod: integrations.fakturoidDefaultPaymentMethod || 'bank',
+		sendInvoiceEmail: integrations.fakturoidSendInvoiceEmail || false,
+		invoiceNote: integrations.fakturoidInvoiceNote || ''
 	};
 }
 
-// Pomocná funkce pro formátování názvu položky
-function formatItemName(item: any): string {
+/**
+ * Export funkce pro použití mimo třídu
+ */
+
+export async function createInvoiceFromOrder(order: any, profile: any, integrationsSettings?: any): Promise<any> {
+	// Pokud nejsou settings předány, vrátíme chybu
+	if (!integrationsSettings) {
+		throw new Error('Fakturoid integrace není nakonfigurována. <a href="/admin/site-setting?tab=integrations" class="underline text-blue-600 hover:text-blue-800">Přejít na nastavení integrace</a>');
+	}
+
+	if (!integrationsSettings.fakturoidEnabled || !integrationsSettings.fakturoidConnected) {
+		throw new Error('Fakturoid není připojen. <a href="/admin/site-setting?tab=integrations" class="underline text-blue-600 hover:text-blue-800">Prosím připojte Fakturoid v nastavení integrace</a>');
+	}
+
+	const config = getFakturoidConfigFromSettings({ integrations: integrationsSettings });
+	if (!config) {
+		throw new Error('Nepodařilo se načíst Fakturoid konfiguraci');
+	}
+
+	const service = new FakturoidService(config);
+
+	// Převedeme data do požadovaného formátu
+	const orderData = {
+		customer: {
+			name: `${profile.first_name} ${profile.last_name}`,
+			email: profile.email,
+			phone: profile.telephone,
+			address: {
+				street: `${profile.street} ${profile.street_number}`,
+				city: profile.city,
+				zip: profile.zip_code,
+				country: 'CZ'
+			}
+		},
+		orderNumber: order.order_number,
+		items: order.order_items.map((item: any) => ({
+			name: formatOrderItemName(item),
+			quantity: item.quantity,
+			price: item.price,
+			vat: 21
+		})),
+		currency: order.currency || 'CZK',
+		note: order.note
+	};
+
+	return await service.createInvoiceFromOrder(orderData);
+}
+
+export async function sendInvoiceEmail(invoiceId: number): Promise<void> {
+	const { getAccessToken } = await import('$lib/fakturoidAuth');
+	const accessToken = await getAccessToken();
+	
+	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/message.json`, {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${accessToken}`,
+			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ 
+			message: {
+				email: true
+			}
+		})
+	});
+
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(`Chyba při odesílání faktury emailem: ${errorText}`);
+	}
+}
+
+export async function markInvoiceAsPaid(invoiceId: number): Promise<void> {
+	const { getAccessToken } = await import('$lib/fakturoidAuth');
+	const accessToken = await getAccessToken();
+	
+	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/fire.json`, {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${accessToken}`,
+			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ 
+			event: 'pay'
+		})
+	});
+
+	if (!response.ok) {
+		const errorText = await response.text();
+		throw new Error(`Chyba při označení faktury jako uhrazené: ${errorText}`);
+	}
+}
+
+// Pomocná funkce pro formátování názvu položky objednávky
+function formatOrderItemName(item: any): string {
 	// Zkusíme získat datum z různých možných míst ve struktuře
 	let menuDate = null;
 	
-	// Priorita: menu_id > menu_version_id > jiné možnosti
 	if (item.variant_id?.menu_id?.date) {
 		menuDate = item.variant_id.menu_id.date;
 	} else if (item.variant_id?.menu_version_id?.date) {
 		menuDate = item.variant_id.menu_version_id.date;
-	} else if (item.menuVersionData?.date) {
-		menuDate = item.menuVersionData.date;
 	}
 	
 	// Získání čísla varianty
-	const variantNumber = item.variant_id?.variant_number || item.variant?.variant_number;
+	const variantNumber = item.variant_id?.variant_number;
 	
 	// Formátování data do českého formátu
 	let formattedDate = '';
@@ -69,130 +371,18 @@ function formatItemName(item: any): string {
 		}
 	}
 	
-	// Sestavení názvu - pouze datum, "Menu" a číslo
+	// Sestavení názvu
 	let itemName = '';
 	
-	// Přidáme datum pokud máme
 	if (formattedDate) {
 		itemName += `${formattedDate} `;
 	}
 	
-	// Přidáme "Menu" a číslo
 	if (variantNumber) {
 		itemName += `Menu ${variantNumber}`;
 	} else {
 		itemName += 'Menu';
 	}
 	
-	// Fallback pokud nemáme žádné údaje
-	return itemName || 'Položka objednávky';
-}
-
-export async function createInvoiceFromOrder(order: Order, profile: Profile): Promise<FakturoidInvoice> {
-	try {
-		const headers = await getHeaders();
-
-		// 1. Vytvoření nebo aktualizace kontaktu
-		const contactResponse = await fetch(
-			`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/subjects.json`,
-			{
-				method: 'POST',
-				headers,
-				body: JSON.stringify({
-					name: `${profile.first_name} ${profile.last_name}`,
-					street: `${profile.street} ${profile.street_number}`,
-					city: profile.city,
-					zip: profile.zip_code,
-					email: profile.email,
-					phone: profile.telephone,
-					registration_no: profile.ico,
-					vat_no: profile.dic
-				})
-			}
-		);
-
-		if (!contactResponse.ok) {
-			const errorText = await contactResponse.text();
-			throw new Error(`Chyba při vytváření kontaktu: ${contactResponse.status} - ${errorText}`);
-		}
-
-		const contact = await contactResponse.json();
-
-		// 2. Příprava řádků faktury s upraveným názvem
-		const lines = order.order_items.map(item => ({
-			name: formatItemName(item),
-			quantity: item.quantity,
-			unit_price: item.price,
-			vat_rate: 0, // Nastaveno na 0, protože nejsme plátci DPH
-			unit_name: 'ks'
-		}));
-
-		// 3. Vytvoření faktury
-		const invoiceResponse = await fetch(
-			`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices.json`,
-			{
-				method: 'POST',
-				headers,
-				body: JSON.stringify({
-					subject_id: contact.id,
-					lines,
-					due: 14, // 14 dní splatnost
-					issued_on: new Date().toISOString().split('T')[0],
-					note: `Objednávka č. ${order.order_number}`,
-					currency: 'CZK',
-					payment_method: 'bank',
-					language: 'cz',
-					vat_price_mode: 'without_vat'
-				})
-			}
-		);
-
-		if (!invoiceResponse.ok) {
-			const errorText = await invoiceResponse.text();
-			throw new Error(`Chyba při vytváření faktury: ${invoiceResponse.status} - ${errorText}`);
-		}
-
-		return await invoiceResponse.json();
-	} catch (error) {
-		console.error('Chyba při vytváření faktury:', error);
-		throw error;
-	}
-}
-
-export async function sendInvoiceEmail(invoiceId: string): Promise<void> {
-	const headers = await getHeaders();
-
-	const response = await fetch(
-		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/message.json`,
-		{
-			method: 'POST',
-			headers
-		}
-	);
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při odesílání faktury: ${response.status} - ${errorText}`);
-	}
-}
-
-export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
-	const headers = await getHeaders();
-
-	const response = await fetch(
-		`${API_BASE}/accounts/${PRIVATE_FAKTUROID_ACCOUNT_SLUG}/invoices/${invoiceId}/fire.json`,
-		{
-			method: 'POST',
-			headers,
-			body: JSON.stringify({
-				event: 'pay',
-				paid_on: new Date().toISOString().split('T')[0]
-			})
-		}
-	);
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při označování faktury jako zaplacené: ${response.status} - ${errorText}`);
-	}
-}
+	return itemName || 'Položka menu';
+} 

@@ -110,74 +110,7 @@
 			</div>
 		</div>
 <hr>
-		<h2 class="py-4 my-4">Firma</h2>
-		<div class="grid gap-6 mb-6 md:grid-cols-2">
-			<div>
-				<label
-					for="company"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-				>Název firmy</label>
-				<input
-					type="text"
-					id="company"
-					class="input input-bordered w-full max-w-xs"
-					placeholder="Název firmy"
-					value={form?.company ?? company}
-					name="company" />
-			</div>
-			<div>
-				<label
-					for="ico"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-				>IČO</label>
-				<input
-					type="text"
-					id="ico"
-					class="input input-bordered w-full max-w-xs"
-					placeholder="123456789"
-					value={form?.ico ?? ico}
-					name="ico" />
-			</div>
-			<div>
-				<label
-					for="dic"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-				>DIČ</label>
-				<input
-					type="text"
-					id="dic"
-					class="input input-bordered w-full max-w-xs"
-					placeholder="CZ123456789"
-					value={form?.dic ?? dic}
-					name="dic" />
-			</div>
-			<div>
-				<label
-					for="street"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-				>Ulice</label>
-				<input
-					type="text"
-					id="street"
-					class="input input-bordered w-full max-w-xs"
-					placeholder="Ulice"
-					value={form?.street ?? street}
-					name="street" />
-			</div>
-			<div>
-				<label
-					for="street_number"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-				>Číslo ulice</label>
-				<input
-					type="text"
-					id="street"
-					class="input input-bordered w-full max-w-xs"
-					placeholder="Číslo ulice"
-					value={form?.street_number ?? street_number}
-					name="street_number" />
-			</div>
-		</div>
+		
 
 		<hr class="my-10" />
 		<button

@@ -161,13 +161,44 @@ export const actions: Actions = {
 				});
 			}
 
-			// 4. Vytvoření faktury pomocí Fakturoid API
+			// 4. Načtení integračních nastavení pro Fakturoid
+			const { data: integrationsData, error: integrationsError } = await supabase
+				.from("site_settings")
+				.select("value")
+				.eq("key", "integrations")
+				.maybeSingle();
+
+			if (integrationsError) {
+				console.error("Chyba při načítání integračních nastavení:", integrationsError);
+				return fail(500, {
+					success: false,
+					message: "Chyba při načítání nastavení integrace"
+				});
+			}
+
+			let integrationsSettings = {};
+			if (integrationsData?.value) {
+				try {
+					integrationsSettings = typeof integrationsData.value === 'string' 
+						? JSON.parse(integrationsData.value) 
+						: integrationsData.value;
+				} catch (e) {
+					console.error('Error parsing integrations settings:', e);
+					return fail(500, {
+						success: false,
+						message: "Chyba při zpracování nastavení integrace"
+					});
+				}
+			}
+
+			// 5. Vytvoření faktury pomocí Fakturoid API
 			const invoice = await createInvoiceFromOrder(
 				order as Order,
-				profile as Profile
+				profile as Profile,
+				integrationsSettings
 			);
 
-			// 5. Uložení ID faktury do objednávky
+			// 6. Uložení ID faktury do objednávky
 			const { error: updateError } = await supabase
 				.from("orders")
 				.update({
@@ -189,7 +220,7 @@ export const actions: Actions = {
 				});
 			}
 
-			// 6. Odeslání faktury e-mailem, pokud je požadováno
+			// 7. Odeslání faktury e-mailem, pokud je požadováno
 			if (sendEmail && invoice.id) {
 				try {
 					await sendInvoiceEmail(invoice.id);
@@ -199,7 +230,7 @@ export const actions: Actions = {
 				}
 			}
 
-			// 7. Označení faktury jako uhrazené, pokud je požadováno
+			// 8. Označení faktury jako uhrazené, pokud je požadováno
 			if (markPaid && invoice.id) {
 				try {
 					await markInvoiceAsPaid(invoice.id);
@@ -209,7 +240,7 @@ export const actions: Actions = {
 				}
 			}
 
-			// 8. Aktualizace stavu objednávky na 'Vyfakturovaná', pokud je požadováno
+			// 9. Aktualizace stavu objednávky na 'Vyfakturovaná', pokud je požadováno
 			if (markPaid) {
 				const { error: stateError } = await supabase
 					.from("orders")
@@ -224,7 +255,7 @@ export const actions: Actions = {
 				}
 			}
 
-			// 9. Vracíme úspěšný výsledek
+			// 10. Vracíme úspěšný výsledek
 			return {
 				success: true,
 				message: "Faktura byla úspěšně vytvořena",

@@ -298,7 +298,7 @@
 
 			{#if form?.success === false}
 				<div class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-					{form.message}
+					{@html form.message}
 				</div>
 			{/if}
 		</form>
