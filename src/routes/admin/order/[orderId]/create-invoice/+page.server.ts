@@ -309,12 +309,12 @@ export const actions: Actions = {
 				}
 			}
 
-			// 10. Aktualizace stavu objednávky na 'Vyfakturovaná', pokud je požadováno
+			// 10. Aktualizace stavu objednávky na 'Fakturovaná', pokud je požadováno
 			if (markPaid) {
 				const { error: stateError } = await supabase
 					.from("orders")
 					.update({
-						state: "Vyfakturovaná",
+						state: "Fakturovaná",
 						pay_state: true
 					})
 					.eq("id", orderId);

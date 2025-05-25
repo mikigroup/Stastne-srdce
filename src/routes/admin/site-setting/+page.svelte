@@ -31,7 +31,7 @@
 		const tab = $page.url.searchParams.get('tab');
 		
 		// Automatické přepnutí na zadanou záložku
-		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'zakazky', 'doprava', 'products'].includes(tab)) {
+		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'zakazky', 'doprava', 'products', 'customer', 'inventory'].includes(tab)) {
 			activeTab = tab;
 		}
 		
@@ -95,9 +95,11 @@
 		{ id: 'business', label: 'Firemní údaje', icon: 'fa-solid fa-building' },
 		{ id: 'email', label: 'Šablony e-mailů', icon: 'fa-solid fa-envelope' },
 		{ id: 'integrations', label: 'Integrace', icon: 'fa-solid fa-plug' },
-		{ id: 'zakazky', label: 'Zakázky', icon: 'fa-solid fa-clipboard-list' },
+		{ id: 'zakazky', label: 'Objednávky', icon: 'fa-solid fa-clipboard-list' },
 		{ id: 'doprava', label: 'Doprava', icon: 'fa-solid fa-truck' },
-		{ id: 'products', label: 'Produkty', icon: 'fa-solid fa-utensils' }
+		{ id: 'products', label: 'Produkty', icon: 'fa-solid fa-utensils' },
+		{ id: 'customer', label: 'Zákazníci', icon: 'fa-solid fa-users' },
+		{ id: 'inventory', label: 'Inventář', icon: 'fa-solid fa-boxes-stacked' }
 	];
 
 	// Set active tab
@@ -105,7 +107,8 @@
 		activeTab = tabId;
 	}
 
-	// Note: We're using the form action to save settings	// The form in the HTML section below submits the settings directly to the server
+	// Note: We're using the form action to save settings
+	// The form in the HTML section below submits the settings directly to the server
 
 	// Add opening hours entry
 	function addOpeningHoursDay() {

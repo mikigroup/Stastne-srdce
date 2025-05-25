@@ -59,12 +59,71 @@ export async function getDopravaSettings(supabase: TypedSupabaseClient) {
  */
 export function getDefaultZakazkySettings() {
     return {
+        // Stavy objednávek
         orderStates: [
             { name: 'Nová', color: '#0284c7' },
-            { name: 'Zpracovává se', color: '#eab308' },
-            { name: 'Dokončená', color: '#16a34a' },
-            { name: 'Zrušená', color: '#dc2626' }
-        ]
+            { name: 'Expedovaná', color: '#eab308' },
+            { name: 'Fakturovaná', color: '#16a34a' },
+            { name: 'Stornovaná', color: '#dc2626' }
+        ],
+        
+        // Automatizace objednávek
+        automation: {
+            autoConfirmOrders: true,
+            autoConfirmAfterMinutes: 30,
+            autoCompleteAfterDays: 7,
+            sendConfirmationEmail: true,
+            sendStatusUpdateEmails: true,
+            sendReminderEmails: false,
+            reminderHoursBefore: 24
+        },
+        
+        // Časové limity
+        timeSettings: {
+            orderDeadlineHour: 17, // Do kdy lze objednávat na další den
+            orderDeadlineMinute: 0,
+            advanceOrderDays: 7, // Kolik dní dopředu lze objednávat
+            cancelDeadlineHours: 24, // Do kdy lze zrušit objednávku
+            editDeadlineHours: 12 // Do kdy lze upravit objednávku
+        },
+        
+        // Omezení objednávek
+        orderLimits: {
+            maxItemsPerOrder: 10,
+            maxOrdersPerDay: 3,
+            maxOrdersPerWeek: 15,
+            requireMinimumAmount: false,
+            minimumOrderAmount: 0
+        },
+        
+        // Platební metody
+        paymentMethods: [
+            { name: 'Hotově při převzetí', code: 'cash', enabled: true, fee: 0 },
+            { name: 'Kartou při převzetí', code: 'card', enabled: true, fee: 0 },
+            { name: 'Bankovní převod', code: 'bank', enabled: true, fee: 0 },
+            { name: 'Online platba', code: 'online', enabled: false, fee: 0 }
+        ],
+        
+        // Slevy a kupóny
+        discounts: {
+            enableLoyaltyDiscount: false,
+            loyaltyDiscountPercent: 5,
+            loyaltyOrdersRequired: 10,
+            enableBulkDiscount: false,
+            bulkDiscountPercent: 10,
+            bulkDiscountMinItems: 5,
+            enableCoupons: false
+        },
+        
+        // Notifikace
+        notifications: {
+            adminNewOrderEmail: true,
+            adminOrderStatusEmail: false,
+            customerOrderConfirmEmail: true,
+            customerStatusUpdateEmail: true,
+            smsNotifications: false,
+            pushNotifications: false
+        }
     };
 }
 
@@ -73,12 +132,83 @@ export function getDefaultZakazkySettings() {
  */
 export function getDefaultDopravaSettings() {
     return {
+        // Způsoby dopravy
         shippingMethods: [
-            { name: 'Osobní odběr', price: 0 },
-            { name: 'Doručení na adresu', price: 150 }
+            { 
+                name: 'Osobní odběr', 
+                code: 'pickup',
+                price: 0, 
+                enabled: true,
+                description: 'Vyzvednutí na prodejně',
+                estimatedTime: '0 minut',
+                availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+            },
+            { 
+                name: 'Doručení na adresu', 
+                code: 'delivery',
+                price: 150, 
+                enabled: true,
+                description: 'Doručení kurýrem',
+                estimatedTime: '30-60 minut',
+                availableDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+            }
         ],
+        
+        // Obecná nastavení
         minimumOrderValue: 0,
-        freeDeliveryThreshold: 1000
+        freeDeliveryThreshold: 1000,
+        
+        // Časové sloty pro doručení
+        deliveryTimeSlots: {
+            enabled: true,
+            slotDuration: 60, // minuty
+            slots: [
+                { start: '11:00', end: '12:00', enabled: true, maxOrders: 10 },
+                { start: '12:00', end: '13:00', enabled: true, maxOrders: 15 },
+                { start: '13:00', end: '14:00', enabled: true, maxOrders: 10 }
+            ]
+        },
+        
+        // Doručovací zóny
+        deliveryZones: [
+            { 
+                name: 'Mikulovice centrum', 
+                postcodes: ['79084'], 
+                price: 0, 
+                enabled: true,
+                estimatedTime: '15-30 minut'
+            },
+            { 
+                name: 'Jeseník', 
+                postcodes: ['79001'], 
+                price: 50, 
+                enabled: true,
+                estimatedTime: '30-45 minut'
+            },
+            { 
+                name: 'Okolní obce', 
+                postcodes: ['79085', '79086'], 
+                price: 100, 
+                enabled: true,
+                estimatedTime: '45-60 minut'
+            }
+        ],
+        
+        // Nastavení kurýrů
+        couriers: {
+            maxOrdersPerCourier: 8,
+            maxDeliveryRadius: 15, // km
+            enableRouteOptimization: false,
+            enableGpsTracking: false
+        },
+        
+        // Speciální dny
+        specialDays: {
+            enableHolidayDelivery: false,
+            holidayDeliveryFee: 100,
+            enableWeekendDelivery: false,
+            weekendDeliveryFee: 50
+        }
     };
 }
 
@@ -172,4 +302,117 @@ export function formatPrice(price: number, currencyCode: string = 'CZK', setting
     
     // Vlastní formátování s uživatelsky nastaveným symbolem
     return `${new Intl.NumberFormat('cs-CZ').format(price)} ${currency.symbol}`;
+}
+
+/**
+ * Vrátí výchozí nastavení zákazníků, pokud v databázi nejsou žádná
+ */
+export function getDefaultCustomerSettings() {
+    return {
+        // Registrace zákazníků
+        registration: {
+            requireRegistration: false,
+            allowGuestOrders: true,
+            requireEmailVerification: false,
+            requirePhoneVerification: false,
+            autoCreateAccount: true
+        },
+        
+        // Věrnostní program
+        loyalty: {
+            enabled: false,
+            pointsPerCzk: 1, // body za 1 Kč
+            pointsValue: 0.1, // hodnota 1 bodu v Kč
+            welcomeBonus: 100,
+            birthdayBonus: 200,
+            enableTiers: false,
+            tiers: [
+                { name: 'Bronzový', minOrders: 0, discount: 0 },
+                { name: 'Stříbrný', minOrders: 10, discount: 5 },
+                { name: 'Zlatý', minOrders: 25, discount: 10 }
+            ]
+        },
+        
+        // Komunikace se zákazníky
+        communication: {
+            enableNewsletters: true,
+            enableSmsMarketing: false,
+            enablePushNotifications: false,
+            enableOrderReminders: true,
+            enableBirthdayMessages: false,
+            enableFeedbackRequests: true
+        },
+        
+        // Ochrana osobních údajů
+        privacy: {
+            enableGdprCompliance: true,
+            dataRetentionMonths: 36,
+            enableCookieConsent: true,
+            enableDataExport: true,
+            enableAccountDeletion: true
+        },
+        
+        // Segmentace zákazníků
+        segmentation: {
+            enableAutoSegmentation: false,
+            segments: [
+                { name: 'Noví zákazníci', criteria: 'orders_count < 3' },
+                { name: 'Pravidelní zákazníci', criteria: 'orders_count >= 10' },
+                { name: 'VIP zákazníci', criteria: 'total_spent > 10000' }
+            ]
+        }
+    };
+}
+
+/**
+ * Vrátí výchozí nastavení inventáře, pokud v databázi nejsou žádná
+ */
+export function getDefaultInventorySettings() {
+    return {
+        // Správa zásob
+        stockManagement: {
+            enableStockTracking: true,
+            enableLowStockAlerts: true,
+            lowStockThreshold: 5,
+            enableOutOfStockNotifications: true,
+            allowBackorders: false,
+            enableStockReservation: true,
+            reservationTimeMinutes: 30
+        },
+        
+        // Automatické doplňování
+        autoReplenishment: {
+            enabled: false,
+            defaultReorderPoint: 10,
+            defaultReorderQuantity: 50,
+            enableSeasonalAdjustments: false,
+            leadTimeDays: 1
+        },
+        
+        // Plánování menu
+        menuPlanning: {
+            enableCapacityPlanning: true,
+            defaultDailyCapacity: 100,
+            enableIngredientTracking: false,
+            enableNutritionalTracking: false,
+            enableCostTracking: true
+        },
+        
+        // Varování a limity
+        alerts: {
+            enableDailyCapacityAlerts: true,
+            enableIngredientShortageAlerts: false,
+            enableExpirationAlerts: false,
+            alertEmailRecipients: ['admin@stastnesrdce.cz']
+        },
+        
+        // Reporting
+        reporting: {
+            enableDailyReports: true,
+            enableWeeklyReports: true,
+            enableMonthlyReports: false,
+            includeWasteTracking: false,
+            includeCostAnalysis: true
+        }
+    };
 } 

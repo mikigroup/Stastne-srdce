@@ -50,9 +50,20 @@
 	let delivery_telephone: string = order?.delivery_telephone ?? "";
 
 	let updateMessage = "";
+	let orderStates: string[] = [];
 
-	// Získáme seznam stavů objednávek
-	$: orderStates = eshopSettings?.orderStates?.map((state: any) => state.name) || ['Nová', 'Zpracovává se', 'Dokončená', 'Zrušená'];
+	// Získáme seznam stavů objednávek - vždy zahrneme všechny možné stavy
+	$: {
+		const settingsStates = eshopSettings?.orderStates?.map((state: any) => state.name) || [];
+		const allPossibleStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
+		
+		// Kombinujeme stavy z nastavení s všemi možnými stavy (bez duplikátů)
+		orderStates = [...new Set([...settingsStates, ...allPossibleStates])];
+		
+		console.log('Debug - orderStates:', orderStates);
+		console.log('Debug - current selectedOrderState:', selectedOrderState);
+		console.log('Debug - eshopSettings:', eshopSettings);
+	}
 
 	// Získáme seznam měn
 	$: currencies = eshopSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
@@ -159,9 +170,18 @@
 		await goto(`/admin/order/${orderId}/create-invoice`);
 	}
 
-	// Získáme barvu pro stav objednávky
+	// Získáme barvu pro stav objednávky - s fallbackem pro neznámé stavy
 	function getOrderStateColor(stateName: any) {
-		if (!eshopSettings?.orderStates) return '#9ca3af';
+		if (!eshopSettings?.orderStates) {
+			// Výchozí barvy pro základní stavy když nejsou v nastavení
+			const defaultColors: Record<string, string> = {
+				'Nová': '#0284c7',
+				'Expedovaná': '#eab308', 
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+			};
+			return defaultColors[stateName] || '#9ca3af';
+		}
 		
 		const state = eshopSettings.orderStates.find((state: any) => state.name === stateName);
 		return state ? state.color : '#9ca3af';

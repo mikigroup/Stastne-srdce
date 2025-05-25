@@ -6,7 +6,7 @@
 	export let selectedPaymentMethod = "";
 	export let paymentMethods = ["Hotovost", "Faktura"];
 	export let selectedOrderState = "";
-	export let orderStates = ["Nová", "Expedovaná", "Stornovaná"];
+	export let orderStates = ["Nová", "Expedovaná", "Fakturovaná", "Stornovaná"];
 	export let selectedCurrency = "";
 	export let currencies = ["CZK", "EUR", "USD"];
 	export let selectedShippingMethod = "";

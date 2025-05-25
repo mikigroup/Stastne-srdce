@@ -173,10 +173,29 @@
 
 	// Funkce pro získání barvy stavu objednávky
 	function getStatusColor(status: string) {
-		if (!eshopSettings?.orderStates) return 'bg-gray-100 text-gray-800';
+		if (!eshopSettings?.orderStates) {
+			// Výchozí barvy pro základní stavy když nejsou v nastavení
+			const defaultColors: Record<string, string> = {
+				'Nová': '#0284c7',
+				'Expedovaná': '#eab308', 
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+			};
+			const color = defaultColors[status] || '#9ca3af';
+			return {
+				background: lightenColor(color, 0.85),
+				text: color
+			};
+		}
 		
 		const orderState = eshopSettings.orderStates.find((state: any) => state.name === status);
-		if (!orderState) return 'bg-gray-100 text-gray-800';
+		if (!orderState) {
+			// Fallback pro neznámé stavy
+			return {
+				background: '#f3f4f6',
+				text: '#6b7280'
+			};
+		}
 		
 		// Vygenerujeme světlejší odstín barvy pro pozadí
 		const hexColor = orderState.color;
@@ -366,15 +385,15 @@
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
-	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+	<div class="join flex my-10 justify-center w-full ">
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3 "
 			on:click={previousPage}
 			disabled={currentPage === 1}>
 			Předchozí stránka
 		</button>
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3"
 			on:click={nextPage}
 			disabled={currentPage === totalPages}>
 			Další stránka

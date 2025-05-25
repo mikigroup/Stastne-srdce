@@ -290,15 +290,15 @@
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
-	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+	<div class="join flex my-10 justify-center w-full ">
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3"
 			on:click={previousPage}
 			disabled={currentPage === 1}>
 			Předchozí stránka
 		</button>
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3"
 			on:click={nextPage}
 			disabled={currentPage === totalPages}>
 			Další stránka

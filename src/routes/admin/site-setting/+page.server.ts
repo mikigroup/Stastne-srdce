@@ -5,7 +5,9 @@ import {
 	getDefaultZakazkySettings, 
 	getDefaultDopravaSettings, 
 	getDefaultProductSettings, 
-	getDefaultGeneralSettings
+	getDefaultGeneralSettings,
+	getDefaultCustomerSettings,
+	getDefaultInventorySettings
 } from "$lib/services/eshopSettingsService";
 
 // Výchozí nastavení pro integrace
@@ -97,7 +99,9 @@ async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: S
 		{ key: 'integrations', defaultValue: getDefaultIntegrationsSettings() },
 		{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
 		{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
-		{ key: 'products', defaultValue: getDefaultProductSettings() }
+		{ key: 'products', defaultValue: getDefaultProductSettings() },
+		{ key: 'customer', defaultValue: getDefaultCustomerSettings() },
+		{ key: 'inventory', defaultValue: getDefaultInventorySettings() }
 	];
 
 	for (const setting of requiredSettings) {
