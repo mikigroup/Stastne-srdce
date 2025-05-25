@@ -306,7 +306,7 @@
 										class="col-span-5 pl-5 border-r mr-1 flex gap-2 flex-col">
 										{#each cartItem.variants as variant, index}
 											<div class="">
-												{index + 1}. {truncateText(variant.description, 50)}
+												{variant.variant_number}. {truncateText(variant.description, 50)}
 											</div>
 										{/each}
 									</div>
@@ -330,7 +330,7 @@
 												</div>
 											{/each}
 										</div>
-										<div class="flex flex-col gap-11 xl:gap-2 justify-center">
+										<div class="flex flex-col gap-11 xl:gap-7 justify-center">
 											{#each cartItem.variants as variant}
 												<div class="">
 													{(variant.price || 0) * (variant.quantity || 0)} Kč
@@ -339,7 +339,7 @@
 										</div>
 									</div>
 
-									<div class="col-span-1 flex flex-col gap-11 xl:gap-2">
+									<div class="col-span-1 flex flex-col gap-11 xl:gap-7">
 										{#each cartItem.variants as variant}
 											<button
 												type="button"
