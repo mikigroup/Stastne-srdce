@@ -70,15 +70,24 @@ export const load: PageServerLoad = async ({
 
 	console.log("Načítám nastavení z DB...");
 	
+	// Načteme parent data paralelně s našimi daty
+	const parentDataPromise = parent();
+	
 	try {
 		// 1. Načteme pouze nastavení (pages jsou volitelné)
 		const { data: existingSettings, error: settingsError } = await supabase
 			.from("site_settings")
-			.select("*");
+			.select("*")
+			.limit(20); // Omezíme počet záznamů pro rychlejší načtení
 
 		if (settingsError) {
 			console.error("Chyba při načítání nastavení:", settingsError);
-			return fail(500, { error: "Nepodařilo se načíst nastavení" });
+			const parentData = await parentDataPromise;
+			return {
+				...parentData,
+				settings: [],
+				pages: ['hlavni']
+			};
 		}
 
 		// 2. Rychlá kontrola chybějících nastavení v paměti
@@ -86,6 +95,8 @@ export const load: PageServerLoad = async ({
 		const missingSettings = REQUIRED_SETTINGS.filter(s => !existingKeys.has(s.key));
 
 		// 3. Pokud chybí nastavení, přidáme je jedním batch insertem
+		let finalSettings = existingSettings || [];
+		
 		if (missingSettings.length > 0) {
 			console.log(`Přidávám ${missingSettings.length} chybějících nastavení...`);
 			
@@ -101,61 +112,35 @@ export const load: PageServerLoad = async ({
 
 			if (insertError) {
 				console.error("Chyba při vkládání výchozích nastavení:", insertError);
-				// Pokračujeme i s chybou - použijeme co máme
-			}
-
-			// Znovu načteme všechna nastavení
-			const { data: allSettings } = await supabase
-				.from('site_settings')
-				.select('*');
-
-			// 4. Zkusíme načíst pages, ale není to kritické
-			let pages = ['hlavni'];
-			try {
-				const { data: pagesData } = await supabase
-					.rpc('get_routes')
-					.eq('is_admin', false);
+				// Přidáme chybějící nastavení do výsledku i bez databáze
+				finalSettings = [...finalSettings, ...newRecords];
+			} else {
+				// Znovu načteme všechna nastavení
+				const { data: allSettings } = await supabase
+					.from('site_settings')
+					.select('*')
+					.limit(20);
 				
-				if (pagesData) {
-					pages = [...new Set(['hlavni', ...pagesData])];
-				}
-			} catch (pagesError) {
-				console.warn("Nepodařilo se načíst seznam stránek:", pagesError);
+				finalSettings = allSettings || finalSettings;
 			}
-
-			return {
-				...(await parent()),
-				settings: allSettings || existingSettings || [],
-				pages
-			};
 		}
 
-		// 5. Pokud nic nechybí, zkusíme načíst pages paralelně
-		let pages = ['hlavni'];
-		try {
-			// Nepoužíváme Promise.all, protože pages nejsou kritické
-			const { data: pagesData } = await supabase
-				.rpc('get_routes')
-				.eq('is_admin', false);
-			
-			if (pagesData) {
-				pages = [...new Set(['hlavni', ...pagesData])];
-			}
-		} catch (pagesError) {
-			console.warn("Nepodařilo se načíst seznam stránek:", pagesError);
-		}
-
+		// 4. Pages načteme až po všem ostatním nebo vůbec
+		const parentData = await parentDataPromise;
+		
+		// Vracíme data bez čekání na pages
 		return {
-			...(await parent()),
-			settings: existingSettings || [],
-			pages
+			...parentData,
+			settings: finalSettings,
+			pages: ['hlavni'] // Výchozí hodnota, pages nejsou kritické
 		};
 
 	} catch (err) {
 		console.error("Kritická chyba při načítání nastavení:", err);
+		const parentData = await parentDataPromise;
 		// Vrátíme alespoň prázdná data, aby stránka fungovala
 		return {
-			...(await parent()),
+			...parentData,
 			settings: [],
 			pages: ['hlavni']
 		};
