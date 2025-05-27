@@ -18,23 +18,37 @@ export const load: PageServerLoad = async ({
 	const { session } = await safeGetSession();
 	if (!session) throw redirect(303, "/login");
 
-	// Zkontrolujeme, zda chceme načíst pouze specifické nastavení
-	const settingKey = url.searchParams.get('key');
+	// Získáme aktivní záložku z URL
+	const activeTab = url.searchParams.get('tab') || 'general';
 	
-	let query = supabase
-		.from("site_settings")
-		.select("*");
-	
-	// Pokud je specifikován klíč, načteme pouze toto nastavení
-	if (settingKey) {
-		query = query.eq('key', settingKey);
-	}
+	// Mapování záložek na klíče nastavení
+	const tabToKeys: Record<string, string[]> = {
+		general: ['shopName', 'shortName', 'legalName'],
+		seo: ['metaTitle', 'metaDescription', 'metaKeywords', 'ogImage', 'googleAnalyticsId'],
+		contact: ['email', 'phone', 'address', 'mapCoordinates', 'openingHours'],
+		social: ['facebook', 'instagram', 'twitter', 'linkedin', 'youtube'],
+		appearance: ['logo', 'favicon', 'primaryColor', 'secondaryColor', 'footerText'],
+		business: ['companyName', 'street', 'streetNumber', 'zipCode', 'city', 'ico', 'dic', 'bankAccount'],
+		email: ['orderConfirmationTemplate', 'contactFormTemplate'],
+		integrations: ['fakturoidEnabled', 'fakturoidConnected', 'fakturoidAccountName'],
+		zakazky: ['zakazkyEnabled', 'zakazkyNotificationEmail'],
+		doprava: ['dopravaEnabled', 'dopravaOptions'],
+		products: ['productsEnabled', 'productsPerPage'],
+		customer: ['customerEnabled', 'customerRegistration'],
+		inventory: ['inventoryEnabled', 'inventoryLowStock']
+	};
 
-	// Nejdřív načteme parent data
+	// Získáme klíče pro aktivní záložku
+	const keysToLoad = tabToKeys[activeTab] || [];
+
+	// Načteme parent data
 	const parentData = await parent();
 	
-	// Pak načteme nastavení
-	const { data: settings, error } = await query;
+	// Načteme pouze nastavení pro aktivní záložku
+	const { data: settings, error } = await supabase
+		.from("site_settings")
+		.select("*")
+		.in('key', keysToLoad);
 
 	if (error) {
 		console.error("Chyba při načítání nastavení:", error);
@@ -44,6 +58,7 @@ export const load: PageServerLoad = async ({
 	return {
 		...parentData,
 		settings: settings || [],
+		activeTab,
 		pages: ['hlavni'] // Výchozí hodnota, můžeme přidat dynamické načítání později
 	};
 };
