@@ -259,11 +259,13 @@ export async function loadAllSettings(
 	supabase: SupabaseClient
 ): Promise<AllSettings> {
 	try {
+		console.log("Načítám nastavení z Supabase");
 		const settings = getDefaultSettings();
 
 		const { data, error } = await supabase
 			.from("site_settings")
-			.select("key, value");
+			.select("key, value")
+			.throwOnError();
 
 		if (error) {
 			console.error("Chyba při načítání nastavení:", error);
@@ -281,7 +283,18 @@ export async function loadAllSettings(
 								? JSON.parse(item.value)
 								: item.value;
 
-						settings[key] = { ...settings[key], ...value };
+						// Speciální ošetření pro integrations, které jsou někdy uloženy jako string
+						if (key === "integrations" && typeof value === "string") {
+							try {
+								const parsedValue = JSON.parse(value);
+								settings[key] = { ...settings[key], ...parsedValue };
+							} catch (parseError) {
+								console.error("Chyba při parsování integrations:", parseError);
+								continue;
+							}
+						} else {
+							settings[key] = { ...settings[key], ...value };
+						}
 					} catch (parseError) {
 						console.error(
 							`Chyba při parsování hodnoty pro ${key}:`,
@@ -301,6 +314,8 @@ export async function loadAllSettings(
 			businessSettings.set(settings.business);
 			emailSettings.set(settings.email);
 			integrationSettings.set(settings.integrations);
+
+			console.log("Nastavení úspěšně načteno");
 		}
 
 		return settings;

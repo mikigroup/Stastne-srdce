@@ -25,6 +25,11 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 							const cookie = parse(document.cookie);
 							return cookie[key];
 						}
+					},
+					auth: {
+						persistSession: true,
+						autoRefreshToken: true,
+						detectSessionInUrl: true
 					}
 				}
 			)
@@ -61,9 +66,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		try {
 			const { data, error } = await supabase
 				.from("site_settings")
-				.select("key, value");
-
-			if (error) throw error;
+				.select("key, value")
+				.throwOnError();
 
 			if (!data) return DEFAULT_SETTINGS;
 

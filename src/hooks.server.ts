@@ -14,6 +14,11 @@ const supabase: Handle = async ({ event, resolve }) => {
 			remove: (key, options) => {
 				event.cookies.delete(key, { ...options, path: "/" });
 			}
+		},
+		global: {
+			headers: {
+				apikey: PRIVATE_SBKey
+			}
 		}
 	});
 
