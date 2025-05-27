@@ -44,6 +44,23 @@ interface SettingRecord {
 	user_id?: string;
 }
 
+// Definice všech požadovaných nastavení
+const REQUIRED_SETTINGS = [
+	{ key: 'general', defaultValue: getDefaultGeneralSettings() },
+	{ key: 'seo', defaultValue: {} },
+	{ key: 'contact', defaultValue: {} },
+	{ key: 'social', defaultValue: {} },
+	{ key: 'appearance', defaultValue: {} },
+	{ key: 'business', defaultValue: {} },
+	{ key: 'email', defaultValue: {} },
+	{ key: 'integrations', defaultValue: getDefaultIntegrationsSettings() },
+	{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
+	{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
+	{ key: 'products', defaultValue: getDefaultProductSettings() },
+	{ key: 'customer', defaultValue: getDefaultCustomerSettings() },
+	{ key: 'inventory', defaultValue: getDefaultInventorySettings() }
+];
+
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
 	parent
@@ -52,78 +69,98 @@ export const load: PageServerLoad = async ({
 	if (!session) throw redirect(303, "/login");
 
 	console.log("Načítám nastavení z DB...");
-	const { data: existingSettings, error } = await supabase
-		.from("site_settings")
-		.select("*");
+	
+	try {
+		// 1. Načteme pouze nastavení (pages jsou volitelné)
+		const { data: existingSettings, error: settingsError } = await supabase
+			.from("site_settings")
+			.select("*");
 
-	if (error) {
-		console.error("Chyba při načítání nastavení:", error);
-		return fail(500, { error: "Nepodařilo se načíst nastavení" });
-	}
-
-	// Příprava seznamu stránek pro nastavení
-	const { data: pagesData } = await supabase
-		.rpc('get_routes')
-		.eq('is_admin', false);
-
-	let pages = ['hlavni'];
-	if (pagesData) {
-		pages = [...new Set(['hlavni', ...pagesData])];
-	}
-
-	// Kontrola a přidání chybějících nastavení
-	await ensureSettingsExist(supabase, existingSettings || []);
-
-	// Znovu načtení nastavení po možném přidání výchozích hodnot
-	const { data: settings } = await supabase
-		.from('site_settings')
-		.select('*');
-
-	return {
-		...(await parent()),
-		settings,
-		pages
-	};
-};
-
-// Funkce pro kontrolu existence všech potřebných nastavení a jejich doplnění
-async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: SettingRecord[]) {
-	const requiredSettings = [
-		{ key: 'general', defaultValue: getDefaultGeneralSettings() },
-		{ key: 'seo', defaultValue: {} },
-		{ key: 'contact', defaultValue: {} },
-		{ key: 'social', defaultValue: {} },
-		{ key: 'appearance', defaultValue: {} },
-		{ key: 'business', defaultValue: {} },
-		{ key: 'email', defaultValue: {} },
-		{ key: 'integrations', defaultValue: getDefaultIntegrationsSettings() },
-		{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
-		{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
-		{ key: 'products', defaultValue: getDefaultProductSettings() },
-		{ key: 'customer', defaultValue: getDefaultCustomerSettings() },
-		{ key: 'inventory', defaultValue: getDefaultInventorySettings() }
-	];
-
-	for (const setting of requiredSettings) {
-		// Kontrolujeme pouze textové klíče, ne číselné
-		const exists = existingSettings.some(s => s.key === setting.key && typeof s.key === 'string');
-		
-		if (!exists) {
-			console.log(`Adding default value for missing setting: ${setting.key}`);
-			const { error } = await supabase
-				.from('site_settings')
-				.insert({
-					key: setting.key,
-					value: setting.defaultValue, // Ukládáme přímo objekt, ne JSON string
-					updated_at: new Date().toISOString()
-				});
-			
-			if (error) {
-				console.error(`Error adding default value for ${setting.key}:`, error);
-			}
+		if (settingsError) {
+			console.error("Chyba při načítání nastavení:", settingsError);
+			return fail(500, { error: "Nepodařilo se načíst nastavení" });
 		}
+
+		// 2. Rychlá kontrola chybějících nastavení v paměti
+		const existingKeys = new Set(existingSettings?.map(s => s.key) || []);
+		const missingSettings = REQUIRED_SETTINGS.filter(s => !existingKeys.has(s.key));
+
+		// 3. Pokud chybí nastavení, přidáme je jedním batch insertem
+		if (missingSettings.length > 0) {
+			console.log(`Přidávám ${missingSettings.length} chybějících nastavení...`);
+			
+			const newRecords = missingSettings.map(setting => ({
+				key: setting.key,
+				value: setting.defaultValue,
+				updated_at: new Date().toISOString()
+			}));
+
+			const { error: insertError } = await supabase
+				.from('site_settings')
+				.insert(newRecords);
+
+			if (insertError) {
+				console.error("Chyba při vkládání výchozích nastavení:", insertError);
+				// Pokračujeme i s chybou - použijeme co máme
+			}
+
+			// Znovu načteme všechna nastavení
+			const { data: allSettings } = await supabase
+				.from('site_settings')
+				.select('*');
+
+			// 4. Zkusíme načíst pages, ale není to kritické
+			let pages = ['hlavni'];
+			try {
+				const { data: pagesData } = await supabase
+					.rpc('get_routes')
+					.eq('is_admin', false);
+				
+				if (pagesData) {
+					pages = [...new Set(['hlavni', ...pagesData])];
+				}
+			} catch (pagesError) {
+				console.warn("Nepodařilo se načíst seznam stránek:", pagesError);
+			}
+
+			return {
+				...(await parent()),
+				settings: allSettings || existingSettings || [],
+				pages
+			};
+		}
+
+		// 5. Pokud nic nechybí, zkusíme načíst pages paralelně
+		let pages = ['hlavni'];
+		try {
+			// Nepoužíváme Promise.all, protože pages nejsou kritické
+			const { data: pagesData } = await supabase
+				.rpc('get_routes')
+				.eq('is_admin', false);
+			
+			if (pagesData) {
+				pages = [...new Set(['hlavni', ...pagesData])];
+			}
+		} catch (pagesError) {
+			console.warn("Nepodařilo se načíst seznam stránek:", pagesError);
+		}
+
+		return {
+			...(await parent()),
+			settings: existingSettings || [],
+			pages
+		};
+
+	} catch (err) {
+		console.error("Kritická chyba při načítání nastavení:", err);
+		// Vrátíme alespoň prázdná data, aby stránka fungovala
+		return {
+			...(await parent()),
+			settings: [],
+			pages: ['hlavni']
+		};
 	}
-}
+};
 
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, safeGetSession } }) => {
