@@ -30,11 +30,11 @@ export const load: PageServerLoad = async ({
 		query = query.eq('key', settingKey);
 	}
 
-	// Načteme parent data paralelně
-	const [parentData, { data: settings, error }] = await Promise.all([
-		parent(),
-		query
-	]);
+	// Nejdřív načteme parent data
+	const parentData = await parent();
+	
+	// Pak načteme nastavení
+	const { data: settings, error } = await query;
 
 	if (error) {
 		console.error("Chyba při načítání nastavení:", error);
@@ -50,87 +50,34 @@ export const load: PageServerLoad = async ({
 
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, safeGetSession } }) => {
-		console.log("--- ZAČÁTEK AKCE UPDATE ---");
-		const startTime = Date.now();
-
-		// 1. Session verification
 		const { session } = await safeGetSession();
-		if (!session) {
-			console.error("Uživatel není přihlášen");
-			throw redirect(303, "/login");
+		if (!session) throw redirect(303, "/login");
+
+		const formData = await request.formData();
+		const settings = Object.fromEntries(formData.entries());
+
+		// Připravíme data pro batch upsert
+		const settingsData = Object.entries(settings).map(([key, value]) => ({
+			key,
+			value: value.toString(),
+			updated_at: new Date().toISOString(),
+			updated_by: session.user.id,
+			user_id: session.user.id
+		}));
+
+		// Provedeme jeden batch upsert
+		const { error } = await supabase
+			.from("site_settings")
+			.upsert(settingsData, {
+				onConflict: 'key'
+			});
+
+		if (error) {
+			console.error("Chyba při ukládání nastavení:", error);
+			return fail(500, { error: "Nepodařilo se uložit nastavení" });
 		}
 
-		try {
-			// 2. Process input data
-			const formData = await request.formData();
-			const settingsJson = formData.get("settings")?.toString() || "{}";
-
-			let settingsData: Record<string, any>;
-			try {
-				settingsData = JSON.parse(settingsJson);
-			} catch (e) {
-				console.error("Neplatný JSON formát:", e);
-				return fail(400, { error: "Neplatný formát dat" });
-			}
-
-			console.log("Obdržená data:", {
-				user: session.user.id,
-				dataKeys: Object.keys(settingsData),
-				timestamp: new Date().toISOString()
-			});
-
-			// 3. Data validation
-			if (
-				!settingsData ||
-				typeof settingsData !== "object" ||
-				Array.isArray(settingsData)
-			) {
-				console.error("Prázdná nebo neplatná data pro update");
-				return fail(400, { error: "Žádná platná data k uložení" });
-			}
-
-			// 4. Připravíme všechna data pro batch upsert
-			const upsertData = Object.entries(settingsData).map(([key, value]) => ({
-				key: key,
-				value: value,
-				updated_at: new Date().toISOString(),
-				updated_by: session.user.id,
-				user_id: session.user.id
-			}));
-
-			console.log(`Provádím batch upsert pro ${upsertData.length} nastavení...`);
-
-			// 5. Provedeme jediný batch upsert
-			const { error: upsertError } = await supabase
-				.from("site_settings")
-				.upsert(upsertData, {
-					onConflict: 'key'
-				});
-
-			if (upsertError) {
-				console.error("Chyba při ukládání:", upsertError);
-				return fail(500, {
-					error: "Nepodařilo se uložit nastavení",
-					details: upsertError.message
-				});
-			}
-
-			console.log(`Úspěšně dokončeno za ${Date.now() - startTime}ms`);
-			return {
-				success: true,
-				updated: upsertData.length
-			};
-		} catch (error) {
-			console.error("Kritická chyba:", {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				timestamp: new Date().toISOString()
-			});
-			return fail(500, {
-				error: "Interní chyba serveru",
-				details: error instanceof Error ? error.message : "Neznámá chyba"
-			});
-		}
+		return { success: true };
 	},
 
 	testFakturoidOAuth: async ({ locals: { supabase, safeGetSession } }) => {
