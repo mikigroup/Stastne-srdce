@@ -583,30 +583,7 @@
 
 				<!-- Action Buttons -->
 				<div class="mt-6 p-4 border-t border-gray-300 space-y-3">
-					<form method="POST" action="?/update" use:enhance={() => {
-						loading = true;
-						return async ({ result, update }) => {
-							loading = false;
-							if (result.type === 'success') {
-								// Vymazat cache po úspěšném uložení
-								clearCache();
-								saveMessage = 'Nastavení byla úspěšně uložena!';
-								saveMessageType = 'success';
-								showMessage = true;
-								setTimeout(() => {
-									showMessage = false;
-								}, 3000);
-							} else if (result.type === 'failure') {
-								saveMessage = (result.data as any)?.error || 'Chyba při ukládání nastavení';
-								saveMessageType = 'error';
-								showMessage = true;
-								setTimeout(() => {
-									showMessage = false;
-								}, 5000);
-							}
-							await update();
-						};
-					}}>
+					<form method="POST" action="?/update" use:enhance>
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
 							type="submit"
@@ -1261,30 +1238,7 @@
 														<i class="fa-solid fa-check-circle"></i>
 														<span class="font-medium">Připojeno k Fakturoid</span>
 													</div>
-													<form method="POST" action="?/disconnectFakturoid" use:enhance={() => {
-														loading = true;
-														return async ({ result, update }) => {
-															loading = false;
-															if (result.type === 'success') {
-																saveMessage = 'Fakturoid byl úspěšně odpojeno!';
-																saveMessageType = 'success';
-																showMessage = true;
-																
-																// Aktualizovat lokální stav
-																$editableSettings.integrations.fakturoidConnected = false;
-																$editableSettings.integrations.fakturoidEnabled = false;
-																$editableSettings.integrations.fakturoidAccountName = '';
-															} else if (result.type === 'failure') {
-																saveMessage = String(result.data?.['error'] || 'Chyba při odpojování');
-																saveMessageType = 'error';
-																showMessage = true;
-															}
-															setTimeout(() => {
-																showMessage = false;
-															}, 5000);
-															await update();
-														};
-													}}>
+													<form method="POST" action="?/disconnectFakturoid" use:enhance>
 														<button 
 															type="submit"
 															class="btn btn-outline btn-sm btn-error"
@@ -1416,25 +1370,7 @@
 												<p class="text-sm text-gray-600 mb-3">
 													Otestujte aktuální OAuth připojení k Fakturoid.
 												</p>
-												<form method="POST" action="?/testFakturoidOAuth" use:enhance={() => {
-													loading = true;
-													return async ({ result, update }) => {
-														loading = false;
-														if (result.type === 'success') {
-															saveMessage = String(result.data?.['message'] || 'Test připojení byl úspěšný!');
-															saveMessageType = 'success';
-															showMessage = true;
-														} else if (result.type === 'failure') {
-															saveMessage = String(result.data?.['error'] || 'Test připojení selhal');
-															saveMessageType = 'error';
-															showMessage = true;
-														}
-														setTimeout(() => {
-															showMessage = false;
-														}, 5000);
-														await update();
-													};
-												}}>
+												<form method="POST" action="?/testFakturoidOAuth" use:enhance>
 													<button 
 														type="submit"
 														class="btn btn-outline btn-sm"

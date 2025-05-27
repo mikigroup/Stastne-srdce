@@ -69,7 +69,7 @@ export const actions: Actions = {
 
 			console.log("Obdržená data:", {
 				user: session.user.id,
-				data: settingsData,
+				dataKeys: Object.keys(settingsData),
 				timestamp: new Date().toISOString()
 			});
 
@@ -83,59 +83,36 @@ export const actions: Actions = {
 				return fail(400, { error: "Žádná platná data k uložení" });
 			}
 
-			// 4. Prepare batch operations
-			const updates = Object.entries(settingsData).map(async ([key, value]) => {
-				console.log(`Zpracovávám klíč: ${key}`);
+			// 4. Připravíme všechna data pro batch upsert
+			const upsertData = Object.entries(settingsData).map(([key, value]) => ({
+				key: key,
+				value: value,
+				updated_at: new Date().toISOString(),
+				updated_by: session.user.id,
+				user_id: session.user.id
+			}));
 
-				// 4a. Najdi existující záznam
-				const { data: existing, error: fetchError } = await supabase
-					.from("site_settings")
-					.select("id, key")
-					.eq("key", key)
-					.maybeSingle();
+			console.log(`Provádím batch upsert pro ${upsertData.length} nastavení...`);
 
-				if (fetchError) throw fetchError;
+			// 5. Provedeme jediný batch upsert
+			const { error: upsertError } = await supabase
+				.from("site_settings")
+				.upsert(upsertData, {
+					onConflict: 'key'
+				});
 
-				// 4b. Připrav typově bezpečná data
-				const recordData: SettingRecord = {
-					key: key,
-					value: value,
-					updated_at: new Date().toISOString(),
-					updated_by: session.user.id,
-					user_id: session.user.id
-				};
-
-				// 4c. Proveď operaci
-				if (existing?.id) {
-					console.log(`Updatuji existující záznam ID: ${existing.id}`);
-					return supabase
-						.from("site_settings")
-						.update(recordData)
-						.eq("id", existing.id);
-				} else {
-					console.log(`Vytvářím nový záznam pro klíč: ${key}`);
-					return supabase.from("site_settings").insert(recordData);
-				}
-			});
-
-			// 5. Execute all operations
-			console.log("Provádím batch operací...");
-			const results = await Promise.all(updates);
-			const errors = results.filter((r) => r.error);
-
-			// 6. Process results
-			if (errors.length > 0) {
-				console.error("Chyby při ukládání:", errors);
+			if (upsertError) {
+				console.error("Chyba při ukládání:", upsertError);
 				return fail(500, {
-					error: "Částečné selhání",
-					details: errors.map((e) => e.error?.message)
+					error: "Nepodařilo se uložit nastavení",
+					details: upsertError.message
 				});
 			}
 
 			console.log(`Úspěšně dokončeno za ${Date.now() - startTime}ms`);
 			return {
 				success: true,
-				updated: Object.keys(settingsData).length
+				updated: upsertData.length
 			};
 		} catch (error) {
 			console.error("Kritická chyba:", {
