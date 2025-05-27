@@ -10,6 +10,10 @@ interface SettingRecord {
 	user_id?: string;
 }
 
+// Cache pro sdílení dat mezi requesty
+const settingsCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
+
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
 	parent,
@@ -40,26 +44,41 @@ export const load: PageServerLoad = async ({
 
 	// Získáme klíče pro aktivní záložku
 	const keysToLoad = tabToKeys[activeTab] || [];
-
+	
 	// Načteme parent data
 	const parentData = await parent();
 	
-	// Načteme pouze nastavení pro aktivní záložku
-	const { data: settings, error } = await supabase
-		.from("site_settings")
-		.select("*")
-		.in('key', keysToLoad);
+	// Zkontrolujeme cache
+	const cacheKey = keysToLoad.sort().join(',');
+	const cached = settingsCache.get(cacheKey);
+	const now = Date.now();
+	
+	let settings;
+	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+		// Použijeme cache
+		settings = cached.data;
+	} else {
+		// Načteme z databáze
+		const { data, error } = await supabase
+			.from("site_settings")
+			.select("*")
+			.in('key', keysToLoad);
 
-	if (error) {
-		console.error("Chyba při načítání nastavení:", error);
-		// Pokračujeme s prázdnými nastaveními
+		if (error) {
+			console.error("Chyba při načítání nastavení:", error);
+			settings = [];
+		} else {
+			settings = data || [];
+			// Uložíme do cache
+			settingsCache.set(cacheKey, { data: settings, timestamp: now });
+		}
 	}
 
 	return {
 		...parentData,
-		settings: settings || [],
+		settings,
 		activeTab,
-		pages: ['hlavni'] // Výchozí hodnota, můžeme přidat dynamické načítání později
+		pages: ['hlavni']
 	};
 };
 
@@ -91,6 +110,9 @@ export const actions: Actions = {
 			console.error("Chyba při ukládání nastavení:", error);
 			return fail(500, { error: "Nepodařilo se uložit nastavení" });
 		}
+
+		// Vyčistíme cache pro aktualizovaná nastavení
+		settingsCache.clear();
 
 		return { success: true };
 	},
