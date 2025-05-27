@@ -43,6 +43,11 @@
 			saveMessageType = 'success';
 			showMessage = true;
 			
+			// Vyčistíme URL parametry
+			const url = new URL(window.location.href);
+			url.searchParams.delete('success');
+			window.history.replaceState({}, '', url.toString());
+			
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
@@ -64,6 +69,12 @@
 			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : 'Neznámá chyba při připojování Fakturoid účtu.');
 			saveMessageType = 'error';
 			showMessage = true;
+			
+			// Vyčistíme URL parametry
+			const url = new URL(window.location.href);
+			url.searchParams.delete('error');
+			url.searchParams.delete('message');
+			window.history.replaceState({}, '', url.toString());
 			
 			setTimeout(() => {
 				showMessage = false;
@@ -1014,9 +1025,15 @@
 												<i class="fa-solid fa-shield-halved"></i>
 												OAuth Připojení
 											</h4>
-											<p class="text-sm text-green-700 mb-3">
-												Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.
-											</p>
+											{#if $editableSettings.integrations.fakturoidConnected}
+												<p class="text-sm text-green-700 mb-3">
+													Váš Fakturoid účet je úspěšně připojen a můžete vytvářet faktury pro objednávky.
+												</p>
+											{:else}
+												<p class="text-sm text-green-700 mb-3">
+													Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.
+												</p>
+											{/if}
 											
 											<!-- Connect/Disconnect Button -->
 											<div class="flex items-center gap-3">
