@@ -6,6 +6,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 
 	export let data: PageData;
 
@@ -24,6 +25,52 @@
 	let saveMessage = '';
 	let saveMessageType: 'success'|'error'|'info' = 'success';
 	let showMessage = false;
+	let loadingTab = false;
+
+	// Cache management
+	const CACHE_KEY = 'site_settings_cache';
+	const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
+
+	// Funkce pro práci s cache
+	function getCachedSettings() {
+		if (!browser) return null;
+		
+		try {
+			const cached = localStorage.getItem(CACHE_KEY);
+			if (!cached) return null;
+			
+			const { data, timestamp } = JSON.parse(cached);
+			
+			// Zkontrolujeme, zda cache není starší než CACHE_DURATION
+			if (Date.now() - timestamp > CACHE_DURATION) {
+				localStorage.removeItem(CACHE_KEY);
+				return null;
+			}
+			
+			return data;
+		} catch (e) {
+			console.error('Chyba při čtení cache:', e);
+			return null;
+		}
+	}
+
+	function setCachedSettings(settings: any) {
+		if (!browser) return;
+		
+		try {
+			localStorage.setItem(CACHE_KEY, JSON.stringify({
+				data: settings,
+				timestamp: Date.now()
+			}));
+		} catch (e) {
+			console.error('Chyba při ukládání do cache:', e);
+		}
+	}
+
+	function clearCache() {
+		if (!browser) return;
+		localStorage.removeItem(CACHE_KEY);
+	}
 
 	// Zpracování OAuth úspěchu a chyb
 	onMount(() => {
@@ -82,9 +129,115 @@
 		}
 	});
 
-	// Get settings from data
+	// Get settings from data or cache
 	let settings = data.settings;
+	
+	// Zkusíme načíst z cache při prvním načtení
+	onMount(() => {
+		const cached = getCachedSettings();
+		if (cached && cached.length > 0) {
+			settings = cached;
+			editableSettings.set(structureSettings(cached));
+		}
+	});
+	
 	$: settings = data.settings;
+	$: if (settings && settings.length > 0) {
+		setCachedSettings(settings);
+	}
+
+	// Výchozí hodnoty pro každou sekci
+	const DEFAULT_VALUES = {
+		general: {
+			shopName: '',
+			shortName: '',
+			legalName: ''
+		},
+		seo: {
+			metaTitle: '',
+			metaDescription: '',
+			metaKeywords: '',
+			ogImage: '',
+			googleAnalyticsId: ''
+		},
+		contact: {
+			email: '',
+			phone: '',
+			address: '',
+			mapCoordinates: { lat: 0, lng: 0 },
+			openingHours: {}
+		},
+		social: {
+			facebook: '',
+			instagram: '',
+			twitter: '',
+			linkedin: '',
+			youtube: ''
+		},
+		appearance: {
+			logo: '',
+			favicon: '',
+			primaryColor: '#10b981',
+			secondaryColor: '#3b82f6',
+			footerText: ''
+		},
+		business: {
+			companyName: '',
+			street: '',
+			streetNumber: '',
+			zipCode: '',
+			city: '',
+			ico: '',
+			dic: '',
+			bankAccount: ''
+		},
+		email: {
+			orderConfirmationTemplate: '',
+			contactFormTemplate: ''
+		},
+		integrations: {
+			fakturoidEnabled: false,
+			fakturoidConnected: false,
+			fakturoidAccountName: '',
+			fakturoidSubdomain: '',
+			fakturoidDefaultLanguage: 'cz',
+			fakturoidAutoCreateInvoices: false,
+			fakturoidInvoiceDueDays: 14,
+			fakturoidDefaultPaymentMethod: 'bank',
+			fakturoidSendInvoiceEmail: false,
+			fakturoidInvoiceNote: '',
+			googleAnalyticsEnabled: false,
+			googleAnalyticsTrackingId: '',
+			facebookPixelEnabled: false,
+			facebookPixelId: ''
+		},
+		eshop: {
+			orderStates: [],
+			currencies: []
+		},
+		doprava: {
+			shippingMethods: [],
+			minimumOrderValue: 0,
+			freeDeliveryThreshold: 1000
+		},
+		products: {
+			menuTitle: 'Obědy',
+			menuIntroText: '',
+			visibleDays: 7,
+			features: [],
+			showAllergens: true,
+			showAllergensTooltip: true
+		},
+		customer: {
+			allowRegistration: true,
+			requireEmailVerification: true,
+			defaultRole: 'customer'
+		},
+		inventory: {
+			trackInventory: false,
+			lowStockThreshold: 10
+		}
+	};
 
 	// Structure the settings for easier editing
 	function structureSettings(settingsData: any) {
@@ -109,6 +262,13 @@
 			}
 		});
 
+		// Doplníme výchozí hodnoty pro chybějící nastavení
+		Object.keys(DEFAULT_VALUES).forEach(key => {
+			if (!structured[key]) {
+				structured[key] = DEFAULT_VALUES[key as keyof typeof DEFAULT_VALUES];
+			}
+		});
+
 		return structured;
 	}
 
@@ -118,6 +278,40 @@
 	// Watch for changes in data
 	$: if (settings) {
 		editableSettings.set(structureSettings(settings));
+	}
+
+	// Lazy loading pro jednotlivé taby
+	async function loadTabSettings(tabId: string) {
+		// Pokud už máme data pro tento tab, nemusíme načítat
+		if ($editableSettings[tabId] && Object.keys($editableSettings[tabId]).length > 0) {
+			return;
+		}
+
+		loadingTab = true;
+		
+		try {
+			const response = await fetch('?/loadSetting', {
+				method: 'POST',
+				body: new FormData(Object.assign(document.createElement('form'), {
+					innerHTML: `<input name="key" value="${tabId}">`
+				}))
+			});
+
+			if (response.ok) {
+				const result = await response.json();
+				if (result.type === 'success' && result.data?.setting) {
+					// Aktualizujeme pouze toto konkrétní nastavení
+					editableSettings.update(s => ({
+						...s,
+						[tabId]: result.data.setting.value || DEFAULT_VALUES[tabId as keyof typeof DEFAULT_VALUES]
+					}));
+				}
+			}
+		} catch (e) {
+			console.error('Chyba při načítání nastavení:', e);
+		} finally {
+			loadingTab = false;
+		}
 	}
 
 	// Tabs configuration
@@ -137,9 +331,11 @@
 		{ id: 'inventory', label: 'Inventář', icon: 'fa-solid fa-boxes-stacked' }
 	];
 
-	// Set active tab
-	function setActiveTab(tabId: string) {
+	// Set active tab with lazy loading
+	async function setActiveTab(tabId: string) {
 		activeTab = tabId;
+		// Lazy load nastavení pro tento tab
+		await loadTabSettings(tabId);
 	}
 
 	// Note: We're using the form action to save settings
@@ -387,7 +583,30 @@
 
 				<!-- Action Buttons -->
 				<div class="mt-6 p-4 border-t border-gray-300 space-y-3">
-					<form method="POST" action="?/update" use:enhance>
+					<form method="POST" action="?/update" use:enhance={() => {
+						loading = true;
+						return async ({ result, update }) => {
+							loading = false;
+							if (result.type === 'success') {
+								// Vymazat cache po úspěšném uložení
+								clearCache();
+								saveMessage = 'Nastavení byla úspěšně uložena!';
+								saveMessageType = 'success';
+								showMessage = true;
+								setTimeout(() => {
+									showMessage = false;
+								}, 3000);
+							} else if (result.type === 'failure') {
+								saveMessage = (result.data as any)?.error || 'Chyba při ukládání nastavení';
+								saveMessageType = 'error';
+								showMessage = true;
+								setTimeout(() => {
+									showMessage = false;
+								}, 5000);
+							}
+							await update();
+						};
+					}}>
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
 							type="submit"

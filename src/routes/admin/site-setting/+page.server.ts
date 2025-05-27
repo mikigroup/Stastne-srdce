@@ -1,39 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { 
-	getDefaultZakazkySettings, 
-	getDefaultDopravaSettings, 
-	getDefaultProductSettings, 
-	getDefaultGeneralSettings,
-	getDefaultCustomerSettings,
-	getDefaultInventorySettings
-} from "$lib/services/eshopSettingsService";
-
-// Výchozí nastavení pro integrace
-function getDefaultIntegrationsSettings() {
-	return {
-		// Fakturoid OAuth
-		fakturoidEnabled: false,
-		fakturoidConnected: false,
-		fakturoidAccountName: '',
-		fakturoidSubdomain: '',
-		fakturoidDefaultLanguage: 'cz',
-		fakturoidAutoCreateInvoices: false,
-		fakturoidInvoiceDueDays: 14,
-		fakturoidDefaultPaymentMethod: 'bank',
-		fakturoidSendInvoiceEmail: false,
-		fakturoidInvoiceNote: '',
-		
-		// Google Analytics
-		googleAnalyticsEnabled: false,
-		googleAnalyticsTrackingId: '',
-		
-		// Facebook Pixel
-		facebookPixelEnabled: false,
-		facebookPixelId: ''
-	};
-}
 
 interface SettingRecord {
 	id?: number;
@@ -44,107 +10,36 @@ interface SettingRecord {
 	user_id?: string;
 }
 
-// Definice všech požadovaných nastavení
-const REQUIRED_SETTINGS = [
-	{ key: 'general', defaultValue: getDefaultGeneralSettings() },
-	{ key: 'seo', defaultValue: {} },
-	{ key: 'contact', defaultValue: {} },
-	{ key: 'social', defaultValue: {} },
-	{ key: 'appearance', defaultValue: {} },
-	{ key: 'business', defaultValue: {} },
-	{ key: 'email', defaultValue: {} },
-	{ key: 'integrations', defaultValue: getDefaultIntegrationsSettings() },
-	{ key: 'eshop', defaultValue: getDefaultZakazkySettings() },
-	{ key: 'doprava', defaultValue: getDefaultDopravaSettings() },
-	{ key: 'products', defaultValue: getDefaultProductSettings() },
-	{ key: 'customer', defaultValue: getDefaultCustomerSettings() },
-	{ key: 'inventory', defaultValue: getDefaultInventorySettings() }
-];
-
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
-	parent
+	parent,
+	url
 }) => {
 	const { session } = await safeGetSession();
 	if (!session) throw redirect(303, "/login");
 
-	console.log("Načítám nastavení z DB...");
+	// Zkontrolujeme, zda chceme načíst pouze specifické nastavení
+	const settingKey = url.searchParams.get('key');
 	
-	// Načteme parent data paralelně s našimi daty
-	const parentDataPromise = parent();
+	let query = supabase.from("site_settings").select("*");
 	
-	try {
-		// 1. Načteme pouze nastavení (pages jsou volitelné)
-		const { data: existingSettings, error: settingsError } = await supabase
-			.from("site_settings")
-			.select("*")
-			.limit(20); // Omezíme počet záznamů pro rychlejší načtení
-
-		if (settingsError) {
-			console.error("Chyba při načítání nastavení:", settingsError);
-			const parentData = await parentDataPromise;
-			return {
-				...parentData,
-				settings: [],
-				pages: ['hlavni']
-			};
-		}
-
-		// 2. Rychlá kontrola chybějících nastavení v paměti
-		const existingKeys = new Set(existingSettings?.map(s => s.key) || []);
-		const missingSettings = REQUIRED_SETTINGS.filter(s => !existingKeys.has(s.key));
-
-		// 3. Pokud chybí nastavení, přidáme je jedním batch insertem
-		let finalSettings = existingSettings || [];
-		
-		if (missingSettings.length > 0) {
-			console.log(`Přidávám ${missingSettings.length} chybějících nastavení...`);
-			
-			const newRecords = missingSettings.map(setting => ({
-				key: setting.key,
-				value: setting.defaultValue,
-				updated_at: new Date().toISOString()
-			}));
-
-			const { error: insertError } = await supabase
-				.from('site_settings')
-				.insert(newRecords);
-
-			if (insertError) {
-				console.error("Chyba při vkládání výchozích nastavení:", insertError);
-				// Přidáme chybějící nastavení do výsledku i bez databáze
-				finalSettings = [...finalSettings, ...newRecords];
-			} else {
-				// Znovu načteme všechna nastavení
-				const { data: allSettings } = await supabase
-					.from('site_settings')
-					.select('*')
-					.limit(20);
-				
-				finalSettings = allSettings || finalSettings;
-			}
-		}
-
-		// 4. Pages načteme až po všem ostatním nebo vůbec
-		const parentData = await parentDataPromise;
-		
-		// Vracíme data bez čekání na pages
-		return {
-			...parentData,
-			settings: finalSettings,
-			pages: ['hlavni'] // Výchozí hodnota, pages nejsou kritické
-		};
-
-	} catch (err) {
-		console.error("Kritická chyba při načítání nastavení:", err);
-		const parentData = await parentDataPromise;
-		// Vrátíme alespoň prázdná data, aby stránka fungovala
-		return {
-			...parentData,
-			settings: [],
-			pages: ['hlavni']
-		};
+	// Pokud je specifikován klíč, načteme pouze toto nastavení
+	if (settingKey) {
+		query = query.eq('key', settingKey);
 	}
+
+	const { data: settings, error } = await query;
+
+	if (error) {
+		console.error("Chyba při načítání nastavení:", error);
+		// Pokračujeme s prázdnými nastaveními
+	}
+
+	return {
+		...(await parent()),
+		settings: settings || [],
+		pages: ['hlavni'] // Výchozí hodnota, můžeme přidat dynamické načítání později
+	};
 };
 
 export const actions: Actions = {
@@ -390,5 +285,36 @@ export const actions: Actions = {
 			console.error("Error disconnecting Fakturoid:", error);
 			return fail(500, { error: 'Chyba při odpojování Fakturoid' });
 		}
+	},
+
+	// Nová akce pro načtení specifického nastavení
+	loadSetting: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			return fail(401, { error: "Nepřihlášen" });
+		}
+
+		const formData = await request.formData();
+		const key = formData.get("key")?.toString();
+
+		if (!key) {
+			return fail(400, { error: "Chybí klíč nastavení" });
+		}
+
+		const { data, error } = await supabase
+			.from("site_settings")
+			.select("*")
+			.eq("key", key)
+			.maybeSingle();
+
+		if (error) {
+			console.error("Chyba při načítání nastavení:", error);
+			return fail(500, { error: "Nepodařilo se načíst nastavení" });
+		}
+
+		return {
+			success: true,
+			setting: data
+		};
 	}
 };

@@ -1,10 +1,15 @@
 {
   "functions": {
     "src/routes/admin/site-setting/+page.server.ts": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "src/routes/auth/callback/fakturoid/+server.ts": {
-      "maxDuration": 30
+      "maxDuration": 60
+    }
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
     }
   }
 } 
