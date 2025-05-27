@@ -25,23 +25,31 @@ export async function getAccessToken(): Promise<string | null> {
 		
 		console.log('Making request to Fakturoid OAuth endpoint...');
 		
+		// Vytvoření Basic auth hlavičky podle dokumentace
+		const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+		
 		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 			method: 'POST',
 			headers: {
+				'Authorization': `Basic ${basicAuth}`,
 				'Content-Type': 'application/x-www-form-urlencoded',
-				'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)'
+				'Accept': 'application/json',
+				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
 			},
 			body: new URLSearchParams({
-				grant_type: 'client_credentials',
-				client_id: clientId,
-				client_secret: clientSecret,
-				scope: 'read write'
-			})
+				grant_type: 'client_credentials'
+			}).toString()
 		});
 		
 		if (!response.ok) {
 			const errorText = await response.text();
 			console.error('OAuth request failed:', response.status, errorText);
+			try {
+				const errorData = JSON.parse(errorText);
+				console.error('Error details:', errorData.error_description || errorData.error);
+			} catch (e) {
+				// Ignorujeme chyby při parsování error response
+			}
 			return null;
 		}
 		
@@ -49,8 +57,8 @@ export async function getAccessToken(): Promise<string | null> {
 		
 		// Cache the token
 		cachedToken = data.access_token;
-		// Set expiry to 90% of the actual expiry time for safety
-		tokenExpiry = Date.now() + (data.expires_in * 1000 * 0.9);
+		// Token expiruje za 2 hodiny (7200 sekund)
+		tokenExpiry = Date.now() + (data.expires_in * 1000 * 0.9); // 90% z 2 hodin pro jistotu
 		
 		console.log('Successfully received access token');
 		return cachedToken;
