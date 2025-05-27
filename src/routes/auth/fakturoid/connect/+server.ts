@@ -13,8 +13,13 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }
 	
 	console.log('User ID:', session.user.id);
 
-	// Generujeme náhodný state pro CSRF ochranu
-	const state = crypto.randomUUID();
+	// Generujeme state s user_id pro případ ztráty session
+	const stateData = {
+		random: crypto.randomUUID(),
+		user_id: session.user.id,
+		timestamp: Date.now()
+	};
+	const state = Buffer.from(JSON.stringify(stateData)).toString('base64url');
 	
 	// Uložíme state do cookie - zjednodušené nastavení pro produkci
 	cookies.set('fakturoid_oauth_state', state, {
