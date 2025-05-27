@@ -262,9 +262,11 @@ export async function loadAllSettings(
 		console.log("Načítám nastavení z Supabase");
 		const settings = getDefaultSettings();
 
+		// Načteme jen potřebná nastavení
 		const { data, error } = await supabase
 			.from("site_settings")
 			.select("key, value")
+			.in("key", ["general", "seo", "contact", "appearance", "social", "business"])
 			.throwOnError();
 
 		if (error) {
@@ -273,28 +275,25 @@ export async function loadAllSettings(
 		}
 
 		if (data) {
-			for (const item of data) {
-				const key = item.key as keyof AllSettings;
+			// Použijeme Map pro rychlejší vyhledávání
+			const settingsMap = new Map(
+				data.map(item => [item.key, item.value])
+			);
+
+			// Aktualizujeme jen existující klíče
+			for (const [key, value] of settingsMap) {
 				if (key in settings) {
 					try {
 						// Podpora pro oba formáty - objekt i JSON string
-						const value =
-							typeof item.value === "string"
-								? JSON.parse(item.value)
-								: item.value;
+						const parsedValue =
+							typeof value === "string"
+								? JSON.parse(value)
+								: value;
 
-						// Speciální ošetření pro integrations, které jsou někdy uloženy jako string
-						if (key === "integrations" && typeof value === "string") {
-							try {
-								const parsedValue = JSON.parse(value);
-								settings[key] = { ...settings[key], ...parsedValue };
-							} catch (parseError) {
-								console.error("Chyba při parsování integrations:", parseError);
-								continue;
-							}
-						} else {
-							settings[key] = { ...settings[key], ...value };
-						}
+						settings[key as keyof AllSettings] = {
+							...settings[key as keyof AllSettings],
+							...parsedValue
+						};
 					} catch (parseError) {
 						console.error(
 							`Chyba při parsování hodnoty pro ${key}:`,
