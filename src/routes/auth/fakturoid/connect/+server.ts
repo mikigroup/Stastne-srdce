@@ -8,7 +8,7 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }
 	const { session } = await safeGetSession();
 	if (!session) {
 		console.log('No session found, redirecting to login');
-		throw redirect(303, "/login");
+		return redirect(303, "/login");
 	}
 	
 	console.log('User ID:', session.user.id);
@@ -21,14 +21,14 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }
 	};
 	const state = Buffer.from(JSON.stringify(stateData)).toString('base64url');
 	
-	// Uložíme state do cookie - zjednodušené nastavení pro produkci
+	// Uložíme state do cookie - optimalizované pro Vercel
+	const isProduction = url.hostname !== 'localhost' && !url.hostname.includes('127.0.0.1');
 	cookies.set('fakturoid_oauth_state', state, {
 		path: '/',
 		maxAge: 600, // 10 minut
 		httpOnly: true,
-		secure: false, // Zkusíme bez secure pro test
-		sameSite: 'lax'
-		// Bez domain - necháme browser rozhodnout
+		secure: isProduction, // Secure pouze v produkci
+		sameSite: isProduction ? 'none' : 'lax' // None pro cross-site v produkci
 	});
 
 	console.log('State cookie set:', { state, hostname: url.hostname });
@@ -41,5 +41,5 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }
 	authUrl.searchParams.set('state', state);
 
 	// Přesměrujeme uživatele na Fakturoid pro výběr účtu
-	throw redirect(303, authUrl.toString());
+	return redirect(303, authUrl.toString());
 }; 

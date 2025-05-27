@@ -25,9 +25,11 @@
 	let saveMessageType: 'success'|'error'|'info' = 'success';
 	let showMessage = false;
 
-	// Zpracování OAuth úspěchu
+	// Zpracování OAuth úspěchu a chyb
 	onMount(() => {
 		const success = $page.url.searchParams.get('success');
+		const error = $page.url.searchParams.get('error');
+		const message = $page.url.searchParams.get('message');
 		const tab = $page.url.searchParams.get('tab');
 		
 		// Automatické přepnutí na zadanou záložku
@@ -44,6 +46,28 @@
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
+		} else if (error) {
+			activeTab = 'integrations';
+			
+			// Mapování chybových kódů na uživatelsky přívětivé zprávy
+			const errorMessages: Record<string, string> = {
+				'oauth_state_mismatch': 'Chyba ověření OAuth stavu. Zkuste to prosím znovu.',
+				'missing_oauth_params': 'Chybí OAuth parametry. Zkuste připojení znovu.',
+				'invalid_state_format': 'Neplatný formát OAuth stavu.',
+				'token_request_failed': 'Nepodařilo se získat přístupový token od Fakturoid.',
+				'user_info_failed': 'Nepodařilo se načíst informace o uživateli z Fakturoid.',
+				'token_save_failed': 'Nepodařilo se uložit přístupový token do databáze.',
+				'settings_update_failed': 'Nepodařilo se aktualizovat nastavení integrace.',
+				'callback_failed': 'Obecná chyba při OAuth callback.'
+			};
+			
+			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : 'Neznámá chyba při připojování Fakturoid účtu.');
+			saveMessageType = 'error';
+			showMessage = true;
+			
+			setTimeout(() => {
+				showMessage = false;
+			}, 8000);
 		}
 	});
 

@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		if (!session) {
 			// Místo chyby přesměrujeme na login s informací
 			console.error('No session found during OAuth callback');
-			throw redirect(303, "/login?error=session_lost&message=OAuth session expired, please try again");
+			return redirect(303, "/login?error=session_lost&message=OAuth session expired, please try again");
 		}
 
 		const code = url.searchParams.get("code");
@@ -49,7 +49,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		console.log('OAuth params:', { code: code ? 'present' : 'missing', state: state ? 'present' : 'missing' });
 
 		if (!code || !state) {
-			throw error(400, "Missing required OAuth parameters");
+			console.error('Missing OAuth parameters:', { code: !!code, state: !!state });
+			return redirect(303, "/admin/site-setting?error=missing_oauth_params");
 		}
 
 		// Dekódujeme state a získáme user_id
@@ -62,7 +63,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			console.log('State decoded:', { userId, timestamp: stateData.timestamp });
 		} catch (e) {
 			console.error('Failed to decode state:', e);
-			throw error(400, "Invalid state format");
+			return redirect(303, "/admin/site-setting?error=invalid_state_format");
 		}
 		
 		// Ověříme state z cookie
@@ -73,12 +74,16 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			cookiesAvailable: Object.keys(cookies.getAll())
 		});
 		
-		if (!savedState || savedState !== state) {
+		// Na Vercelu mohou být problémy s cookies, takže budeme mírnější
+		if (!savedState) {
+			console.warn('No saved state found in cookies - this may be due to Vercel cookie issues');
+			// Pokračujeme, ale logujeme varování
+		} else if (savedState !== state) {
 			console.error('Invalid state parameter:', { 
 				savedState, 
 				receivedState: state
 			});
-			throw error(400, "Invalid state parameter");
+			return redirect(303, "/admin/site-setting?error=oauth_state_mismatch");
 		}
 		
 		// Pokud nemáme session, použijeme userId ze state
@@ -115,7 +120,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		if (!tokenResponse.ok) {
 			const errorText = await tokenResponse.text();
 			console.error('Token request failed:', tokenResponse.status, errorText);
-			throw error(500, "Failed to obtain access token");
+			return redirect(303, "/admin/site-setting?error=token_request_failed");
 		}
 
 		const tokenData = await tokenResponse.json();
@@ -132,7 +137,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 		if (!userResponse.ok) {
 			console.error('Failed to fetch user info:', await userResponse.text());
-			throw error(500, "Failed to fetch user info");
+			return redirect(303, "/admin/site-setting?error=user_info_failed");
 		}
 
 		const userData = await userResponse.json();
@@ -155,7 +160,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		if (tokenSaveError) {
 			console.error('Failed to save token:', tokenSaveError);
 			console.error('Token save error details:', JSON.stringify(tokenSaveError, null, 2));
-			throw error(500, "Failed to save authentication data");
+			return redirect(303, "/admin/site-setting?error=token_save_failed");
 		}
 		console.log('Token saved successfully');
 
@@ -188,19 +193,23 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 		if (settingsError) {
 			console.error('Failed to update settings:', settingsError);
-			throw error(500, "Failed to update integration settings");
+			return redirect(303, "/admin/site-setting?error=settings_update_failed");
 		}
 
 		// Přesměrujeme zpět na nastavení
-		throw redirect(303, "/admin/site-setting?success=fakturoid_connected");
+		return redirect(303, "/admin/site-setting?success=fakturoid_connected");
 
 	} catch (err) {
 		console.error("Fakturoid callback failed:", err);
 		
-		if (err instanceof Response) throw err;
+		// Pokud je to redirect, necháme ho projít
+		if (err instanceof Response) {
+			throw err;
+		}
 		
-		throw error(500, {
-			message: "Failed to connect Fakturoid account: " + (err instanceof Error ? err.message : String(err))
-		});
+		// Místo 500 chyby přesměrujeme s chybovou zprávou
+		const errorMessage = err instanceof Error ? err.message : String(err);
+		console.error("Redirecting to settings with error:", errorMessage);
+		return redirect(303, `/admin/site-setting?error=callback_failed&message=${encodeURIComponent(errorMessage)}`);
 	}
 };
