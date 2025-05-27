@@ -21,14 +21,20 @@ export const load: PageServerLoad = async ({
 	// Zkontrolujeme, zda chceme načíst pouze specifické nastavení
 	const settingKey = url.searchParams.get('key');
 	
-	let query = supabase.from("site_settings").select("*");
+	let query = supabase
+		.from("site_settings")
+		.select("*");
 	
 	// Pokud je specifikován klíč, načteme pouze toto nastavení
 	if (settingKey) {
 		query = query.eq('key', settingKey);
 	}
 
-	const { data: settings, error } = await query;
+	// Načteme parent data paralelně
+	const [parentData, { data: settings, error }] = await Promise.all([
+		parent(),
+		query
+	]);
 
 	if (error) {
 		console.error("Chyba při načítání nastavení:", error);
@@ -36,7 +42,7 @@ export const load: PageServerLoad = async ({
 	}
 
 	return {
-		...(await parent()),
+		...parentData,
 		settings: settings || [],
 		pages: ['hlavni'] // Výchozí hodnota, můžeme přidat dynamické načítání později
 	};
