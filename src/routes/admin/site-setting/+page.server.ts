@@ -105,7 +105,8 @@ async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: S
 	];
 
 	for (const setting of requiredSettings) {
-		const exists = existingSettings.some(s => s.key === setting.key);
+		// Kontrolujeme pouze textové klíče, ne číselné
+		const exists = existingSettings.some(s => s.key === setting.key && typeof s.key === 'string');
 		
 		if (!exists) {
 			console.log(`Adding default value for missing setting: ${setting.key}`);
@@ -113,7 +114,7 @@ async function ensureSettingsExist(supabase: SupabaseClient, existingSettings: S
 				.from('site_settings')
 				.insert({
 					key: setting.key,
-					value: JSON.stringify(setting.defaultValue),
+					value: setting.defaultValue, // Ukládáme přímo objekt, ne JSON string
 					updated_at: new Date().toISOString()
 				});
 			
