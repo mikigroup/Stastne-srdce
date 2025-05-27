@@ -2,7 +2,7 @@ import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { PRIVATE_FAKTUROID_CLIENT_ID } from "$env/static/private";
 
-export const GET: RequestHandler = async ({ locals: { safeGetSession }, url, cookies }) => {
+export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }, url, cookies }) => {
 	console.log('=== FAKTUROID OAUTH CONNECT START ===');
 	
 	const { session } = await safeGetSession();
@@ -16,14 +16,17 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession }, url, coo
 	// Generujeme náhodný state pro CSRF ochranu
 	const state = crypto.randomUUID();
 	
-	// Uložíme state do cookie s expirací 5 minut
+	// Uložíme state do cookie - zjednodušené nastavení pro produkci
 	cookies.set('fakturoid_oauth_state', state, {
 		path: '/',
-		maxAge: 300, // 5 minut
+		maxAge: 600, // 10 minut
 		httpOnly: true,
-		secure: true,
+		secure: false, // Zkusíme bez secure pro test
 		sameSite: 'lax'
+		// Bez domain - necháme browser rozhodnout
 	});
+
+	console.log('State cookie set:', { state, hostname: url.hostname });
 
 	// Sestavíme URL pro OAuth autorizaci
 	const authUrl = new URL('https://app.fakturoid.cz/api/v3/oauth');

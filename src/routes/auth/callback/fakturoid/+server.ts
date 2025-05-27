@@ -21,8 +21,19 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 		// Získáme a ověříme state z cookie
 		const savedState = cookies.get('fakturoid_oauth_state');
+		console.log('State verification:', { 
+			savedState, 
+			receivedState: state, 
+			cookiesAvailable: Object.keys(cookies.getAll()),
+			allCookies: cookies.getAll()
+		});
+		
 		if (!savedState || savedState !== state) {
-			console.error('Invalid state:', { savedState, receivedState: state });
+			console.error('Invalid state parameter:', { 
+				savedState, 
+				receivedState: state,
+				allCookies: cookies.getAll()
+			});
 			throw error(400, "Invalid state parameter");
 		}
 
