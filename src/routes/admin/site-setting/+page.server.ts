@@ -302,6 +302,12 @@ export const actions: Actions = {
 		}
 
 		try {
+			// Importujeme clearStoredToken z fakturoidAuth
+			const { clearStoredToken } = await import('$lib/fakturoidAuth');
+			
+			// Vymažeme uložené tokeny
+			await clearStoredToken();
+
 			// Načteme existující integrations nastavení
 			const { data: existingSettings, error: fetchError } = await supabase
 				.from('site_settings')

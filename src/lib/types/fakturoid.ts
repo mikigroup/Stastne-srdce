@@ -53,28 +53,34 @@ export interface FakturoidTables {
     fakturoid_tokens: {
         Row: {
             id: string;
-            customer_id: string;
+            user_id: string;
             access_token: string;
             refresh_token: string;
             expires_at: string;
+            account_email?: string;
+            account_name?: string;
             created_at: string;
             updated_at: string;
         };
         Insert: {
             id?: string;
-            customer_id: string;
+            user_id: string;
             access_token: string;
             refresh_token: string;
             expires_at: string;
+            account_email?: string;
+            account_name?: string;
             created_at?: string;
             updated_at?: string;
         };
         Update: {
             id?: string;
-            customer_id?: string;
+            user_id?: string;
             access_token?: string;
             refresh_token?: string;
             expires_at?: string;
+            account_email?: string;
+            account_name?: string;
             created_at?: string;
             updated_at?: string;
         };

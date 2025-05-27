@@ -1,16 +1,15 @@
-import {
-	PRIVATE_FAKTUROID_CLIENT_ID,
-	PRIVATE_FAKTUROID_CLIENT_SECRET
-} from "$env/static/private";
 import { supabase } from "./supabase";
 import type { FakturoidToken } from "./types/fakturoid";
 
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
 
+/**
+ * Získá platný access token pro aktuálního uživatele z databáze
+ * Pokud je token expirovaný, pokusí se ho obnovit pomocí refresh tokenu
+ */
 export async function getAccessToken(): Promise<string | null> {
-	// Debug log
-	console.log('Attempting to get access token...');
+	console.log('Attempting to get access token from database...');
 	
 	// Check if we have a cached token that's still valid
 	if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
@@ -19,52 +18,134 @@ export async function getAccessToken(): Promise<string | null> {
 	}
 	
 	try {
-		// Get environment variables
-		const clientId = PRIVATE_FAKTUROID_CLIENT_ID;
-		const clientSecret = PRIVATE_FAKTUROID_CLIENT_SECRET;
-		
-		console.log('Making request to Fakturoid OAuth endpoint...');
-		
-		// Vytvoření Basic auth hlavičky podle dokumentace
-		const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-		
-		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
-			method: 'POST',
-			headers: {
-				'Authorization': `Basic ${basicAuth}`,
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Accept': 'application/json',
-				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
-			},
-			body: new URLSearchParams({
-				grant_type: 'client_credentials'
-			}).toString()
-		});
-		
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error('OAuth request failed:', response.status, errorText);
-			try {
-				const errorData = JSON.parse(errorText);
-				console.error('Error details:', errorData.error_description || errorData.error);
-			} catch (e) {
-				// Ignorujeme chyby při parsování error response
-			}
+		// Získáme aktuálního uživatele
+		const { data: { user }, error: userError } = await supabase.auth.getUser();
+		if (userError || !user) {
+			console.error('No authenticated user found');
 			return null;
 		}
+
+		// Načteme token z databáze
+		const { data: tokenData, error: tokenError } = await supabase
+			.from('fakturoid_tokens')
+			.select('*')
+			.eq('user_id', user.id)
+			.maybeSingle();
+
+		if (tokenError) {
+			console.error('Error fetching token from database:', tokenError);
+			return null;
+		}
+
+		if (!tokenData) {
+			console.log('No Fakturoid token found for user');
+			return null;
+		}
+
+		// Zkontrolujeme, zda token není expirovaný
+		const expiresAt = new Date(tokenData.expires_at);
+		const now = new Date();
 		
-		const data = await response.json();
+		if (now >= expiresAt) {
+			console.log('Token expired, attempting to refresh...');
+			
+			// Pokusíme se obnovit token pomocí refresh tokenu
+			const refreshedToken = await refreshAccessToken(tokenData.refresh_token, user.id);
+			if (refreshedToken) {
+				cachedToken = refreshedToken;
+				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny
+				return cachedToken;
+			} else {
+				console.error('Failed to refresh token');
+				return null;
+			}
+		}
+
+		// Token je stále platný
+		cachedToken = tokenData.access_token;
+		tokenExpiry = expiresAt.getTime();
 		
-		// Cache the token
-		cachedToken = data.access_token;
-		// Token expiruje za 2 hodiny (7200 sekund)
-		tokenExpiry = Date.now() + (data.expires_in * 1000 * 0.9); // 90% z 2 hodin pro jistotu
-		
-		console.log('Successfully received access token');
+		console.log('Successfully retrieved access token from database');
 		return cachedToken;
 		
 	} catch (error) {
 		console.error('Error getting access token:', error);
 		return null;
+	}
+}
+
+/**
+ * Obnoví access token pomocí refresh tokenu
+ */
+async function refreshAccessToken(refreshToken: string, userId: string): Promise<string | null> {
+	try {
+		const { PRIVATE_FAKTUROID_CLIENT_ID, PRIVATE_FAKTUROID_CLIENT_SECRET } = await import('$env/static/private');
+		
+		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Accept': 'application/json',
+				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
+			},
+			body: new URLSearchParams({
+				grant_type: 'refresh_token',
+				refresh_token: refreshToken
+			}).toString()
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error('Token refresh failed:', response.status, errorText);
+			return null;
+		}
+
+		const tokenData = await response.json();
+
+		// Uložíme nový token do databáze
+		const { error: updateError } = await supabase
+			.from('fakturoid_tokens')
+			.update({
+				access_token: tokenData.access_token,
+				refresh_token: tokenData.refresh_token || refreshToken, // Někdy se refresh token nemění
+				expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+				updated_at: new Date().toISOString()
+			})
+			.eq('user_id', userId);
+
+		if (updateError) {
+			console.error('Failed to update token in database:', updateError);
+			return null;
+		}
+
+		console.log('Token successfully refreshed');
+		return tokenData.access_token;
+
+	} catch (error) {
+		console.error('Error refreshing token:', error);
+		return null;
+	}
+}
+
+/**
+ * Vymaže uložený token (při odpojení účtu)
+ */
+export async function clearStoredToken(): Promise<void> {
+	try {
+		const { data: { user } } = await supabase.auth.getUser();
+		if (!user) return;
+
+		await supabase
+			.from('fakturoid_tokens')
+			.delete()
+			.eq('user_id', user.id);
+
+		// Vymažeme cache
+		cachedToken = null;
+		tokenExpiry = null;
+
+	} catch (error) {
+		console.error('Error clearing stored token:', error);
 	}
 }
