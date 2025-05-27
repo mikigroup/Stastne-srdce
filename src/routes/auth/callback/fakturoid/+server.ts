@@ -148,6 +148,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 				expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
 				account_email: userData.email,
 				account_name: userData.name
+			}, {
+				onConflict: 'user_id'
 			});
 
 		if (tokenSaveError) {
