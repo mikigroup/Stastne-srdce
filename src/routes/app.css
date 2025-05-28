@@ -1,5 +1,6 @@
 @import "@fontsource/fira-mono";
 @import "./custom.css";
+@import "tailwindcss";
 
 @tailwind base;
 @tailwind components;

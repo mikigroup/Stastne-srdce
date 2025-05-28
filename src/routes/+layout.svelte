@@ -152,36 +152,25 @@
 
 <Footer />
 
-<style lang="scss">
+<style lang="postcss">
 	.textmenu {
-		font-size: 1em;
+		@apply text-base;
 	}
+	
 	header {
-		position: fixed;
-		top: 0px;
-		width: 100%;
-		height: 100px;
-		z-index: 1;
+		@apply fixed top-0 w-full h-[100px] z-10;
 	}
+	
 	.navItem {
-		text-decoration: none;
-		position: relative;
-		display: inline-block;
-
+		@apply no-underline relative inline-block;
+		
 		&::after {
 			content: "";
-			background: #d2691e;
-			height: 1px;
-			position: absolute;
-			bottom: 0;
-			transition: 0.16s all 0.025s;
-			left: 100%;
-			right: 0;
+			@apply bg-[#d2691e] h-[1px] absolute bottom-0 transition-all duration-150 delay-[25ms] left-full right-0;
 		}
-
+		
 		&:hover::after {
-			left: 0;
-			right: 0;
+			@apply left-0 right-0;
 		}
 	}
 </style>
