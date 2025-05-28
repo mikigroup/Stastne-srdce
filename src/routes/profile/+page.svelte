@@ -75,7 +75,10 @@
       email: session?.user?.email,
       company,
       ico,
-      dic
+      dic,
+      telephone,
+      delivery_method: deliveryMethod,
+      payment_method: paymentMethod
     });
     profileValidationMessage = getProfileValidationMessage(validationResult);
   }
@@ -171,13 +174,57 @@
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    value={form?.telephone ?? telephone}
+                    bind:value={telephone}
                     type="text"
                     name="telephone"
                     id="telephone"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                     placeholder="Telefon"
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery and Payment section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Způsob dodání a platby</h3>
+            <div class="space-y-4">
+              <div class="flex flex-col items-center md:flex-row gap-4">
+                <div class="flex justify-start basis-1/3">
+                  <label class="text-gray-700 font-medium" for="delivery_method">Způsob dodání</label>
+                </div>
+                <div class="w-full basis-2/3">
+                  <select
+                    bind:value={deliveryMethod}
+                    name="delivery_method"
+                    id="delivery_method"
+                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  >
+                    <option value="">Vyberte způsob dodání</option>
+                    <option value="reBox">reBox</option>
+                    <option value="personal">Osobní odběr</option>
+                    <option value="delivery">Doručení</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center md:flex-row gap-4">
+                <div class="flex justify-start basis-1/3">
+                  <label class="text-gray-700 font-medium" for="payment_method">Způsob platby</label>
+                </div>
+                <div class="w-full basis-2/3">
+                  <select
+                    bind:value={paymentMethod}
+                    name="payment_method"
+                    id="payment_method"
+                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  >
+                    <option value="">Vyberte způsob platby</option>
+                    <option value="bankNoInvoice">Bankovní převod bez faktury</option>
+                    <option value="bankWithInvoice">Bankovní převod s fakturou</option>
+                    <option value="cash">Hotově</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -350,48 +397,6 @@
                 </div>
               </div>
             {/if}
-
-            <!-- Způsob dodání -->
-            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label class="text-gray-700 font-medium">Způsob dodání</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <select
-                    name="delivery_method"
-                    bind:value={deliveryMethod}
-                    class="w-full px-4 py-2 text-base text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  >
-                    <option value="">Vyberte způsob dodání</option>
-                    <option value="own">Vlastní nosič</option>
-                    <option value="reBox">REkrabička (záloha 160 Kč za set/80 Kč za jednu)</option>
-                    <option value="menuBox">Menu Box (12 Kč/kus)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Způsob platby -->
-            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label class="text-gray-700 font-medium">Způsob platby</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <select
-                    name="payment_method"
-                    bind:value={paymentMethod}
-                    class="w-full px-4 py-2 text-base text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  >
-                    <option value="">Vyberte způsob platby</option>
-                    <option value="cash">Hotově</option>
-                    <option value="bankNoInvoice">Na účet bez faktury</option>
-                    <option value="bankWithInvoice">Na účet s fakturou</option>
-                  </select>
-                </div>
-              </div>
-            </div>
           {/if}
 
           <!-- Submit button -->

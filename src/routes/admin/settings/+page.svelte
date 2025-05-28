@@ -11,16 +11,20 @@
 
 	let loading = false;
 
-	let username: string = profiles?.username ?? "";
-	let avatarUrl: string | null = profiles?.avatar_url ?? null;
-	let first_name: string = profiles?.first_name ?? "";
-	let last_name: string = profiles?.last_name ?? "";
-	let telephone: string = profiles?.telephone ?? "";
-	let ico: string = profiles?.ico ?? "";
-	let dic: string = profiles?.dic ?? "";
-	let company: string = profiles?.company ?? "";
-	let street: string = profiles?.street ?? "";
-	let street_number: string = profiles?.street_number ?? "";
+	// Inicializace formuláře z dat nebo z předchozího odeslání
+	$: formData = {
+		first_name: form?.formData?.first_name ?? profiles?.first_name ?? "",
+		last_name: form?.formData?.last_name ?? profiles?.last_name ?? "",
+		username: form?.formData?.username ?? profiles?.username ?? "",
+		telephone: form?.formData?.telephone ?? profiles?.telephone ?? "",
+		company: form?.formData?.company ?? profiles?.company ?? "",
+		ico: form?.formData?.ico ?? profiles?.ico ?? "",
+		dic: form?.formData?.dic ?? profiles?.dic ?? "",
+		street: form?.formData?.street ?? profiles?.street ?? "",
+		street_number: form?.formData?.street_number ?? profiles?.street_number ?? "",
+		city: form?.formData?.city ?? profiles?.city ?? "",
+		zip_code: form?.formData?.zip_code ?? profiles?.zip_code ?? ""
+	};
 
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -64,10 +68,13 @@
 				<input
 					type="text"
 					id="first_name"
-					class="input input-bordered w-full max-w-xs"
+					class="input input-bordered w-full max-w-xs {form?.errors?.first_name ? 'input-error' : ''}"
 					placeholder="Franta"
-					value={form?.firstName ?? first_name}
+					value={formData.first_name}
 					name="first_name" />
+				{#if form?.errors?.first_name}
+					<p class="text-error text-sm mt-1">{form.errors.first_name}</p>
+				{/if}
 			</div>
 			<div>
 				<label
@@ -77,10 +84,13 @@
 				<input
 					type="text"
 					id="last_name"
-					class="input input-bordered w-full max-w-xs"
+					class="input input-bordered w-full max-w-xs {form?.errors?.last_name ? 'input-error' : ''}"
 					placeholder="Omáčka"
-					value={form?.lastName ?? last_name}
+					value={formData.last_name}
 					name="last_name" />
+				{#if form?.errors?.last_name}
+					<p class="text-error text-sm mt-1">{form.errors.last_name}</p>
+				{/if}
 			</div>
 			<div>
 				<label
@@ -90,10 +100,13 @@
 				<input
 					type="text"
 					id="telephone"
-					class="input input-bordered w-full max-w-xs"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.telephone ? 'input-warning' : ''}"
 					placeholder="+420 123 456 789"
-					value={form?.telephone ?? telephone}
+					value={formData.telephone}
 					name="telephone" />
+				{#if form?.warnings?.telephone}
+					<p class="text-warning text-sm mt-1">{form.warnings.telephone}</p>
+				{/if}
 			</div>
 			<div>
 				<label
@@ -103,14 +116,135 @@
 				<input
 					type="text"
 					id="username"
-					class="input input-bordered w-full max-w-xs"
-					value={form?.username ?? username}
+					class="input input-bordered w-full max-w-xs {form?.errors?.username ? 'input-error' : ''}"
+					value={formData.username}
 					name="username"
 					placeholder="z mládí?" />
+				{#if form?.errors?.username}
+					<p class="text-error text-sm mt-1">{form.errors.username}</p>
+				{/if}
 			</div>
 		</div>
-<hr>
-		
+
+		<h2 class="mt-8 mb-4">Fakturační údaje</h2>
+		<div class="grid gap-6 mb-6 md:grid-cols-2">
+			<div>
+				<label
+					for="company"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>Společnost</label>
+				<input
+					type="text"
+					id="company"
+					class="input input-bordered w-full max-w-xs {form?.errors?.company ? 'input-error' : ''}"
+					value={formData.company}
+					name="company"
+					placeholder="Název společnosti" />
+				{#if form?.errors?.company}
+					<p class="text-error text-sm mt-1">{form.errors.company}</p>
+				{/if}
+			</div>
+			<div>
+				<label
+					for="ico"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>IČO</label>
+				<input
+					type="text"
+					id="ico"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.ico ? 'input-warning' : ''}"
+					value={formData.ico}
+					name="ico"
+					placeholder="12345678" />
+				{#if form?.warnings?.ico}
+					<p class="text-warning text-sm mt-1">{form.warnings.ico}</p>
+				{/if}
+			</div>
+			<div>
+				<label
+					for="dic"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>DIČ</label>
+				<input
+					type="text"
+					id="dic"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.dic ? 'input-warning' : ''}"
+					value={formData.dic}
+					name="dic"
+					placeholder="CZ12345678" />
+				{#if form?.warnings?.dic}
+					<p class="text-warning text-sm mt-1">{form.warnings.dic}</p>
+				{/if}
+			</div>
+		</div>
+
+		<h2 class="mt-8 mb-4">Adresa</h2>
+		<div class="grid gap-6 mb-6 md:grid-cols-2">
+			<div>
+				<label
+					for="street"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>Ulice</label>
+				<input
+					type="text"
+					id="street"
+					class="input input-bordered w-full max-w-xs {form?.errors?.street ? 'input-error' : ''}"
+					value={formData.street}
+					name="street"
+					placeholder="Název ulice" />
+				{#if form?.errors?.street}
+					<p class="text-error text-sm mt-1">{form.errors.street}</p>
+				{/if}
+			</div>
+			<div>
+				<label
+					for="street_number"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>Číslo popisné</label>
+				<input
+					type="text"
+					id="street_number"
+					class="input input-bordered w-full max-w-xs {form?.errors?.street_number ? 'input-error' : ''}"
+					value={formData.street_number}
+					name="street_number"
+					placeholder="123" />
+				{#if form?.errors?.street_number}
+					<p class="text-error text-sm mt-1">{form.errors.street_number}</p>
+				{/if}
+			</div>
+			<div>
+				<label
+					for="city"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>Město</label>
+				<input
+					type="text"
+					id="city"
+					class="input input-bordered w-full max-w-xs {form?.errors?.city ? 'input-error' : ''}"
+					value={formData.city}
+					name="city"
+					placeholder="Název města" />
+				{#if form?.errors?.city}
+					<p class="text-error text-sm mt-1">{form.errors.city}</p>
+				{/if}
+			</div>
+			<div>
+				<label
+					for="zip_code"
+					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+					>PSČ</label>
+				<input
+					type="text"
+					id="zip_code"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.zip_code ? 'input-warning' : ''}"
+					value={formData.zip_code}
+					name="zip_code"
+					placeholder="123 45" />
+				{#if form?.warnings?.zip_code}
+					<p class="text-warning text-sm mt-1">{form.warnings.zip_code}</p>
+				{/if}
+			</div>
+		</div>
 
 		<hr class="my-10" />
 		<button
@@ -133,3 +267,18 @@
 <Rezervace {rezcalendar} />
 </div> -->
 </div>
+
+<style>
+	.success {
+		@apply text-green-600;
+	}
+	.error {
+		@apply text-red-600;
+	}
+	.warning {
+		@apply text-yellow-600;
+	}
+	.input-warning {
+		@apply border-yellow-500;
+	}
+</style>

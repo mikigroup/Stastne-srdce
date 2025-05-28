@@ -126,25 +126,25 @@ export async function loadAllSettings(
 
 		// Sestavení nastavení
 		const settings = getDefaultSettings();
-		for (const item of data) {
-			const key = item.key as keyof AllSettings;
-			if (key in settings) {
-				try {
+			for (const item of data) {
+				const key = item.key as keyof AllSettings;
+				if (key in settings) {
+					try {
 					const value = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
-					settings[key] = { ...settings[key], ...value };
+						settings[key] = { ...settings[key], ...value };
 				} catch (error) {
 					console.error(`Chyba při parsování ${key}:`, error);
+					}
 				}
 			}
-		}
 
 		// Aktualizace stores
-		generalSettings.set(settings.general);
-		seoSettings.set(settings.seo);
-		contactSettings.set(settings.contact);
-		socialSettings.set(settings.social);
-		appearanceSettings.set(settings.appearance);
-		businessSettings.set(settings.business);
+			generalSettings.set(settings.general);
+			seoSettings.set(settings.seo);
+			contactSettings.set(settings.contact);
+			socialSettings.set(settings.social);
+			appearanceSettings.set(settings.appearance);
+			businessSettings.set(settings.business);
 
 		// Aktualizace cache
 		settingsCache = settings;
