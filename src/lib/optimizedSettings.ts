@@ -13,6 +13,14 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
 type SettingKey = keyof AllSettings;
 type SettingValue = AllSettings[SettingKey];
 
+const PAGE_SETTINGS = {
+	"/": ["general", "seo", "appearance"],
+	"/kontakt": ["contact", "general"],
+	"/admin": ["general", "business"],
+	"/kosik": ["general", "business"],
+	"*": ["general"] // výchozí pro ostatní stránky
+};
+
 // Optimalizované načítání nastavení
 export async function loadOptimizedSettings(
 	supabase: SupabaseClient,
@@ -86,4 +94,66 @@ export function getSetting<T extends SettingKey>(
 	key: T
 ): AllSettings[T] {
 	return settings[key];
+}
+
+// Optimalizované načítání nastavení pro konkrétní stránku
+export async function loadOptimizedSettingsForPage(
+	supabase: SupabaseClient,
+	path: string,
+	isAuthenticated: boolean = false
+): Promise<AllSettings> {
+	try {
+		// Pokud uživatel není přihlášený, vrátíme výchozí nastavení
+		if (!isAuthenticated) {
+			console.log("Uživatel není přihlášený, používám výchozí nastavení");
+			return DEFAULT_SETTINGS;
+		}
+
+		// Kontrola cache
+		const now = Date.now();
+		const cached = settingsCache.get(supabase);
+		
+		if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+			console.log("Používám cache pro nastavení");
+			return cached.settings;
+		}
+
+		// Načtení potřebných nastavení pro danou stránku
+		const neededKeys = PAGE_SETTINGS[path] || PAGE_SETTINGS["*"];
+		const { data } = await supabase
+			.from("site_settings")
+			.select("key, value")
+			.in("key", neededKeys);
+
+		if (data.length === 0) {
+			console.error("Nenalezeno žádné nastavení pro danou stránku");
+			return DEFAULT_SETTINGS;
+		}
+
+		// Optimalizované sestavení nastavení
+		const settings = { ...DEFAULT_SETTINGS };
+		
+		// Použijeme for...of pro lepší výkon
+		for (const item of data) {
+			const key = item.key as keyof AllSettings;
+			if (key in settings) {
+				settings[key] = {
+					...DEFAULT_SETTINGS[key],
+					...item.value
+				};
+			}
+		}
+
+		// Aktualizace cache
+		settingsCache.set(supabase, {
+			settings,
+			timestamp: now
+		});
+
+		console.log("Nastavení úspěšně načteno a uloženo do cache");
+		return settings;
+	} catch (error) {
+		console.error("Chyba při načítání nastavení:", error);
+		return DEFAULT_SETTINGS;
+	}
 } 
