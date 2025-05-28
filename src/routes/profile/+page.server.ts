@@ -125,7 +125,7 @@ export const load: PageServerLoad = async ({
 			);
 		});
 	}
-	console.log(profile);
+	
 	return {
 		session,
 		profile,

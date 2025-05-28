@@ -46,22 +46,24 @@
 
 <header class="fixed top-0 left-0 w-full bg-white z-10">
 	<nav>
-		<div class="grid grid-cols-2 px-4 m-2 mx-auto xl:grid-cols-3 max-w-8xl">
+		<div class="flex items-center justify-between w-full px-4 m-2 mx-auto xl:flex xl:justify-between max-w-8xl">
 			<!-- Logo a čas -->
-			<div class="grid items-center w-full grid-cols-2 py-4 mx-4 lg:px-8 lg:mx-0">
-				<div class="grid grid-cols-2 w-74">
-					<h1 class="grid items-center text-xl font-semibold">
-						<a href="/" class="hover:text-gray-600 transition-colors duration-200">{generalSettings.shopName}</a>
+			<div class="flex items-center justify-between w-full lg:w-auto lg:px-8 gap-8">
+				<div class="flex items-center gap-2">
+					<h1 class="text-xl font-semibold">
+						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap">
+							{generalSettings.shopName}
+						</a>
 					</h1>
-					<img {src} alt="staste srdce" class="" width="22" height="22" />
+					<img {src} alt="stastne srdce" class="shrink-0" width="22" height="22" />
 				</div>
-				<div class="grid justify-end w-44">
+				<div class="mx-auto">
 					<time>{formatter.format($time)}</time>
 				</div>
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="items-center hidden text-center border-2 rounded-full xl:grid xl:grid-cols-6 bg-slate-50 border-green-700 ">
+			<div class="items-center hidden text-center border-2 rounded-full xl:grid xl:grid-cols-6 bg-slate-50 border-green-700 h-[3.5rem] ">
 				<div class="border-r-2 border-green-700">
 					<a href="/" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">O nás</a>
 				</div>
