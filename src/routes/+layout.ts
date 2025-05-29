@@ -6,10 +6,10 @@ import {
 } from "@supabase/ssr";
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 // import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
-import { DEFAULT_SETTINGS, type AllSettings } from "$lib/settingsService";
+import { loadSettings } from "$lib/settingsService";
 import type { LayoutLoad } from "./$types";
 
-export const load: LayoutLoad = async ({ data, depends, fetch }) => {
+export const load: LayoutLoad = async ({ data, depends, fetch, url }) => {
 	depends("supabase:auth");
 
 	const supabase = isBrowser()
@@ -61,39 +61,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	// Použijeme session pouze pokud user je ověřený
 	const safeSession = user ? session : null;
 
-	// Načtení nastavení
-	const loadSettings = async (): Promise<AllSettings> => {
-		try {
-			const { data, error } = await supabase
-				.from("site_settings")
-				.select("key, value")
-				.throwOnError();
-
-			if (!data) return DEFAULT_SETTINGS;
-
-			return data.reduce(
-				(acc, item) => {
-					const key = item.key as keyof AllSettings;
-					if (key in acc) {
-						return {
-							...acc,
-							[key]: {
-								...DEFAULT_SETTINGS[key],
-								...item.value
-							}
-						};
-					}
-					return acc;
-				},
-				{ ...DEFAULT_SETTINGS }
-			);
-		} catch (error) {
-			console.error("Chyba při načítání nastavení:", error);
-			return DEFAULT_SETTINGS;
-		}
-	};
-
-	const settings = await loadSettings();
+	// Načtení nastavení s optimalizovaným cachováním a pouze pro aktuální stránku
+	const settings = await loadSettings(supabase, url.pathname, !!user);
 
 	return {
 		session: safeSession,
