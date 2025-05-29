@@ -1,24 +1,37 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { z } from "zod";
+import * as yup from "yup";
 
-// Definice schématu pro validaci
-const profileSchema = z.object({
-	first_name: z.string().min(2, "Jméno musí mít alespoň 2 znaky"),
-	last_name: z.string().min(2, "Příjmení musí mít alespoň 2 znaky"),
-	username: z.string().optional(),
-	telephone: z.string().optional(),
-	company: z.string().optional(),
-	ico: z.string().optional(),
-	dic: z.string().optional(),
-	street: z.string().optional(),
-	street_number: z.string().optional(),
-	city: z.string().optional(),
-	zip_code: z.string().optional(),
-	avatar_url: z.string().nullable().optional()
+// Definice schématu pro validaci pomocí yup
+const profileSchema = yup.object({
+	first_name: yup.string().min(2, "Jméno musí mít alespoň 2 znaky").required("Jméno je povinné"),
+	last_name: yup.string().min(2, "Příjmení musí mít alespoň 2 znaky").required("Příjmení je povinné"),
+	username: yup.string().optional(),
+	telephone: yup.string().optional(),
+	company: yup.string().optional(),
+	ico: yup.string().optional(),
+	dic: yup.string().optional(),
+	street: yup.string().optional(),
+	street_number: yup.string().optional(),
+	city: yup.string().optional(),
+	zip_code: yup.string().optional(),
+	avatar_url: yup.string().nullable().optional()
 });
 
-export type ProfileData = z.infer<typeof profileSchema>;
+export type ProfileData = {
+	first_name: string;
+	last_name: string;
+	username?: string;
+	telephone?: string;
+	company?: string;
+	ico?: string;
+	dic?: string;
+	street?: string;
+	street_number?: string;
+	city?: string;
+	zip_code?: string;
+	avatar_url?: string | null;
+};
 
 /*export type RezcalendarData = {
 	id: number;
@@ -91,8 +104,8 @@ export const actions: Actions = {
 		const data = Object.fromEntries(formData);
 
 		try {
-			// Validace dat
-			const validatedData = profileSchema.parse(data);
+			// Validace dat pomocí yup
+			const validatedData = await profileSchema.validate(data, { abortEarly: false });
 
 			const { error } = await supabase.from("profiles").upsert({
 				id: session.user.id,
@@ -108,9 +121,9 @@ export const actions: Actions = {
 				message: { success: true, display: "Profil byl úspěšně aktualizován" }
 			};
 		} catch (error) {
-			if (error instanceof z.ZodError) {
-				const warnings = error.errors.reduce((acc, err) => {
-					const field = err.path[0] as string;
+			if (error instanceof yup.ValidationError) {
+				const warnings = error.inner.reduce((acc, err) => {
+					const field = err.path as string;
 					acc[field] = err.message;
 					return acc;
 				}, {} as Record<string, string>);
