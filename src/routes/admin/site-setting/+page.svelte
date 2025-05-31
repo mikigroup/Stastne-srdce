@@ -147,7 +147,10 @@
 			metaDescription: '',
 			metaKeywords: '',
 			ogImage: '',
-			googleAnalyticsId: ''
+			googleAnalyticsId: '',
+			googleAnalyticsEnabled: false,
+			facebookPixelEnabled: false,
+			facebookPixelId: ''
 		},
 		contact: {
 			email: 'info@stastnesrdce.cz',
@@ -791,15 +794,41 @@
 							</div>
 
 							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Google Analytics ID</span>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={$editableSettings.seo.googleAnalyticsEnabled}
+										class="checkbox checkbox-primary"
+									/>
+									<span class="label-text">Google Analytics</span>
 								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.seo.googleAnalyticsId}
-									class="input input-bordered w-full"
-									placeholder="např. G-XXXXXXXXXX"
-								/>
+								{#if $editableSettings.seo.googleAnalyticsEnabled}
+									<input
+										type="text"
+										bind:value={$editableSettings.seo.googleAnalyticsId}
+										class="input input-bordered w-full mt-2"
+										placeholder="G-XXXXXXXXXX"
+									/>
+								{/if}
+							</div>
+
+							<div class="form-control">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={$editableSettings.seo.facebookPixelEnabled}
+										class="checkbox checkbox-primary"
+									/>
+									<span class="label-text">Facebook Pixel</span>
+								</label>
+								{#if $editableSettings.seo.facebookPixelEnabled}
+									<input
+										type="text"
+										bind:value={$editableSettings.seo.facebookPixelId}
+										class="input input-bordered w-full mt-2"
+										placeholder="123456789012345"
+									/>
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -1426,76 +1455,6 @@
 											</div>
 										</div>
 									{/if}
-								</div>
-							{/if}
-						</div>
-
-						<!-- Google Analytics Section -->
-						<div class="mb-6 border-b pb-6">
-							<h3 class="text-lg font-medium mb-4 flex items-center gap-2">
-								<i class="fa-brands fa-google text-blue-600"></i>
-								Google Analytics
-							</h3>
-							
-							<div class="form-control mb-4">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input 
-										type="checkbox" 
-										bind:checked={$editableSettings.integrations.googleAnalyticsEnabled} 
-										class="checkbox checkbox-primary"
-									/>
-									<span class="label-text font-medium">Povolit Google Analytics</span>
-								</label>
-							</div>
-
-							{#if $editableSettings.integrations.googleAnalyticsEnabled}
-								<div class="space-y-4 pl-4 border-l-4 border-blue-200">
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Tracking ID (GA4)</span>
-										</label>
-										<input
-											type="text"
-											bind:value={$editableSettings.integrations.googleAnalyticsTrackingId}
-											class="input input-bordered w-full"
-											placeholder="G-XXXXXXXXXX"
-										/>
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Facebook Pixel Section -->
-						<div class="mb-6">
-							<h3 class="text-lg font-medium mb-4 flex items-center gap-2">
-								<i class="fa-brands fa-facebook text-blue-800"></i>
-								Facebook Pixel
-							</h3>
-							
-							<div class="form-control mb-4">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input 
-										type="checkbox" 
-										bind:checked={$editableSettings.integrations.facebookPixelEnabled} 
-										class="checkbox checkbox-primary"
-									/>
-									<span class="label-text font-medium">Povolit Facebook Pixel</span>
-								</label>
-							</div>
-
-							{#if $editableSettings.integrations.facebookPixelEnabled}
-								<div class="space-y-4 pl-4 border-l-4 border-blue-800">
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Pixel ID</span>
-										</label>
-										<input
-											type="text"
-											bind:value={$editableSettings.integrations.facebookPixelId}
-											class="input input-bordered w-full"
-											placeholder="123456789012345"
-										/>
-									</div>
 								</div>
 							{/if}
 						</div>
