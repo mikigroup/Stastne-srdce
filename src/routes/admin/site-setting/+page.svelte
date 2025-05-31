@@ -150,11 +150,21 @@
 			googleAnalyticsId: ''
 		},
 		contact: {
-			email: '',
-			phone: '',
-			address: '',
-			mapCoordinates: { lat: 0, lng: 0 },
-			openingHours: {}
+			email: 'info@stastnesrdce.cz',
+			phone: '777111222',
+			phone1: '+420 724 448 377 Kamila Kučerová',
+			phone2: '+420 732 722 115 Martin Forejt',
+			address: 'Potoční 16, Mikulovice 79084',
+			mapCoordinates: { lat: 50.299513, lng: 17.324304 },
+			openingHours: {
+				monday: '8:00-16:00',
+				tuesday: '8:00-16:00',
+				wednesday: '8:00-16:00',
+				thursday: '8:00-16:00',
+				friday: '8:00-16:00',
+				saturday: 'Zavřeno',
+				sunday: 'Zavřeno'
+			}
 		},
 		social: {
 			facebook: '',
@@ -792,17 +802,6 @@
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Kontaktní údaje</h2>
 
-						<div class="form-control">
-					<label class="label">
-						<span class="label-text">Právní název</span>
-					</label>
-					<input
-						type="text"
-						bind:value={$editableSettings.general.legalName}
-						class="input input-bordered w-full"
-					/>
-				</div>
-
 						<div class="space-y-4">
 							<div class="form-control">
 								<label class="label">
@@ -817,11 +816,33 @@
 
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Telefon</span>
+									<span class="label-text">Hlavní telefon</span>
 								</label>
 								<input
 									type="tel"
 									bind:value={$editableSettings.contact.phone}
+									class="input input-bordered w-full"
+								/>
+							</div>
+
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Telefon 1</span>
+								</label>
+								<input
+									type="tel"
+									bind:value={$editableSettings.contact.phone1}
+									class="input input-bordered w-full"
+								/>
+							</div>
+
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">Telefon 2</span>
+								</label>
+								<input
+									type="tel"
+									bind:value={$editableSettings.contact.phone2}
 									class="input input-bordered w-full"
 								/>
 							</div>
@@ -871,39 +892,27 @@
 									<span class="label-text">Otevírací doba</span>
 								</label>
 
-								{#if $editableSettings.contact.openingHours}
-									{#each Object.entries($editableSettings.contact.openingHours) as [day, hours]}
-										<div class="flex gap-2 items-center mb-2">
-											<input
-												type="text"
-												bind:value={day}
-												class="input input-bordered w-1/3"
-												placeholder="Den"
-											/>
+								<div class="space-y-2">
+									{#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as day}
+										<div class="flex gap-2 items-center">
+											<label class="w-32 text-sm font-medium">
+												{#if day === 'monday'}Pondělí
+												{:else if day === 'tuesday'}Úterý
+												{:else if day === 'wednesday'}Středa
+												{:else if day === 'thursday'}Čtvrtek
+												{:else if day === 'friday'}Pátek
+												{:else if day === 'saturday'}Sobota
+												{:else if day === 'sunday'}Neděle{/if}
+											</label>
 											<input
 												type="text"
 												bind:value={$editableSettings.contact.openingHours[day]}
-												class="input input-bordered w-2/3"
-												placeholder="Hodiny (např. 8:00-16:00)"
+												class="input input-bordered flex-grow"
+												placeholder="např. 8:00-16:00 nebo Zavřeno"
 											/>
-											<button
-												on:click={() => removeOpeningHoursDay(day)}
-												class="btn btn-circle btn-sm btn-error"
-												type="button"
-											>
-												<i class="fas fa-trash"></i>
-											</button>
 										</div>
 									{/each}
-								{/if}
-
-								<button
-									on:click={addOpeningHoursDay}
-									class="btn btn-outline btn-sm mt-2"
-									type="button"
-								>
-									<i class="fas fa-plus mr-2"></i> Přidat den
-								</button>
+								</div>
 							</div>
 						</div>
 					</div>

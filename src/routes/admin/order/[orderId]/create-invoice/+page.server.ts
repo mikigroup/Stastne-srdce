@@ -7,7 +7,8 @@ import {
 } from "$lib/services/fakturoidService";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
-import { FakturoidAccountService } from "$lib/services/fakturoidAccountService";
+import { getSetting } from "$lib/services/siteSettingsService";
+import type { IntegrationsSettings } from "$lib/types/siteSettings";
 
 export const load: PageServerLoad = async ({
 	params,
@@ -84,23 +85,9 @@ export const load: PageServerLoad = async ({
 		}
 
 		// Načtení Fakturoid nastavení
-		const { data: integrationsData } = await supabase
-			.from("site_settings")
-			.select("value")
-			.eq("key", "integrations")
-			.maybeSingle();
-
-		let integrations = {};
-		if (integrationsData?.value) {
-			integrations = typeof integrationsData.value === 'string' 
-				? JSON.parse(integrationsData.value) 
-				: integrationsData.value;
-		}
-
-		// Migrace a získání aktuálního účtu
-		const migratedIntegrations = FakturoidAccountService.migrateFromLegacyFormat(integrations);
-		const activeAccount = FakturoidAccountService.getActiveAccount(migratedIntegrations);
-		const activeAccountId = FakturoidAccountService.getActiveAccountId(migratedIntegrations);
+		const integrations = await getSetting(supabase, 'integrations') as IntegrationsSettings;
+		const activeAccount = integrations?.fakturoid?.accounts?.find(acc => acc.isActive) || null;
+		const activeAccountId = activeAccount?.subdomain || null;
 
 		// Kontrola, zda již faktura byla vytvořena PRO SOUČASNÝ ÚČET
 		let hasInvoice = false;
@@ -174,39 +161,9 @@ export const actions: Actions = {
 			}
 
 			// 2. Načtení integračních nastavení pro Fakturoid
-			const { data: integrationsData, error: integrationsError } = await supabase
-				.from("site_settings")
-				.select("value")
-				.eq("key", "integrations")
-				.maybeSingle();
-
-			if (integrationsError) {
-				console.error("Chyba při načítání integračních nastavení:", integrationsError);
-				return fail(500, {
-					success: false,
-					message: "Chyba při načítání nastavení integrace"
-				});
-			}
-
-			let integrations = {};
-			if (integrationsData?.value) {
-				try {
-					integrations = typeof integrationsData.value === 'string' 
-						? JSON.parse(integrationsData.value) 
-						: integrationsData.value;
-				} catch (e) {
-					console.error('Error parsing integrations settings:', e);
-					return fail(500, {
-						success: false,
-						message: "Chyba při zpracování nastavení integrace"
-					});
-				}
-			}
-
-			// 3. Migrace a kontrola aktivního účtu
-			const migratedIntegrations = FakturoidAccountService.migrateFromLegacyFormat(integrations);
-			const activeAccount = FakturoidAccountService.getActiveAccount(migratedIntegrations);
-			const activeAccountId = FakturoidAccountService.getActiveAccountId(migratedIntegrations);
+			const integrations = await getSetting(supabase, 'integrations') as IntegrationsSettings;
+			const activeAccount = integrations?.fakturoid?.accounts?.find(acc => acc.isActive) || null;
+			const activeAccountId = activeAccount?.subdomain || null;
 
 			if (!activeAccount || !activeAccountId) {
 				return fail(400, {
@@ -215,7 +172,7 @@ export const actions: Actions = {
 				});
 			}
 
-			// 4. Kontrola, zda faktura už nebyla vytvořena PRO SOUČASNÝ ÚČET
+			// 3. Kontrola, zda faktura už nebyla vytvořena PRO SOUČASNÝ ÚČET
 			if (order.fakturoid_data?.invoice_id) {
 				let isFromCurrentAccount = false;
 				
@@ -237,7 +194,7 @@ export const actions: Actions = {
 				// Pokud je z jiného účtu, můžeme pokračovat a přepsat fakturu
 			}
 
-			// 5. Načtení profilu zákazníka
+			// 4. Načtení profilu zákazníka
 			const { data: profile, error: profileError } = await supabase
 				.from("profiles")
 				.select("*")
@@ -251,31 +208,25 @@ export const actions: Actions = {
 				});
 			}
 
-			// 6. Vytvoření faktury pomocí Fakturoid API (používáme starý formát pro kompatibilitu)
-			const legacyIntegrationsSettings = {
-				fakturoidEnabled: true,
-				fakturoidConnected: true,
-				fakturoidAccountName: activeAccount.name,
-				fakturoidSubdomain: activeAccount.subdomain,
-				...integrations // ostatní nastavení
-			};
+			// 5. Vytvoření faktury
+			const invoice = await createInvoiceFromOrder(order, profile, integrations);
 
-			const invoice = await createInvoiceFromOrder(
-				order as Order,
-				profile as Profile,
-				legacyIntegrationsSettings
-			);
+			if (!invoice?.id) {
+				return fail(500, {
+					success: false,
+					message: "Chyba při vytváření faktury"
+				});
+			}
 
-			// 7. Uložení ID faktury do objednávky S ACCOUNT ID
+			// 6. Aktualizace objednávky s ID faktury
 			const { error: updateError } = await supabase
 				.from("orders")
 				.update({
 					fakturoid_data: {
 						invoice_id: invoice.id,
 						invoice_number: invoice.number,
-						invoice_url: invoice.html_url,
-						created_at: new Date().toISOString(),
-						account_id: activeAccountId
+						account_id: activeAccountId,
+						created_at: new Date().toISOString()
 					}
 				})
 				.eq("id", orderId);
@@ -284,50 +235,33 @@ export const actions: Actions = {
 				console.error("Chyba při aktualizaci objednávky:", updateError);
 				return fail(500, {
 					success: false,
-					message:
-						"Faktura byla vytvořena, ale nepodařilo se aktualizovat objednávku"
+					message: "Faktura byla vytvořena, ale nepodařilo se aktualizovat objednávku"
 				});
 			}
 
-			// 8. Odeslání faktury e-mailem, pokud je požadováno
-			if (sendEmail && invoice.id) {
+			// 7. Odeslání emailu (pokud požadováno)
+			if (sendEmail) {
 				try {
 					await sendInvoiceEmail(invoice.id);
-				} catch (emailError) {
-					console.error("Chyba při odesílání faktury e-mailem:", emailError);
-					// Nezastavujeme proces, jen logujeme chybu
+				} catch (error) {
+					console.error("Chyba při odesílání emailu:", error);
+					// Pokračujeme dál, i když se email nepodařilo odeslat
 				}
 			}
 
-			// 9. Označení faktury jako uhrazené, pokud je požadováno
-			if (markPaid && invoice.id) {
+			// 8. Označení jako zaplaceno (pokud požadováno)
+			if (markPaid) {
 				try {
 					await markInvoiceAsPaid(invoice.id);
-				} catch (paidError) {
-					console.error("Chyba při označení faktury jako uhrazené:", paidError);
-					// Nezastavujeme proces, jen logujeme chybu
+				} catch (error) {
+					console.error("Chyba při označování faktury jako zaplacené:", error);
+					// Pokračujeme dál, i když se nepodařilo označit jako zaplacené
 				}
 			}
 
-			// 10. Aktualizace stavu objednávky na 'Fakturovaná', pokud je požadováno
-			if (markPaid) {
-				const { error: stateError } = await supabase
-					.from("orders")
-					.update({
-						state: "Fakturovaná",
-						pay_state: true
-					})
-					.eq("id", orderId);
-
-				if (stateError) {
-					console.error("Chyba při aktualizaci stavu objednávky:", stateError);
-				}
-			}
-
-			// 11. Vracíme úspěšný výsledek
 			return {
 				success: true,
-				message: `Faktura byla úspěšně vytvořena účtem ${activeAccount.name}`,
+				message: "Faktura byla úspěšně vytvořena",
 				invoiceId: invoice.id,
 				invoiceNumber: invoice.number
 			};
@@ -335,7 +269,7 @@ export const actions: Actions = {
 			console.error("Chyba při vytváření faktury:", err);
 			return fail(500, {
 				success: false,
-				message: `Chyba při vytváření faktury: ${err instanceof Error ? err.message : "Neznámá chyba"}`
+				message: "Nastala neočekávaná chyba při vytváření faktury"
 			});
 		}
 	}
