@@ -250,11 +250,17 @@ export function getEshopSettings(supabase: TypedSupabaseClient) {
 }
 
 export function getDefaultEshopSettings() {
-    // Pro zpětnou kompatibilitu, vrátíme původní strukturu včetně currencies a shippingMethods
     return {
-        orderStates: getDefaultZakazkySettings().orderStates,
-        currencies: getDefaultGeneralSettings().currencies,
-        shippingMethods: getDefaultDopravaSettings().shippingMethods
+        enabled: false,
+        orderStates: [
+            { name: 'Nová', color: '#0284c7' },
+            { name: 'Expedovaná', color: '#eab308' },
+            { name: 'Fakturovaná', color: '#16a34a' },
+            { name: 'Stornovaná', color: '#dc2626' }
+        ],
+        currencies: [
+            { code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
+        ]
     };
 }
 

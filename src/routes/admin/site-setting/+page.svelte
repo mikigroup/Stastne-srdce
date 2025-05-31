@@ -202,6 +202,7 @@
 				enabled: false,
 				connected: false,
 				accounts: [],
+				subdomain: '',
 				defaultLanguage: 'cz',
 				autoCreateInvoices: false,
 				invoiceDueDays: 14,
@@ -218,9 +219,6 @@
 			enabled: false,
 			currencies: [],
 			orderStates: []
-		},
-		esho: {
-			enabled: false
 		},
 		doprava: {
 			enabled: false,

@@ -87,16 +87,18 @@ const DEFAULT_SETTINGS = [
   {
     key: 'integrations',
     value: {
-      fakturoidEnabled: false,
-      fakturoidConnected: false,
-      fakturoidAccountName: '',
-      fakturoidSubdomain: '',
-      fakturoidDefaultLanguage: 'cz',
-      fakturoidAutoCreateInvoices: false,
-      fakturoidInvoiceDueDays: 14,
-      fakturoidDefaultPaymentMethod: 'bank',
-      fakturoidSendInvoiceEmail: false,
-      fakturoidInvoiceNote: '',
+      fakturoid: {
+        enabled: false,
+        connected: false,
+        accounts: [],
+        subdomain: '',
+        defaultLanguage: 'cz',
+        autoCreateInvoices: false,
+        invoiceDueDays: 14,
+        defaultPaymentMethod: 'bank',
+        sendInvoiceEmail: false,
+        invoiceNote: ''
+      },
       googleAnalyticsEnabled: false,
       googleAnalyticsTrackingId: '',
       facebookPixelEnabled: false,
@@ -106,7 +108,13 @@ const DEFAULT_SETTINGS = [
   {
     key: 'eshop',
     value: {
-      orderStates: [],
+      enabled: false,
+      orderStates: [
+        { name: 'Nová', color: '#0284c7' },
+        { name: 'Expedovaná', color: '#eab308' },
+        { name: 'Fakturovaná', color: '#16a34a' },
+        { name: 'Stornovaná', color: '#dc2626' }
+      ],
       currencies: [
         { code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
       ]

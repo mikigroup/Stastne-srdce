@@ -195,6 +195,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		fakturoid: {
 			enabled: true,
 			connected: true,
+			subdomain: userData.subdomain || '',
 			accounts: [{
 				name: userData.email || userData.name,
 				email: userData.email,
