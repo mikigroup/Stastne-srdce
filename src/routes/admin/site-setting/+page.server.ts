@@ -26,31 +26,11 @@ export const load: PageServerLoad = async ({
 	// Získáme aktivní záložku z URL
 	const activeTab = url.searchParams.get('tab') || 'general';
 	
-	// Mapování záložek na klíče nastavení
-	const tabToKeys: Record<string, string[]> = {
-		general: ['shopName', 'shortName', 'legalName'],
-		seo: ['metaTitle', 'metaDescription', 'metaKeywords', 'ogImage', 'googleAnalyticsId'],
-		contact: ['email', 'phone', 'address', 'mapCoordinates', 'openingHours'],
-		social: ['facebook', 'instagram', 'twitter', 'linkedin', 'youtube'],
-		appearance: ['logo', 'favicon', 'primaryColor', 'secondaryColor', 'footerText'],
-		business: ['companyName', 'street', 'streetNumber', 'zipCode', 'city', 'ico', 'dic', 'bankAccount'],
-		email: ['orderConfirmationTemplate', 'contactFormTemplate'],
-		integrations: ['fakturoidEnabled', 'fakturoidConnected', 'fakturoidAccountName'],
-		zakazky: ['zakazkyEnabled', 'zakazkyNotificationEmail'],
-		doprava: ['dopravaEnabled', 'dopravaOptions'],
-		products: ['productsEnabled', 'productsPerPage'],
-		customer: ['customerEnabled', 'customerRegistration'],
-		inventory: ['inventoryEnabled', 'inventoryLowStock']
-	};
-
-	// Získáme klíče pro aktivní záložku
-	const keysToLoad = tabToKeys[activeTab] || [];
-	
 	// Načteme parent data
 	const parentData = await parent();
 	
 	// Zkontrolujeme cache
-	const cacheKey = keysToLoad.sort().join(',');
+	const cacheKey = 'all_settings';
 	const cached = settingsCache.get(cacheKey);
 	const now = Date.now();
 	
@@ -59,11 +39,10 @@ export const load: PageServerLoad = async ({
 		// Použijeme cache
 		settings = cached.data;
 	} else {
-		// Načteme z databáze
+		// Načteme všechna nastavení z databáze
 		const { data, error } = await supabase
 			.from("site_settings")
-			.select("*")
-			.in('key', keysToLoad);
+			.select("*");
 
 		if (error) {
 			console.error("Chyba při načítání nastavení:", error);

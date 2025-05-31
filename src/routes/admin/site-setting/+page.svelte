@@ -138,9 +138,9 @@
 	// Výchozí hodnoty pro každou sekci
 	const DEFAULT_VALUES = {
 		general: {
-			shopName: '',
-			shortName: '',
-			legalName: ''
+			shopName: 'Šťastné srdce',
+			shortName: 'ŠS',
+			legalName: 'Šťastné srdce s.r.o.'
 		},
 		seo: {
 			metaTitle: '',
@@ -185,80 +185,118 @@
 			contactFormTemplate: ''
 		},
 		integrations: {
-			fakturoidEnabled: false,
-			fakturoidConnected: false,
-			fakturoidAccountName: '',
-			fakturoidSubdomain: '',
-			fakturoidDefaultLanguage: 'cz',
-			fakturoidAutoCreateInvoices: false,
-			fakturoidInvoiceDueDays: 14,
-			fakturoidDefaultPaymentMethod: 'bank',
-			fakturoidSendInvoiceEmail: false,
-			fakturoidInvoiceNote: '',
-			googleAnalyticsEnabled: false,
-			googleAnalyticsTrackingId: '',
-			facebookPixelEnabled: false,
-			facebookPixelId: ''
+			fakturoid: {
+				enabled: false,
+				connected: false,
+				accounts: [],
+				defaultLanguage: 'cz',
+				autoCreateInvoices: false,
+				invoiceDueDays: 14,
+				defaultPaymentMethod: 'bank',
+				sendInvoiceEmail: false,
+				invoiceNote: ''
+			}
 		},
-		eshop: {
-			orderStates: [],
-			currencies: []
+		zakazky: {
+			enabled: false,
+			notificationEmail: ''
 		},
 		doprava: {
-			shippingMethods: [],
-			minimumOrderValue: 0,
-			freeDeliveryThreshold: 1000
+			enabled: false,
+			options: []
 		},
 		products: {
-			menuTitle: 'Obědy',
-			menuIntroText: '',
-			visibleDays: 7,
-			features: [],
-			showAllergens: true,
-			showAllergensTooltip: true
+			enabled: false,
+			perPage: 10
 		},
 		customer: {
-			allowRegistration: true,
-			requireEmailVerification: true,
-			defaultRole: 'customer'
+			enabled: false,
+			registration: true
 		},
 		inventory: {
-			trackInventory: false,
-			lowStockThreshold: 10
+			enabled: false,
+			lowStock: 10
 		}
 	};
 
 	// Structure the settings for easier editing
 	function structureSettings(settingsData: any) {
 		const structured: Record<string, any> = {};
-		if (!settingsData) return structured;
-
-		settingsData.forEach((item: any) => {
-			try {
-				if (typeof item.value === 'object' && item.value !== null) {
-					structured[item.key] = item.value;
-				}
-				else if (typeof item.value === 'string') {
-					structured[item.key] = item.value ? JSON.parse(item.value) : {};
-				}
-				// Fallback for other cases
-				else {
-					structured[item.key] = {};
-				}
-			} catch (e) {
-				console.error(`Error processing ${item.key} settings:`, e);
-				structured[item.key] = {};
-			}
+		
+		// Inicializujeme všechny sekce s výchozími hodnotami
+		Object.keys(DEFAULT_VALUES).forEach(key => {
+			structured[key] = { ...DEFAULT_VALUES[key as keyof typeof DEFAULT_VALUES] };
 		});
 
-		// Doplníme výchozí hodnoty pro chybějící nastavení
-		Object.keys(DEFAULT_VALUES).forEach(key => {
-			if (!structured[key]) {
-				structured[key] = DEFAULT_VALUES[key as keyof typeof DEFAULT_VALUES];
+		// Pokud nemáme žádná data, vrátíme výchozí hodnoty
+		if (!settingsData || !Array.isArray(settingsData)) {
+			console.warn('Žádná data pro strukturování nastavení');
+			return structured;
+		}
+
+		// Projdeme načtená data a aktualizujeme strukturu
+		settingsData.forEach((item: any) => {
+			if (!item || !item.key) {
+				console.warn('Chybí klíč v položce nastavení:', item);
+				return;
+			}
+
+			try {
+				let value = item.value;
+				
+				// Pokud je hodnota string, zkusíme ji parsovat jako JSON
+				if (typeof value === 'string') {
+					try {
+						value = JSON.parse(value);
+					} catch (e) {
+						console.warn(`Nepodařilo se parsovat hodnotu pro ${item.key}:`, e);
+						return;
+					}
+				}
+
+				// Aktualizujeme strukturu, zachováme výchozí hodnoty pro chybějící pole
+				if (structured[item.key]) {
+					// Pro vnořené objekty použijeme deep merge
+					if (typeof value === 'object' && value !== null) {
+						structured[item.key] = deepMerge(structured[item.key], value);
+					} else {
+						structured[item.key] = value;
+					}
+				} else {
+					console.warn(`Neznámý klíč nastavení: ${item.key}`);
+				}
+			} catch (e) {
+				console.error(`Chyba při zpracování ${item.key}:`, e);
 			}
 		});
 
 		return structured;
+	}
+
+	// Pomocná funkce pro deep merge objektů
+	function deepMerge(target: any, source: any) {
+		const output = { ...target };
+		
+		if (isObject(target) && isObject(source)) {
+			Object.keys(source).forEach(key => {
+				if (isObject(source[key])) {
+					if (!(key in target)) {
+						Object.assign(output, { [key]: source[key] });
+					} else {
+						output[key] = deepMerge(target[key], source[key]);
+					}
+				} else {
+					Object.assign(output, { [key]: source[key] });
+				}
+			});
+		}
+		
+		return output;
+	}
+
+	// Pomocná funkce pro kontrolu, zda je hodnota objekt
+	function isObject(item: any) {
+		return (item && typeof item === 'object' && !Array.isArray(item));
 	}
 
 	// Initialize editable settings
@@ -1194,14 +1232,14 @@
 								<label class="label cursor-pointer justify-start gap-3">
 									<input 
 										type="checkbox" 
-										bind:checked={$editableSettings.integrations.fakturoidEnabled} 
+										bind:checked={$editableSettings.integrations.fakturoid.enabled} 
 										class="checkbox checkbox-primary"
 									/>
 									<span class="label-text font-medium">Povolit integraci s Fakturoid</span>
 								</label>
 							</div>
 
-							{#if $editableSettings.integrations.fakturoidEnabled}
+							{#if $editableSettings.integrations.fakturoid.enabled}
 								<div class="space-y-4 pl-4 border-l-4 border-green-200">
 									<!-- OAuth Connection Status -->
 									<div class="card bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
@@ -1216,7 +1254,7 @@
 											
 											<!-- Connect/Disconnect Button -->
 											<div class="flex items-center gap-3">
-												{#if $editableSettings.integrations.fakturoidConnected}
+												{#if $editableSettings.integrations.fakturoid.connected}
 													<div class="flex items-center gap-2 text-green-600">
 														<i class="fa-solid fa-check-circle"></i>
 														<span class="font-medium">Připojeno k Fakturoid</span>
@@ -1250,11 +1288,11 @@
 												{/if}
 											</div>
 											
-											{#if $editableSettings.integrations.fakturoidConnected}
+											{#if $editableSettings.integrations.fakturoid.connected}
 												<div class="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
-													<strong>Účet:</strong> {$editableSettings.integrations.fakturoidAccountName || 'Připojeno'}
-													{#if $editableSettings.integrations.fakturoidSubdomain}
-														<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoidSubdomain}
+													<strong>Účet:</strong> {$editableSettings.integrations.fakturoid.accounts.length > 0 ? $editableSettings.integrations.fakturoid.accounts[0].name : 'Připojeno'}
+													{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
+														<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
 													{/if}
 												</div>
 											{/if}
@@ -1269,7 +1307,7 @@
 										<label class="label">
 											<span class="label-text font-medium">Výchozí jazyk faktur</span>
 										</label>
-										<select bind:value={$editableSettings.integrations.fakturoidDefaultLanguage} class="select select-bordered w-full">
+										<select bind:value={$editableSettings.integrations.fakturoid.defaultLanguage} class="select select-bordered w-full">
 											<option value="cz">Čeština</option>
 											<option value="sk">Slovenština</option>
 											<option value="en">Angličtina</option>
@@ -1282,7 +1320,7 @@
 										<label class="label cursor-pointer justify-start gap-3">
 											<input 
 												type="checkbox" 
-												bind:checked={$editableSettings.integrations.fakturoidAutoCreateInvoices} 
+												bind:checked={$editableSettings.integrations.fakturoid.autoCreateInvoices} 
 												class="checkbox checkbox-primary"
 											/>
 											<span class="label-text">Automaticky vytvářet faktury pro objednávky</span>
@@ -1296,7 +1334,7 @@
 										</label>
 										<input
 											type="number"
-											bind:value={$editableSettings.integrations.fakturoidInvoiceDueDays}
+											bind:value={$editableSettings.integrations.fakturoid.invoiceDueDays}
 											class="input input-bordered w-full"
 											placeholder="14"
 											min="1"
@@ -1309,7 +1347,7 @@
 										<label class="label">
 											<span class="label-text font-medium">Výchozí způsob platby</span>
 										</label>
-										<select bind:value={$editableSettings.integrations.fakturoidDefaultPaymentMethod} class="select select-bordered w-full">
+										<select bind:value={$editableSettings.integrations.fakturoid.defaultPaymentMethod} class="select select-bordered w-full">
 											<option value="bank">Bankovní převod</option>
 											<option value="cash">Hotově</option>
 											<option value="card">Kartou</option>
@@ -1326,7 +1364,7 @@
 										<label class="label cursor-pointer justify-start gap-3">
 											<input 
 												type="checkbox" 
-												bind:checked={$editableSettings.integrations.fakturoidSendInvoiceEmail} 
+												bind:checked={$editableSettings.integrations.fakturoid.sendInvoiceEmail} 
 												class="checkbox checkbox-primary"
 											/>
 											<span class="label-text">Automaticky odeslat fakturu emailem</span>
@@ -1339,14 +1377,14 @@
 											<span class="label-text font-medium">Poznámka na faktuře</span>
 										</label>
 										<textarea
-											bind:value={$editableSettings.integrations.fakturoidInvoiceNote}
+											bind:value={$editableSettings.integrations.fakturoid.invoiceNote}
 											class="textarea textarea-bordered w-full h-20"
 											placeholder="Dodatečná poznámka, která se zobrazí na všech fakturách..."
 										></textarea>
 									</div>
 
 									<!-- Test Connection Button (only if connected) -->
-									{#if $editableSettings.integrations.fakturoidConnected}
+									{#if $editableSettings.integrations.fakturoid.connected}
 										<div class="card bg-gray-50 border border-gray-300">
 											<div class="card-body p-4">
 												<h4 class="font-medium mb-2">Test připojení</h4>
