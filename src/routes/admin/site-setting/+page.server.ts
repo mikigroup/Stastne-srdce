@@ -1,5 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
 
 interface SettingRecord {
 	id?: number;
@@ -194,52 +195,22 @@ export const actions: Actions = {
 			await clearStoredToken();
 
 			// Načteme existující integrations nastavení
-			const { data: existingSettings, error: fetchError } = await supabase
-				.from('site_settings')
-				.select('value')
-				.eq('key', 'integrations')
-				.maybeSingle();
-
-			if (fetchError) {
-				console.error('Error fetching existing settings:', fetchError);
-				return fail(500, { error: 'Nepodařilo se načíst nastavení' });
-			}
-
-			// Sloučíme existující nastavení s odpojením Fakturoid
-			let integrationsData = {};
-			if (existingSettings?.value) {
-				try {
-					integrationsData = typeof existingSettings.value === 'string' 
-						? JSON.parse(existingSettings.value) 
-						: existingSettings.value;
-				} catch (e) {
-					console.error('Error parsing existing integrations:', e);
-				}
-			}
+			const integrationsData = await getSetting(supabase, 'integrations') || {};
 
 			// Odpojíme Fakturoid
 			const updatedIntegrations = {
 				...integrationsData,
-				fakturoidEnabled: false,
-				fakturoidConnected: false,
-				fakturoidAccountName: ''
+				fakturoid: {
+					enabled: false,
+					connected: false,
+					accounts: []
+				}
 			};
 
 			// Uložíme aktualizovaná nastavení
-			const { error: updateError } = await supabase
-				.from('site_settings')
-				.upsert({
-					key: 'integrations',
-					value: JSON.stringify(updatedIntegrations),
-					updated_at: new Date().toISOString(),
-					updated_by: session.user.id,
-					user_id: session.user.id
-				}, {
-					onConflict: 'key'
-				});
+			const success = await saveSetting(supabase, 'integrations', updatedIntegrations, session.user.id);
 
-			if (updateError) {
-				console.error('Error updating settings:', updateError);
+			if (!success) {
 				return fail(500, { error: 'Nepodařilo se odpojit Fakturoid' });
 			}
 

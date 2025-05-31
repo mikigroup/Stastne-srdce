@@ -4,6 +4,7 @@ import {
 	PRIVATE_FAKTUROID_CLIENT_ID,
 	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
+import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSession }, cookies }) => {
 	console.log('=== FAKTUROID CALLBACK START ===');
@@ -188,34 +189,26 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	console.log('Token saved successfully');
 
 	// Aktualizujeme nastavení integrace
-	const { data: existingSettings } = await supabase
-		.from('site_settings')
-		.select('value')
-		.eq('key', 'integrations')
-		.maybeSingle();
-
-	const integrationsData = existingSettings?.value || {};
+	const integrationsData = await getSetting(supabase, 'integrations') || {};
 	const updatedIntegrations = {
 		...integrationsData,
-		fakturoidEnabled: true,
-		fakturoidConnected: true,
-		fakturoidAccountName: userData.email || userData.name
+		fakturoid: {
+			enabled: true,
+			connected: true,
+			accounts: [{
+				name: userData.email || userData.name,
+				email: userData.email,
+				subdomain: userData.subdomain || '',
+				isActive: true,
+				connectedAt: new Date().toISOString()
+			}]
+		}
 	};
 
-	const { error: settingsError } = await supabase
-		.from('site_settings')
-		.upsert({
-			key: 'integrations',
-			value: updatedIntegrations,
-			updated_at: new Date().toISOString(),
-			updated_by: session.user.id,
-			user_id: session.user.id
-		}, {
-			onConflict: 'key'
-		});
+	const success = await saveSetting(supabase, 'integrations', updatedIntegrations, session.user.id);
 
-	if (settingsError) {
-		console.error('Failed to update settings:', settingsError);
+	if (!success) {
+		console.error('Failed to update settings');
 		return redirect(303, "/admin/site-setting?error=settings_update_failed");
 	}
 

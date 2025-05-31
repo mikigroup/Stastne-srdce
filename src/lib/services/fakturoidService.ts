@@ -1,3 +1,5 @@
+import type { IntegrationsSettings } from '$lib/types/siteSettings';
+
 export interface FakturoidConfig {
 	enabled: boolean;
 	connected: boolean;
@@ -225,24 +227,29 @@ export function createFakturoidService(config: FakturoidConfig): FakturoidServic
 /**
  * Helper pro získání Fakturoid konfigurace ze site settings
  */
-export function getFakturoidConfigFromSettings(settings: any): FakturoidConfig | null {
+export function getFakturoidConfigFromSettings(settings: { integrations: IntegrationsSettings }): FakturoidConfig | null {
 	const integrations = settings?.integrations;
 	
-	if (!integrations?.fakturoidEnabled || !integrations?.fakturoidConnected) {
+	if (!integrations?.fakturoid?.enabled || !integrations?.fakturoid?.connected) {
+		return null;
+	}
+
+	const activeAccount = integrations.fakturoid.accounts.find(acc => acc.isActive);
+	if (!activeAccount) {
 		return null;
 	}
 
 	return {
-		enabled: integrations.fakturoidEnabled,
-		connected: integrations.fakturoidConnected,
-		accountName: integrations.fakturoidAccountName,
-		subdomain: integrations.fakturoidSubdomain,
-		defaultLanguage: integrations.fakturoidDefaultLanguage || 'cz',
-		autoCreateInvoices: integrations.fakturoidAutoCreateInvoices || false,
-		invoiceDueDays: integrations.fakturoidInvoiceDueDays || 14,
-		defaultPaymentMethod: integrations.fakturoidDefaultPaymentMethod || 'bank',
-		sendInvoiceEmail: integrations.fakturoidSendInvoiceEmail || false,
-		invoiceNote: integrations.fakturoidInvoiceNote || ''
+		enabled: integrations.fakturoid.enabled,
+		connected: integrations.fakturoid.connected,
+		accountName: activeAccount.name,
+		subdomain: activeAccount.subdomain,
+		defaultLanguage: integrations.fakturoid.defaultLanguage || 'cz',
+		autoCreateInvoices: integrations.fakturoid.autoCreateInvoices || false,
+		invoiceDueDays: integrations.fakturoid.invoiceDueDays || 14,
+		defaultPaymentMethod: integrations.fakturoid.defaultPaymentMethod || 'bank',
+		sendInvoiceEmail: integrations.fakturoid.sendInvoiceEmail || false,
+		invoiceNote: integrations.fakturoid.invoiceNote || ''
 	};
 }
 
