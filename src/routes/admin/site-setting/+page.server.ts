@@ -68,33 +68,44 @@ export const actions: Actions = {
 		if (!session) throw redirect(303, "/login");
 
 		const formData = await request.formData();
-		const settings = Object.fromEntries(formData.entries());
+		const settingsJson = formData.get('settings');
 
-		// Připravíme data pro batch upsert
-		const settingsData = Object.entries(settings).map(([key, value]) => ({
-			key,
-			value: value.toString(),
-			updated_at: new Date().toISOString(),
-			updated_by: session.user.id,
-			user_id: session.user.id
-		}));
-
-		// Provedeme jeden batch upsert
-		const { error } = await supabase
-			.from("site_settings")
-			.upsert(settingsData, {
-				onConflict: 'key'
-			});
-
-		if (error) {
-			console.error("Chyba při ukládání nastavení:", error);
-			return fail(500, { error: "Nepodařilo se uložit nastavení" });
+		if (!settingsJson || typeof settingsJson !== 'string') {
+			return fail(400, { error: "Neplatná data nastavení" });
 		}
 
-		// Vyčistíme cache pro aktualizovaná nastavení
-		settingsCache.clear();
+		try {
+			const settings = JSON.parse(settingsJson);
+			
+			// Připravíme data pro batch upsert
+			const settingsData = Object.entries(settings).map(([key, value]) => ({
+				key,
+				value: JSON.stringify(value),
+				updated_at: new Date().toISOString(),
+				updated_by: session.user.id,
+				user_id: session.user.id
+			}));
 
-		return { success: true };
+			// Provedeme jeden batch upsert
+			const { error } = await supabase
+				.from("site_settings")
+				.upsert(settingsData, {
+					onConflict: 'key'
+				});
+
+			if (error) {
+				console.error("Chyba při ukládání nastavení:", error);
+				return fail(500, { error: "Nepodařilo se uložit nastavení" });
+			}
+
+			// Vyčistíme cache pro aktualizovaná nastavení
+			settingsCache.clear();
+
+			return { success: true };
+		} catch (error) {
+			console.error("Chyba při zpracování nastavení:", error);
+			return fail(400, { error: "Neplatný formát nastavení" });
+		}
 	},
 
 	testFakturoidOAuth: async ({ locals: { supabase, safeGetSession } }) => {

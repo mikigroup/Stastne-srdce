@@ -52,6 +52,11 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
+	// Ignorovat požadavky na statické soubory
+	if (event.url.pathname.startsWith('/favi/') || event.url.pathname === '/favicon.ico') {
+		return resolve(event);
+	}
+
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;

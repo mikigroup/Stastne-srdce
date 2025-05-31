@@ -175,7 +175,7 @@
 		},
 		appearance: {
 			logo: '',
-			favicon: '',
+			favicon: '/favi/favicon.ico',
 			primaryColor: '#10b981',
 			secondaryColor: '#3b82f6',
 			footerText: ''
@@ -210,6 +210,14 @@
 		zakazky: {
 			enabled: false,
 			notificationEmail: ''
+		},
+		eshop: {
+			enabled: false,
+			currencies: [],
+			orderStates: []
+		},
+		esho: {
+			enabled: false
 		},
 		doprava: {
 			enabled: false,
@@ -247,7 +255,11 @@
 		// Projdeme načtená data a aktualizujeme strukturu
 		settingsData.forEach((item: any) => {
 			if (!item || !item.key) {
-				console.warn('Chybí klíč v položce nastavení:', item);
+				return;
+			}
+
+			// Ignorujeme neplatné klíče
+			if (item.key === 'action' || item.key === 'settings') {
 				return;
 			}
 
@@ -259,8 +271,8 @@
 					try {
 						value = JSON.parse(value);
 					} catch (e) {
-						console.warn(`Nepodařilo se parsovat hodnotu pro ${item.key}:`, e);
-						return;
+						// Pokud se nejedná o JSON, použijeme hodnotu jako je
+						value = value;
 					}
 				}
 
@@ -272,8 +284,6 @@
 					} else {
 						structured[item.key] = value;
 					}
-				} else {
-					console.warn(`Neznámý klíč nastavení: ${item.key}`);
 				}
 			} catch (e) {
 				console.error(`Chyba při zpracování ${item.key}:`, e);
@@ -624,12 +634,10 @@
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
 							type="submit"
-							name="action"
-						value="update"
-						disabled={loading}
-						class="w-full btn btn-primary bg-green-800 text-white hover:bg-green-700"
+							disabled={loading}
+							class="w-full btn btn-primary bg-green-800 text-white hover:bg-green-700"
 						>
-						{loading ? 'Ukládání...' : 'Uložit změny'}
+							{loading ? 'Ukládání...' : 'Uložit změny'}
 						</button>
 					</form>
 

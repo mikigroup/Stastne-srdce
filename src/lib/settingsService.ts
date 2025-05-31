@@ -68,7 +68,7 @@ export const DEFAULT_SETTINGS: AllSettings = {
 	},
 	appearance: {
 		primaryColor: "#3CB371",
-		logo: "/android-chrome-192x192.png",
+		logo: "/favi/web-app-manifest-192x192.png",
 		footerText: "Šťastné srdce s.r.o. 2022 - 2025"
 	},
 	business: {
