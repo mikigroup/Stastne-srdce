@@ -80,11 +80,11 @@ export const DEFAULT_SETTINGS: AllSettings = {
 // Definice potřebných settings pro jednotlivé stránky
 export const PAGE_SETTINGS = {
 	'/': ['general', 'seo', 'appearance'],
-	'/kontakt': ['general', 'contact', 'seo'],
-	'/prednasky-a-kurzy': ['general', 'seo'],
-	'/admin': ['general', 'business'],
-	'/kosik': ['general', 'business'],
-	'*': ['general'] // výchozí pro ostatní stránky
+	'/kontakt': ['general', 'contact', 'seo', 'appearance'],
+	'/prednasky-a-kurzy': ['general', 'seo', 'appearance'],
+	'/kosik': ['general', 'business', 'appearance'],
+	'/admin': ['general', 'business'], // Admin část bez appearance
+	'*': ['general', 'appearance'] // výchozí pro ostatní stránky
 } as const;
 
 // Cache konfigurace
