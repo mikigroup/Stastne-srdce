@@ -172,6 +172,17 @@ export const actions: Actions = {
 				});
 			}
 
+			// Získáme Fakturoid konfiguraci pro předání ostatním funkcím
+			const { getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
+			const fakturoidConfig = getFakturoidConfigFromSettings({ integrations });
+			
+			if (!fakturoidConfig) {
+				return fail(400, {
+					success: false,
+					message: "Nepodařilo se načíst Fakturoid konfiguraci"
+				});
+			}
+
 			// 3. Kontrola, zda faktura už nebyla vytvořena PRO SOUČASNÝ ÚČET
 			if (order.fakturoid_data?.invoice_id) {
 				let isFromCurrentAccount = false;
@@ -209,7 +220,7 @@ export const actions: Actions = {
 			}
 
 			// 5. Vytvoření faktury
-			const invoice = await createInvoiceFromOrder(order, profile, integrations);
+			const invoice = await createInvoiceFromOrder(order, profile, integrations, supabase);
 
 			if (!invoice?.id) {
 				return fail(500, {
@@ -242,7 +253,7 @@ export const actions: Actions = {
 			// 7. Odeslání emailu (pokud požadováno)
 			if (sendEmail) {
 				try {
-					await sendInvoiceEmail(invoice.id);
+					await sendInvoiceEmail(invoice.id, supabase, fakturoidConfig);
 				} catch (error) {
 					console.error("Chyba při odesílání emailu:", error);
 					// Pokračujeme dál, i když se email nepodařilo odeslat
@@ -252,7 +263,7 @@ export const actions: Actions = {
 			// 8. Označení jako zaplaceno (pokud požadováno)
 			if (markPaid) {
 				try {
-					await markInvoiceAsPaid(invoice.id);
+					await markInvoiceAsPaid(invoice.id, supabase, fakturoidConfig);
 				} catch (error) {
 					console.error("Chyba při označování faktury jako zaplacené:", error);
 					// Pokračujeme dál, i když se nepodařilo označit jako zaplacené

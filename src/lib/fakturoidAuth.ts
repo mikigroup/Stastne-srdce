@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import type { FakturoidToken } from "./types/fakturoid";
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
@@ -9,6 +10,14 @@ let tokenExpiry: number | null = null;
  * Pokud je token expirovaný, pokusí se ho obnovit pomocí refresh tokenu
  */
 export async function getAccessToken(): Promise<string | null> {
+	return getAccessTokenWithSupabase(supabase);
+}
+
+/**
+ * Získá platný access token s konkrétní supabase instancí
+ * Pro použití na serveru s session-aware supabase
+ */
+export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient): Promise<string | null> {
 	console.log('Attempting to get access token from database...');
 	
 	// Check if we have a cached token that's still valid
@@ -19,14 +28,14 @@ export async function getAccessToken(): Promise<string | null> {
 	
 	try {
 		// Získáme aktuálního uživatele
-		const { data: { user }, error: userError } = await supabase.auth.getUser();
+		const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 		if (userError || !user) {
 			console.error('No authenticated user found');
 			return null;
 		}
 
 		// Načteme token z databáze
-		const { data: tokenData, error: tokenError } = await supabase
+		const { data: tokenData, error: tokenError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.select('*')
 			.eq('user_id', user.id)
@@ -50,7 +59,7 @@ export async function getAccessToken(): Promise<string | null> {
 			console.log('Token expired, attempting to refresh...');
 			
 			// Pokusíme se obnovit token pomocí refresh tokenu
-			const refreshedToken = await refreshAccessToken(tokenData.refresh_token, user.id);
+			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, user.id, supabaseClient);
 			if (refreshedToken) {
 				cachedToken = refreshedToken;
 				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny
@@ -78,6 +87,13 @@ export async function getAccessToken(): Promise<string | null> {
  * Obnoví access token pomocí refresh tokenu
  */
 async function refreshAccessToken(refreshToken: string, userId: string): Promise<string | null> {
+	return refreshAccessTokenWithSupabase(refreshToken, userId, supabase);
+}
+
+/**
+ * Obnoví access token pomocí refresh tokenu s konkrétní supabase instancí
+ */
+async function refreshAccessTokenWithSupabase(refreshToken: string, userId: string, supabaseClient: SupabaseClient): Promise<string | null> {
 	try {
 		const { PRIVATE_FAKTUROID_CLIENT_ID, PRIVATE_FAKTUROID_CLIENT_SECRET } = await import('$env/static/private');
 		
@@ -104,7 +120,7 @@ async function refreshAccessToken(refreshToken: string, userId: string): Promise
 		const tokenData = await response.json();
 
 		// Uložíme nový token do databáze
-		const { error: updateError } = await supabase
+		const { error: updateError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.update({
 				access_token: tokenData.access_token,

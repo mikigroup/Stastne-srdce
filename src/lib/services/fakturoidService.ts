@@ -1,4 +1,5 @@
 import type { IntegrationsSettings } from '$lib/types/siteSettings';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface FakturoidConfig {
 	enabled: boolean;
@@ -29,7 +30,7 @@ export interface FakturoidInvoice {
 	subject_id: number;
 	currency: string;
 	language: string;
-	due: string;
+	due: number;
 	issued_on: string;
 	taxable_fulfillment_due?: string;
 	note?: string;
@@ -63,20 +64,37 @@ export interface FakturoidSubject {
 
 export class FakturoidService {
 	private config: FakturoidConfig;
+	private supabase: SupabaseClient;
 
-	constructor(config: FakturoidConfig) {
+	constructor(config: FakturoidConfig, supabase: SupabaseClient) {
 		this.config = config;
+		this.supabase = supabase;
 	}
 
 	/**
 	 * Základní HTTP request wrapper
 	 */
 	private async request(endpoint: string, options: RequestInit = {}) {
-		// Importujeme getAccessToken z fakturoidAuth
-		const { getAccessToken } = await import('$lib/fakturoidAuth');
-		const accessToken = await getAccessToken();
+		// Importujeme getAccessToken z fakturoidAuth a předáme mu supabase instanci
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		const accessToken = await getAccessTokenWithSupabase(this.supabase);
 		
-		const url = `https://app.fakturoid.cz/api/v3${endpoint}`;
+		// Konstrukce URL s account slug pro všechny endpointy kromě /user.json
+		let url: string;
+		if (endpoint === '/user.json') {
+			// /user.json endpoint nepotřebuje account slug
+			url = `https://app.fakturoid.cz/api/v3${endpoint}`;
+		} else {
+			// Ostatní endpointy vyžadují account slug
+			const subdomain = this.config.subdomain;
+			if (!subdomain) {
+				throw new Error('Subdoména Fakturoid účtu není nakonfigurována');
+			}
+			url = `https://app.fakturoid.cz/api/v3/accounts/${subdomain}${endpoint}`;
+		}
+		
+		console.log(`Fakturoid API request: ${options.method || 'GET'} ${url}`);
+		console.log(`Access token length: ${accessToken?.length || 0}`);
 		
 		const headers = {
 			'Authorization': `Bearer ${accessToken}`,
@@ -90,8 +108,11 @@ export class FakturoidService {
 			headers
 		});
 
+		console.log(`Fakturoid API response: ${response.status} ${response.statusText}`);
+
 		if (!response.ok) {
 			const errorText = await response.text();
+			console.error(`Fakturoid API error response:`, errorText);
 			throw new Error(`Fakturoid API error ${response.status}: ${errorText}`);
 		}
 
@@ -130,6 +151,16 @@ export class FakturoidService {
 		currency?: string;
 		note?: string;
 	}): Promise<FakturoidInvoice> {
+		// Nejdříve zkusíme testovací spojení
+		console.log('Testing Fakturoid connection...');
+		try {
+			const userInfo = await this.testConnection();
+			console.log('Fakturoid connection successful:', userInfo);
+		} catch (error) {
+			console.error('Fakturoid connection test failed:', error);
+			throw new Error('Nepodařilo se připojit k Fakturoid API. Zkontrolujte připojení a oprávnění.');
+		}
+
 		// Vytvoříme nebo najdeme kontakt
 		const subject = await this.createOrFindSubject({
 			name: orderData.customer.name,
@@ -147,16 +178,23 @@ export class FakturoidService {
 			quantity: item.quantity,
 			unit_price: item.price,
 			unit_name: 'ks',
-			vat_rate: item.vat || 21
+			vat_rate: 0 // Nastaveno na 0 pro neplátce DPH
 		}));
+
+		// Vypočítáme datum splatnosti
+		const issuedDate = new Date();
+		const dueDays = Math.min(Math.max(this.config.invoiceDueDays || 14, 1), 365); // Omezíme na 1-365 dní
+		const dueDate = new Date(issuedDate);
+		dueDate.setDate(dueDate.getDate() + dueDays);
 
 		// Vytvoříme fakturu
 		const invoiceData: Partial<FakturoidInvoice> = {
 			subject_id: subject.id!,
 			currency: orderData.currency || 'CZK',
 			language: this.config.defaultLanguage || 'cz',
-			due: new Date(Date.now() + (this.config.invoiceDueDays || 14) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-			issued_on: new Date().toISOString().split('T')[0],
+			due: dueDays,
+			issued_on: issuedDate.toISOString().split('T')[0],
+			taxable_fulfillment_due: issuedDate.toISOString().split('T')[0],
 			payment_method: this.config.defaultPaymentMethod || 'bank',
 			order_number: orderData.orderNumber,
 			note: orderData.note || this.config.invoiceNote || '',
@@ -220,8 +258,8 @@ export class FakturoidService {
 /**
  * Factory funkce pro vytvoření Fakturoid service instance
  */
-export function createFakturoidService(config: FakturoidConfig): FakturoidService {
-	return new FakturoidService(config);
+export function createFakturoidService(config: FakturoidConfig, supabase: SupabaseClient): FakturoidService {
+	return new FakturoidService(config, supabase);
 }
 
 /**
@@ -257,13 +295,15 @@ export function getFakturoidConfigFromSettings(settings: { integrations: Integra
  * Export funkce pro použití mimo třídu
  */
 
-export async function createInvoiceFromOrder(order: any, profile: any, integrationsSettings?: any): Promise<any> {
+export async function createInvoiceFromOrder(order: any, profile: any, integrationsSettings?: any, supabase?: SupabaseClient): Promise<any> {
 	// Pokud nejsou settings předány, vrátíme chybu
 	if (!integrationsSettings) {
 		throw new Error('Fakturoid integrace není nakonfigurována. <a href="/admin/site-setting?tab=integrations" class="underline text-blue-600 hover:text-blue-800">Přejít na nastavení integrace</a>');
 	}
 
-	if (!integrationsSettings.fakturoidEnabled || !integrationsSettings.fakturoidConnected) {
+	// Kontrola, zda je Fakturoid připojen - správná cesta k vlastnostem
+	const fakturoidConfig = integrationsSettings.fakturoid;
+	if (!fakturoidConfig?.enabled || !fakturoidConfig?.connected) {
 		throw new Error('Fakturoid není připojen. <a href="/admin/site-setting?tab=integrations" class="underline text-blue-600 hover:text-blue-800">Prosím připojte Fakturoid v nastavení integrace</a>');
 	}
 
@@ -272,7 +312,11 @@ export async function createInvoiceFromOrder(order: any, profile: any, integrati
 		throw new Error('Nepodařilo se načíst Fakturoid konfiguraci');
 	}
 
-	const service = new FakturoidService(config);
+	if (!supabase) {
+		throw new Error('Supabase instance není dostupná');
+	}
+
+	const service = new FakturoidService(config, supabase);
 
 	// Převedeme data do požadovaného formátu
 	const orderData = {
@@ -301,9 +345,16 @@ export async function createInvoiceFromOrder(order: any, profile: any, integrati
 	return await service.createInvoiceFromOrder(orderData);
 }
 
-export async function sendInvoiceEmail(invoiceId: number): Promise<void> {
-	const { getAccessToken } = await import('$lib/fakturoidAuth');
-	const accessToken = await getAccessToken();
+export async function sendInvoiceEmail(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
+	let accessToken: string | null;
+	
+	if (supabase) {
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		accessToken = await getAccessTokenWithSupabase(supabase);
+	} else {
+		const { getAccessToken } = await import('$lib/fakturoidAuth');
+		accessToken = await getAccessToken();
+	}
 	
 	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/message.json`, {
 		method: 'POST',
@@ -325,9 +376,16 @@ export async function sendInvoiceEmail(invoiceId: number): Promise<void> {
 	}
 }
 
-export async function markInvoiceAsPaid(invoiceId: number): Promise<void> {
-	const { getAccessToken } = await import('$lib/fakturoidAuth');
-	const accessToken = await getAccessToken();
+export async function markInvoiceAsPaid(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
+	let accessToken: string | null;
+	
+	if (supabase) {
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		accessToken = await getAccessTokenWithSupabase(supabase);
+	} else {
+		const { getAccessToken } = await import('$lib/fakturoidAuth');
+		accessToken = await getAccessToken();
+	}
 	
 	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/fire.json`, {
 		method: 'POST',
