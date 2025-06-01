@@ -103,6 +103,7 @@
 		cookieStore.saveSelection();
 		showBanner = false;
 	}}
+	class="fixed bottom-4 left-4 z-50"
 />
 
 <Footer />
