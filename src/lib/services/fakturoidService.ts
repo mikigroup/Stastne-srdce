@@ -76,8 +76,8 @@ export class FakturoidService {
 	 */
 	private async request(endpoint: string, options: RequestInit = {}) {
 		// Importujeme getAccessToken z fakturoidAuth a předáme mu supabase instanci
-		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-		const accessToken = await getAccessTokenWithSupabase(this.supabase);
+		const { getAccessTokenWithSupabase, clearTokenCache } = await import('$lib/fakturoidAuth');
+		let accessToken = await getAccessTokenWithSupabase(this.supabase);
 		
 		// Konstrukce URL s account slug pro všechny endpointy kromě /user.json
 		let url: string;
@@ -103,12 +103,36 @@ export class FakturoidService {
 			...options.headers
 		};
 
-		const response = await fetch(url, {
+		let response = await fetch(url, {
 			...options,
 			headers
 		});
 
 		console.log(`Fakturoid API response: ${response.status} ${response.statusText}`);
+
+		// Pokud dostaneme 401, zkusíme vymazat cache a získat nový token
+		if (response.status === 401) {
+			console.log('401 Unauthorized - clearing cache and retrying...');
+			clearTokenCache();
+			accessToken = await getAccessTokenWithSupabase(this.supabase);
+			
+			if (accessToken) {
+				console.log('Retrying with fresh token...');
+				const retryHeaders = {
+					'Authorization': `Bearer ${accessToken}`,
+					'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+					'Content-Type': 'application/json',
+					...options.headers
+				};
+
+				response = await fetch(url, {
+					...options,
+					headers: retryHeaders
+				});
+
+				console.log(`Fakturoid API retry response: ${response.status} ${response.statusText}`);
+			}
+		}
 
 		if (!response.ok) {
 			const errorText = await response.text();
@@ -210,13 +234,31 @@ export class FakturoidService {
 	private async createOrFindSubject(subjectData: FakturoidSubject): Promise<FakturoidSubject> {
 		// Nejdříve zkusíme najít existující kontakt podle emailu
 		if (subjectData.email) {
+			console.log('Hledám existující kontakt pro email:', subjectData.email);
 			const subjects = await this.request(`/subjects.json?email=${encodeURIComponent(subjectData.email)}`);
+			console.log(`Nalezeno ${subjects.length} kontaktů s emailem ${subjectData.email}`);
+			
 			if (subjects.length > 0) {
-				return subjects[0];
+				// Zkusíme najít kontakt se stejným jménem
+				const exactMatch = subjects.find((subject: any) => 
+					subject.name === subjectData.name
+				);
+				
+				if (exactMatch) {
+					console.log('Nalezen přesně odpovídající kontakt:', exactMatch.name);
+					return exactMatch;
+				} else {
+					console.log('Nenalezen kontakt se stejným jménem. Existující kontakty:', 
+						subjects.map((s: any) => s.name).join(', '));
+					console.log('Vytváří se nový kontakt pro:', subjectData.name);
+					// Pokud nenajdeme přesnou shodu jména, vytvoříme nový kontakt
+					// (i když má stejný email)
+				}
 			}
 		}
 
-		// Pokud nenajdeme, vytvoříme nový
+		// Pokud nenajdeme přesnou shodu nebo email není zadán, vytvoříme nový
+		console.log('Vytváří se nový kontakt:', subjectData);
 		return await this.request('/subjects.json', {
 			method: 'POST',
 			body: JSON.stringify({ subject: subjectData })
@@ -338,8 +380,7 @@ export async function createInvoiceFromOrder(order: any, profile: any, integrati
 			price: item.price,
 			vat: 21
 		})),
-		currency: order.currency || 'CZK',
-		note: order.note
+		currency: order.currency || 'CZK'
 	};
 
 	return await service.createInvoiceFromOrder(orderData);

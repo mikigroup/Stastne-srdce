@@ -165,3 +165,12 @@ export async function clearStoredToken(): Promise<void> {
 		console.error('Error clearing stored token:', error);
 	}
 }
+
+/**
+ * Vymaže pouze cache (ne databázi) - použije se při 401 chybách
+ */
+export function clearTokenCache(): void {
+	cachedToken = null;
+	tokenExpiry = null;
+	console.log('Token cache cleared');
+}

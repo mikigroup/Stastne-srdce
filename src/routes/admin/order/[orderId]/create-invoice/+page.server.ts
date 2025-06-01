@@ -236,6 +236,7 @@ export const actions: Actions = {
 					fakturoid_data: {
 						invoice_id: invoice.id,
 						invoice_number: invoice.number,
+						invoice_url: invoice.html_url,
 						account_id: activeAccountId,
 						created_at: new Date().toISOString()
 					}

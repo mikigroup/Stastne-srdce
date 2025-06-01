@@ -66,9 +66,8 @@
 	{#if successMessage}
 		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
 			{successMessage}
-		</div>
+		</div>		
 	{/if}
-
 	<!-- Error Message -->
 	{#if errorMessage}
 		<div class="mb-4 p-3 bg-red-100 border border-red-200 text-red-800 rounded">

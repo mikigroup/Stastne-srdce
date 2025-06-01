@@ -272,7 +272,7 @@
 							readonly
 							disabled
 							value={order?.order_number ?? ""}
-							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
+							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />						
 					</div>
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Datum</label>
