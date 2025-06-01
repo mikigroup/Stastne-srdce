@@ -76,32 +76,32 @@ export const actions: Actions = {
 
 		try {
 			const settings = JSON.parse(settingsJson);
-			
-			// Připravíme data pro batch upsert
-			const settingsData = Object.entries(settings).map(([key, value]) => ({
-				key,
+
+		// Připravíme data pro batch upsert
+		const settingsData = Object.entries(settings).map(([key, value]) => ({
+			key,
 				value: JSON.stringify(value),
-				updated_at: new Date().toISOString(),
-				updated_by: session.user.id,
-				user_id: session.user.id
-			}));
+			updated_at: new Date().toISOString(),
+			updated_by: session.user.id,
+			user_id: session.user.id
+		}));
 
-			// Provedeme jeden batch upsert
-			const { error } = await supabase
-				.from("site_settings")
-				.upsert(settingsData, {
-					onConflict: 'key'
-				});
+		// Provedeme jeden batch upsert
+		const { error } = await supabase
+			.from("site_settings")
+			.upsert(settingsData, {
+				onConflict: 'key'
+			});
 
-			if (error) {
-				console.error("Chyba při ukládání nastavení:", error);
-				return fail(500, { error: "Nepodařilo se uložit nastavení" });
-			}
+		if (error) {
+			console.error("Chyba při ukládání nastavení:", error);
+			return fail(500, { error: "Nepodařilo se uložit nastavení" });
+		}
 
-			// Vyčistíme cache pro aktualizovaná nastavení
-			settingsCache.clear();
+		// Vyčistíme cache pro aktualizovaná nastavení
+		settingsCache.clear();
 
-			return { success: true };
+		return { success: true };
 		} catch (error) {
 			console.error("Chyba při zpracování nastavení:", error);
 			return fail(400, { error: "Neplatný formát nastavení" });

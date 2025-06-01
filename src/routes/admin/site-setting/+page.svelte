@@ -590,6 +590,60 @@
 			$editableSettings = $editableSettings;
 		}
 	}
+
+	// Fakturoid connection functions
+	async function connectFakturoid() {
+		try {
+			// Přesměrujeme na OAuth endpoint pro Fakturoid
+			window.location.href = '/api/fakturoid/oauth/authorize';
+		} catch (error) {
+			console.error('Chyba při připojování Fakturoid:', error);
+			saveMessage = 'Chyba při připojování k Fakturoid';
+			saveMessageType = 'error';
+			showMessage = true;
+			setTimeout(() => showMessage = false, 5000);
+		}
+	}
+
+	async function disconnectFakturoid() {
+		if (!confirm('Opravdu chcete odpojit Fakturoid účet?')) {
+			return;
+		}
+
+		try {
+			loading = true;
+			
+			const formData = new FormData();
+			const response = await fetch('?/disconnectFakturoid', {
+				method: 'POST',
+				body: formData
+			});
+
+			const result = await response.json();
+			
+			if (result.type === 'success') {
+				// Aktualizujeme lokální nastavení
+				$editableSettings.integrations.fakturoid.connected = false;
+				$editableSettings.integrations.fakturoid.accounts = [];
+				$editableSettings = $editableSettings;
+				
+				saveMessage = 'Fakturoid byl úspěšně odpojeno';
+				saveMessageType = 'success';
+				showMessage = true;
+				setTimeout(() => showMessage = false, 5000);
+			} else {
+				throw new Error(result.data?.error || 'Neznámá chyba');
+			}
+		} catch (error) {
+			console.error('Chyba při odpojování Fakturoid:', error);
+			saveMessage = 'Chyba při odpojování Fakturoid';
+			saveMessageType = 'error';
+			showMessage = true;
+			setTimeout(() => showMessage = false, 5000);
+		} finally {
+			loading = false;
+		}
+	}
 </script>
 
 <svelte:head>
