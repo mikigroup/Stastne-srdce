@@ -1,6 +1,5 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { sendEmail } from '$lib/email';
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
