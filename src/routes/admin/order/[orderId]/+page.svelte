@@ -29,6 +29,7 @@
 	let selectedShippingMethod: string = order?.shipping_method;
 	let isPaid: boolean = order?.pay_state || false;
 	let note: string = order?.note ?? "";
+	let text: string = order?.text ?? "";
 
 	// Fakturační údaje
 	let customer_email: string = order?.customer_email ?? "";
@@ -91,6 +92,7 @@
 				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
 				note,
+				text,
 				customer_email,
 				customer_first_name,
 				customer_last_name,
@@ -465,6 +467,32 @@
 			</div>
 		</div>
 
+	<!-- Poznámky -->
+	<div class="pt-6 border-t border-gray-200">
+		<h3 class="text-lg font-medium text-gray-900 mb-4">Poznámky</h3>
+		
+		<div class="grid grid-cols-1 gap-6">
+			{#if text}
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-2">Text z košíku</label>
+					<div class="w-full px-3 py-3 border border-gray-300 rounded-md bg-gray-50 text-sm text-gray-800 min-h-[80px]">
+						{text}
+					</div>
+				</div>
+			{/if}
+			
+			<div>
+
+				<textarea
+					bind:value={note}
+					placeholder="Poznámka k objednávce..."
+					rows="4"
+					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+				></textarea>
+			</div>
+		</div>
+	</div>
+
 		<!-- Položky objednávky -->
 		<div class="pt-6 border-t border-gray-200">
 			<h3 class="text-lg font-medium text-gray-900 mb-4">Položky objednávky</h3>
@@ -580,6 +608,7 @@
 				</div>
 			</div>
 		</div>
+	
 	{:else}
 		<div class="p-8 text-center">
 			<p class="text-gray-600">Načítání dat objednávky...</p>
