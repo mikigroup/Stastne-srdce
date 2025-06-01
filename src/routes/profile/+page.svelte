@@ -230,6 +230,37 @@
             </div>
           </div>
 
+            <!-- Alergie -->
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
+              <div class="flex flex-col items-center md:flex-row gap-4">
+                <div class="flex justify-start basis-1/3">
+                  <label class="text-gray-700 font-medium">Alergie</label>
+                </div>
+                <div class="w-full basis-2/3 flex gap-4 justify-center">
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      name="allergies"
+                      value="no"
+                      bind:group={allergies}
+                      class="mr-2"
+                    />
+                    Ne
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      type="radio"
+                      name="allergies"
+                      value="yes"
+                      bind:group={allergies}
+                      class="mr-2"
+                    />
+                    Ano
+                  </label>
+                </div>
+              </div>
+            </div>
+
           {#if visible}
             <!-- Address section -->
             <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
@@ -341,38 +372,7 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Alergie -->
-            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label class="text-gray-700 font-medium">Alergie</label>
-                </div>
-                <div class="w-full basis-2/3 flex gap-4 justify-center">
-                  <label class="flex items-center">
-                    <input
-                      type="radio"
-                      name="allergies"
-                      value="no"
-                      bind:group={allergies}
-                      class="mr-2"
-                    />
-                    Ne
-                  </label>
-                  <label class="flex items-center">
-                    <input
-                      type="radio"
-                      name="allergies"
-                      value="yes"
-                      bind:group={allergies}
-                      class="mr-2"
-                    />
-                    Ano
-                  </label>
-                </div>
-              </div>
-            </div>
+            </div>          
 
             {#if allergies === "yes"}
               <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">

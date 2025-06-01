@@ -35,7 +35,7 @@ export const actions: Actions = {
 			.eq("id", user.id)
 			.single();
 
-		if (!profile?.registration_status) {
+		if (profile?.registration_status !== "completed") {
 			return {
 				success: false,
 				type: 'failure',

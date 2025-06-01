@@ -11,13 +11,23 @@
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 	import { cookieStore } from '$lib/stores/cookieStore';
 	import type { Profile } from "$lib/types/profile";
+	import type { Session, User } from '@supabase/supabase-js';
+	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { AllSettings, GeneralSettings } from '$lib/types/settings';
 
-	export let data;
+	export let data: {
+		session: Session | null;
+		supabase: SupabaseClient;
+		user: User | null;
+		settings: Partial<AllSettings>;
+		generalSettings: GeneralSettings | undefined;
+		profile: Profile | null;
+	};
 	let { supabase, session, user, profile } = data;
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = session && user && profile && !profile.registration_status && !$page.url.pathname.startsWith('/signup/complete');
+	$: showRegistrationBanner = session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {

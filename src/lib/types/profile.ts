@@ -11,5 +11,5 @@ export interface Profile {
     ico: string | null;
     dic: string | null;
     company: string | null;
-    registration_status: boolean;
+    registration_status: string;
 } 
