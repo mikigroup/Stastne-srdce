@@ -27,10 +27,20 @@
 	} = {};
 
 	let loading = false;
-	let allergies = form?.allergies ? "yes" : "no";
-	let allergiesDescription = form?.allergies_description || "";
-	let deliveryMethod = form?.delivery_method || "";
-	let paymentMethod = form?.payment_method || "";
+	let first_name = form?.first_name ?? data.profile?.first_name ?? "";
+	let last_name = form?.last_name ?? data.profile?.last_name ?? "";
+	let street = form?.street ?? data.profile?.street ?? "";
+	let street_number = form?.street_number ?? data.profile?.street_number ?? "";
+	let city = form?.city ?? data.profile?.city ?? "";
+	let zip_code = form?.zip_code ?? data.profile?.zip_code ?? "";
+	let telephone = form?.telephone ?? data.profile?.telephone ?? "";
+	let company = form?.company ?? data.profile?.company ?? "";
+	let ico = form?.ico ?? data.profile?.ico ?? "";
+	let dic = form?.dic ?? data.profile?.dic ?? "";
+	let allergies = form?.allergies ? "yes" : data.profile?.allergies ? "yes" : "no";
+	let allergiesDescription = form?.allergies_description ?? data.profile?.allergies_description ?? "";
+	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
+	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
 	let profileValidationMessage = '';
 
 	function toggleAllergies(value: string) {
@@ -39,7 +49,7 @@
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result }) => {
+		return async ({ result }: { result: { type: string } }) => {
 			if (result.type === 'success') {
 				await goto('/profile');
 			}
@@ -51,23 +61,23 @@
 
 	$: {
 		const validationResult = validateProfileForInvoicing({
-			first_name: form?.first_name ?? '',
-			last_name: form?.last_name ?? '',
-			street: form?.street ?? '',
-			street_number: form?.street_number ?? '',
-			city: form?.city ?? '',
-			zip_code: form?.zip_code ?? '',
+			first_name,
+			last_name,
+			street,
+			street_number,
+			city,
+			zip_code,
 			email: data.session?.user?.email,
-			company: form?.company ?? '',
-			ico: form?.ico ?? '',
-			dic: form?.dic ?? ''
+			company,
+			ico,
+			dic
 		});
 		profileValidationMessage = getProfileValidationMessage(validationResult);
 	}
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Dokončení registrace</title>
+	<title>{generalSettings?.shopName ?? 'Dokončení registrace'}</title>
 	<meta name="description" content="Dokončení registrace" />
 </svelte:head>
 
@@ -93,7 +103,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.first_name ?? ""}
+							bind:value={first_name}
 							type="text"
 							id="first_name"
 							name="first_name"
@@ -105,7 +115,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.last_name ?? ""}
+							bind:value={last_name}
 							type="text"
 							id="last_name"
 							name="last_name"
@@ -122,7 +132,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.street ?? ""}
+							bind:value={street}
 							type="text"
 							id="street"
 							name="street"
@@ -134,7 +144,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.street_number ?? ""}
+							bind:value={street_number}
 							type="text"
 							id="street_number"
 							name="street_number"
@@ -146,7 +156,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.city ?? ""}
+							bind:value={city}
 							type="text"
 							id="city"
 							name="city"
@@ -158,7 +168,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.zip_code ?? ""}
+							bind:value={zip_code}
 							type="text"
 							id="zip_code"
 							name="zip_code"
@@ -170,7 +180,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.telephone ?? ""}
+							bind:value={telephone}
 							type="tel"
 							id="telephone"
 							name="telephone"
@@ -211,17 +221,17 @@
 
 					{#if allergies === "yes"}
 						<div class="flex flex-col">
-            <textarea
-							name="allergies_description"
-							bind:value={allergiesDescription}
-							maxlength="300"
-							placeholder="Popište vaše alergie (max 300 znaků)"
-							class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
-							rows="3"
-						></textarea>
+							<textarea
+								name="allergies_description"
+								bind:value={allergiesDescription}
+								maxlength="300"
+								placeholder="Popište vaše alergie (max 300 znaků)"
+								class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
+								rows="3"
+							></textarea>
 							<span class="text-sm text-gray-500 mt-1">
-                Zbývá {300 - allergiesDescription.length} znaků
-            </span>
+								Zbývá {300 - allergiesDescription.length} znaků
+							</span>
 						</div>
 					{/if}
 				</div>

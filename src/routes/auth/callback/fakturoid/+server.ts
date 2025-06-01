@@ -161,6 +161,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	let userData;
 	try {
 		userData = await userResponse.json();
+		console.log('Fakturoid user data:', JSON.stringify(userData, null, 2));
 	} catch (parseError) {
 		console.error('Failed to parse user response:', parseError);
 		return redirect(303, "/admin/site-setting?error=user_info_failed");
@@ -195,11 +196,11 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		fakturoid: {
 			enabled: true,
 			connected: true,
-			subdomain: userData.subdomain || '',
+			subdomain: userData.accounts[0].slug || '',
 			accounts: [{
 				name: userData.email || userData.name,
 				email: userData.email,
-				subdomain: userData.subdomain || '',
+				subdomain: userData.accounts[0].slug || '',
 				isActive: true,
 				connectedAt: new Date().toISOString()
 			}]

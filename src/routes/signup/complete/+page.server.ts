@@ -8,10 +8,16 @@ export const load: PageServerLoad = async ({
 		throw redirect(303, "/login");
 	}
 
-	// Kontrola existence profilu
+	// Kontrola existence profilu a načtení všech polí
 	const { data: profile } = await supabase
 		.from("profiles")
-		.select("*")
+		.select(`
+			*,
+			allergies,
+			allergies_description,
+			delivery_method,
+			payment_method
+		`)
 		.eq("id", session.user.id)
 		.single();
 

@@ -1286,171 +1286,38 @@
 							{#if $editableSettings.integrations.fakturoid.enabled}
 								<div class="space-y-4 pl-4 border-l-4 border-green-200">
 									<!-- OAuth Connection Status -->
-									<div class="card bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
-										<div class="card-body p-4">
-											<h4 class="font-medium text-green-800 mb-2 flex items-center gap-2">
-												<i class="fa-solid fa-shield-halved"></i>
-												OAuth Připojení
-											</h4>
-											<p class="text-sm text-green-700 mb-3">
-												Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.
-											</p>
-											
-											<!-- Connect/Disconnect Button -->
-											<div class="flex items-center gap-3">
-												{#if $editableSettings.integrations.fakturoid.connected}
-													<div class="flex items-center gap-2 text-green-600">
-														<i class="fa-solid fa-check-circle"></i>
-														<span class="font-medium">Připojeno k Fakturoid</span>
-													</div>
-													<form method="POST" action="?/disconnectFakturoid" use:enhance>
-														<button 
-															type="submit"
-															class="btn btn-outline btn-sm btn-error"
-															disabled={loading}
-														>
-															{#if loading}
-																<span class="loading loading-spinner loading-xs"></span>
-																Odpojování...
-															{:else}
-																<i class="fa-solid fa-unlink"></i>
-																Odpojit
-															{/if}
-														</button>
-													</form>
-												{:else}
-													<button 
-														class="btn btn-primary btn-sm"
-														on:click={() => {
-															// Přesměrujeme na OAuth endpoint
-															window.location.href = '/auth/fakturoid/connect';
-														}}
-													>
-														<i class="fa-solid fa-link"></i>
-														Připojit Fakturoid účet
-													</button>
-												{/if}
-											</div>
-											
-											{#if $editableSettings.integrations.fakturoid.connected}
-												<div class="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
-													<strong>Účet:</strong> {$editableSettings.integrations.fakturoid.accounts.length > 0 ? $editableSettings.integrations.fakturoid.accounts[0].name : 'Připojeno'}
-													{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
-														<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
-													{/if}
-												</div>
+									<div class="flex items-center justify-between">
+										<div>
+											<h3 class="text-lg font-medium">Fakturoid</h3>
+											{#if $editableSettings.integrations?.fakturoid?.connected}
+												<p class="text-sm text-gray-500">Připojeno k účtu: {$editableSettings.integrations.fakturoid.accounts[0]?.email}</p>
+											{:else}
+												<p class="text-sm text-gray-500">Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.</p>
 											{/if}
 										</div>
+										{#if $editableSettings.integrations?.fakturoid?.connected}
+											<button
+												on:click={() => disconnectFakturoid()}
+												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+											>
+												Odpojit účet
+											</button>
+										{:else}
+											<button
+												on:click={() => connectFakturoid()}
+												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+											>
+												Připojit účet
+											</button>
+										{/if}
 									</div>
-
-									<!-- Invoice Settings -->
-									<div class="divider">Nastavení faktur</div>
-
-									<!-- Default Invoice Language -->
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Výchozí jazyk faktur</span>
-										</label>
-										<select bind:value={$editableSettings.integrations.fakturoid.defaultLanguage} class="select select-bordered w-full">
-											<option value="cz">Čeština</option>
-											<option value="sk">Slovenština</option>
-											<option value="en">Angličtina</option>
-											<option value="de">Němčina</option>
-										</select>
-									</div>
-
-									<!-- Auto-create Invoices -->
-									<div class="form-control">
-										<label class="label cursor-pointer justify-start gap-3">
-											<input 
-												type="checkbox" 
-												bind:checked={$editableSettings.integrations.fakturoid.autoCreateInvoices} 
-												class="checkbox checkbox-primary"
-											/>
-											<span class="label-text">Automaticky vytvářet faktury pro objednávky</span>
-										</label>
-									</div>
-
-									<!-- Invoice Due Days -->
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Splatnost faktur (dny)</span>
-										</label>
-										<input
-											type="number"
-											bind:value={$editableSettings.integrations.fakturoid.invoiceDueDays}
-											class="input input-bordered w-full"
-											placeholder="14"
-											min="1"
-											max="365"
-										/>
-									</div>
-
-									<!-- Default Payment Method -->
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Výchozí způsob platby</span>
-										</label>
-										<select bind:value={$editableSettings.integrations.fakturoid.defaultPaymentMethod} class="select select-bordered w-full">
-											<option value="bank">Bankovní převod</option>
-											<option value="cash">Hotově</option>
-											<option value="card">Kartou</option>
-											<option value="paypal">PayPal</option>
-											<option value="gopay">GoPay</option>
-										</select>
-									</div>
-
-									<!-- Additional Settings -->
-									<div class="divider">Další nastavení</div>
-
-									<!-- Send Invoice Email -->
-									<div class="form-control">
-										<label class="label cursor-pointer justify-start gap-3">
-											<input 
-												type="checkbox" 
-												bind:checked={$editableSettings.integrations.fakturoid.sendInvoiceEmail} 
-												class="checkbox checkbox-primary"
-											/>
-											<span class="label-text">Automaticky odeslat fakturu emailem</span>
-										</label>
-									</div>
-
-									<!-- Invoice Note -->
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text font-medium">Poznámka na faktuře</span>
-										</label>
-										<textarea
-											bind:value={$editableSettings.integrations.fakturoid.invoiceNote}
-											class="textarea textarea-bordered w-full h-20"
-											placeholder="Dodatečná poznámka, která se zobrazí na všech fakturách..."
-										></textarea>
-									</div>
-
-									<!-- Test Connection Button (only if connected) -->
+									
 									{#if $editableSettings.integrations.fakturoid.connected}
-										<div class="card bg-gray-50 border border-gray-300">
-											<div class="card-body p-4">
-												<h4 class="font-medium mb-2">Test připojení</h4>
-												<p class="text-sm text-gray-600 mb-3">
-													Otestujte aktuální OAuth připojení k Fakturoid.
-												</p>
-												<form method="POST" action="?/testFakturoidOAuth" use:enhance>
-													<button 
-														type="submit"
-														class="btn btn-outline btn-sm"
-														disabled={loading}
-													>
-														{#if loading}
-															<span class="loading loading-spinner loading-xs"></span>
-															Testování...
-														{:else}
-															<i class="fa-solid fa-plug"></i>
-															Otestovat OAuth připojení
-														{/if}
-													</button>
-												</form>
-											</div>
+										<div class="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
+											<strong>Účet:</strong> {$editableSettings.integrations.fakturoid.accounts.length > 0 ? $editableSettings.integrations.fakturoid.accounts[0].name : 'Připojeno'}
+											{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
+												<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
+											{/if}
 										</div>
 									{/if}
 								</div>

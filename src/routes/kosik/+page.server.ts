@@ -3,6 +3,7 @@ import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+import type { Profile } from "$lib/types/profile";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -17,11 +18,29 @@ const transporter = nodemailer.createTransport({
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession } }: RequestEvent) => {
 		const { session, user } = await safeGetSession();
+
 		if (!session || !user) {
 			return {
 				success: false,
 				type: 'failure',
-				message: "Pro vytvoření objednávky se musíte přihlásit."
+				message: "Pro vytvoření objednávky se musíte přihlásit.",
+				redirectUrl: "/prihlaseni?redirect=/kosik"
+			};
+		}
+
+		// Kontrola dokončené registrace
+		const { data: profile } = await supabase
+			.from("profiles")
+			.select("registration_status")
+			.eq("id", user.id)
+			.single();
+
+		if (!profile?.registration_status) {
+			return {
+				success: false,
+				type: 'failure',
+				message: "Pro vytvoření objednávky je potřeba dokončit registraci.",
+				redirectUrl: "/signup/complete"
 			};
 		}
 

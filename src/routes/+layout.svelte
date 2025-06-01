@@ -10,22 +10,24 @@
 	import Footer from "$lib/component/Footer.svelte";
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 	import { cookieStore } from '$lib/stores/cookieStore';
+	import type { Profile } from "$lib/types/profile";
 
 	export let data;
-	let { supabase, session, user  } = data;
-	$: ({ supabase, session, user } = data);
+	let { supabase, session, user, profile } = data;
+	$: ({ supabase, session, user, profile } = data);
 
-	//console.log(settings)
+	// Kontrola nedokončené registrace
+	$: showRegistrationBanner = session && user && profile && !profile.registration_status && !$page.url.pathname.startsWith('/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {
-			// Při jakékoli změně auth stavu znovu načteme data bezpečně
 			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
 				invalidate("supabase:auth");
 			}
 		});
 		return () => data.subscription.unsubscribe();
 	});
+
 	$: isAdminRoute = $page.url.pathname.startsWith("/admin");
 	injectSpeedInsights();
 
@@ -33,83 +35,11 @@
 	let showBanner = false;
 
 	onMount(() => {
-		// Zkontrolujeme, zda už existuje souhlas s cookies
 		const cookieConsent = cookieStore.hasConsent();
 		showBanner = !cookieConsent;
-
-		// Poslech události pro statistiky
-		window.addEventListener('consent:statistics', () => {
-			initGoogleAnalytics();
-		});
-
-		// Poslech události pro marketing
-		window.addEventListener('consent:marketing', () => {
-			initMarketingScripts();
-		});
 	});
-
-	// Funkce pro inicializaci sledovacích skriptů
-	function initializeTracking() {
-		if (cookieStore.isCategoryAccepted('statistics')) {
-			initGoogleAnalytics();
-		}
-
-		if (cookieStore.isCategoryAccepted('marketing')) {
-			initMarketingScripts();
-		}
-	}
-
-	// Funkce pro inicializaci Google Analytics
-	function initGoogleAnalytics() {
-	/*	const gaId = 'G-88SZ0DZWC8';
-
-		if (!gaId) return;
-
-		// Přidání GA skriptu pokud ještě neexistuje
-		if (!document.getElementById('ga-script')) {
-			const script = document.createElement('script');
-			script.id = 'ga-script';
-			script.async = true;
-			script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-			document.head.appendChild(script);
-
-			// Inicializace GA
-			window.dataLayer = window.dataLayer || [];
-			function gtag(...args: any[]) {
-				window.dataLayer.push(args);
-			}
-			gtag('js', new Date());
-			gtag('config', gaId);
-		}*/
-	}
-
-	// Funkce pro inicializaci marketingových skriptů
-	function initMarketingScripts() {
-		// Implementace podle potřeb (Facebook Pixel, atd.)
-	/*	const fbPixelId = 'YOUR_PIXEL_ID';
-
-		if (fbPixelId && !document.getElementById('fb-pixel')) {
-			// Facebook Pixel
-			const script = document.createElement('script');
-			script.id = 'fb-pixel';
-			script.innerHTML = `
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '${fbPixelId}');
-        fbq('track', 'PageView');
-      `;
-			document.head.appendChild(script);
-		} */
-	}
 </script>
 
-<!-- <Header /> -->
 {#if !isAdminRoute}
 	<HeaderCustomer {data} />
 {:else}
@@ -126,29 +56,44 @@
 	<slot class="mt-10 container mx-auto " />
 </main>
 
-<!--<GDPR cookieName="gdpr" />-->
-<!-- <GdprBanner bind:this={gdprBanner} cookieName="props.beyonk_gdpr" {...props} on:analytics={initAnalytics} /> -->
+{#if showRegistrationBanner}
+	<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed top-0 left-0 right-0 z-50">
+		<div class="flex">
+			<div class="flex-shrink-0">
+				<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+				</svg>
+			</div>
+			<div class="ml-3">
+				<p class="text-sm text-yellow-700">
+					Pro plné využití všech funkcí je potřeba dokončit registraci.
+					<a href="/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+						Dokončit registraci
+					</a>
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <GDPR
 	cookieName="stastne_srdce_cookies"
 	visible={showBanner}
 	showEditIcon={true}
-	on:show={() => {
-    /*showBanner = true;*/
-  }}
+	on:show={() => {}}
 	on:accept-all={() => {
-    cookieStore.acceptAll();
-    showBanner = false;
-  }}
+		cookieStore.acceptAll();
+		showBanner = false;
+	}}
 	on:reject-all={() => {
-    cookieStore.rejectAll();
-    showBanner = false;
-  }}
+		cookieStore.rejectAll();
+		showBanner = false;
+	}}
 	on:accept-selection={() => {
-    cookieStore.saveSelection();
-    showBanner = false;
-  }}
+		cookieStore.saveSelection();
+		showBanner = false;
+	}}
 />
-
 
 <Footer />
 
