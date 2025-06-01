@@ -465,6 +465,13 @@
 					</div>
 				</div>
 			</div>
+			{#if order?.fakturoid_data?.invoice_url}
+							<div class="mt-2">
+								<a href={order.fakturoid_data.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 text-sm">
+									Otevřít fakturu ve Fakturoidu
+								</a>
+							</div>
+						{/if}
 		</div>
 
 	<!-- Poznámky -->
