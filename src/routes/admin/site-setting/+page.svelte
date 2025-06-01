@@ -637,30 +637,14 @@
 			return;
 		}
 
-		try {
-			loading = true;
-			
-			const formData = new FormData();
-			const response = await fetch('?/disconnectFakturoid', {
-				method: 'POST',
-				body: formData
-			});
-
-			// Server-side akce nyní dělá redirect, takže tady nemusíme nic zpracovávať
-			// Pokud se dostaneme sem, něco se pokazilo
-			if (!response.ok) {
-				throw new Error('Chyba při odpojování');
-			}
-
-		} catch (error) {
-			console.error('Chyba při odpojování Fakturoid:', error);
-			saveMessage = 'Chyba při odpojování Fakturoid';
-			saveMessageType = 'error';
-			showMessage = true;
-			setTimeout(() => showMessage = false, 5000);
-		} finally {
-			loading = false;
-		}
+		// Použijeme klasický form submit místo fetch API pro správný redirect
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/disconnectFakturoid';
+		form.style.display = 'none';
+		
+		document.body.appendChild(form);
+		form.submit();
 	}
 </script>
 
