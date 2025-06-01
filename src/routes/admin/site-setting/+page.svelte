@@ -93,6 +93,20 @@
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
+		} else if (success === 'fakturoid_disconnected') {
+			activeTab = 'integrations';
+			// Vyčistíme local cache
+			clearCache();
+			// Vynucíme refresh dat
+			window.location.hash = '#refresh';
+			
+			saveMessage = 'Fakturoid byl úspěšně odpojeno!';
+			saveMessageType = 'success';
+			showMessage = true;
+			
+			setTimeout(() => {
+				showMessage = false;
+			}, 5000);
 		} else if (error) {
 			activeTab = 'integrations';
 			
@@ -133,6 +147,19 @@
 	$: settings = data.settings;
 	$: if (settings && settings.length > 0) {
 		setCachedSettings(settings);
+	}
+
+	// Watch for changes in data
+	$: if (settings) {
+		editableSettings.set(structureSettings(settings));
+	}
+	
+	// Reactive refresh dat při změně URL parametrů
+	$: if ($page.url.searchParams.get('success') === 'fakturoid_disconnected') {
+		// Force refresh dat po odpojení
+		setTimeout(() => {
+			editableSettings.set(structureSettings(settings));
+		}, 100);
 	}
 
 	// Výchozí hodnoty pro každou sekci
@@ -594,8 +621,8 @@
 	// Fakturoid connection functions
 	async function connectFakturoid() {
 		try {
-			// Přesměrujeme na OAuth endpoint pro Fakturoid
-			window.location.href = '/api/fakturoid/oauth/authorize';
+			// Přesměrujeme na správný OAuth endpoint pro Fakturoid
+			window.location.href = '/auth/fakturoid/connect';
 		} catch (error) {
 			console.error('Chyba při připojování Fakturoid:', error);
 			saveMessage = 'Chyba při připojování k Fakturoid';
@@ -619,21 +646,12 @@
 				body: formData
 			});
 
-			const result = await response.json();
-			
-			if (result.type === 'success') {
-				// Aktualizujeme lokální nastavení
-				$editableSettings.integrations.fakturoid.connected = false;
-				$editableSettings.integrations.fakturoid.accounts = [];
-				$editableSettings = $editableSettings;
-				
-				saveMessage = 'Fakturoid byl úspěšně odpojeno';
-				saveMessageType = 'success';
-				showMessage = true;
-				setTimeout(() => showMessage = false, 5000);
-			} else {
-				throw new Error(result.data?.error || 'Neznámá chyba');
+			// Server-side akce nyní dělá redirect, takže tady nemusíme nic zpracovávať
+			// Pokud se dostaneme sem, něco se pokazilo
+			if (!response.ok) {
+				throw new Error('Chyba při odpojování');
 			}
+
 		} catch (error) {
 			console.error('Chyba při odpojování Fakturoid:', error);
 			saveMessage = 'Chyba při odpojování Fakturoid';

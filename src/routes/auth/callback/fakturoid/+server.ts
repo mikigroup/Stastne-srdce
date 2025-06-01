@@ -191,6 +191,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 	// Aktualizujeme nastavení integrace
 	const integrationsData = await getSetting(supabase, 'integrations') || {};
+	console.log('Current integrations data before update:', JSON.stringify(integrationsData, null, 2));
+	
 	const updatedIntegrations = {
 		...integrationsData,
 		fakturoid: {
@@ -206,8 +208,11 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			}]
 		}
 	};
+	
+	console.log('Updated integrations data to save:', JSON.stringify(updatedIntegrations, null, 2));
 
 	const success = await saveSetting(supabase, 'integrations', updatedIntegrations, session.user.id);
+	console.log('Settings save result:', success);
 
 	if (!success) {
 		console.error('Failed to update settings');
@@ -216,5 +221,5 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 	// Přesměrujeme zpět na nastavení
 	console.log('OAuth callback completed successfully, redirecting...');
-	return redirect(303, "/admin/site-setting?success=fakturoid_connected");
+	return redirect(303, "/admin/site-setting?success=fakturoid_connected&tab=integrations");
 };

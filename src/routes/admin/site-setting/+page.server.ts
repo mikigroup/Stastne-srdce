@@ -25,6 +25,13 @@ export const load: PageServerLoad = async ({
 
 	// Získáme aktivní záložku z URL
 	const activeTab = url.searchParams.get('tab') || 'general';
+	const success = url.searchParams.get('success');
+	
+	// Pokud je success=fakturoid_connected nebo fakturoid_disconnected, vyčistíme cache
+	if (success === 'fakturoid_connected' || success === 'fakturoid_disconnected') {
+		console.log('OAuth success/disconnect detected, clearing cache...');
+		settingsCache.clear();
+	}
 	
 	// Načteme parent data
 	const parentData = await parent();
@@ -38,8 +45,10 @@ export const load: PageServerLoad = async ({
 	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
 		// Použijeme cache
 		settings = cached.data;
+		console.log('Using cached settings');
 	} else {
 		// Načteme všechna nastavení z databáze
+		console.log('Loading fresh settings from database');
 		const { data, error } = await supabase
 			.from("site_settings")
 			.select("*");
@@ -52,6 +61,15 @@ export const load: PageServerLoad = async ({
 			// Uložíme do cache
 			settingsCache.set(cacheKey, { data: settings, timestamp: now });
 		}
+	}
+
+	console.log('Settings loaded:', settings.length, 'items');
+	// Logujeme specificky integrations nastavení
+	const integrationsItem = settings.find(item => item.key === 'integrations');
+	if (integrationsItem) {
+		console.log('Integrations setting found:', JSON.stringify(integrationsItem.value, null, 2));
+	} else {
+		console.log('No integrations setting found in database');
 	}
 
 	return {
@@ -178,14 +196,18 @@ export const actions: Actions = {
 		}
 
 		try {
+			console.log('=== DISCONNECTING FAKTUROID ===');
+			
 			// Importujeme clearStoredToken z fakturoidAuth
 			const { clearStoredToken } = await import('$lib/fakturoidAuth');
 			
 			// Vymažeme uložené tokeny
 			await clearStoredToken();
+			console.log('Tokens cleared');
 
 			// Načteme existující integrations nastavení
 			const integrationsData = await getSetting(supabase, 'integrations') || {};
+			console.log('Current integrations data:', integrationsData);
 
 			// Odpojíme Fakturoid
 			const updatedIntegrations = {
@@ -196,20 +218,29 @@ export const actions: Actions = {
 					accounts: []
 				}
 			};
+			console.log('Updated integrations data:', updatedIntegrations);
 
 			// Uložíme aktualizovaná nastavení
 			const success = await saveSetting(supabase, 'integrations', updatedIntegrations, session.user.id);
+			console.log('Save result:', success);
 
 			if (!success) {
 				return fail(500, { error: 'Nepodařilo se odpojit Fakturoid' });
 			}
 
-			return {
-				success: true,
-				message: 'Fakturoid byl úspěšně odpojeno'
-			};
+			// Vyčistíme cache na serveru
+			settingsCache.clear();
+			console.log('Server cache cleared');
+
+			// Přesměrujeme zpět na integrace se zprávou o úspěchu
+			throw redirect(303, `/admin/site-setting?tab=integrations&success=fakturoid_disconnected&t=${Date.now()}`);
 
 		} catch (error) {
+			// Pokud je to redirect, necháme ho projít
+			if (error.status === 303) {
+				throw error;
+			}
+			
 			console.error("Error disconnecting Fakturoid:", error);
 			return fail(500, { error: 'Chyba při odpojování Fakturoid' });
 		}
