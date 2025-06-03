@@ -18,6 +18,7 @@
 	export function close() {
 		if (dialog) {
 			dialog.close();
+			dispatch('close');
 		}
 	}
 </script>
@@ -42,7 +43,7 @@
 				class="w-full px-6 py-3 text-center text-white bg-green-800 border rounded-lg shadow-md hover:bg-green-700 text-lg font-semibold"
 				type="button"
 				on:click={() => dispatch('confirm')}>
-				Potvrdit objednávku
+				Potvrdit
 			</button>
 		</div>
 	</div>
