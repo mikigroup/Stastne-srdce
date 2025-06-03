@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
+import type { Session, User } from '@supabase/supabase-js';
 
 interface OrderItem {
 	id: string;
@@ -134,18 +135,17 @@ export const load: PageServerLoad = async ({
 };
 
 export const actions: Actions = {
-	update: async ({ request, locals: { supabase, session } }: {
+	update: async ({ request, locals: { supabase, safeGetSession } }: {
 		request: Request;
 		locals: {
 			supabase: SupabaseClient<Database>;
-			session: {
-				user: {
-					id: string;
-					email: string;
-				};
-			} | null;
+			safeGetSession: () => Promise<{
+				session: Session | null;
+				user: User | null;
+			}>;
 		};
 	}) => {
+		const { session } = await safeGetSession();
 		if (!session) {
 			throw redirect(303, "/login");
 		}

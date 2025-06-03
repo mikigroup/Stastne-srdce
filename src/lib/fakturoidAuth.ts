@@ -28,8 +28,8 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 	
 	try {
 		// Získáme aktuálního uživatele
-		const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-		if (userError || !user) {
+		const { data, error: userError } = await supabaseClient.auth.getUser();
+		if (userError || !data.user) {
 			console.error('No authenticated user found');
 			return null;
 		}
@@ -38,7 +38,7 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 		const { data: tokenData, error: tokenError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.select('*')
-			.eq('user_id', user.id)
+			.eq('user_id', data.user.id)
 			.maybeSingle();
 
 		if (tokenError) {
@@ -59,7 +59,7 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 			console.log('Token expired, attempting to refresh...');
 			
 			// Pokusíme se obnovit token pomocí refresh tokenu
-			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, user.id, supabaseClient);
+			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, data.user.id, supabaseClient);
 			if (refreshedToken) {
 				cachedToken = refreshedToken;
 				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny

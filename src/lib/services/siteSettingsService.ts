@@ -17,7 +17,15 @@ export function deserializeSettingValue(value: any): any {
     }
     
     try {
-        return typeof value === 'string' ? JSON.parse(value) : value;
+        if (typeof value === 'string') {
+            return JSON.parse(value);
+        } else if (typeof value === 'object') {
+            // Return object values as-is, they're already deserialized
+            return value;
+        } else {
+            // For other types, convert to string representation
+            return String(value);
+        }
     } catch (e) {
         console.error('Error deserializing setting value:', e);
         return null;

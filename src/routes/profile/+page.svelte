@@ -1,106 +1,185 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
-  import { enhance } from "$app/forms";
-  import type { SubmitFunction } from "@sveltejs/kit";
-  import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
-  import type { Database } from '$lib/types/database.types';
+	import { enhance } from "$app/forms";
+	import type { SubmitFunction } from "@sveltejs/kit";
+	import type { Database } from '$lib/types/database.types';
 
-  type Order = Database['public']['Tables']['orders']['Row'] & {
-    grouped_items: Array<{
-      date: string;
-      items: Array<{
-        variant: {
-          variant_number: string;
-          description: string;
-          menu: {
-            soup: string;
-          };
-        };
-        price: number;
-        quantity: number;
-      }>;
-    }>;
-  };
+	type Order = Database['public']['Tables']['orders']['Row'] & {
+		grouped_items: Array<{
+			date: string;
+			items: Array<{
+				variant: {
+					variant_number: string;
+					description: string;
+					menu: {
+						soup: string;
+					};
+				};
+				price: number;
+				quantity: number;
+			}>;
+		}>;
+	};
 
-  export let data;
-  export let form;
-  let { session, supabase, profile, orders, generalSettings } = data;
-  $: ({ session, supabase, profile, orders, generalSettings } = data);
+	export let data;
+	export let form;
+	let { session, supabase, profile, orders, generalSettings } = data;
+	$: ({ session, supabase, profile, orders, generalSettings } = data);
 
-  let visible: boolean = true;
-  let expandedOrders: { [key: string]: boolean } = {};
-  let selectedOrderId: string | null = null;
+	let visible: boolean = true;
+	let expandedOrders: { [key: string]: boolean } = {};
+	let selectedOrderId: string | null = null;
 
-  const toggleVisible = () => {
-    visible = !visible;
-  };
+	const toggleVisible = () => {
+		visible = !visible;
+	};
 
-  function toggleOrderDetails(orderId: string) {
-    if (selectedOrderId === orderId) {
-      selectedOrderId = null;
-    } else {
-      selectedOrderId = orderId;
-    }
-    expandedOrders[orderId] = !expandedOrders[orderId];
-  }
+	function toggleOrderDetails(orderId: string) {
+		if (selectedOrderId === orderId) {
+			selectedOrderId = null;
+		} else {
+			selectedOrderId = orderId;
+		}
+		expandedOrders[orderId] = !expandedOrders[orderId];
+	}
 
-  function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString("cs-CZ", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
-  }
+	function formatDate(dateString: string): string {
+		return new Date(dateString).toLocaleDateString("cs-CZ", {
+			year: "numeric",
+			month: "long",
+			day: "numeric"
+		});
+	}
 
-  function calculateTotalItems(items: Array<{ quantity: number }>): number {
-    return items.reduce((total, item) => total + (item.quantity || 0), 0);
-  }
+	function calculateTotalItems(items: Array<{ quantity: number }>): number {
+		return items.reduce((total, item) => total + (item.quantity || 0), 0);
+	}
 
-  let profileForm: HTMLFormElement;
-  let loading = false;
-  let username: string = profile?.username ?? "";
-  let first_name: string = profile?.first_name ?? "";
-  let last_name: string = profile?.last_name ?? "";
-  let telephone: string = profile?.telephone ?? "";
-  let street: string = profile?.street ?? "";
-  let street_number: string = profile?.street_number ?? "";
-  let city: string = profile?.city ?? "";
-  let ico: string = profile?.ico ?? "";
-  let dic: string = profile?.dic ?? "";
-  let company: string = profile?.company ?? "";
-  let zip_code: string = profile?.zip_code ?? "";
-  let allergies: string = profile?.allergies ? "yes" : "no";
-  let allergiesDescription: string = profile?.allergies_description ?? "";
-  let deliveryMethod: string = profile?.delivery_method ?? "";
-  let paymentMethod: string = profile?.payment_method ?? "";
+	let profileForm: HTMLFormElement;
+	let loading = false;
+	let username: string = profile?.username ?? "";
+	let first_name: string = profile?.first_name ?? "";
+	let last_name: string = profile?.last_name ?? "";
+	let telephone: string = profile?.telephone ?? "";
+	let street: string = profile?.street ?? "";
+	let street_number: string = profile?.street_number ?? "";
+	let city: string = profile?.city ?? "";
+	let ico: string = profile?.ico ?? "";
+	let dic: string = profile?.dic ?? "";
+	let company: string = profile?.company ?? "";
+	let zip_code: string = profile?.zip_code ?? "";
+	let allergies: string = profile?.allergies ? "yes" : "no";
+	let allergiesDescription: string = profile?.allergies_description ?? "";
+	let deliveryMethod: string = profile?.delivery_method ?? "";
+	let paymentMethod: string = profile?.payment_method ?? "";
 
-  let profileValidationMessage = '';
+	let profileValidationMessage = '';
 
-  const handleSubmit: SubmitFunction = () => {
-    loading = true;
-    return async () => {
-      loading = false;
-    };
-  };
+	let fieldErrors: { [key: string]: string } = {};
 
-  $: {
-    const validationResult = validateProfileForInvoicing({
-      first_name,
-      last_name,
-      street,
-      street_number,
-      city,
-      zip_code,
-      email: session?.user?.email,
-      company,
-      ico,
-      dic,
-      telephone,
-      delivery_method: deliveryMethod,
-      payment_method: paymentMethod
-    });
-    profileValidationMessage = getProfileValidationMessage(validationResult);
-  }
+	function validateField(field: string, value: string | undefined): string {
+		if (!value) {
+			switch (field) {
+				case 'first_name': return 'Jméno je povinné';
+				case 'last_name': return 'Příjmení je povinné';
+				case 'street': return 'Ulice je povinná';
+				case 'street_number': return 'Číslo popisné je povinné';
+				case 'city': return 'Město je povinné';
+				case 'zip_code': return 'PSČ je povinné';
+				case 'telephone': return 'Telefon je povinný';
+				case 'delivery_method': return 'Způsob dodání je povinný';
+				case 'payment_method': return 'Způsob platby je povinný';
+				case 'company': return paymentMethod === 'bankWithInvoice' ? 'Firma je povinná pro fakturaci' : '';
+				case 'ico': return paymentMethod === 'bankWithInvoice' ? 'IČO je povinné pro fakturaci' : '';
+				case 'dic': return paymentMethod === 'bankWithInvoice' ? 'DIČ je povinné pro fakturaci' : '';
+				default: return '';
+			}
+		}
+		return '';
+	}
+
+	$: {
+		fieldErrors = {
+			first_name: validateField('first_name', first_name),
+			last_name: validateField('last_name', last_name),
+			street: validateField('street', street),
+			street_number: validateField('street_number', street_number),
+			city: validateField('city', city),
+			zip_code: validateField('zip_code', zip_code),
+			telephone: validateField('telephone', telephone),
+			delivery_method: validateField('delivery_method', deliveryMethod),
+			payment_method: validateField('payment_method', paymentMethod),
+			company: validateField('company', company),
+			ico: validateField('ico', ico),
+			dic: validateField('dic', dic)
+		};
+
+		const validationResult = validateProfileForInvoicing({
+			first_name,
+			last_name,
+			street,
+			street_number,
+			city,
+			zip_code,
+			email: session?.user?.email,
+			company,
+			ico,
+			dic,
+			telephone,
+			delivery_method: deliveryMethod,
+			payment_method: paymentMethod
+		});
+		profileValidationMessage = getProfileValidationMessage(validationResult);
+	}
+
+	const handleSubmit: SubmitFunction = () => {
+		loading = true;
+		return async () => {
+			loading = false;
+		};
+	};
+
+	function validateProfileForInvoicing(profile: {
+		first_name?: string;
+		last_name?: string;
+		street?: string;
+		street_number?: string;
+		city?: string;
+		zip_code?: string;
+		email?: string;
+		company?: string;
+		ico?: string;
+		dic?: string;
+		telephone?: string;
+		delivery_method?: string;
+		payment_method?: string;
+	}) {
+		const errors: string[] = [];
+
+		if (!profile.first_name) errors.push("Jméno je povinné");
+		if (!profile.last_name) errors.push("Příjmení je povinné");
+		if (!profile.street) errors.push("Ulice je povinná");
+		if (!profile.street_number) errors.push("Číslo popisné je povinné");
+		if (!profile.city) errors.push("Město je povinné");
+		if (!profile.zip_code) errors.push("PSČ je povinné");
+		if (!profile.email) errors.push("Email je povinný");
+		if (!profile.telephone) errors.push("Telefon je povinný");
+		if (!profile.delivery_method) errors.push("Způsob dodání je povinný");
+		if (!profile.payment_method) errors.push("Způsob platby je povinný");
+
+		if (profile.payment_method === 'bankWithInvoice') {
+			if (!profile.company) errors.push("Firma je povinná pro fakturaci");
+			if (!profile.ico) errors.push("IČO je povinné pro fakturaci");
+			if (!profile.dic) errors.push("DIČ je povinné pro fakturaci");
+		}
+
+		return errors;
+	}
+
+	function getProfileValidationMessage(errors: string[]): string {
+		if (errors.length === 0) return '';
+		return errors.join('\n');
+	}
 </script>
 
 <svelte:head>
@@ -163,7 +242,7 @@
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    value={form?.first_name ?? first_name}
+                    bind:value={first_name}
                     type="text"
                     name="first_name"
                     id="first_name"
@@ -171,6 +250,9 @@
                     required
                     placeholder="Jméno"
                   />
+                  {#if fieldErrors.first_name}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.first_name}</p>
+                  {/if}
                 </div>
               </div>
 
@@ -180,13 +262,16 @@
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    value={form?.last_name ?? last_name}
+                    bind:value={last_name}
                     type="text"
                     name="last_name"
                     id="last_name"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                     placeholder="Příjmení"
                   />
+                  {#if fieldErrors.last_name}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.last_name}</p>
+                  {/if}
                 </div>
               </div>
 
@@ -203,6 +288,9 @@
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                     placeholder="Telefon"
                   />
+                  {#if fieldErrors.telephone}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.telephone}</p>
+                  {/if}
                 </div>
               </div>
             </div>
@@ -228,6 +316,9 @@
                     <option value="personal">Osobní odběr</option>
                     <option value="delivery">Doručení</option>
                   </select>
+                  {#if fieldErrors.delivery_method}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.delivery_method}</p>
+                  {/if}
                 </div>
               </div>
 
@@ -247,6 +338,9 @@
                     <option value="bankWithInvoice">Bankovní převod s fakturou</option>
                     <option value="cash">Hotově</option>
                   </select>
+                  {#if fieldErrors.payment_method}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.payment_method}</p>
+                  {/if}
                 </div>
               </div>
             </div>
@@ -294,13 +388,16 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.street ?? street}
+                      bind:value={street}
                       name="street"
                       type="text"
                       id="street"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="Ulice"
                     />
+                    {#if fieldErrors.street}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.street}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
@@ -309,13 +406,16 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.street_number ?? street_number}
+                      bind:value={street_number}
                       type="text"
                       name="street_number"
                       id="street_number"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="Číslo popisné"
                     />
+                    {#if fieldErrors.street_number}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.street_number}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
@@ -324,28 +424,34 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.city ?? city}
+                      bind:value={city}
                       type="text"
                       name="city"
                       id="city"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="Město"
                     />
+                    {#if fieldErrors.city}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.city}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
                   <div class="flex justify-start basis-1/3">
-                    <label class="text-gray-700 font-medium" for="city">PSČ</label>
+                    <label class="text-gray-700 font-medium" for="zip_code">PSČ</label>
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.city ?? zip_code}
+                      bind:value={zip_code}
                       type="text"
                       name="zip_code"
                       id="zip_code"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="PSČ"
                     />
+                    {#if fieldErrors.zip_code}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.zip_code}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
@@ -354,13 +460,16 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.company ?? company}
+                      bind:value={company}
                       type="text"
                       name="company"
                       id="company"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="Firma"
                     />
+                    {#if fieldErrors.company}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.company}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
@@ -369,13 +478,16 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.ico ?? ico}
+                      bind:value={ico}
                       type="text"
                       name="ico"
                       id="ico"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="IČO"
                     />
+                    {#if fieldErrors.ico}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.ico}</p>
+                    {/if}
                   </div>
                 </div>
                 <div class="flex flex-col items-center md:flex-row gap-4">
@@ -384,13 +496,16 @@
                   </div>
                   <div class="w-full basis-2/3">
                     <input
-                      value={form?.dic ?? dic}
+                      bind:value={dic}
                       type="text"
                       name="dic"
                       id="dic"
                       class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       placeholder="DIČ"
                     />
+                    {#if fieldErrors.dic}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.dic}</p>
+                    {/if}
                   </div>
                 </div>
               </div>

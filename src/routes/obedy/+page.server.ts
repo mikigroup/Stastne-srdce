@@ -61,7 +61,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.filter((menu) => {
 				if (!menu.date) return false;
 				const menuDate = new Date(menu.date);
-				return menuDate > currentDate;
+				return menuDate >= currentDate;
 			});
 
 		// Načtení doplňkových informací
