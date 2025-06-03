@@ -18,12 +18,13 @@ const createPageCache = () => {
         // Získání dat z cache
         get: (key: string) => {
             let result: any = null;
-            subscribe(cache => {
+            const unsubscribe = subscribe(cache => {
                 const item = cache[key];
                 if (item && (Date.now() - item.timestamp) < CACHE_DURATION) {
                     result = item.data;
                 }
-            })();
+            });
+            unsubscribe();
             return result;
         },
         // Uložení dat do cache

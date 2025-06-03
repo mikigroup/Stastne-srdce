@@ -51,6 +51,7 @@ export const load: PageServerLoad = async ({
 			id,
 			created_at,
 			state,
+			pay_state,
 			total_price,
 			order_number,
 			order_items (

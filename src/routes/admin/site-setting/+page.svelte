@@ -367,9 +367,11 @@
 		try {
 			const response = await fetch('?/loadSetting', {
 				method: 'POST',
-				body: new FormData(Object.assign(document.createElement('form'), {
-					innerHTML: `<input name="key" value="${tabId}">`
-				}))
+				body: (() => {
+					const formData = new FormData();
+					formData.append('key', tabId);
+					return formData;
+				})()
 			});
 
 			if (response.ok) {
@@ -378,7 +380,7 @@
 					// Aktualizujeme pouze toto konkrétní nastavení
 					editableSettings.update(s => ({
 						...s,
-						[tabId]: result.data.setting.value || DEFAULT_VALUES[tabId as keyof typeof DEFAULT_VALUES]
+						[tabId]: result.data.setting.value || (tabId in DEFAULT_VALUES ? DEFAULT_VALUES[tabId as keyof typeof DEFAULT_VALUES] : {})
 					}));
 				}
 			}

@@ -14,7 +14,7 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 			.single();
 
 		// Pokud registrace není dokončena a uživatel není na stránce dokončení registrace
-		if (profile?.registration_status !== "completed" && !url.pathname.startsWith('/signup/complete')) {
+		if (profile?.registration_status !== "completed" && url.pathname !== '/signup/complete' && !url.pathname.startsWith('/signup/complete/')) {
 			throw redirect(303, '/signup/complete');
 		}
 

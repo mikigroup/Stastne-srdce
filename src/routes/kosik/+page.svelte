@@ -444,7 +444,7 @@
 			</div>
 		{:else}
 			<div class="space-y-4">
-				<h3 class="text-xl font-semibold mb-4">Potvrzení objednávky</h3>				
+				<h3 class="text-xl font-semibold mb-4">Opravdu chcete odeslat objednávku?</h3>				
 			</div>
 		{/if}
 	</Modal>

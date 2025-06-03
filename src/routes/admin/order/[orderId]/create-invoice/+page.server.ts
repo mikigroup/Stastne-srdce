@@ -101,7 +101,6 @@ export const load: PageServerLoad = async ({
 			} else {
 				// Stará faktura bez account_id - považuj za z jiného účtu
 				hasInvoice = true;
-				isFromCurrentAccount = false;
 			}
 		}
 

@@ -92,7 +92,6 @@
 				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
 				note,
-				text,
 				customer_email,
 				customer_first_name,
 				customer_last_name,

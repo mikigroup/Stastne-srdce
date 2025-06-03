@@ -91,7 +91,7 @@
 			{#if profileValidationMessage}
 				<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
 					<p class="text-yellow-800">
-						<span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
+						<span class="font-medium">Upozornění:</span> {profileValidationMessage}
 					</p>
 				</div>
 			{/if}
@@ -250,7 +250,7 @@
 									type="radio"
 									name="delivery_method"
 									value={value}
-									checked={deliveryMethod === value}
+									bind:group={deliveryMethod}
 									class="mr-2"
 									required
 								/>

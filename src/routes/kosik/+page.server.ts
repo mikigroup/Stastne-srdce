@@ -172,7 +172,7 @@ export const actions: Actions = {
 			try {
 				await sendOrderConfirmationEmail(
 					email,
-					order.order_number?.toString() || order.id,
+					order.order_number?.toString() || order.id || 'unknown',
 					cartItems,
 					totalPrice,
 					totalPieces,

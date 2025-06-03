@@ -42,7 +42,10 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
         street_number: order.customer_street_number,
         city: order.customer_city,
         zip_code: order.customer_zip_code,
-        email: order.customer_email
+        email: order.customer_email,
+        telephone: order.customer_telephone,
+        delivery_method: order.delivery_method,
+        payment_method: order.payment_method
     });
 
     return {

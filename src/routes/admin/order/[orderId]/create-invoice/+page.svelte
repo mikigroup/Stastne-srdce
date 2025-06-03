@@ -224,7 +224,7 @@
 						{#each order.order_items as item}
 							<tr class="hover:bg-gray-50">
 								<td class="px-4 py-3 text-sm">
-									{formatItemName(item)}
+									{item.variant?.description || 'Položka menu'}
 								</td>
 								<td class="px-4 py-3 text-sm text-center">{item.quantity} ks</td>
 								<td class="px-4 py-3 text-sm text-right">{item.price} Kč</td>
@@ -300,7 +300,7 @@
 
 			{#if form?.success === false}
 				<div class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-					{@html form.message}
+					{form.message}
 				</div>
 			{/if}
 		</form>

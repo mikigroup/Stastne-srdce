@@ -26,9 +26,10 @@ export interface SocialSettings {
 }
 
 export interface AppearanceSettings {
-	primaryColor?: string;
-	logo?: string;
 	footerText?: string;
+	headerText?: string;
+	showLogo?: boolean;
+	showFooter?: boolean;
 }
 
 export interface BusinessSettings {
@@ -67,9 +68,10 @@ export const DEFAULT_SETTINGS: AllSettings = {
 		facebook: "https://facebook.com/stastnesrdce"
 	},
 	appearance: {
-		primaryColor: "#3CB371",
-		logo: "/favi/web-app-manifest-192x192.png",
-		footerText: "Šťastné srdce s.r.o. 2022 - 2025"
+		footerText: "Šťastné srdce s.r.o. 2022 - 2025",
+		headerText: "Šťastné srdce",
+		showLogo: true,
+		showFooter: true
 	},
 	business: {
 		ico: "21300674",

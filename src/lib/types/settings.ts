@@ -11,8 +11,20 @@ export interface GeneralSettings {
     };
 }
 
+export interface AppearanceSettings {
+    logo?: string;
+    favicon?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    footerText?: string;
+    headerText?: string;
+    showLogo?: boolean;
+    showFooter?: boolean;
+}
+
 export interface AllSettings {
     general: GeneralSettings;
+    appearance: AppearanceSettings;
     customer: {
         allowRegistration: boolean;
         requireEmailVerification: boolean;

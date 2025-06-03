@@ -10,16 +10,16 @@ const FakturoidAccountSchema = yup.object({
 });
 
 // Schéma pro Fakturoid integraci
-const FakturoidIntegrationSchema = yup.object({
+export const FakturoidIntegrationSchema = yup.object().shape({
     enabled: yup.boolean().required(),
     connected: yup.boolean().required(),
     accounts: yup.array().of(FakturoidAccountSchema).required(),
-    defaultLanguage: yup.string().default('cz'),
-    autoCreateInvoices: yup.boolean().default(false),
-    invoiceDueDays: yup.number().default(14),
-    defaultPaymentMethod: yup.string().default('bank'),
-    sendInvoiceEmail: yup.boolean().default(false),
-    invoiceNote: yup.string().default('')
+    defaultLanguage: yup.string().optional().default('cz'),
+    autoCreateInvoices: yup.boolean().optional().default(false),
+    invoiceDueDays: yup.number().optional().default(14),
+    defaultPaymentMethod: yup.string().optional().default('bank'),
+    sendInvoiceEmail: yup.boolean().optional().default(false),
+    invoiceNote: yup.string().optional().default('')
 });
 
 // Schéma pro celé integrations nastavení
