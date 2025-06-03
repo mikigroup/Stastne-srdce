@@ -54,13 +54,12 @@
         border-radius: 0.6em;
         border: none;
         padding: 0;
-        margin: auto;
+        margin: 0;
         max-height: 90vh;
         overflow-y: auto;
         position: fixed;
-        left: 35%;
-        top: 20px; /* Změna z 50% na pevnou hodnotu */
-        transform: translateX(-50%); /* Odstraněn vertikální posun */
+        inset: 0;
+        margin: auto;
         min-width: 320px;
         background: white;
     }
@@ -72,11 +71,11 @@
     }
     @keyframes zoom {
         from {
-            transform: translateX(-50%) scale(0.95); /* Odstraněn vertikální posun */
+            transform: scale(0.95);
             opacity: 0;
         }
         to {
-            transform: translateX(-50%) scale(1); /* Odstraněn vertikální posun */
+            transform: scale(1);
             opacity: 1;
         }
     }
