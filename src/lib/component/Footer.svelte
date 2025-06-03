@@ -4,11 +4,6 @@
 
 	// Získáme nastavení z page data
 	$: settings = $page.data.settings;
-	$: {
-		console.log('Footer - settings:', settings);
-		console.log('Footer - appearance:', settings?.appearance);
-		console.log('Footer - footerText:', settings?.appearance?.footerText);
-	}
 	$: footerText = settings?.appearance?.footerText || '© Šťastné srdce s.r.o. 2022 - 2025. Všechna práva vyhrazena.';
 </script>
 

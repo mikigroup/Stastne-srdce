@@ -47,8 +47,7 @@ export const load: PageServerLoad = async ({
 		settings = cached.data;
 		console.log('Using cached settings');
 	} else {
-		// Načteme všechna nastavení z databáze
-		console.log('Loading fresh settings from database');
+		// Načteme všechna nastavení z databáze		
 		const { data, error } = await supabase
 			.from("site_settings")
 			.select("*");
@@ -62,8 +61,7 @@ export const load: PageServerLoad = async ({
 			settingsCache.set(cacheKey, { data: settings, timestamp: now });
 		}
 	}
-
-	console.log('Settings loaded:', settings.length, 'items');
+	
 	// Logujeme specificky integrations nastavení
 	const integrationsItem = settings.find(item => item.key === 'integrations');
 	if (integrationsItem) {
