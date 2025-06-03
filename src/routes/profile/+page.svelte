@@ -3,11 +3,29 @@
   import { enhance } from "$app/forms";
   import type { SubmitFunction } from "@sveltejs/kit";
   import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
+  import type { Database } from '$lib/types/database.types';
+
+  type Order = Database['public']['Tables']['orders']['Row'] & {
+    grouped_items: Array<{
+      date: string;
+      items: Array<{
+        variant: {
+          variant_number: string;
+          description: string;
+          menu: {
+            soup: string;
+          };
+        };
+        price: number;
+        quantity: number;
+      }>;
+    }>;
+  };
 
   export let data;
   export let form;
-  let { session, supabase, profile, orders } = data;
-  $: ({ session, supabase, profile, orders } = data);
+  let { session, supabase, profile, orders, generalSettings } = data;
+  $: ({ session, supabase, profile, orders, generalSettings } = data);
 
   let visible: boolean = true;
   let expandedOrders: { [key: string]: boolean } = {};
@@ -34,6 +52,10 @@
     });
   }
 
+  function calculateTotalItems(items: Array<{ quantity: number }>): number {
+    return items.reduce((total, item) => total + (item.quantity || 0), 0);
+  }
+
   let profileForm: HTMLFormElement;
   let loading = false;
   let username: string = profile?.username ?? "";
@@ -47,7 +69,6 @@
   let dic: string = profile?.dic ?? "";
   let company: string = profile?.company ?? "";
   let zip_code: string = profile?.zip_code ?? "";
-  // Nové proměnné
   let allergies: string = profile?.allergies ? "yes" : "no";
   let allergiesDescription: string = profile?.allergies_description ?? "";
   let deliveryMethod: string = profile?.delivery_method ?? "";
@@ -61,8 +82,6 @@
       loading = false;
     };
   };
-
-	const { generalSettings } = data;
 
   $: {
     const validationResult = validateProfileForInvoicing({
@@ -85,7 +104,7 @@
 </script>
 
 <svelte:head>
-  <title>{generalSettings.shopName} - Účet</title>
+  <title>{generalSettings?.shopName ?? 'Účet'} - Účet</title>
   <meta name="description" content="Účet" />
 </svelte:head>
 
@@ -98,7 +117,10 @@
     {#if profileValidationMessage}
       <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p class="text-yellow-800">
-          <span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
+          <span class="font-medium">Upozornění:</span> 
+          {#each profileValidationMessage.split('\n') as line}
+            <span>{line}</span><br>
+          {/each}
         </p>
       </div>
     {/if}
@@ -510,7 +532,7 @@
 												<div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
 													<div class="font-medium">Menu ze dne: {formatDate(group.date)}</div>
 													<div class="text-sm text-gray-500">
-														{group.items.reduce((total, item) => total + parseInt(item.quantity), 0)} položek
+														{calculateTotalItems(group.items)} položek
 													</div>
 												</div>
 

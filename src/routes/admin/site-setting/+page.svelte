@@ -365,11 +365,12 @@
 		loadingTab = true;
 		
 		try {
+			const formData = new FormData();
+			formData.append('key', tabId);
+			
 			const response = await fetch('?/loadSetting', {
 				method: 'POST',
-				body: new FormData(Object.assign(document.createElement('form'), {
-					innerHTML: `<input name="key" value="${tabId}">`
-				}))
+				body: formData
 			});
 
 			if (response.ok) {

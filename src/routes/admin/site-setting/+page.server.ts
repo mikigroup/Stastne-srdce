@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
+import { getSetting, saveSetting, serializeSettingValue } from "$lib/services/siteSettingsService";
 
 interface SettingRecord {
 	id?: number;
@@ -98,7 +98,7 @@ export const actions: Actions = {
 		// Připravíme data pro batch upsert
 		const settingsData = Object.entries(settings).map(([key, value]) => ({
 			key,
-				value: JSON.stringify(value),
+			value: serializeSettingValue(value),
 			updated_at: new Date().toISOString(),
 			updated_by: session.user.id,
 			user_id: session.user.id
