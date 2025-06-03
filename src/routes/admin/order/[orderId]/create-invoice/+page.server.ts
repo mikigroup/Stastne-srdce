@@ -96,12 +96,11 @@ export const load: PageServerLoad = async ({
 		if (order.fakturoid_data?.invoice_id) {
 			// Pokud faktura má account_id, porovnej s aktuálním
 			if (order.fakturoid_data.account_id) {
-				hasInvoice = true;
 				isFromCurrentAccount = order.fakturoid_data.account_id === activeAccountId;
+				hasInvoice = isFromCurrentAccount;
 			} else {
 				// Stará faktura bez account_id - považuj za z jiného účtu
 				hasInvoice = true;
-				isFromCurrentAccount = false;
 			}
 		}
 

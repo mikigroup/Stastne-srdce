@@ -43,7 +43,6 @@
 
 	const cookieName = 'stastne_srdce_cookies';
 	let showBanner = false;
-	let showRegistrationBanner = false;
 
 	onMount(() => {
 		const cookieConsent = cookieStore.hasConsent();
