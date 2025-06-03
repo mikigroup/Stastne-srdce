@@ -2,7 +2,17 @@
 	import { page } from "$app/stores";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
-	export let form: Actions;
+	
+	type FormData = {
+		message?: {
+			success: boolean;
+			display: string;
+		};
+		email?: string;
+		password?: string;
+	};
+	
+	export let form: FormData | null = null;
 	export let data;
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
@@ -127,7 +137,7 @@
 									Přihlásit se
 								</button>
 							</div>
-							{#if form?.message}
+							{#if form?.message?.display}
 								<div class="flex w-full p-2 my-4 border rounded-lg">
 									<p class="error">{form.message.display}</p>
 								</div>

@@ -1,17 +1,26 @@
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
-	// Get date range parameters if provided
-	const startDate = url.searchParams.get("startDate") || getStartOfMonth();
-	const endDate = url.searchParams.get("endDate") || getEndOfMonth();
+	// Helper function to get last 24 hours in local time (Europe/Prague)
+	const getLast24HoursRange = () => {
+		const now = new Date();
+		const start = new Date(now);
+		start.setHours(now.getHours() - 24); // 24 hours ago
 
-	// Get today's date range for today's orders
-	const todayStart = new Date();
-	todayStart.setHours(0, 0, 0, 0);
-	const todayEnd = new Date();
-	todayEnd.setHours(23, 59, 59, 999);
+		return { start, end: now };
+	};
 
-	// Fetch all orders within date range
+	// Helper function to format date as ISO string
+	const formatDateToISO = (date: Date): string => {
+		return date.toISOString();
+	};
+
+	// Use last 24 hours range by default
+	const { start, end } = getLast24HoursRange();
+	const startDate = formatDateToISO(start);
+	const endDate = formatDateToISO(end);
+
+	// Fetch orders from last 24 hours
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
 		.select("*")
@@ -24,13 +33,13 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		return {
 			orders: [],
 			customers: [],
-			todayOrders: [],
-			todayOrdersCount: 0,
-			todayOrdersTotal: 0
+			last24hOrders: [],
+			last24hOrdersCount: 0,
+			last24hOrdersTotal: 0
 		};
 	}
 
-	// Fetch customers within date range
+	// Fetch customers from last 24 hours
 	const { data: customers, error: customersError } = await supabase
 		.from("profiles")
 		.select("*")
@@ -41,63 +50,24 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	if (customersError) {
 		console.error("Error fetching customers:", customersError);
 		return {
-			orders: [],
+			orders: orders || [],
 			customers: [],
-			todayOrders: [],
-			todayOrdersCount: 0,
-			todayOrdersTotal: 0
+			last24hOrders: [],
+			last24hOrdersCount: 0,
+			last24hOrdersTotal: 0
 		};
 	}
 
-	// Fetch today's orders specifically
-	const { data: todayOrders, error: todayOrdersError } = await supabase
-		.from("orders")
-		.select("*")
-		.gte("created_at", todayStart.toISOString())
-		.lte("created_at", todayEnd.toISOString())
-		.order("created_at", { ascending: false });
-
-	if (todayOrdersError) {
-		console.error("Error fetching today's orders:", todayOrdersError);
-		return {
-			orders,
-			customers,
-			todayOrders: [],
-			todayOrdersCount: 0,
-			todayOrdersTotal: 0
-		};
-	}
-
-	// Calculate today's statistics
-	const todayOrdersCount = todayOrders ? todayOrders.length : 0;
-	const todayOrdersTotal = todayOrders
-		? todayOrders.reduce((sum, order) => sum + (order.total_price || 0), 0)
-		: 0;
+	// Calculate statistics for last 24 hours
+	const last24hOrdersCount = orders?.length || 0;
+	const last24hOrdersTotal =
+		orders?.reduce((sum, order) => sum + (order.total_price || 0), 0) || 0;
 
 	return {
 		orders: orders || [],
 		customers: customers || [],
-		todayOrders: todayOrders || [],
-		todayOrdersCount,
-		todayOrdersTotal
+		last24hOrders: orders || [], // All orders are from last 24h now
+		last24hOrdersCount,
+		last24hOrdersTotal
 	};
 };
-
-// Helper functions for default date ranges
-function getStartOfMonth(): string {
-	const now = new Date();
-	return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-}
-
-function getEndOfMonth(): string {
-	const now = new Date();
-	return new Date(
-		now.getFullYear(),
-		now.getMonth() + 1,
-		0,
-		23,
-		59,
-		59,
-		999
-	).toISOString();
-}

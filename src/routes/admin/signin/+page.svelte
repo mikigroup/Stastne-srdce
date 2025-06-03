@@ -2,13 +2,13 @@
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
-	import type { ActionData } from "./$types";
+	import type { ActionData } from "./+page.server";
 	import { onMount } from "svelte";
 
-	export let form: ActionData;
+	export let form: ActionData | null = null;
 	export let data;
-	let { supabase } = data;
-	$: ({ supabase } = data);
+	let { session, supabase } = data;
+	$: ({ session, supabase } = data);
 
 	let loading = false;
 
@@ -24,13 +24,13 @@
 		});
 	}
 
-	if (form?.message?.success) {
+/*	if (form?.message?.success) {
 		onMount(() => {
 			setTimeout(() => {
 				goto("/admin");
 			}, 3000);
 		});
-	}
+	}*/
 </script>
 
 <svelte:head>
@@ -99,7 +99,7 @@
 					type="submit"
 					class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center my-10"
 					>Potvrdit</button>
-				{#if form?.message}
+				{#if form?.message?.display}
 					<div class="flex w-full p-2 my-4 border rounded-lg">
 						<p class="error">{form.message.display}</p>
 					</div>

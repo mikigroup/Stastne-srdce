@@ -1,67 +1,70 @@
+import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { error } from "@sveltejs/kit";
+import { getEshopSettings } from "$lib/services/eshopSettingsService";
+
+// Definujeme typovou strukturu pro business nastavení
+interface BusinessSettings {
+	paymentMethods?: string[];
+	deliveryOptions?: string[];
+	[key: string]: any;
+}
 
 export const load: PageServerLoad = async ({
-	locals: { supabase },
-	params
+	params,
+	locals: { supabase, safeGetSession }
 }) => {
-	const id = params.orderId;
+	console.log("====== ORDER PAGE SERVER LOAD START ======");
+	console.log("Params:", params);
+	
+	const { session } = await safeGetSession();
+	if (!session) {
+		throw redirect(303, "/login");
+	}
+
+	const { orderId } = params;
+	console.log("Loading order with ID:", orderId);
 
 	try {
-		// Načtení objednávky se všemi daty pomocí *
+		// Načtení objednávky
 		const { data: order, error: orderError } = await supabase
 			.from("orders")
 			.select(
-				`
-        *,
-        order_items(
-          *,
-          variant_id(
-            *,
-            menu_id(*)
-          )
-        )
-        `
+				`*,
+				order_items(*, variant_id(*, menu_id(*), menu_version_id(*)))`
 			)
-			.eq("id", id)
+			.eq("id", orderId)
 			.single();
 
+		console.log("Order loaded:", order ? "SUCCESS" : "UNDEFINED");
 		if (orderError) {
-			console.error("Error fetching order:", orderError);
-			throw error(500, "Chyba při načítání objednávky");
-		}
-
-		if (!order) {
-			throw error(404, "Objednávka nenalezena");
-		}
-
-		// Pro každou položku objednávky načteme data z příslušné verze menu
-		for (let i = 0; i < order.order_items.length; i++) {
-			const item = order.order_items[i];
-
-			// Pokud položka má verzi menu, načteme ji
-			if (item.menu_version_id) {
-				const { data: menuVersion, error: versionError } = await supabase
-					.from("menu_versions")
-					.select("*")
-					.eq("id", item.menu_version_id)
-					.single();
-
-				if (versionError) {
-					console.error("Error fetching menu version:", versionError);
-					// Pokračujeme bez verze
-				} else if (menuVersion) {
-					// Přidáme data verze menu k položce
-					order.order_items[i].menuVersionData = menuVersion;
-				}
+			console.error("Error loading order:", orderError);
+			if (orderError.code === "PGRST116") {
+				throw error(404, {
+					message: "Objednávka nenalezena"
+				});
 			}
+			throw error(500, {
+				message: orderError.message
+			});
+		} else {
+			console.log("Order data structure:", JSON.stringify(order, null, 2).substring(0, 500) + "...");
 		}
 
-		return {
-			order
+		// Načteme nastavení e-shopu
+		const eshopSettings = await getEshopSettings(supabase);
+
+		const returnData = {
+			order,
+			eshopSettings
 		};
+
+		console.log("Final return data keys:", Object.keys(returnData || {}));
+		console.log("====== ORDER PAGE SERVER LOAD END ======");
+		
+		return returnData;
 	} catch (err) {
-		console.error("Error fetching order details:", err);
-		throw error(500, "Nastala chyba při načítání detailů objednávky");
+		console.error("Unexpected error in order page load:", err);
+		console.log("====== ORDER PAGE SERVER LOAD ERROR ======");
+		throw err;
 	}
 };

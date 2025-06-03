@@ -44,7 +44,7 @@
 							type="password"
 							placeholder="Zadej nové heslo"
 							value={form?.password ?? ""}
-							minlength="6"
+							minlength="8"
 							required />
 						<input
 							class="flex-1 w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-r-lg shadow-sm appearance-none focus:outline-none focus:border-green-600"
@@ -52,7 +52,7 @@
 							type="password"
 							placeholder="Zadej nové heslo"
 							value={form?.newpassword ?? ""}
-							minlength="6"
+							minlength="8"
 							required />
 					</div>
 				</div>

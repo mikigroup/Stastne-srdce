@@ -9,10 +9,10 @@
 	let { menus, menuGroups, texts } = data;
 
 	// Dostupné volby počtu menu, které můžeme zobrazit
-	const menuCountOptions = [7, 14, 21, 28];
+	const menuCountOptions = [7, 14, 21, 28, 70];
 
 	// Výchozí počet menu k zobrazení
-	let selectedMenuCount = 7;
+	let selectedMenuCount = 70;
 
 	// Store pro aktuálně vybraná menu
 	const currentMenus = writable(menuGroups[selectedMenuCount]);
@@ -53,10 +53,10 @@
 
 		<div class="max-w-4xl mx-auto mt-5 bg-white border rounded-lg border-gray-400">
 			<div class="pb-10" id="menu-content">
-				<MenuCountSelector
+<!--				<MenuCountSelector
 					options={menuCountOptions}
 					selectedCount={selectedMenuCount}
-					on:select={handleMenuCountSelect} />
+					on:select={handleMenuCountSelect} />-->
 
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#if $currentMenus && $currentMenus.length > 0}

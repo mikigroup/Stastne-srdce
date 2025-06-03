@@ -1,4 +1,5 @@
 import { readable, writable } from "svelte/store";
+import { browser } from "$app/environment";
 
 export interface MenuVariant {
 	id: string;
@@ -36,14 +37,34 @@ function createCartStore() {
 		});
 	}
 
-	// Načtení a seřazení dat z localStorage při inicializaci
-	if (typeof window !== "undefined") {
-		const stored = localStorage.getItem("cartItems");
-		if (stored) {
-			const items = JSON.parse(stored);
-			set(sortByDate(items));
+	// Načtení a synchronizace dat s localStorage
+	function loadFromStorage() {
+		if (browser) {
+			try {
+				const stored = localStorage.getItem("cartItems");
+				if (stored) {
+					const items = JSON.parse(stored);
+					set(sortByDate(items));
+				}
+			} catch (error) {
+				console.error("Error loading cart from localStorage:", error);
+			}
 		}
 	}
+
+	// Uložení do localStorage
+	function saveToStorage(items: CartItem[]) {
+		if (browser) {
+			try {
+				localStorage.setItem("cartItems", JSON.stringify(items));
+			} catch (error) {
+				console.error("Error saving cart to localStorage:", error);
+			}
+		}
+	}
+
+	// Inicializace při vytvoření store
+	loadFromStorage();
 
 	return {
 		subscribe,
@@ -83,17 +104,18 @@ function createCartStore() {
 					});
 				}
 
-				// Sort by date and save
+				// Sort by date
 				const sortedItems = sortByDate(newItems);
-				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
-				}
+
+				// Save to localStorage
+				saveToStorage(sortedItems);
 
 				return sortedItems;
 			});
 		},
 		updateQuantity: (itemId: string, variantId: string, quantity: number) => {
 			update((items) => {
+				// Vytvoření kopie pole pro imutabilní aktualizaci
 				const newItems = items
 					.map((item) => {
 						if (item.id === itemId) {
@@ -112,9 +134,9 @@ function createCartStore() {
 
 				// Sort by date and save
 				const sortedItems = sortByDate(newItems);
-				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
-				}
+
+				// Save to localStorage
+				saveToStorage(sortedItems);
 
 				return sortedItems;
 			});
@@ -124,6 +146,7 @@ function createCartStore() {
 				const newItems = items
 					.map((item) => {
 						if (item.id === itemId) {
+							// Vytvoření nové položky s odfiltrovanými variantami
 							return {
 								...item,
 								variants: sortVariants(
@@ -137,17 +160,21 @@ function createCartStore() {
 
 				// Sort by date and save
 				const sortedItems = sortByDate(newItems);
-				if (typeof window !== "undefined") {
-					localStorage.setItem("cartItems", JSON.stringify(sortedItems));
-				}
+
+				// Save to localStorage
+				saveToStorage(sortedItems);
 
 				return sortedItems;
 			});
 		},
 		clear: () => {
 			set([]);
-			if (typeof window !== "undefined") {
-				localStorage.removeItem("cartItems");
+			if (browser) {
+				try {
+					localStorage.removeItem("cartItems");
+				} catch (error) {
+					console.error("Error clearing cart from localStorage:", error);
+				}
 			}
 		}
 	};
@@ -155,12 +182,12 @@ function createCartStore() {
 
 export const CartItemsStore = createCartStore();
 
-// Create totalPiecesStore
+// Zlepšená implementace totalPiecesStore
 function createTotalPiecesStore() {
 	const { subscribe, set } = writable(0);
 
-	// Initialize total from CartItemsStore
-	CartItemsStore.subscribe(($cart) => {
+	// Inicializace a aktualizace při změně košíku
+	const unsubscribe = CartItemsStore.subscribe(($cart) => {
 		const total = $cart.reduce(
 			(sum, item) =>
 				sum +

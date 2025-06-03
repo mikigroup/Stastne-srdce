@@ -32,7 +32,8 @@
 		totalItems,
 		itemsOnCurrentPage,
 		itemsPerPage,
-		searchQuery
+		searchQuery,
+		eshopSettings
 	} = data;
 	$: ({
 		session,
@@ -44,7 +45,8 @@
 		totalItems,
 		itemsOnCurrentPage,
 		itemsPerPage,
-		searchQuery
+		searchQuery,
+		eshopSettings
 	} = data);
 
 	let loading = false;
@@ -145,7 +147,7 @@
 	);
 
 	// Define table columns with TanStack column definition
-	const columns: ColumnDef<any>[] = columnOrder.map(key => ({
+	let columns: ColumnDef<any>[] = columnOrder.map(key => ({
 		accessorKey: key,
 		id: key,
 		header: columnNames[key],
@@ -168,6 +170,101 @@
 			return value ?? "";
 		}
 	}));
+
+	// Funkce pro získání barvy stavu objednávky
+	function getStatusColor(status: string) {
+		if (!eshopSettings?.orderStates) {
+			// Výchozí barvy pro základní stavy když nejsou v nastavení
+			const defaultColors: Record<string, string> = {
+				'Nová': '#0284c7',
+				'Expedovaná': '#eab308', 
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+			};
+			const color = defaultColors[status] || '#9ca3af';
+			return {
+				background: lightenColor(color, 0.85),
+				text: color
+			};
+		}
+		
+		const orderState = eshopSettings.orderStates.find((state: any) => state.name === status);
+		if (!orderState) {
+			// Fallback pro neznámé stavy
+			return {
+				background: '#f3f4f6',
+				text: '#6b7280'
+			};
+		}
+		
+		// Vygenerujeme světlejší odstín barvy pro pozadí
+		const hexColor = orderState.color;
+		return {
+			background: `${lightenColor(hexColor, 0.85)}`,
+			text: hexColor
+		};
+	}
+
+	// Pomocná funkce pro zesvětlení barvy
+	function lightenColor(hex: string, factor: number) {
+		// Převedeme hex na RGB
+		const r = parseInt(hex.slice(1, 3), 16);
+		const g = parseInt(hex.slice(3, 5), 16);
+		const b = parseInt(hex.slice(5, 7), 16);
+		
+		// Aplikujeme faktor zesvětlení
+		const r2 = Math.round(r + (255 - r) * factor);
+		const g2 = Math.round(g + (255 - g) * factor);
+		const b2 = Math.round(b + (255 - b) * factor);
+		
+		// Převedeme zpět na hex
+		return `#${r2.toString(16).padStart(2, '0')}${g2.toString(16).padStart(2, '0')}${b2.toString(16).padStart(2, '0')}`;
+	}
+
+	// Upravíme sloupec se stavem objednávky, aby používal barvy
+	columns = columns.map(column => {
+		if (column.id === 'state') {
+			return {
+				...column,
+				cell: info => {
+					const value = info.getValue();
+					return {
+						value,
+						color: getStatusColor(value)
+					};
+				}
+			};
+		}
+		
+		// Pro měnu a způsob platby můžeme také použít nastavení z e-shopu
+		if (column.id === 'currency') {
+			return {
+				...column,
+				cell: info => {
+					const code = info.getValue();
+					if (!eshopSettings?.currencies) return code;
+					
+					const currency = eshopSettings.currencies.find((c: any) => c.code === code);
+					return currency ? `${currency.name} (${currency.symbol})` : code;
+				}
+			};
+		}
+		
+		if (column.id === 'shipping_method') {
+			return {
+				...column, 
+				cell: info => {
+					const method = info.getValue();
+					if (!eshopSettings?.shippingMethods) return method;
+					
+					const shippingMethod = eshopSettings.shippingMethods.find((m: any) => m.name === method);
+					return shippingMethod ? method : method;
+				}
+			};
+		}
+		
+		return column;
+	});
 
 	// Přidáme sloupec "Upravit"
 	columns.push({
@@ -288,15 +385,15 @@
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 
 <section>
-	<div class="join grid grid-cols-2 w-1/2 mx-auto my-10">
+	<div class="join flex my-10 justify-center w-full ">
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3 "
 			on:click={previousPage}
 			disabled={currentPage === 1}>
 			Předchozí stránka
 		</button>
 		<button
-			class="join-item btn btn-outline"
+			class="join-item btn btn-outline w-1/3"
 			on:click={nextPage}
 			disabled={currentPage === totalPages}>
 			Další stránka
@@ -417,6 +514,17 @@
 												Upravit
 											</a>
 										</div>
+									{:else if cell.column.id === "state"}
+										{#if cell.getValue() && cell.getValue().value}
+											<span 
+												class="px-2 py-1 rounded-full text-sm font-medium" 
+												style="background-color: {cell.getValue().color.background}; color: {cell.getValue().color.text};"
+											>
+												{cell.getValue().value}
+											</span>
+										{:else}
+											{cell.getValue() ?? ""}
+										{/if}
 									{:else}
 										{cell.getValue() ?? ""}
 									{/if}

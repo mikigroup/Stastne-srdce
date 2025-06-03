@@ -2,14 +2,40 @@
 	import { goto } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
+	import type { Database } from "$lib/types/database.types";
 
-	export let data;
-	export let customer = null; // If null, we're creating a new customer
+	// Definice typů pro data zákazníka
+	type Customer = Database["public"]["Tables"]["profiles"]["Row"];
+
+	// Definice typů pro vlastnosti komponenty
+	interface ComponentProps {
+		data: {
+			supabase: any; // Ideálně by zde mělo být SupabaseClient<Database>
+			session: {
+				user: {
+					id: string;
+					email: string;
+				};
+			} | null;
+		};
+		customer?: Customer | null;
+	}
+
+	// Definice typů pro chyby při ukládání
+	interface ApiError {
+		message: string;
+		code?: string;
+		details?: string;
+	}
+
+	// Props a explicitní typizace
+	export let data: ComponentProps["data"];
+	export let customer: ComponentProps["customer"] = null; // If null, we're creating a new customer
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
 
-	// State variables
+	// State variables s typizací
 	let loading = false;
 	let updateMessage = "";
 
@@ -27,15 +53,36 @@
 	let website: string = customer?.website ?? "";
 	let username: string = customer?.username ?? "";
 	let email: string = customer?.email ?? "";
-	let allergies: string = customer?.allergies === true ? "yes" : "no";
+	let allergies: "yes" | "no" = customer?.allergies === true ? "yes" : "no";
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
 
-	async function saveCustomer() {
+	// Definice typu pro customerData
+	type CustomerData = {
+		first_name: string;
+		last_name: string;
+		telephone: string;
+		street: string;
+		city: string;
+		street_number: string;
+		zip_code: string;
+		email: string;
+		ico: string;
+		dic: string;
+		company: string;
+		website: string;
+		username: string;
+		allergies: boolean;
+		allergies_description: string | null;
+		delivery_method: string;
+		payment_method: string;
+	};
+
+	async function saveCustomer(): Promise<void> {
 		try {
 			loading = true;
-			const customerData = {
+			const customerData: CustomerData = {
 				first_name,
 				last_name,
 				telephone,
@@ -50,7 +97,7 @@
 				website,
 				username,
 				allergies: allergies === "yes",
-				allergies_description,
+				allergies_description: allergies === "yes" ? allergies_description : null,
 				delivery_method,
 				payment_method
 			};
@@ -67,28 +114,30 @@
 				updateMessage = "Zákazník úspěšně uložen!";
 			} else {
 				// Create new customer
-				const { user } = session;
+				if (!session?.user?.id) {
+					throw new Error("Uživatel není přihlášen");
+				}
+
 				const { error } = await supabase
 					.from("customers")
 					.insert({
 						...customerData,
-						id: user?.id
+						id: session.user.id
 					});
 
 				if (error) throw error;
 				goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
 			}
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Chyba při ukládání:", error);
-				alert(error.message);
-			}
+			const apiError = error as ApiError;
+			console.error("Chyba při ukládání:", apiError);
+			alert(apiError.message || "Došlo k chybě při ukládání zákazníka");
 		} finally {
 			loading = false;
 		}
 	}
 
-	async function deleteCustomer() {
+	async function deleteCustomer(): Promise<void> {
 		if (!customer?.id) return;
 
 		try {
@@ -101,350 +150,279 @@
 			if (error) throw error;
 			await goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
 		} catch (error) {
-			if (error instanceof Error) {
-				console.error("Error deleting customer:", error);
-				alert(error.message);
-			}
+			const apiError = error as ApiError;
+			console.error("Error deleting customer:", apiError);
+			alert(apiError.message || "Došlo k chybě při mazání zákazníka");
 		} finally {
 			loading = false;
 		}
 	}
 
-	function back() {
+	function back(): void {
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
 </script>
 
-<div class="relative overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200 ">
-	<div class="antialiased bg-white">
-		<div class="p-2 md:p-6">
-			<div class="flex justify-between">
-				<h2 class="pb-2 mb-6 text-2xl font-bold tracking-wider uppercase">
-					{customer ? 'Zákazník' : 'Nový zákazník'}
-				</h2>
-			</div>
+<div class="bg-white rounded-lg shadow-md p-6">
+	<div class="flex items-center justify-between mb-6">
+		<h2 class="text-xl font-semibold">
+			{customer ? 'Detail zákazníka' : 'Nový zákazník'}
+		</h2>
+		<div class="flex gap-2">
+			<button on:click={back} class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+				Zpět
+			</button>
+			<button
+				disabled={loading}
+				on:click={saveCustomer}
+				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
+				{loading ? 'Ukládá se...' : customer ? 'Uložit změny' : 'Vytvořit'}
+			</button>
+			{#if customer}
+				<button
+					disabled={loading}
+					on:click={deleteCustomer}
+					class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors">
+					Smazat
+				</button>
+			{/if}
+		</div>
+	</div>
 
-			<div class="flex justify-between">
+	{#if updateMessage}
+		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
+			{updateMessage}
+		</div>
+	{/if}
+
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+		<!-- Osobní údaje -->
+		<div class="space-y-4">
+			<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Osobní údaje</h3>
+			
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div>
-					<button on:click={back} class="btn btn-outline">Zpět</button>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+					<input
+						type="email"
+						bind:value={email}
+						readonly={!!customer}
+						disabled={!!customer}
+						placeholder="Zadejte email"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed" />
 				</div>
-				{#if updateMessage}
-					<div class="p-2 my-2 text-green-800 bg-green-200 rounded">
-						{updateMessage}
-					</div>
-				{/if}
-				<div class="flex flex-col gap-2 md:flex-row">
-					<button
-						value={loading ? "Nahrává se..." : customer ? "Změněno" : "Vytvořeno"}
-						disabled={loading}
-						on:click={saveCustomer}
-						class="btn btn-outline">
-						{customer ? 'Upravit' : 'Vytvořit'}
-					</button>
-					{#if customer}
-						<button
-							class="btn btn-outline btn-error"
-							value={loading ? "Nahrává se..." : "Smazáno"}
-							disabled={loading}
-							on:click={deleteCustomer}>
-							Smazat
-						</button>
-					{/if}
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+					<input
+						type="tel"
+						bind:value={telephone}
+						placeholder="Zadejte telefon"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
 				</div>
 			</div>
 
-			<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
+					<input
+						type="text"
+						bind:value={first_name}
+						placeholder="Zadejte jméno"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
+					<input
+						type="text"
+						bind:value={last_name}
+						placeholder="Zadejte příjmení"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+			</div>
+		</div>
 
-			<div in:fly={{ x: -50, duration: 500, delay: 200 }}>
-				<div class="max-w-3xl mx-auto">
-					<!-- Personal Information -->
-					<div class="collapse collapse-plus bg-base-200 border-slate-300 border p-4 md:p-10">
-						<input type="radio" name="my-accordion-3" checked="checked" />
-						<div class="collapse-title text-xl font-medium">Osobní údaje</div>
-						<div class="collapse-content">
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Email</span>
-								</div>
-								<input
-									type="text"
-									bind:value={email}
-									placeholder="Zadejte email"
-									class="input input-bordered w-full"
-									readonly={!!customer}
-									disabled={!!customer} />
-							</label>
+		<!-- Adresa -->
+		<div class="space-y-4">
+			<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Adresa</h3>
+			
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<div class="sm:col-span-2">
+					<label class="block text-sm font-medium text-gray-700 mb-1">Ulice</label>
+					<input
+						type="text"
+						bind:value={street}
+						placeholder="Zadejte ulici"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Číslo</label>
+					<input
+						type="text"
+						bind:value={street_number}
+						placeholder="Č.p."
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+			</div>
 
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Jméno</span>
-								</div>
-								<input
-									type="text"
-									bind:value={first_name}
-									placeholder="Zadejte jméno"
-									class="input input-bordered w-full" />
-							</label>
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Město</label>
+					<input
+						type="text"
+						bind:value={city}
+						placeholder="Zadejte město"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">PSČ</label>
+					<input
+						type="text"
+						bind:value={zip_code}
+						placeholder="12345"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+			</div>
+		</div>
+	</div>
 
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Příjmení</span>
-								</div>
-								<input
-									type="text"
-									bind:value={last_name}
-									placeholder="Zadejte příjmení"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Telefon</span>
-								</div>
-								<input
-									type="text"
-									bind:value={telephone}
-									placeholder="Zadejte telefon"
-									class="input input-bordered w-full" />
-							</label>
+	<!-- Doplňující informace v jednom řádku -->
+	<div class="mt-6 pt-6 border-t border-gray-200">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<!-- Firemní údaje -->
+			<div class="space-y-4">
+				<h4 class="font-medium text-gray-900">Firemní údaje</h4>
+				<div class="space-y-3">
+					<div>
+						<label class="block text-sm text-gray-600 mb-1">Společnost</label>
+						<input
+							type="text"
+							bind:value={company}
+							placeholder="Název společnosti"
+							class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+					<div class="grid grid-cols-2 gap-2">
+						<div>
+							<label class="block text-sm text-gray-600 mb-1">IČO</label>
+							<input
+								type="text"
+								bind:value={ico}
+								placeholder="IČO"
+								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+						</div>
+						<div>
+							<label class="block text-sm text-gray-600 mb-1">DIČ</label>
+							<input
+								type="text"
+								bind:value={dic}
+								placeholder="DIČ"
+								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
 						</div>
 					</div>
+				</div>
+			</div>
 
-					<!-- Address -->
-					<div class="collapse collapse-plus bg-base-200 border-slate-300 border p-4 md:p-10">
-						<input type="radio" name="my-accordion-3" />
-						<div class="collapse-title text-xl font-medium">Adresa</div>
-						<div class="collapse-content">
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Ulice</span>
-								</div>
-								<input
-									type="text"
-									bind:value={street}
-									placeholder="Zadejte ulici"
-									class="input input-bordered w-full" />
-							</label>
+			<!-- Preference dodání -->
+			<div class="space-y-4">
+				<h4 class="font-medium text-gray-900">Způsob dodání</h4>
+				<div class="space-y-2">
+					<label class="flex items-center">
+						<input
+							type="radio"
+							name="deliveryMethod"
+							value="own"
+							bind:group={delivery_method}
+							class="mr-2" />
+						<span class="text-sm">Vlastní nosič</span>
+					</label>
+					<label class="flex items-center">
+						<input
+							type="radio"
+							name="deliveryMethod"
+							value="reBox"
+							bind:group={delivery_method}
+							class="mr-2" />
+						<span class="text-sm">REkrabička</span>
+					</label>
+					<label class="flex items-center">
+						<input
+							type="radio"
+							name="deliveryMethod"
+							value="menuBox"
+							bind:group={delivery_method}
+							class="mr-2" />
+						<span class="text-sm">Menu Box</span>
+					</label>
+				</div>
+			</div>
 
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Číslo</span>
-								</div>
-								<input
-									type="text"
-									bind:value={street_number}
-									placeholder="Zadejte číslo"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Město</span>
-								</div>
-								<input
-									type="text"
-									bind:value={city}
-									placeholder="Zadejte město"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">PSČ</span>
-								</div>
-								<input
-									type="text"
-									bind:value={zip_code}
-									placeholder="Zadejte PSČ"
-									class="input input-bordered w-full" />
-							</label>
-						</div>
+			<!-- Způsob platby + Alergie -->
+			<div class="space-y-4">
+				<div>
+					<h4 class="font-medium text-gray-900 mb-3">Způsob platby</h4>
+					<div class="space-y-2">
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="paymentMethod"
+								value="cash"
+								bind:group={payment_method}
+								class="mr-2" />
+							<span class="text-sm">Hotově</span>
+						</label>
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="paymentMethod"
+								value="bankNoInvoice"
+								bind:group={payment_method}
+								class="mr-2" />
+							<span class="text-sm">Na účet bez faktury</span>
+						</label>
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="paymentMethod"
+								value="bankWithInvoice"
+								bind:group={payment_method}
+								class="mr-2" />
+							<span class="text-sm">Na účet s fakturou</span>
+						</label>
 					</div>
+				</div>
 
-					<!-- Company Information -->
-					<div class="collapse collapse-plus bg-base-200 border-slate-300 border p-4 md:p-10">
-						<input type="radio" name="my-accordion-3" />
-						<div class="collapse-title text-xl font-medium">Firemní údaje</div>
-						<div class="collapse-content">
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">IČO</span>
-								</div>
-								<input
-									type="text"
-									bind:value={ico}
-									placeholder="Zadejte IČO"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">DIČ</span>
-								</div>
-								<input
-									type="text"
-									bind:value={dic}
-									placeholder="Zadejte DIČ"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Společnost</span>
-								</div>
-								<input
-									type="text"
-									bind:value={company}
-									placeholder="Zadejte společnost"
-									class="input input-bordered w-full" />
-							</label>
-
-							<label class="form-control w-full">
-								<div class="label">
-									<span class="label-text">Web</span>
-								</div>
-								<input
-									type="text"
-									bind:value={website}
-									placeholder="Zadejte web"
-									class="input input-bordered w-full" />
-							</label>
-						</div>
+				<div>
+					<h4 class="font-medium text-gray-900 mb-3">Alergie</h4>
+					<div class="flex gap-4 mb-2">
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="allergies"
+								value="no"
+								bind:group={allergies}
+								class="mr-2" />
+							<span class="text-sm">Ne</span>
+						</label>
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="allergies"
+								value="yes"
+								bind:group={allergies}
+								class="mr-2" />
+							<span class="text-sm">Ano</span>
+						</label>
 					</div>
-
-					<!-- Preferences -->
-					<div class="collapse collapse-plus bg-base-200 border-slate-300 border p-4 md:p-10">
-						<input type="radio" name="my-accordion-3" />
-						<div class="collapse-title text-xl font-medium">Preference</div>
-						<div class="collapse-content">
-							<!-- Allergies -->
-							<div class="mb-6">
-								<div class="w-full">
-									<div class="label">
-										<span class="label-text">Alergie</span>
-									</div>
-									<div class="flex gap-4 mb-2">
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="allergies"
-												value="no"
-												bind:group={allergies}
-												class="mr-2"
-											/>
-											Ne
-										</label>
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="allergies"
-												value="yes"
-												bind:group={allergies}
-												class="mr-2"
-											/>
-											Ano
-										</label>
-									</div>
-									{#if allergies === "yes"}
-										<div class="flex flex-col w-full">
-                      <textarea
-												bind:value={allergies_description}
-												maxlength="300"
-												placeholder="Popište alergie (max 300 znaků)"
-												class="textarea textarea-bordered w-full h-24"
-												rows="3"
-											></textarea>
-											<span class="text-sm text-gray-500 mt-1">
-                        Zbývá {300 - (allergies_description?.length || 0)} znaků
-                      </span>
-										</div>
-									{/if}
-								</div>
-							</div>
-
-							<!-- Delivery Method -->
-							<div class="mb-6">
-								<div class="w-full">
-									<div class="label">
-										<span class="label-text">Způsob dodání</span>
-									</div>
-									<div class="flex flex-col gap-2">
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="deliveryMethod"
-												value="own"
-												bind:group={delivery_method}
-												class="mr-2"
-											/>
-											Vlastní nosič
-										</label>
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="deliveryMethod"
-												value="reBox"
-												bind:group={delivery_method}
-												class="mr-2"
-											/>
-											REkrabička (záloha 160 Kč za set/80 Kč za jednu)
-										</label>
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="deliveryMethod"
-												value="menuBox"
-												bind:group={delivery_method}
-												class="mr-2"
-											/>
-											Menu Box (12 Kč/kus)
-										</label>
-									</div>
-								</div>
-							</div>
-
-							<!-- Payment Method -->
-							<div class="mb-6">
-								<div class="w-full">
-									<div class="label">
-										<span class="label-text">Způsob platby</span>
-									</div>
-									<div class="flex flex-col gap-2">
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="paymentMethod"
-												value="cash"
-												bind:group={payment_method}
-												class="mr-2"
-											/>
-											Hotově
-										</label>
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="paymentMethod"
-												value="bankNoInvoice"
-												bind:group={payment_method}
-												class="mr-2"
-											/>
-											Na účet bez faktury
-										</label>
-										<label class="flex items-center">
-											<input
-												type="radio"
-												name="paymentMethod"
-												value="bankWithInvoice"
-												bind:group={payment_method}
-												class="mr-2"
-											/>
-											Na účet s fakturou
-										</label>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+					{#if allergies === "yes"}
+						<textarea
+							bind:value={allergies_description}
+							maxlength="300"
+							placeholder="Popište alergie..."
+							class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 h-20 resize-none"
+						></textarea>
+						<span class="text-xs text-gray-500">
+							Zbývá {300 - (allergies_description?.length || 0)} znaků
+						</span>
+					{/if}
 				</div>
 			</div>
 		</div>

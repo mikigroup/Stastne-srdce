@@ -1,19 +1,87 @@
-<!--
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { fly, fade } from 'svelte/transition';
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
+	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 
-	export let data: PageData;
-	export let form;
+	export let data: {
+		fakturoidAuthUrl: string;
+		fakturoidState: string;
+	} & {
+		order: any;
+		profile: any; 
+		hasInvoice: boolean;
+		invoiceId: string;
+		invoiceNumber: string;
+		isFromCurrentAccount?: boolean;
+		currentFakturoidAccount?: string;
+	};
+
+	export let form: ActionData | null = null;
 
 	let { order, profile, hasInvoice, invoiceId, invoiceNumber } = data;
 	$: ({ order, profile, hasInvoice, invoiceId, invoiceNumber } = data);
 
 	let loading = false;
-	let sendEmail = true;
-	let markPaid = false;
+	let sendEmail = false;
+	let markPaid = true;
+	let authStatus = 'idle';
+	let error = '';
+
+	// Funkce pro formátování názvu položky - stejná jako ve Fakturoidu
+	function formatItemName(item: any): string {
+		// Zkusíme získat datum z různých možných míst ve struktuře
+		let menuDate = null;
+		
+		// Priorita: menu_id > menu_version_id > jiné možnosti
+		if (item.variant_id?.menu_id?.date) {
+			menuDate = item.variant_id.menu_id.date;
+		} else if (item.variant_id?.menu_version_id?.date) {
+			menuDate = item.variant_id.menu_version_id.date;
+		} else if (item.menuVersionData?.date) {
+			menuDate = item.menuVersionData.date;
+		}
+		
+		// Získání čísla varianty
+		const variantNumber = item.variant_id?.variant_number || item.variant?.variant_number;
+		
+		// Formátování data do českého formátu
+		let formattedDate = '';
+		if (menuDate) {
+			try {
+				const date = new Date(menuDate);
+				if (!isNaN(date.getTime())) {
+					formattedDate = date.toLocaleDateString('cs-CZ', {
+						day: 'numeric',
+						month: 'numeric', 
+						year: 'numeric'
+					});
+				}
+			} catch (e) {
+				console.warn('Chyba při formátování data:', e);
+			}
+		}
+		
+		// Sestavení názvu - pouze datum, "Menu" a číslo
+		let itemName = '';
+		
+		// Přidáme datum pokud máme
+		if (formattedDate) {
+			itemName += `${formattedDate} `;
+		}
+		
+		// Přidáme "Menu" a číslo
+		if (variantNumber) {
+			itemName += `Menu ${variantNumber}`;
+		} else {
+			itemName += 'Menu';
+		}
+		
+		// Fallback pokud nemáme žádné údaje
+		return itemName || 'Položka menu';
+	}
 
 	async function goBack() {
 		await goto(`/admin/order/${order.id}`);
@@ -21,7 +89,7 @@
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result, update }) => {
+		return async ({ result, update }: { result: any, update: () => Promise<void> }) => {
 			await update();
 
 			if (result.type === 'success') {
@@ -50,7 +118,7 @@
 
 		<h1 class="text-2xl font-bold">Vytvoření faktury</h1>
 
-		<div class="w-20">&lt;!&ndash; Placeholder &ndash;&gt;</div>
+		<div class="w-20"><!-- Placeholder --></div>
 	</div>
 
 	{#if hasInvoice}
@@ -61,7 +129,7 @@
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-			&lt;!&ndash; Informace o objednávce &ndash;&gt;
+			<!-- Informace o objednávce -->
 			<div class="bg-gray-50 p-4 rounded-lg border">
 				<h2 class="text-lg font-semibold mb-3">Informace o objednávce</h2>
 
@@ -74,8 +142,8 @@
 					<div class="flex justify-between">
 						<span class="text-gray-600">Datum objednávky:</span>
 						<span class="font-medium">
-              {order.date ? new Date(order.date).toLocaleDateString('cs-CZ') : 'N/A'}
-            </span>
+							{order.date ? new Date(order.date).toLocaleDateString('cs-CZ') : 'N/A'}
+						</span>
 					</div>
 
 					<div class="flex justify-between">
@@ -86,8 +154,8 @@
 					<div class="flex justify-between">
 						<span class="text-gray-600">Stav platby:</span>
 						<span class="font-medium">
-              {order.pay_state ? 'Zaplaceno' : 'Nezaplaceno'}
-            </span>
+							{order.pay_state ? 'Zaplaceno' : 'Nezaplaceno'}
+						</span>
 					</div>
 
 					<div class="flex justify-between">
@@ -97,7 +165,7 @@
 				</div>
 			</div>
 
-			&lt;!&ndash; Informace o zákazníkovi &ndash;&gt;
+			<!-- Informace o zákazníkovi -->
 			<div class="bg-gray-50 p-4 rounded-lg border">
 				<h2 class="text-lg font-semibold mb-3">Zákazník</h2>
 
@@ -120,24 +188,24 @@
 					<div class="flex justify-between">
 						<span class="text-gray-600">Adresa:</span>
 						<span class="font-medium text-right">
-              {profile.street} {profile.street_number}<br>
+							{profile.street} {profile.street_number}<br>
 							{profile.zip_code} {profile.city}
-            </span>
+						</span>
 					</div>
 
 					{#if profile.ico || profile.dic}
 						<div class="flex justify-between">
 							<span class="text-gray-600">IČO/DIČ:</span>
 							<span class="font-medium">
-                {profile.ico || '-'} / {profile.dic || '-'}
-              </span>
+								{profile.ico || '-'} / {profile.dic || '-'}
+							</span>
 						</div>
 					{/if}
 				</div>
 			</div>
 		</div>
 
-		&lt;!&ndash; Položky objednávky &ndash;&gt;
+		<!-- Položky objednávky -->
 		<div class="mb-6">
 			<h2 class="text-lg font-semibold mb-3">Položky faktury</h2>
 
@@ -156,7 +224,7 @@
 						{#each order.order_items as item}
 							<tr class="hover:bg-gray-50">
 								<td class="px-4 py-3 text-sm">
-									{item.variant?.description || 'Položka menu'}
+									{formatItemName(item)}
 								</td>
 								<td class="px-4 py-3 text-sm text-center">{item.quantity} ks</td>
 								<td class="px-4 py-3 text-sm text-right">{item.price} Kč</td>
@@ -181,7 +249,7 @@
 			</div>
 		</div>
 
-		&lt;!&ndash; Formulář pro vytvoření faktury &ndash;&gt;
+		<!-- Formulář pro vytvoření faktury -->
 		<form
 			method="POST"
 			action="?/createInvoice"
@@ -220,13 +288,21 @@
 				</div>
 			</div>
 
-			<div class="mt-6">
+			<div class="mt-6 flex justify-end">
 				<button
 					type="submit"
-					class="w-full inline-flex justify-center items-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+					class="btn btn-primary"
 					disabled={loading}
 				>
-					{#if loading}
-						<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4-->
+					{loading ? 'Vytvářím fakturu...' : 'Vytvořit fakturu'}
+				</button>
+			</div>
+
+			{#if form?.success === false}
+				<div class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+					{@html form.message}
+				</div>
+			{/if}
+		</form>
+	{/if}
+</div>

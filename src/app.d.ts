@@ -11,6 +11,22 @@ import type {
 	IntegrationSettings
 } from "$lib/services/settingsService";
 
+// Přidáváme typy pro $app/stores
+declare module "$app/stores" {
+	import type { Readable } from "svelte/store";
+	
+	export interface Page {
+		url: URL;
+		params: Record<string, string>;
+		status: number;
+		error: Error | null;
+		data: App.PageData;
+		form: any;
+	}
+
+	export const page: Readable<Page>;
+}
+
 declare global {
 	namespace App {
 		interface Locals {
@@ -28,6 +44,11 @@ declare global {
 			}>;
 		}
 
+		interface Window {
+			dataLayer: any[];
+			fbq: any;
+		}
+
 		interface PageData {
 			session: Session | null;
 			user: User | null;
@@ -36,8 +57,6 @@ declare global {
 		interface ImportMetaEnv {
 			VITE_BASE_URL: string;
 			VITE_APP_NAME: string;
-			VITE_SUPABASE_URL: string;
-			VITE_SUPABASE_ANON_KEY: string;
 		}
 	}
 }

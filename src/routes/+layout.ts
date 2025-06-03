@@ -4,18 +4,18 @@ import {
 	isBrowser,
 	parse
 } from "@supabase/ssr";
-// import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 // import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
-import { DEFAULT_SETTINGS, type AllSettings } from "$lib/settingsService";
+import { loadSettings } from "$lib/settingsService";
 import type { LayoutLoad } from "./$types";
 
-export const load: LayoutLoad = async ({ data, depends, fetch }) => {
+export const load: LayoutLoad = async ({ data, depends, fetch, url }) => {
 	depends("supabase:auth");
 
 	const supabase = isBrowser()
 		? createBrowserClient(
-				import.meta.env.VITE_PRIVATE_SBUrl,
-				import.meta.env.VITE_PRIVATE_SBKey,
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
 				{
 					global: {
 						fetch
@@ -25,12 +25,17 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 							const cookie = parse(document.cookie);
 							return cookie[key];
 						}
+					},
+					auth: {
+						persistSession: true,
+						autoRefreshToken: true,
+						detectSessionInUrl: true
 					}
 				}
 			)
 		: createServerClient(
-				import.meta.env.VITE_PRIVATE_SBUrl,
-				import.meta.env.VITE_PRIVATE_SBKey,
+				PUBLIC_SUPABASE_URL,
+				PUBLIC_SUPABASE_ANON_KEY,
 				{
 					global: {
 						fetch
@@ -43,51 +48,24 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 				}
 			);
 
+	// Nejdříve získáme session
 	const {
 		data: { session }
 	} = await supabase.auth.getSession();
 
+	// Bezpečné ověření uživatele - kontaktuje Auth server pro ověření autenticity
 	const {
 		data: { user }
 	} = await supabase.auth.getUser();
 
-	// Načtení nastavení
-	const loadSettings = async (): Promise<AllSettings> => {
-		try {
-			const { data, error } = await supabase
-				.from("site_settings")
-				.select("key, value");
+	// Použijeme session pouze pokud user je ověřený
+	const safeSession = user ? session : null;
 
-			if (error) throw error;
-
-			if (!data) return DEFAULT_SETTINGS;
-
-			return data.reduce(
-				(acc, item) => {
-					const key = item.key as keyof AllSettings;
-					if (key in acc) {
-						return {
-							...acc,
-							[key]: {
-								...DEFAULT_SETTINGS[key],
-								...item.value
-							}
-						};
-					}
-					return acc;
-				},
-				{ ...DEFAULT_SETTINGS }
-			);
-		} catch (error) {
-			console.error("Chyba při načítání nastavení:", error);
-			return DEFAULT_SETTINGS;
-		}
-	};
-
-	const settings = await loadSettings();
+	// Načtení nastavení s optimalizovaným cachováním a pouze pro aktuální stránku
+	const settings = await loadSettings(supabase, url.pathname, !!user);
 
 	return {
-		session,
+		session: safeSession,
 		supabase,
 		user,
 		settings,

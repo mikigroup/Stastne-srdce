@@ -1,54 +1,13 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import {
+	PRIVATE_FAKTUROID_CLIENT_ID,
+	PRIVATE_FAKTUROID_CLIENT_SECRET,
+	PRIVATE_FAKTUROID_REDIRECT_URI
+} from "$env/static/private";
 
-export const GET: RequestHandler = async ({
-	url,
-	request,
-	locals: { supabase }
-}) => {
-	console.log("Auth Callback Handler Triggered");
-	console.log("Full URL:", url.toString());
-
-	const cookies = request.headers.get("cookie");
-	console.log("Cookies:", cookies);
-
-	// Extract the code verifier from cookies
-	const codeVerifierMatch = cookies?.match(
-		/sb-\w+-auth-token-code-verifier=([^;]+)/
-	);
-	const codeVerifier = codeVerifierMatch
-		? decodeURIComponent(codeVerifierMatch[1])
-		: null;
-	console.log("Code Verifier:", codeVerifier);
-
-	if (codeVerifier) {
-		// Extract the actual code from the code verifier (assuming it's in the format "code/PURPOSE")
-		const [code, purpose] = codeVerifier.split("/");
-		console.log("Extracted Code:", code);
-		console.log("Purpose:", purpose);
-
-		if (code) {
-			try {
-				// Use the exchangeCodeForSession method to verify the code and get a session
-				const { data, error } =
-					await supabase.auth.exchangeCodeForSession(code);
-
-				if (error) {
-					console.error("Error exchanging code for session:", error);
-					return redirect(303, "/auth/error?error=verification_failed");
-				}
-
-				console.log("Session exchange successful");
-				return redirect(303, "/reset");
-			} catch (error) {
-				console.error("Error during code exchange:", error);
-				return redirect(303, "/auth/error?error=verification_failed");
-			}
-		}
-	}
-
-	// Existing code remains unchanged
+export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get("token_hash");
 	const type = url.searchParams.get("type") as EmailOtpType | null;
 	const next = url.searchParams.get("next") ?? "/";
@@ -58,29 +17,84 @@ export const GET: RequestHandler = async ({
 	redirectTo.searchParams.delete("token_hash");
 	redirectTo.searchParams.delete("type");
 
-	if (token_hash && type) {
-		const { error } = await supabase.auth.verifyOtp({ type, token_hash });
-		if (!error) {
-			redirectTo.searchParams.delete("next");
-			return redirect(303, redirectTo.toString());
-		}
-		// Zde by mělo být zpracování chyby
+	if (!token_hash || !type) {
 		redirectTo.pathname = "/auth/error";
-		redirectTo.searchParams.append("error", "verification_failed");
-		return redirect(303, redirectTo.toString());
+		redirectTo.searchParams.append("error", "missing_token_or_type");
+		return redirect(303, redirectTo);
 	}
+
+	const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
+
+	if (error) {
+		redirectTo.pathname = "/auth/error";
+		redirectTo.searchParams.append("error", error.message);
+		return redirect(303, redirectTo);
+	}
+
+	redirectTo.searchParams.delete("next");
 
 	if (type === "signup") {
 		redirectTo.pathname = "/signup/complete";
 		redirectTo.searchParams.append("success", "signup");
 	} else if (type === "recovery") {
 		redirectTo.pathname = "/reset";
-		redirectTo.searchParams.append("token", token_hash || "");
+		redirectTo.searchParams.append("token", token_hash);
 	} else {
 		redirectTo.pathname = "/auth/error";
 		redirectTo.searchParams.append("error", "invalid_type");
-		return redirect(303, redirectTo.toString());
+		return redirect(303, redirectTo);
 	}
 
-	return redirect(303, redirectTo.toString());
+	return redirect(303, redirectTo);
 };
+
+/*export const GET = async ({ url, cookies }) => {
+	const code = url.searchParams.get("code");
+	const state = url.searchParams.get("state");
+	const savedState = cookies.get("oauth_state");
+
+	// Ověření state parametru
+	if (!code || !state || state !== savedState) {
+		throw redirect(303, "/?error=invalid_auth");
+	}
+
+	try {
+		// Získání access tokenu
+		const tokenResponse = await fetch(
+			"https://app.fakturoid.cz/api/v3/oauth/token",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString("base64")}`
+				},
+				body: JSON.stringify({
+					grant_type: "authorization_code",
+					code,
+					redirect_uri: PRIVATE_FAKTUROID_REDIRECT_URI
+				})
+			}
+		);
+
+		const tokenData = await tokenResponse.json();
+
+		// Uložení tokenů do secure cookies
+		cookies.set("fakturoid_access_token", tokenData.access_token, {
+			path: "/",
+			secure: process.env.NODE_ENV === "production",
+			httpOnly: true,
+			maxAge: tokenData.expires_in
+		});
+
+		cookies.set("fakturoid_refresh_token", tokenData.refresh_token, {
+			path: "/",
+			secure: process.env.NODE_ENV === "production",
+			httpOnly: true
+		});
+
+		throw redirect(303, "/?auth=success");
+	} catch (error) {
+		console.error("Token exchange failed:", error);
+		throw redirect(303, "/?error=auth_failed");
+	}
+};*/

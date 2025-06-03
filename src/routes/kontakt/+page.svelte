@@ -17,10 +17,14 @@
 	export let form: FormData;
 	export let data;
 
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
+	let { session, supabase, settings } = data;
+	$: ({ session, supabase, settings } = data);
 
-	const key = "6Ldvac0ZAAAAAFmtvwilkJ3MOD4IGou9KjhRglIo";
+	// Extrahujeme data z settings
+	$: contact = settings?.contact || {};
+	$: business = settings?.business || {};
+
+	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
 	const State = {
 		idle: "idle",
 		requesting: "requesting",
@@ -58,13 +62,11 @@
 				});
 		});
 	}
-
-	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Kontakt</title>
-	<meta name="description" content="Kontakt" />
+	<title>Šťastné srdce - Kontakt</title>
+	<meta name="description" content="Kontaktujte nás - Šťastné srdce" />
 	<script src="https://www.google.com/recaptcha/api.js?render={key}"></script>
 </svelte:head>
 
@@ -86,32 +88,34 @@
 					<div class="flex items-center gap-3 border-b pb-4">
 						<Building2 class="w-6 h-6 text-green-700" />
 						<h2 class="text-2xl font-semibold text-gray-800">
-							Šťastné srdce s.r.o.
+							{business?.companyName || "Šťastné srdce s.r.o."}
 						</h2>
 					</div>
 
 					<div class="space-y-4">
 						<div class="flex items-center gap-3">
 							<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
-							<p class="text-gray-600">Potoční 16, Mikulovice 79084</p>
+							<p class="text-gray-600">
+								{contact?.address || business?.street} {business?.companyStreetNumber || business?.streetNumber}, {business?.city} {business?.zipCode}
+							</p>
 						</div>
 						<div class="flex items-center gap-3">
 							<Globe class="w-5 h-5 text-green-700 flex-shrink-0" />
 							<div>
-								<p class="text-gray-600">IČO: 21300674</p>
-								<p class="text-gray-600">DIČ: CZ21300674</p>
+								<p class="text-gray-600">IČO: {business?.ico || "21300674"}</p>
+								<p class="text-gray-600">DIČ: {business?.dic || "CZ21300674"}</p>
 							</div>
 						</div>
 						<div class="flex items-center gap-3">
 							<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
 							<div>
-								<p class="text-gray-600">+420 724 448 377 <span>&nbsp;</span>Kamila Kučerová</p>
-								<p class="text-gray-600">+420 732 722 115 <span>&nbsp;</span>Martin Forejt</p>
+								<p class="text-gray-600">{contact?.phone1 || "+420 724 448 377 Kamila Kučerová"}</p>
+								<p class="text-gray-600">{contact?.phone2 || "+420 732 722 115 Martin Forejt"}</p>
 							</div>
 						</div>
 						<div class="flex items-center gap-3">
 							<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
-							<p class="text-gray-600">stastnesrdcekk@seznam.cz</p>
+							<p class="text-gray-600">{contact?.email || "stastnesrdcekk@seznam.cz"}</p>
 						</div>
 					</div>
 				</div>

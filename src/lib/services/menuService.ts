@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "$lib/database.types";
+import type { Database } from "$lib/types/database.types";
 
 // Definice typů pro práci s menu
 export type MenuAllergen = Database["public"]["Tables"]["allergens"]["Row"];

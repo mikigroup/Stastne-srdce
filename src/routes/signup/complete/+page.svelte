@@ -2,8 +2,10 @@
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
+	import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
 
-	interface CompleteRegistrationForm {
+	export let data: PageData;
+	export let form: {
 		first_name?: string;
 		last_name?: string;
 		street?: string;
@@ -19,36 +21,63 @@
 			success: boolean;
 			display: string;
 		};
-	}
-
-	export let data: PageData;
-	export let form: CompleteRegistrationForm | null;
+		company?: string;
+		ico?: string;
+		dic?: string;
+	} = {};
 
 	let loading = false;
-	// Oprava přístupu k datům - přímý přístup k properties z form
-	let allergies = form?.allergies === true ? "yes" : "no";
-	let allergiesDescription = form?.allergies_description || "";
-	let deliveryMethod = form?.delivery_method || "";
-	let paymentMethod = form?.payment_method || "";
+	let first_name = form?.first_name ?? data.profile?.first_name ?? "";
+	let last_name = form?.last_name ?? data.profile?.last_name ?? "";
+	let street = form?.street ?? data.profile?.street ?? "";
+	let street_number = form?.street_number ?? data.profile?.street_number ?? "";
+	let city = form?.city ?? data.profile?.city ?? "";
+	let zip_code = form?.zip_code ?? data.profile?.zip_code ?? "";
+	let telephone = form?.telephone ?? data.profile?.telephone ?? "";
+	let company = form?.company ?? data.profile?.company ?? "";
+	let ico = form?.ico ?? data.profile?.ico ?? "";
+	let dic = form?.dic ?? data.profile?.dic ?? "";
+	let allergies = form?.allergies ? "yes" : data.profile?.allergies ? "yes" : "no";
+	let allergiesDescription = form?.allergies_description ?? data.profile?.allergies_description ?? "";
+	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
+	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
+	let profileValidationMessage = '';
+
+	function toggleAllergies(value: string) {
+		allergies = value;
+	}
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result }) => {
+		return async ({ result }: { result: { type: string } }) => {
 			if (result.type === 'success') {
-				loading = false;
 				await goto('/profile');
-				return;
 			}
-
 			loading = false;
 		};
 	}
 
 	const { generalSettings } = data;
+
+	$: {
+		const validationResult = validateProfileForInvoicing({
+			first_name,
+			last_name,
+			street,
+			street_number,
+			city,
+			zip_code,
+			email: data.session?.user?.email,
+			company,
+			ico,
+			dic
+		});
+		profileValidationMessage = getProfileValidationMessage(validationResult);
+	}
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Dokončení registrace</title>
+	<title>{generalSettings?.shopName ?? 'Dokončení registrace'}</title>
 	<meta name="description" content="Dokončení registrace" />
 </svelte:head>
 
@@ -59,6 +88,14 @@
 				Dokončení registrace
 			</div>
 
+			{#if profileValidationMessage}
+				<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+					<p class="text-yellow-800">
+						<span class="font-medium">Upozornění:</span> {@html profileValidationMessage}
+					</p>
+				</div>
+			{/if}
+
 			<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
 				<!-- Osobní údaje -->
 				<div class="space-y-4 pt-5">
@@ -66,7 +103,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.first_name ?? ""}
+							bind:value={first_name}
 							type="text"
 							id="first_name"
 							name="first_name"
@@ -78,7 +115,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.last_name ?? ""}
+							bind:value={last_name}
 							type="text"
 							id="last_name"
 							name="last_name"
@@ -95,7 +132,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.street ?? ""}
+							bind:value={street}
 							type="text"
 							id="street"
 							name="street"
@@ -107,7 +144,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.street_number ?? ""}
+							bind:value={street_number}
 							type="text"
 							id="street_number"
 							name="street_number"
@@ -119,7 +156,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.city ?? ""}
+							bind:value={city}
 							type="text"
 							id="city"
 							name="city"
@@ -131,7 +168,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.zip_code ?? ""}
+							bind:value={zip_code}
 							type="text"
 							id="zip_code"
 							name="zip_code"
@@ -143,7 +180,7 @@
 
 					<div class="flex flex-col">
 						<input
-							value={form?.telephone ?? ""}
+							bind:value={telephone}
 							type="tel"
 							id="telephone"
 							name="telephone"
@@ -163,7 +200,8 @@
 								type="radio"
 								name="allergies"
 								value="no"
-								bind:group={allergies}
+								checked={allergies === "no"}
+								on:change={() => toggleAllergies("no")}
 								class="mr-2"
 							/>
 							Ne
@@ -173,7 +211,8 @@
 								type="radio"
 								name="allergies"
 								value="yes"
-								bind:group={allergies}
+								checked={allergies === "yes"}
+								on:change={() => toggleAllergies("yes")}
 								class="mr-2"
 							/>
 							Ano
@@ -182,7 +221,7 @@
 
 					{#if allergies === "yes"}
 						<div class="flex flex-col">
-              <textarea
+							<textarea
 								name="allergies_description"
 								bind:value={allergiesDescription}
 								maxlength="300"
@@ -191,8 +230,8 @@
 								rows="3"
 							></textarea>
 							<span class="text-sm text-gray-500 mt-1">
-                Zbývá {300 - (allergiesDescription?.length || 0)} znaků
-              </span>
+								Zbývá {300 - allergiesDescription.length} znaků
+							</span>
 						</div>
 					{/if}
 				</div>
@@ -210,8 +249,8 @@
 								<input
 									type="radio"
 									name="delivery_method"
-									{value}
-									bind:group={deliveryMethod}
+									value={value}
+									checked={deliveryMethod === value}
 									class="mr-2"
 									required
 								/>
@@ -234,8 +273,8 @@
 								<input
 									type="radio"
 									name="payment_method"
-									{value}
-									bind:group={paymentMethod}
+									value={value}
+									checked={paymentMethod === value}
 									class="mr-2"
 									required
 								/>
@@ -266,4 +305,4 @@
 			</form>
 		</div>
 	</div>
-	</section>
+</section>

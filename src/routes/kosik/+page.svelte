@@ -6,14 +6,23 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
+	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
 
 	export let data;
 	export let form: Actions;
 
-	let { session, supabase } = data;
+	let { session, supabase, user } = data;
 	let loading = false;
-	let showModal = false;
-	$: ({ session, supabase } = data);
+	let modal: Modal;
+	let isSubmitting = false;
+	let errorMessage = '';
+	let orderDetails = {
+		totalPieces: 0,
+		totalPrice: 0
+	};
+	let profileData: any = null;
+
+	$: ({ session, supabase, user } = data);
 
 	// Store subscriptions
 	let cartItems: any[] = [];
@@ -34,24 +43,21 @@
 	}, 0);
 
 	async function getProfile() {
-		if (!session?.user?.id) return;
+		if (!user?.id) return;
 
 		try {
 			loading = true;
-			let first_name: string;
-			let last_name: string;
 
 			const { data: customerData, error } = await supabase
 				.from("profiles")
-				.select("first_name, last_name")
-				.eq("id", session.user.id)
+				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
+				.eq("id", user.id)
 				.single();
 
 			if (error && error.code !== "406") throw error;
 
 			if (customerData) {
-				first_name = customerData.first_name;
-				last_name = customerData.last_name;
+				profileData = customerData;
 			}
 		} catch (error) {
 			console.error("Error fetching profile:", error);
@@ -60,22 +66,48 @@
 		}
 	}
 
-	function handleOrderSubmit() {
-		return async ({ result }) => {
-			if (result.type === "success") {
-				// Zkontroluje, zda máme redirectUrl ve výsledku
-				if (result.data?.redirectUrl) {
-					// Použije window.location pro přesměrování s uchováním košíku v localStorage
-					window.location.href = result.data.redirectUrl;
-				} else {
-					// Původní chování - vyčistit košík a přejít na děkovnou stránku
-					CartItemsStore.clear();
-					await goto("/thankyou");
-				}
-			} else {
-				console.error("Chyba při odesílání objednávky - page", result.error);
+	function handleSubmit(e: Event) {
+		e.preventDefault(); // Zastavíme výchozí odeslání formuláře
+		console.log('handleSubmit called');
+		
+		if (isSubmitting) {
+			console.log('Already submitting, returning');
+			return;
+		}
+
+		// Validace profilu před zobrazením modálu
+		if (profileData && user?.email) {
+			const validationResult = validateProfileForInvoicing({
+				...profileData,
+				email: user.email
+			});
+
+			if (!validationResult.isComplete) {
+				errorMessage = `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`;
+				return;
 			}
+		} else {
+			errorMessage = 'Nepodařilo se načíst údaje z profilu. Zkuste stránku obnovit.';
+			return;
+		}
+		
+		orderDetails = {
+			totalPieces,
+			totalPrice
 		};
+		console.log('Order details set:', orderDetails);
+		
+		// Vyčistíme případnou chybovou zprávu, protože validace prošla
+		errorMessage = '';
+		
+		// Zobrazíme modální okno pro potvrzení
+		console.log('Showing modal');
+		if (modal) {
+			modal.show();
+			console.log('Modal shown');
+		} else {
+			console.error('Modal component not found');
+		}
 	}
 
 	function truncateText(text: string, maxLength: number) {
@@ -88,6 +120,8 @@
 	});
 
 	const { generalSettings } = data;
+
+
 </script>
 
 <svelte:head>
@@ -98,7 +132,38 @@
 <main>
 	<section>
 		{#if $page.data.session}
-			<form method="POST" action="?/sendOrder" use:enhance={handleOrderSubmit}>
+			<form
+				method="POST"
+				action="?/sendOrder"
+				on:submit|preventDefault={handleSubmit}
+				use:enhance={() => {
+					return async ({ result }) => {
+						console.log('Form action result:', result);
+						
+						if (result.type === 'success' && result.data?.success) {
+							console.log('Order successful, clearing cart...');
+							CartItemsStore.clear();
+							
+							const orderId = result.data?.orderId;
+							if (!orderId) {
+								console.error('Missing order ID in response:', result);
+								errorMessage = 'Chyba: Číslo objednávky není k dispozici';
+								return;
+							}
+							
+							const redirectUrl = `/thankyou?order=${orderId}`;
+							console.log('Redirecting to:', redirectUrl);
+							await goto(redirectUrl, { replaceState: true });
+						} else {
+							console.error('Order submission error:', result);
+							errorMessage = result.data?.message || 'Došlo k chybě při zpracování objednávky.';
+						}
+						
+						isSubmitting = false;
+					};
+				}}
+				class="space-y-4">
+				<input type="hidden" name="cartItems" value={JSON.stringify(cartItems)} />
 				<div
 					class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 					<h1
@@ -241,7 +306,7 @@
 										class="col-span-5 pl-5 border-r mr-1 flex gap-2 flex-col">
 										{#each cartItem.variants as variant, index}
 											<div class="">
-												{index + 1}. {truncateText(variant.description, 50)}
+												{variant.variant_number}. {truncateText(variant.description, 50)}
 											</div>
 										{/each}
 									</div>
@@ -265,7 +330,7 @@
 												</div>
 											{/each}
 										</div>
-										<div class="flex flex-col gap-11 xl:gap-2 justify-center">
+										<div class="flex flex-col gap-11 xl:gap-7 justify-center">
 											{#each cartItem.variants as variant}
 												<div class="">
 													{(variant.price || 0) * (variant.quantity || 0)} Kč
@@ -274,7 +339,7 @@
 										</div>
 									</div>
 
-									<div class="col-span-1 flex flex-col gap-11 xl:gap-2">
+									<div class="col-span-1 flex flex-col gap-11 xl:gap-7">
 										{#each cartItem.variants as variant}
 											<button
 												type="button"
@@ -321,28 +386,31 @@
 								</p>
 							</div>
 
+							{#if errorMessage}
+								<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+									<p class="text-red-700">{@html errorMessage}</p>
+								</div>
+							{/if}
+
 							<div class="m-5">
 								<button
-									on:click={() => (showModal = true)}
 									type="button"
-									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-103">
-									<span>Potvrzení košíku</span>
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+									disabled={isSubmitting || cartItems.length === 0}
+									on:click={handleSubmit}
+								>
+									{#if isSubmitting}
+										<span class="inline-flex items-center">
+											<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+												<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+											</svg>
+											Odesílám objednávku...
+										</span>
+									{:else}
+										Odeslat objednávku
+									{/if}
 								</button>
-
-								<Modal bind:showModal>
-									<input
-										type="hidden"
-										name="cartItems"
-										value={JSON.stringify(cartItems)} />
-									<div>
-										<input
-											formaction="?/sendOrder"
-											type="submit"
-											class="w-full px-4 py-2 text-center text-white bg-green-800 border rounded-lg shadow-md hover:border-black"
-											value={loading ? "Odesílá se..." : "Odeslat"}
-											disabled={loading} />
-									</div>
-								</Modal>
 							</div>
 						</div>
 					{/if}
@@ -354,4 +422,30 @@
 			</div>
 		{/if}
 	</section>
+
+	<Modal 
+		bind:this={modal} 
+		on:close={() => {
+			// Nepotřebujeme čistit errorMessage zde, protože validační chyby se zobrazují před modálem
+			if (modal) modal.close();
+		}}
+		on:confirm={() => {
+			isSubmitting = true;
+			const form = document.querySelector('form');
+			if (form) {
+				modal?.close();
+				form.requestSubmit();
+			}
+		}}
+	>
+		{#if errorMessage}
+			<div class="p-4 mb-4 text-red-800 bg-red-100 rounded-lg">
+				{errorMessage}
+			</div>
+		{:else}
+			<div class="space-y-4">
+				<h3 class="text-xl font-semibold mb-4">Potvrzení objednávky</h3>				
+			</div>
+		{/if}
+	</Modal>
 </main>

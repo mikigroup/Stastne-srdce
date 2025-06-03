@@ -13,7 +13,7 @@
 			const { data: profile, error } = await supabase
 				.from("profiles")
 				.select("first_name")
-				.eq("id", session.user.id)
+				.eq("id", user.id)
 				.single();
 			if (error) {
 				console.error("Error fetching profile:", error);
@@ -167,12 +167,11 @@
 									Účet
 								</a>
 							</li>
-							<!--<li>
+							<li>
 								<a href="/admin/site-setting" class="justify-between text-sm">
-									Stránky
-									<span class="badge">Nový</span>
+									Nastavení									
 								</a>
-							</li>-->
+							</li>
 							<hr>
 							<li>
 								<a class="text-sm py-2" on:click={signOut} disabled={loading}

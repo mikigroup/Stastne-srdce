@@ -1,5 +1,5 @@
 import { redirect, fail } from "@sveltejs/kit";
-import type { PageServerLoad, Actions } from "../$types";
+import type { PageServerLoad, Actions } from "./$types";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session }
@@ -8,17 +8,22 @@ export const load: PageServerLoad = async ({
 		throw redirect(303, "/login");
 	}
 
-	// Kontrola existence profilu a jeho stavu
+	// Kontrola existence profilu a načtení všech polí
 	const { data: profile } = await supabase
 		.from("profiles")
-		.select("*")
+		.select(`
+			*,
+			allergies,
+			allergies_description,
+			delivery_method,
+			payment_method
+		`)
 		.eq("id", session.user.id)
 		.single();
 
-	/*
 	if (profile?.registration_status === "completed") {
 		throw redirect(303, "/");
-*/
+	}
 
 	return { profile };
 };
@@ -32,49 +37,60 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 
-			// Data z formuláře
+			// Data z formuláře (bez statusu)
 			const profileData = {
 				id: session.user.id,
-				first_name: formData.get("name") as string,
-				last_name: formData.get("surname") as string,
-				street: formData.get("street") as string,
-				street_number: formData.get("street_number") as string,
-				city: formData.get("city") as string,
-				zip_code: formData.get("zip") as string,
-				telephone: formData.get("telephone") as string,
+				first_name: (formData.get("first_name") as string)?.trim(),
+				last_name: (formData.get("last_name") as string)?.trim(),
+				street: (formData.get("street") as string)?.trim(),
+				street_number: (formData.get("street_number") as string)?.trim(),
+				city: (formData.get("city") as string)?.trim(),
+				zip_code: (formData.get("zip_code") as string)?.trim(),
+				telephone: (formData.get("telephone") as string)?.trim(),
 				allergies: formData.get("allergies") === "yes",
 				allergies_description:
 					formData.get("allergies") === "yes"
-						? formData.get("allergiesDescription")
+						? (formData.get("allergies_description") as string)?.trim()
 						: null,
-				delivery_method: formData.get("deliveryMethod") as string,
-				payment_method: formData.get("paymentMethod") as string,
-				registration_status: "completed",
+				delivery_method: formData.get("delivery_method") as string,
+				payment_method: formData.get("payment_method") as string,
 				user_role: "customer",
 				email: session.user.email,
 				updated_at: new Date().toISOString()
 			};
 
-			// Validace
-			if (
-				!profileData.first_name ||
-				!profileData.last_name ||
-				!profileData.street ||
-				!profileData.city ||
-				!profileData.zip_code ||
-				!profileData.telephone
-			) {
+			// Důkladnější validace povinných polí
+			const requiredFields = [
+				{ field: profileData.first_name, name: "Jméno" },
+				{ field: profileData.last_name, name: "Příjmení" },
+				{ field: profileData.street, name: "Ulice" },
+				{ field: profileData.city, name: "Město" },
+				{ field: profileData.zip_code, name: "PSČ" },
+				{ field: profileData.telephone, name: "Telefon" },
+				{ field: profileData.delivery_method, name: "Způsob dodání" },
+				{ field: profileData.payment_method, name: "Způsob platby" }
+			];
+
+			const missingFields = requiredFields.filter((f) => !f.field);
+
+			if (missingFields.length > 0) {
 				return fail(400, {
 					message: {
 						success: false,
-						display: "Vyplňte prosím všechna povinná pole"
+						display: `Vyplňte prosím všechna povinná pole: ${missingFields.map((f) => f.name).join(", ")}`
 					},
 					data: profileData
 				});
 			}
 
+			// Teprve nyní nastavíme status jako completed
+			const dataToSave = {
+				...profileData,
+				registration_status: "completed"
+			};
+
 			// Uložení profilu
-			const { error } = await supabase.from("profiles").upsert(profileData);
+			const { error } = await supabase.from("profiles").upsert(dataToSave);
 
 			if (error) {
 				console.error("Chyba při ukládání profilu:", error);
@@ -87,8 +103,13 @@ export const actions: Actions = {
 				});
 			}
 
-			// Přesměrování po úspěšném dokončení
-			throw redirect(303, "/?registration=completed");
+			return {
+				message: {
+					success: true,
+					display: "Registrace úspěšně dokončena"
+				},
+				...dataToSave
+			};
 		} catch (error) {
 			console.error("Neočekávaná chyba:", error);
 			return fail(500, {

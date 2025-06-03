@@ -4,7 +4,8 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
+	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,
@@ -59,7 +60,7 @@
 			await updateMenuAllergens(
 				supabase,
 				menuToSave.id,
-				menuToSave.allergens.map(a => a.id)
+				menuToSave.allergens.map((a: any) => a.id)
 			);
 
 			// 3. Vytvoření nových variant pro novou verzi menu
@@ -77,14 +78,14 @@
 				await updateVariantAllergens(
 					supabase,
 					insertedVariant.id,
-					variant.allergens.map(a => a.id)
+					variant.allergens.map((a: any) => a.id)
 				);
 
 				// Přidání ingrediencí k nové variantě
 				await updateVariantIngredients(
 					supabase,
 					insertedVariant.id,
-					variant.ingredients.map(i => i.id)
+					variant.ingredients.map((i: any) => i.id)
 				);
 			}
 
@@ -96,7 +97,7 @@
 
 		} catch (error) {
 			console.error("Chyba při aktualizaci menu:", error);
-			errorMessage = "Chyba při úpravě menu: " + (error.message || "Neznámá chyba");
+			errorMessage = "Chyba při úpravě menu: " + (error instanceof Error ? error.message : "Neznámá chyba");
 		} finally {
 			loading = false;
 		}
@@ -125,42 +126,44 @@
 	async function back() {
 		await goto("/admin/menu");
 	}
+
+	// Formátovací funkce pro datum
+	function formatDate(dateString: string | null): string {
+		if (!dateString) return 'N/A';
+		return new Date(dateString).toLocaleDateString('cs-CZ');
+	}
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			onClick: updateMenu,
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: loading ? 'Maže se...' : 'Smazat menu',
+			onClick: softDeleteMenu,
+			variant: 'danger' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
-<div
-	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200"
-	in:fly={{ y: 50, duration: 500 }}>
-	<div class="flex justify-between items-center mb-4">
-		<button on:click={back} class="btn btn-outline">Zpět</button>
-		{#if updateMessage}
-			<div transition:fade class="bg-green-200 text-green-800 rounded p-2">
-				<span>{updateMessage}</span>
-			</div>
-		{/if}
-		{#if errorMessage}
-			<div transition:fade class="bg-red-200 text-red-800 rounded p-2">
-				<span>{errorMessage}</span>
-			</div>
-		{/if}
-		<div class="flex flex-col gap-2 md:flex-row">
-			<button disabled={loading} on:click={updateMenu} class="btn btn-outline">
-				{loading ? "Ukládá se..." : "Uložit změny"}
-			</button>
-			<button
-				class="btn btn-outline btn-error"
-				disabled={loading}
-				on:click={softDeleteMenu}>
-				{loading ? "Maže se..." : "Smazat menu"}
-			</button>
-		</div>
-	</div>
-	<div class="divider"></div>
+<AdminPageLayout
+	title="Detail menu"
+	subtitle="{formatDate(menu?.date)}"
+	backUrl="/admin/menu"
+	{actions}
+	successMessage={updateMessage}
+	errorMessage={errorMessage}
+	{loading}>
 
-	<div class="rounded-xl p-4 md:p-10 bg-neutral-200">
-		<h2 class="text-2xl font-bold mb-6">Upravit Menu</h2>
-		<MenuItemDetail
-			bind:menu
-			{allAllergens}
-			{allIngredients} />
-	</div>
-</div>
+	<!-- Menu content -->
+	<MenuItemDetail
+		bind:menu
+		{allAllergens}
+		{allIngredients} />
+</AdminPageLayout>

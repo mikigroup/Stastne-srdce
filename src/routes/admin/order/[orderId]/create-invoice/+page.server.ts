@@ -1,4 +1,3 @@
-/*
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import {
@@ -8,6 +7,8 @@ import {
 } from "$lib/services/fakturoidService";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
+import { getSetting } from "$lib/services/siteSettingsService";
+import type { IntegrationsSettings } from "$lib/types/siteSettings";
 
 export const load: PageServerLoad = async ({
 	params,
@@ -29,11 +30,13 @@ export const load: PageServerLoad = async ({
         *,
         order_items(
           *,
-          variant:menu_variants(
+          variant_id:menu_variants(
             id,
             variant_number,
             description,
-            price
+            price,
+            menu_id:menus(id, date),
+            menu_version_id:menu_versions(id, date)
           )
         )
       `
@@ -81,15 +84,36 @@ export const load: PageServerLoad = async ({
 			throw error(404, "Profil zákazníka nenalezen");
 		}
 
-		// Kontrola, zda již faktura byla vytvořena (podle meta údajů v objednávce)
-		const hasInvoice = order.meta?.fakturoid_invoice_id;
+		// Načtení Fakturoid nastavení
+		const integrations = await getSetting(supabase, 'integrations') as IntegrationsSettings;
+		const activeAccount = integrations?.fakturoid?.accounts?.find(acc => acc.isActive) || null;
+		const activeAccountId = activeAccount?.subdomain || null;
+
+		// Kontrola, zda již faktura byla vytvořena PRO SOUČASNÝ ÚČET
+		let hasInvoice = false;
+		let isFromCurrentAccount = false;
+		
+		if (order.fakturoid_data?.invoice_id) {
+			// Pokud faktura má account_id, porovnej s aktuálním
+			if (order.fakturoid_data.account_id) {
+				isFromCurrentAccount = order.fakturoid_data.account_id === activeAccountId;
+				hasInvoice = isFromCurrentAccount;
+			} else {
+				// Stará faktura bez account_id - považuj za z jiného účtu
+				hasInvoice = true;
+				isFromCurrentAccount = false;
+			}
+		}
 
 		return {
 			order,
 			profile,
-			hasInvoice: hasInvoice || false,
-			invoiceId: order.meta?.fakturoid_invoice_id || null,
-			invoiceNumber: order.meta?.fakturoid_invoice_number || null
+			hasInvoice,
+			invoiceId: order.fakturoid_data?.invoice_id || null,
+			invoiceNumber: order.fakturoid_data?.invoice_number || null,
+			isFromCurrentAccount,
+			activeAccount,
+			activeAccountId
 		};
 	} catch (err) {
 		console.error("Chyba při načítání dat:", err);
@@ -118,11 +142,13 @@ export const actions: Actions = {
           *,
           order_items(
             *,
-            variant:menu_variants(
+            variant_id:menu_variants(
               id,
               variant_number, 
               description,
-              price
+              price,
+              menu_id:menus(id, date),
+              menu_version_id:menu_versions(id, date)
             )
           )
         `
@@ -134,17 +160,52 @@ export const actions: Actions = {
 				return fail(404, { success: false, message: "Objednávka nenalezena" });
 			}
 
-			// 2. Kontrola, zda faktura už nebyla vytvořena
-			if (order.meta?.fakturoid_invoice_id) {
+			// 2. Načtení integračních nastavení pro Fakturoid
+			const integrations = await getSetting(supabase, 'integrations') as IntegrationsSettings;
+			const activeAccount = integrations?.fakturoid?.accounts?.find(acc => acc.isActive) || null;
+			const activeAccountId = activeAccount?.subdomain || null;
+
+			if (!activeAccount || !activeAccountId) {
 				return fail(400, {
 					success: false,
-					message: "Pro tuto objednávku již byla faktura vytvořena",
-					invoiceId: order.meta.fakturoid_invoice_id,
-					invoiceNumber: order.meta.fakturoid_invoice_number
+					message: "Žádný aktivní Fakturoid účet není nastaven"
 				});
 			}
 
-			// 3. Načtení profilu zákazníka
+			// Získáme Fakturoid konfiguraci pro předání ostatním funkcím
+			const { getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
+			const fakturoidConfig = getFakturoidConfigFromSettings({ integrations });
+			
+			if (!fakturoidConfig) {
+				return fail(400, {
+					success: false,
+					message: "Nepodařilo se načíst Fakturoid konfiguraci"
+				});
+			}
+
+			// 3. Kontrola, zda faktura už nebyla vytvořena PRO SOUČASNÝ ÚČET
+			if (order.fakturoid_data?.invoice_id) {
+				let isFromCurrentAccount = false;
+				
+				if (order.fakturoid_data.account_id) {
+					isFromCurrentAccount = order.fakturoid_data.account_id === activeAccountId;
+				} else {
+					// Stará faktura bez account_id - považuj za z jiného účtu
+					isFromCurrentAccount = false;
+				}
+
+				if (isFromCurrentAccount) {
+					return fail(400, {
+						success: false,
+						message: `Pro tuto objednávku již byla faktura vytvořena účtem ${activeAccount.name}`,
+						invoiceId: order.fakturoid_data.invoice_id,
+						invoiceNumber: order.fakturoid_data.invoice_number
+					});
+				}
+				// Pokud je z jiného účtu, můžeme pokračovat a přepsat fakturu
+			}
+
+			// 4. Načtení profilu zákazníka
 			const { data: profile, error: profileError } = await supabase
 				.from("profiles")
 				.select("*")
@@ -158,21 +219,26 @@ export const actions: Actions = {
 				});
 			}
 
-			// 4. Vytvoření faktury pomocí Fakturoid API
-			const invoice = await createInvoiceFromOrder(
-				order as Order,
-				profile as Profile
-			);
+			// 5. Vytvoření faktury
+			const invoice = await createInvoiceFromOrder(order, profile, integrations, supabase);
 
-			// 5. Uložení ID faktury do objednávky
+			if (!invoice?.id) {
+				return fail(500, {
+					success: false,
+					message: "Chyba při vytváření faktury"
+				});
+			}
+
+			// 6. Aktualizace objednávky s ID faktury
 			const { error: updateError } = await supabase
 				.from("orders")
 				.update({
-					meta: {
-						...order.meta,
-						fakturoid_invoice_id: invoice.id,
-						fakturoid_invoice_number: invoice.number,
-						fakturoid_created_at: new Date().toISOString()
+					fakturoid_data: {
+						invoice_id: invoice.id,
+						invoice_number: invoice.number,
+						invoice_url: invoice.html_url,
+						account_id: activeAccountId,
+						created_at: new Date().toISOString()
 					}
 				})
 				.eq("id", orderId);
@@ -181,47 +247,30 @@ export const actions: Actions = {
 				console.error("Chyba při aktualizaci objednávky:", updateError);
 				return fail(500, {
 					success: false,
-					message:
-						"Faktura byla vytvořena, ale nepodařilo se aktualizovat objednávku"
+					message: "Faktura byla vytvořena, ale nepodařilo se aktualizovat objednávku"
 				});
 			}
 
-			// 6. Odeslání faktury e-mailem, pokud je požadováno
-			if (sendEmail && invoice.id) {
+			// 7. Odeslání emailu (pokud požadováno)
+			if (sendEmail) {
 				try {
-					await sendInvoiceEmail(invoice.id);
-				} catch (emailError) {
-					console.error("Chyba při odesílání faktury e-mailem:", emailError);
-					// Nezastavujeme proces, jen logujeme chybu
+					await sendInvoiceEmail(invoice.id, supabase, fakturoidConfig);
+				} catch (error) {
+					console.error("Chyba při odesílání emailu:", error);
+					// Pokračujeme dál, i když se email nepodařilo odeslat
 				}
 			}
 
-			// 7. Označení faktury jako uhrazené, pokud je požadováno
-			if (markPaid && invoice.id) {
-				try {
-					await markInvoiceAsPaid(invoice.id);
-				} catch (paidError) {
-					console.error("Chyba při označení faktury jako uhrazené:", paidError);
-					// Nezastavujeme proces, jen logujeme chybu
-				}
-			}
-
-			// 8. Aktualizace stavu objednávky na 'Vyfakturovaná', pokud je požadováno
+			// 8. Označení jako zaplaceno (pokud požadováno)
 			if (markPaid) {
-				const { error: stateError } = await supabase
-					.from("orders")
-					.update({
-						state: "Vyfakturovaná",
-						pay_state: true
-					})
-					.eq("id", orderId);
-
-				if (stateError) {
-					console.error("Chyba při aktualizaci stavu objednávky:", stateError);
+				try {
+					await markInvoiceAsPaid(invoice.id, supabase, fakturoidConfig);
+				} catch (error) {
+					console.error("Chyba při označování faktury jako zaplacené:", error);
+					// Pokračujeme dál, i když se nepodařilo označit jako zaplacené
 				}
 			}
 
-			// 9. Vracíme úspěšný výsledek
 			return {
 				success: true,
 				message: "Faktura byla úspěšně vytvořena",
@@ -232,9 +281,8 @@ export const actions: Actions = {
 			console.error("Chyba při vytváření faktury:", err);
 			return fail(500, {
 				success: false,
-				message: `Chyba při vytváření faktury: ${err instanceof Error ? err.message : "Neznámá chyba"}`
+				message: "Nastala neočekávaná chyba při vytváření faktury"
 			});
 		}
 	}
 };
-*/

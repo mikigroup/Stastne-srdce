@@ -214,7 +214,7 @@
 		</div>
 
 		<!-- Google auth -->
-		<div class="form-widget">
+		<!--<div class="form-widget">
 			<div class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
 				<button
 					on:click={signInWithGoogle}
@@ -223,15 +223,15 @@
 				>
 					<img src="/google.svg" alt="Přihlásit přes Google" width="40" height="40" />
 				</button>
-				<!--<button
+				&lt;!&ndash;<button
 					on:click={signInWithFacebook}
 					disabled={loading}
 					class="px-4 py-2 text-base font-semibold text-center transition duration-200 ease-in rounded-lg shadow-md hover:bg-gray-600"
 				>
 					<img src="/facebook.svg" alt="Přihlásit přes Facebook" width="40" height="40" />
-				</button>-->
+				</button>&ndash;&gt;
 			</div>
-		</div>
+		</div>-->
 
 		</div>
 </section>

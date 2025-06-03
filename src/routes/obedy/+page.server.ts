@@ -7,37 +7,39 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
 		// Výpočet aktuálního data s kontrolou času
 		const now = new Date();
-		let currentDate = new Date(
-			now.getFullYear(),
-			now.getMonth(),
-			now.getDate()
-		);
+		let currentDate = new Date(now);
 
-		// Pokud je po 17:00, používáme následující den jako aktuální
+		// Pokud je po 17:00, přejdi na další den
 		if (now.getHours() >= 17) {
 			currentDate.setDate(currentDate.getDate() + 1);
 		}
 
-		const currentDateStr = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD formát
+		// Formátování data bez časové zóny (YYYY-MM-DD)
+		const currentDateStr = [
+			currentDate.getFullYear(),
+			String(currentDate.getMonth() + 1).padStart(2, "0"),
+			String(currentDate.getDate()).padStart(2, "0")
+		].join("-");
 
-		// Začneme rovnou načtením verzí s budoucím datem
+		// Načtení verzí menu pouze pro budoucí data (včetně dnešního, pokud je před 17:00)
 		const { data: futureVersions, error: versionsError } = await supabase
 			.from("menu_versions")
 			.select("menu_id, date")
-			.gte("date", currentDateStr)
+			.gt("date", currentDateStr) // Pouze STRICTLĚ větší než aktuální datum
 			.is("valid_to", null)
-			.is("active", true);
+			.is("active", true)
+			.order("date", { ascending: true });
 
 		if (versionsError) {
 			throw error(500, "Nepodařilo se najít budoucí menu");
 		}
 
-		// Získáme unikátní ID menu z verzí s budoucím datem
+		// Získání unikátních ID menu
 		const uniqueMenuIds = [
 			...new Set(futureVersions?.map((v) => v.menu_id) || [])
 		];
 
-		// Načteme menu s kontrolou, zda nejsou smazaná
+		// Načtení základních informací o menu
 		const { data: menus, error: menusError } = await supabase
 			.from("menus")
 			.select("id")
@@ -48,35 +50,43 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			throw error(500, "Nepodařilo se načíst menu");
 		}
 
-		// Pro každé menu načteme kompletní data
+		// Načtení kompletních dat menu
 		const menuPromises = uniqueMenuIds.map((menuId) =>
 			loadMenu(supabase, menuId)
 		);
-		const loadedMenus = (await Promise.all(menuPromises)).filter(Boolean);
 
-		// Načtení textů a alergenů
+		// Filtrace načtených menu - odstranění null/undefined a menu se starším datem
+		const loadedMenus = (await Promise.all(menuPromises))
+			.filter(Boolean)
+			.filter((menu) => {
+				if (!menu.date) return false;
+				const menuDate = new Date(menu.date);
+				return menuDate > currentDate;
+			});
+
+		// Načtení doplňkových informací
 		const [textsResult, allergensResult] = await Promise.all([
 			supabase.from("texts").select("*").eq("page", "obedy"),
 			supabase.from("allergens").select("*").order("number")
 		]);
 
-		// Seřazení menu podle data s ošetřením možných null hodnot
+		// Seřazení menu podle data
 		loadedMenus.sort((a, b) => {
-			// Pokud některé datum chybí, umístíme ho na konec
 			if (!a.date) return 1;
 			if (!b.date) return -1;
-			return a.date.localeCompare(b.date);
+			return new Date(a.date).getTime() - new Date(b.date).getTime();
 		});
 
-		// Načteme pouze první max. 28 menu (4 týdny x 7 dní)
+		// Omezení na maximálně 28 menu (4 týdny)
 		const limitedMenus = loadedMenus.slice(0, 28);
 
-		// Rozdělíme menu do skupin po různém počtu položek pro výběr uživatele
+		// Rozdělení menu do skupin
 		const menuGroups = {
-			7: limitedMenus.slice(0, 7), // 1 týden
-			14: limitedMenus.slice(0, 14), // 2 týdny
-			21: limitedMenus.slice(0, 21), // 3 týdny
-			28: limitedMenus // 4 týdny (všechno)
+			7: limitedMenus.slice(0, 7),
+			14: limitedMenus.slice(0, 14),
+			21: limitedMenus.slice(0, 21),
+			28: limitedMenus,
+			70: limitedMenus.slice(0, 70)
 		};
 
 		return {
@@ -86,10 +96,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			endDate: new Date(
 				currentDate.getTime() + 27 * 24 * 60 * 60 * 1000
 			).toISOString(),
-			texts:
-				textsResult.data && textsResult.data.length > 0
-					? textsResult.data[0]
-					: null,
+			texts: textsResult.data?.[0] || null,
 			allergens: allergensResult.data || []
 		};
 	} catch (err) {

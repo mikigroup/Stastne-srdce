@@ -2,7 +2,7 @@
 	import { CartItemsStore, type CartItem } from "$lib/stores/store";
 	import { page } from "$app/stores";
 	import type { Menu } from "$lib/types/menu";
-	import type { Database } from "$lib/database.types";
+	import type { Database } from "$lib/types/database.types";
 
 	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
@@ -73,26 +73,30 @@
 		<p class="text-lg p-2">Polévka</p>
 		<div class="p-5 border rounded-2xl border-gray-400 bg-white">
 			<p class="p-2 text-lg">{menu.soup}</p>
-			<div class="mt-2 p-2">
+			<!--<div class="mt-2 p-2">
 				<p class="text-xs text-gray-600">
 					Alergeny: <span title={getAllergenTooltip(menu.allergens)} class="font-medium cursor-help">{formatAllergens(menu.allergens)}</span>
 				</p>
-			</div>
+			</div>-->
 		</div>
 
 		<div class="py-2 text-lg rounded-2xl">
 			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
 			{#each menu.variants as variant (variant.id)}
 				<div class="border rounded-2xl p-5 mb-4 border-gray-400 bg-white">
+					<!--<div
+						class="rounded-3xl border w-3 px-4.5 py-1 flex justify-center bg-white mb-2">
+							{variant.variant_number}
+						</div>-->
 					<div class="p-2 text-lg">
-						<div>
-							{variant.description}
+						<div class="flex col-2 items-start">
+							<div class="border rounded-3xl py-1 px-3 bg-slate-200">{variant.variant_number}</div><div class="ml-4"> {variant.description}</div>
 						</div>
-						<div class="mt-4">
+				<!--		<div class="mt-4">
 							<p class="text-xs text-gray-600">
 								Alergeny: <span title={getAllergenTooltip(variant.allergens)} class="font-medium cursor-help">{formatAllergens(variant.allergens)}</span>
 							</p>
-						</div>
+						</div>-->
 					</div>
 					{#if !$page.data.session}
 						<a href="/login" class="flex justify-end pt-2">

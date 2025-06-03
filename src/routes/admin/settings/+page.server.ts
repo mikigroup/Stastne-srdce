@@ -1,12 +1,28 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import * as yup from "yup";
+
+// Definice schématu pro validaci pomocí yup
+const profileSchema = yup.object({
+	first_name: yup.string().min(2, "Jméno musí mít alespoň 2 znaky").required("Jméno je povinné"),
+	last_name: yup.string().min(2, "Příjmení musí mít alespoň 2 znaky").required("Příjmení je povinné"),
+	username: yup.string().optional(),
+	telephone: yup.string().optional(),
+	company: yup.string().optional(),
+	ico: yup.string().optional(),
+	dic: yup.string().optional(),
+	street: yup.string().optional(),
+	street_number: yup.string().optional(),
+	city: yup.string().optional(),
+	zip_code: yup.string().optional(),
+	avatar_url: yup.string().nullable().optional()
+});
 
 export type ProfileData = {
-	username: string;
 	first_name: string;
 	last_name: string;
-	avatar_url: string;
-	telephone: string;
+	username?: string;
+	telephone?: string;
 	company?: string;
 	ico?: string;
 	dic?: string;
@@ -14,6 +30,7 @@ export type ProfileData = {
 	street_number?: string;
 	city?: string;
 	zip_code?: string;
+	avatar_url?: string | null;
 };
 
 /*export type RezcalendarData = {
@@ -33,10 +50,14 @@ export type LoadData = {
 export const load: PageServerLoad = async ({
 	locals: { supabase, session }
 }): Promise<LoadData> => {
+	if (!session) {
+		throw redirect(303, "/login");
+	}
+
 	const { data: profiles, error: profilesError } = await supabase
 		.from("profiles")
 		.select("*")
-		.eq("id", session?.user.id)
+		.eq("id", session.user.id)
 		.single();
 
 	/*  const { data: rezcalendar, error: rezcalendarError } = await supabase
@@ -47,6 +68,11 @@ export const load: PageServerLoad = async ({
     console.error("Error fetching profiles or rezcalendar:", profilesError || rezcalendarError);
     throw profilesError || rezcalendarError;
   }*/
+	if (profilesError) {
+		console.error("Chyba při načítání profilu:", profilesError);
+		throw profilesError;
+	}
+
 	if (!profiles) {
 		throw new Error("Profil nenalezen.");
 	}
@@ -59,77 +85,66 @@ export type ActionData = {
 		success: boolean;
 		display: string;
 	};
-	lastName?: string;
-	username?: string;
-	firstName?: string;
-	avatarUrl?: string;
-	telephone?: string;
-	company?: string;
-	ico?: string;
-	dic?: string;
-	street?: string;
-	street_number?: string;
-	city?: string;
-	zip_code?: string;
+	warnings?: Record<string, string>;
+	formData?: Record<string, string>;
 };
 
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, session } }) => {
+		if (!session) {
+			return fail(401, {
+				message: {
+					success: false,
+					display: "Nejste přihlášeni"
+				}
+			});
+		}
+
 		const formData = await request.formData();
-		const first_name = formData.get("first_name") as string;
-		const last_name = formData.get("last_name") as string;
-		const username = formData.get("username") as string;
-		const avatarUrl = formData.get("avatarUrl") as string;
-		const telephone = formData.get("telephone") as string;
-		const company = formData.get("company") as string;
-		const ico = formData.get("ico") as string;
-		const dic = formData.get("dic") as string;
-		const street = formData.get("street") as string;
-		const street_number = formData.get("street_number") as string;
-		const city = formData.get("city") as string;
-		const zip_code = formData.get("zip_code") as string;
+		const data = Object.fromEntries(formData);
 
 		try {
+			// Validace dat pomocí yup
+			const validatedData = await profileSchema.validate(data, { abortEarly: false });
+
 			const { error } = await supabase.from("profiles").upsert({
-				id: session?.user.id,
-				first_name,
-				last_name,
-				username,
-				telephone,
-				company,
-				ico,
-				dic,
-				street,
-				street_number,
-				city,
-				zip_code,
-				avatar_url: avatarUrl,
+				id: session.user.id,
+				...validatedData,
 				updated_at: new Date()
 			});
 
 			if (error) {
 				throw error;
 			}
-			return { message: { success: true, display: "Profil aktualizován" } };
+
+			return {
+				message: { success: true, display: "Profil byl úspěšně aktualizován" }
+			};
 		} catch (error) {
+			if (error instanceof yup.ValidationError) {
+				const warnings = error.inner.reduce((acc, err) => {
+					const field = err.path as string;
+					acc[field] = err.message;
+					return acc;
+				}, {} as Record<string, string>);
+
+				return {
+					message: {
+						success: true,
+						display: "Profil byl aktualizován s upozorněními"
+					},
+					warnings,
+					formData: data as Record<string, string>
+				};
+			}
+
 			console.error("Chyba při aktualizaci profilu:", error);
 			return fail(500, {
 				message: {
 					success: false,
-					display: "Chyba při aktualizaci profilu"
+					display: "Nastala neočekávaná chyba při ukládání"
 				},
-				lastName: last_name,
-				username,
-				firstName: first_name,
-				avatarUrl,
-				telephone,
-				company,
-				ico,
-				dic,
-				street,
-				street_number,
-				city,
-				zip_code
+				formData: data as Record<string, string>
 			});
 		}
 	}

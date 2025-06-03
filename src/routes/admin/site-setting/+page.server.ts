@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
 
 interface SettingRecord {
 	id?: number;
@@ -8,135 +8,272 @@ interface SettingRecord {
 	value: any;
 	updated_at?: string;
 	updated_by?: string;
+	user_id?: string;
 }
+
+// Cache pro sdílení dat mezi requesty
+const settingsCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
-	parent
+	parent,
+	url
 }) => {
 	const { session } = await safeGetSession();
 	if (!session) throw redirect(303, "/login");
 
-	console.log("Načítám nastavení z DB...");
-	const { data: settings, error } = await supabase
-		.from("site_settings")
-		.select("*");
+	// Získáme aktivní záložku z URL
+	const activeTab = url.searchParams.get('tab') || 'general';
+	const success = url.searchParams.get('success');
+	
+	// Pokud je success=fakturoid_connected nebo fakturoid_disconnected, vyčistíme cache
+	if (success === 'fakturoid_connected' || success === 'fakturoid_disconnected') {
+		console.log('OAuth success/disconnect detected, clearing cache...');
+		settingsCache.clear();
+	}
+	
+	// Načteme parent data
+	const parentData = await parent();
+	
+	// Zkontrolujeme cache
+	const cacheKey = 'all_settings';
+	const cached = settingsCache.get(cacheKey);
+	const now = Date.now();
+	
+	let settings;
+	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+		// Použijeme cache
+		settings = cached.data;
+		console.log('Using cached settings');
+	} else {
+		// Načteme všechna nastavení z databáze
+		console.log('Loading fresh settings from database');
+		const { data, error } = await supabase
+			.from("site_settings")
+			.select("*");
 
-	if (error) {
-		console.error("Chyba při načítání nastavení:", error);
-		return fail(500, { error: "Nepodařilo se načíst nastavení" });
+		if (error) {
+			console.error("Chyba při načítání nastavení:", error);
+			settings = [];
+		} else {
+			settings = data || [];
+			// Uložíme do cache
+			settingsCache.set(cacheKey, { data: settings, timestamp: now });
+		}
+	}
+
+	console.log('Settings loaded:', settings.length, 'items');
+	// Logujeme specificky integrations nastavení
+	const integrationsItem = settings.find(item => item.key === 'integrations');
+	if (integrationsItem) {
+		console.log('Integrations setting found:', JSON.stringify(integrationsItem.value, null, 2));
+	} else {
+		console.log('No integrations setting found in database');
 	}
 
 	return {
-		...(await parent()),
-		settings: settings || []
+		...parentData,
+		settings,
+		activeTab,
+		pages: ['hlavni']
 	};
 };
 
 export const actions: Actions = {
 	update: async ({ request, locals: { supabase, safeGetSession } }) => {
-		console.log("--- ZAČÁTEK AKCE UPDATE ---");
-		const startTime = Date.now();
+		const { session } = await safeGetSession();
+		if (!session) throw redirect(303, "/login");
 
-		// 1. Session verification
+		const formData = await request.formData();
+		const settingsJson = formData.get('settings');
+
+		if (!settingsJson || typeof settingsJson !== 'string') {
+			return fail(400, { error: "Neplatná data nastavení" });
+		}
+
+		try {
+			const settings = JSON.parse(settingsJson);
+
+		// Připravíme data pro batch upsert
+		const settingsData = Object.entries(settings).map(([key, value]) => ({
+			key,
+				value: JSON.stringify(value),
+			updated_at: new Date().toISOString(),
+			updated_by: session.user.id,
+			user_id: session.user.id
+		}));
+
+		// Provedeme jeden batch upsert
+		const { error } = await supabase
+			.from("site_settings")
+			.upsert(settingsData, {
+				onConflict: 'key'
+			});
+
+		if (error) {
+			console.error("Chyba při ukládání nastavení:", error);
+			return fail(500, { error: "Nepodařilo se uložit nastavení" });
+		}
+
+		// Vyčistíme cache pro aktualizovaná nastavení
+		settingsCache.clear();
+
+		return { success: true };
+		} catch (error) {
+			console.error("Chyba při zpracování nastavení:", error);
+			return fail(400, { error: "Neplatný formát nastavení" });
+		}
+	},
+
+	testFakturoidOAuth: async ({ locals: { supabase, safeGetSession } }) => {
 		const { session } = await safeGetSession();
 		if (!session) {
-			console.error("Uživatel není přihlášen");
 			throw redirect(303, "/login");
 		}
 
 		try {
-			// 2. Process input data
-			const formData = await request.formData();
-			const settingsJson = formData.get("settings")?.toString() || "{}";
-
-			let settingsData: Record<string, any>;
-			try {
-				settingsData = JSON.parse(settingsJson);
-			} catch (e) {
-				console.error("Neplatný JSON formát:", e);
-				return fail(400, { error: "Neplatný formát dat" });
-			}
-
-			console.log("Obdržená data:", {
-				user: session.user.id,
-				data: settingsData,
-				timestamp: new Date().toISOString()
-			});
-
-			// 3. Data validation
-			if (
-				!settingsData ||
-				typeof settingsData !== "object" ||
-				Array.isArray(settingsData)
-			) {
-				console.error("Prázdná nebo neplatná data pro update");
-				return fail(400, { error: "Žádná platná data k uložení" });
-			}
-
-			// 4. Prepare batch operations
-			const updates = Object.entries(settingsData).map(async ([key, value]) => {
-				console.log(`Zpracovávám klíč: ${key}`);
-
-				// 4a. Najdi existující záznam
-				const { data: existing, error: fetchError } = await supabase
-					.from("site_settings")
-					.select("id, key")
-					.eq("key", key)
-					.maybeSingle();
-
-				if (fetchError) throw fetchError;
-
-				// 4b. Připrav typově bezpečná data
-				const recordData: SettingRecord = {
-					key: key,
-					value: value,
-					updated_at: new Date().toISOString(),
-					updated_by: session.user.id
-				};
-
-				// 4c. Proveď operaci
-				if (existing?.id) {
-					console.log(`Updatuji existující záznam ID: ${existing.id}`);
-					return supabase
-						.from("site_settings")
-						.update(recordData)
-						.eq("id", existing.id);
-				} else {
-					console.log(`Vytvářím nový záznam pro klíč: ${key}`);
-					return supabase.from("site_settings").insert(recordData);
-				}
-			});
-
-			// 5. Execute all operations
-			console.log("Provádím batch operací...");
-			const results = await Promise.all(updates);
-			const errors = results.filter((r) => r.error);
-
-			// 6. Process results
-			if (errors.length > 0) {
-				console.error("Chyby při ukládání:", errors);
-				return fail(500, {
-					error: "Částečné selhání",
-					details: errors.map((e) => e.error?.message)
+			// Importujeme getAccessToken z fakturoidAuth
+			const { getAccessToken } = await import('$lib/fakturoidAuth');
+			
+			// Pokusíme se získat OAuth token
+			const accessToken = await getAccessToken();
+			
+			if (!accessToken) {
+				return fail(400, { 
+					error: "Nepodařilo se získat OAuth token. Zkontrolujte prosím konfiguraci." 
 				});
 			}
 
-			console.log(`Úspěšně dokončeno za ${Date.now() - startTime}ms`);
+			// Test připojení k Fakturoid API pomocí OAuth tokenu
+			const response = await fetch('https://app.fakturoid.cz/api/v3/user.json', {
+				headers: {
+					'Authorization': `Bearer ${accessToken}`,
+					'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('Fakturoid OAuth API error:', response.status, errorText);
+				
+				if (response.status === 401) {
+					return fail(401, { 
+						error: "OAuth token není platný. Zkuste se znovu přihlásit." 
+					});
+				} else {
+					return fail(response.status, { 
+						error: `Chyba API: ${response.status} - ${errorText}` 
+					});
+				}
+			}
+
+			const userData = await response.json();
+			
 			return {
 				success: true,
-				updated: Object.keys(settingsData).length
+				message: `OAuth připojení úspěšné! Připojen jako: ${userData.email}`,
+				userInfo: {
+					email: userData.email,
+					name: userData.name
+				}
 			};
+
 		} catch (error) {
-			console.error("Kritická chyba:", {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				timestamp: new Date().toISOString()
-			});
+			console.error("Chyba při testování Fakturoid OAuth:", error);
 			return fail(500, {
-				error: "Interní chyba serveru",
+				error: "Chyba při testování OAuth připojení",
 				details: error instanceof Error ? error.message : "Neznámá chyba"
 			});
 		}
+	},
+
+	disconnectFakturoid: async ({ locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			throw redirect(303, "/login");
+		}
+
+		try {
+			console.log('=== DISCONNECTING FAKTUROID ===');
+			
+			// Importujeme clearStoredToken z fakturoidAuth
+			const { clearStoredToken } = await import('$lib/fakturoidAuth');
+			
+			// Vymažeme uložené tokeny
+			await clearStoredToken();
+			console.log('Tokens cleared');
+
+			// Načteme existující integrations nastavení
+			const integrationsData = await getSetting(supabase, 'integrations') || {};
+			console.log('Current integrations data:', integrationsData);
+
+			// Odpojíme Fakturoid
+			const updatedIntegrations = {
+				...integrationsData,
+				fakturoid: {
+					enabled: false,
+					connected: false,
+					accounts: []
+				}
+			};
+			console.log('Updated integrations data:', updatedIntegrations);
+
+			// Uložíme aktualizovaná nastavení
+			const success = await saveSetting(supabase, 'integrations', updatedIntegrations, session.user.id);
+			console.log('Save result:', success);
+
+			if (!success) {
+				return fail(500, { error: 'Nepodařilo se odpojit Fakturoid' });
+			}
+
+			// Vyčistíme cache na serveru
+			settingsCache.clear();
+			console.log('Server cache cleared');
+
+			// Přesměrujeme zpět na integrace se zprávou o úspěchu
+			throw redirect(303, `/admin/site-setting?tab=integrations&success=fakturoid_disconnected&t=${Date.now()}`);
+
+		} catch (error) {
+			// Pokud je to redirect, necháme ho projít
+			if (error.status === 303) {
+				throw error;
+			}
+			
+			console.error("Error disconnecting Fakturoid:", error);
+			return fail(500, { error: 'Chyba při odpojování Fakturoid' });
+		}
+	},
+
+	// Nová akce pro načtení specifického nastavení
+	loadSetting: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			return fail(401, { error: "Nepřihlášen" });
+		}
+
+		const formData = await request.formData();
+		const key = formData.get("key")?.toString();
+
+		if (!key) {
+			return fail(400, { error: "Chybí klíč nastavení" });
+		}
+
+		const { data, error } = await supabase
+			.from("site_settings")
+			.select("*")
+			.eq("key", key)
+			.maybeSingle();
+
+		if (error) {
+			console.error("Chyba při načítání nastavení:", error);
+			return fail(500, { error: "Nepodařilo se načíst nastavení" });
+		}
+
+		return {
+			success: true,
+			setting: data
+		};
 	}
 };

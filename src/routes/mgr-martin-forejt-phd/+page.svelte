@@ -1,5 +1,8 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  export let data;
+
+  const { generalSettings } = data;
 </script>
 
 <svelte:head>

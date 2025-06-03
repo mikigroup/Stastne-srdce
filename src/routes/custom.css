@@ -1,0 +1,36 @@
+.footer_fix {
+	padding-bottom: 230px;
+}
+
+.footer_fix2 {
+	padding-bottom: 250px;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+::placeholder {
+	/* Chrome, Firefox, Opera, Safari 10.1+ */
+	color: rgba(224, 224, 224, 0.952) !important;
+	opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder {
+	/* Internet Explorer 10-11 */
+	color: rgba(224, 224, 224, 0.952) !important;
+}
+
+::-ms-input-placeholder {
+	/* Microsoft Edge */
+	color: rgba(224, 224, 224, 0.952) !important;
+}
+
+.colorMenuBg {
+	background-color: #929da5;
+}
+
+h2 {
+	font-size: 1.5rem;
+	line-height: 2rem;
+} 

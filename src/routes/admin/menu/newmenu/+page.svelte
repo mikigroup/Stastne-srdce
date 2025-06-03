@@ -1,36 +1,52 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { fade, fly } from "svelte/transition";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import { ROUTES } from "$lib/stores/store";
+	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import {
+		createMenuVersion,
+		updateMenuAllergens,
+		createMenuVariant,
+		updateVariantAllergens,
+		updateVariantIngredients
+	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { supabase, allAllergens, allIngredients } = data;
-	$: ({ supabase, allAllergens, allIngredients } = data);
-
-	console.log(allAllergens);
+	let { session, supabase, allAllergens, allIngredients } = data;
+	$: ({ session, supabase, allAllergens, allIngredients } = data);
 
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";
 
-	// Initialize new menu object with default values
+	// Inicializace nového menu
 	let newMenu: Menu = {
 		id: "",
 		date: "",
 		soup: "",
-		active: false,
+		active: true,
 		notes: "",
 		type: "",
 		nutri: "",
 		allergens: [],
-		ingredients: [],
 		variants: [
-			{ id: "", description: "", price: 0, allergens: [], ingredients: [] },
-			{ id: "", description: "", price: 0, allergens: [], ingredients: [] },
-			{ id: "", description: "", price: 0, allergens: [], ingredients: [] }
+			{
+				id: "",
+				variant_number: "1",
+				description: "",
+				price: 0,
+				allergens: [],
+				ingredients: []
+			},
+			{
+				id: "",
+				variant_number: "2",
+				description: "",
+				price: 0,
+				allergens: [],
+				ingredients: []
+			}
 		]
 	};
 
@@ -40,19 +56,13 @@
 			errorMessage = "";
 			updateMessage = "";
 
-			console.log(
-				"Starting menu creation. newMenu content:",
-				JSON.stringify(newMenu, null, 2)
-			);
-
-			// Check if date is provided (required field)
-			if (!newMenu.date) {
-				errorMessage = "Datum je povinné";
-				return;
+			// Validace základních údajů
+			if (!newMenu.date || !newMenu.soup) {
+				throw new Error("Datum a polévka jsou povinné údaje");
 			}
 
-			// 1. Create basic menu
-			const { data: createdMenu, error: menuError } = await supabase
+			// Vytvoření základního menu záznamu
+			const { data: menuData, error: menuError } = await supabase
 				.from("menus")
 				.insert({
 					date: newMenu.date,
@@ -60,125 +70,76 @@
 					active: newMenu.active,
 					notes: newMenu.notes,
 					type: newMenu.type,
-					nutri: newMenu.nutri,
-					deleted: false
+					nutri: newMenu.nutri
 				})
 				.select()
 				.single();
 
 			if (menuError) throw menuError;
 
-			console.log("Basic menu created:", JSON.stringify(createdMenu, null, 2));
+			const menuId = menuData.id;
 
-			// 2. Add variants and their allergens
-			if (newMenu.variants && newMenu.variants.length > 0) {
-				console.log(
-					"Adding variants:",
-					JSON.stringify(newMenu.variants, null, 2)
-				);
-				for (let variant of newMenu.variants) {
-					const { data: createdVariant, error: variantError } = await supabase
-						.from("menu_variants")
-						.insert({
-							menu_id: createdMenu.id,
-							variant_number: (
-								newMenu.variants.indexOf(variant) + 1
-							).toString(),
-							description: variant.description,
-							price: variant.price
-						})
-						.select()
-						.single();
+			// 1. Vytvořit novou verzi menu
+			const menuVersionId = await createMenuVersion(supabase, {
+				id: menuId,
+				date: newMenu.date,
+				soup: newMenu.soup,
+				active: newMenu.active,
+				notes: newMenu.notes,
+				type: newMenu.type,
+				nutri: newMenu.nutri
+			});
 
-					if (variantError) throw variantError;
+			// 2. Aktualizace alergenů polévky
+			await updateMenuAllergens(
+				supabase,
+				menuId,
+				newMenu.allergens.map((a: any) => a.id)
+			);
 
-					// Add allergens for this variant
-					if (variant.allergens && variant.allergens.length > 0) {
-						const { error: variantAllergensError } = await supabase
-							.from("variant_allergens")
-							.insert(
-								variant.allergens.map((a) => ({
-									variant_id: createdVariant.id,
-									allergen_id: a.id
-								}))
-							);
+			// 3. Vytvoření variant pro novou verzi menu
+			for (const variant of newMenu.variants) {
+				if (variant.description && variant.price > 0) {
+					// Vytvoříme novou variantu pro novou verzi
+					const insertedVariant = await createMenuVariant(supabase, {
+						menu_id: menuId,
+						menu_version_id: menuVersionId,
+						variant_number: variant.variant_number,
+						description: variant.description,
+						price: variant.price
+					});
 
-						if (variantAllergensError) throw variantAllergensError;
-					}
+					// Přidání alergenů k nové variantě
+					await updateVariantAllergens(
+						supabase,
+						insertedVariant.id,
+						variant.allergens.map((a: any) => a.id)
+					);
+
+					// Přidání ingrediencí k nové variantě
+					await updateVariantIngredients(
+						supabase,
+						insertedVariant.id,
+						variant.ingredients.map((i: any) => i.id)
+					);
 				}
-				console.log("Variants and their allergens successfully added");
 			}
 
-			// 3. Add allergens
-			if (newMenu.allergens && newMenu.allergens.length > 0) {
-				console.log(
-					"Adding allergens:",
-					JSON.stringify(newMenu.allergens, null, 2)
-				);
-				const { data: createdAllergens, error: allergensError } = await supabase
-					.from("menu_allergens")
-					.insert(
-						newMenu.allergens.map((a) => ({
-							// Map each allergen to a new object linking it to the menu
-							menu_id: createdMenu.id,
-							allergen_id: a.id
-						}))
-					)
-					.select();
+			updateMessage = "Menu úspěšně vytvořeno";
+			
+			// Přesměrování na seznam menu
+			setTimeout(() => {
+				goto("/admin/menu", { replaceState: true });
+			}, 1500);
 
-				if (allergensError) throw allergensError;
-				console.log(
-					"Allergens successfully added:",
-					JSON.stringify(createdAllergens, null, 2)
-				);
-			} else {
-				console.log("No allergens to add.");
-			}
-
-			// 4. Add ingredients
-			if (newMenu.ingredients && newMenu.ingredients.length > 0) {
-				console.log(
-					"Adding ingredients:",
-					JSON.stringify(newMenu.ingredients, null, 2)
-				);
-				const { data: createdIngredients, error: ingredientsError } =
-					await supabase
-						.from("menu_ingredients")
-						.insert(
-							newMenu.ingredients.map((i) => ({
-								// Map each ingredient to a new object linking it to the menu
-								menu_id: createdMenu.id,
-								ingredient_id: i.id
-							}))
-						)
-						.select();
-
-				if (ingredientsError) throw ingredientsError;
-				console.log(
-					"Ingredients successfully added:",
-					JSON.stringify(createdIngredients, null, 2)
-				);
-			} else {
-				console.log("No ingredients to add.");
-			}
-
-			updateMessage = "Nové menu úspěšně vytvořeno!";
-			console.log("Menu successfully created. Redirecting to /admin/menu");
-			await goto($ROUTES.ADMIN.MENU.LIST, { replaceState: true });
 		} catch (error) {
-			console.error("Error creating menu:", error);
-			errorMessage = "Nastala chyba při vytváření menu";
+			console.error("Chyba při vytváření menu:", error);
+			errorMessage = "Chyba při vytváření menu: " + (error instanceof Error ? error.message : "Neznámá chyba");
 		} finally {
 			loading = false;
 		}
 	}
 
-	// Navigate back to menu list
-	async function back() {
-		await goto($ROUTES.ADMIN.MENU.LIST);
-	}
-
-	// Handle update events from MenuItemDetail component
 	function handleUpdate(event: CustomEvent<Menu>) {
 		console.log(
 			"handleUpdate called with:",
@@ -187,41 +148,34 @@
 		newMenu = event.detail;
 		console.log("newMenu after update:", JSON.stringify(newMenu, null, 2));
 	}
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Vytváří se...' : 'Vytvořit menu',
+			onClick: createMenu,
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
-<div
-	class="relative p-5 overflow-x-auto shadow-md sm:rounded-lg border border-zinc-200"
-	in:fly={{ y: 50, duration: 500 }}>
-	<div class="flex justify-between items-center mb-4">
-		<button on:click={back} class="btn btn-outline">Zpět</button>
-		{#if updateMessage}
-			<div transition:fade class="bg-green-200 text-green-800 rounded p-2">
-				<span>{updateMessage}</span>
-			</div>
-		{/if}
-		{#if errorMessage}
-			<div transition:fade class="bg-red-200 text-red-800 rounded p-2">
-				<span>{errorMessage}</span>
-			</div>
-		{/if}
-		<div class="flex gap-2">
-			<button disabled={loading} on:click={createMenu} class="btn btn-outline">
-				{loading ? "Vytváří se..." : "Vytvořit menu"}
-			</button>
-		</div>
-	</div>
+<AdminPageLayout
+	title="Nové menu"
+	backUrl="/admin/menu"
+	{actions}
+	successMessage={updateMessage}
+	errorMessage={errorMessage}
+	{loading}>
 
-	<div class="divider"></div>
-
-	<div class="rounded-xl p-4 md:p-10 bg-neutral-200">
-		<h2 class="text-2xl font-bold mb-6">Nové menu</h2>
-		<MenuItemDetail
-			bind:menu={newMenu}
-			{allAllergens}
-			{allIngredients}
-			on:update={handleUpdate} />
-	</div>
-</div>
+	<!-- Menu content -->
+	<MenuItemDetail
+		bind:menu={newMenu}
+		{allAllergens}
+		{allIngredients}
+		on:update={handleUpdate} />
+</AdminPageLayout>
 
 <style>
 </style>

@@ -15,7 +15,7 @@
 	let selectedPaymentMethod = "";
 	let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
 	let selectedOrderState = "";
-	let orderStateOptions = ["Přijata", "Expedována", "Vyfakturována"];
+	let orderStateOptions = ["Nová", "Expedovaná", "Fakturovaná", "Stornovaná"];
 	let selectedCurrency = "";
 	let currencyOptions = ["CZK", "EUR", "USD"];
 	let selectedShippingMethod = "";
@@ -36,7 +36,6 @@
 	async function createOrder() {
 		try {
 			loading = true;
-			const { user } = session;
 
 			const createOrderData = {
 				created_at: new Date().toISOString(),
@@ -46,7 +45,7 @@
 				pay_method: selectedPaymentMethod,
 				state: selectedOrderState,
 				pay_state: isPaid,
-				user_id: user?.id
+				user_id: session?.user?.id
 			};
 
 			console.log(createOrderData);

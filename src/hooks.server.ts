@@ -14,10 +14,17 @@ const supabase: Handle = async ({ event, resolve }) => {
 			remove: (key, options) => {
 				event.cookies.delete(key, { ...options, path: "/" });
 			}
+		},
+		global: {
+			headers: {
+				apikey: PRIVATE_SBKey
+			}
 		}
 	});
 
 	event.locals.safeGetSession = async () => {
+		// Poznámka: getSession() zde je bezpečné, protože následně ověřujeme
+		// autenticitu uživatele kontaktováním Auth serveru přes getUser()
 		const {
 			data: { session }
 		} = await event.locals.supabase.auth.getSession();
@@ -25,6 +32,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 			return { session: null, user: null };
 		}
 
+		// Bezpečné ověření uživatele - kontaktuje Auth server
 		const {
 			data: { user },
 			error
@@ -44,6 +52,11 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
+	// Ignorovat požadavky na statické soubory
+	if (event.url.pathname.startsWith('/favi/') || event.url.pathname === '/favicon.ico') {
+		return resolve(event);
+	}
+
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;

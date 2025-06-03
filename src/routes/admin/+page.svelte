@@ -10,8 +10,6 @@
 		CategoryScale
 	} from "chart.js";
 	import { goto } from "$app/navigation";
-	import DateRangeSelector from "$lib/component/DateRangeSelector.svelte";
-	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/stores/store";
 	import { page } from "$app/stores";
 
@@ -26,110 +24,19 @@
 
 	export let data;
 
-	// All data from the server
+	// Data from server (last 24 hours)
 	$: allOrders = data.orders;
 	$: allCustomers = data.customers;
-	$: todayOrders = data.todayOrders || [];
-	$: todayOrdersCount = data.todayOrdersCount || 0;
-	$: todayOrdersTotal = data.todayOrdersTotal || 0;
-	$: {
-		if ($page.url) {
-			const params = $page.url.searchParams;
-			const start = params.get('startDate');
-			const end = params.get('endDate');
+	$: last24hOrders = data.last24hOrders || [];
+	$: last24hOrdersCount = data.last24hOrdersCount || 0;
+	$: last24hOrdersTotal = data.last24hOrdersTotal || 0;
 
-			if (start && end) {
-				startDate = start;
-				endDate = end;
-				filterDataByDateRange();
-			}
-		}
-	}
-
-	// Filtered data based on selected date range
-	let filteredOrders = [];
-	let filteredCustomers = [];
-	let currentDateRange = '';
-	let startDate: string;
-	let endDate: string;
-
-	onMount(() => {
-		// Default to current month on initial load
-		const now = new Date();
-		startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-		endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
-
-		// Update URL with default range
-		goto(`?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
-			keepFocus: true,
-			replaceState: true,
-			noScroll: true
-		});
-
-		filterDataByDateRange();
-	})
-
-	function handleRangeChange(event) {
-		const { startDate: start, endDate: end, formattedRange } = event.detail;
-		startDate = start;
-		endDate = end;
-		currentDateRange = formattedRange;
-
-		// Update URL with new date range
-		goto(`?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`, {
-			keepFocus: true,
-			replaceState: true,
-			noScroll: true
-		});
-	}
-
-	function filterDataByDateRange() {
-		// Filter orders by date range
-		filteredOrders = allOrders.filter(order => {
-			const orderDate = new Date(order.created_at);
-			return orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
-		});
-
-		// Filter customers by date range (customers who registered in the period)
-		filteredCustomers = allCustomers.filter(customer => {
-			const customerDate = new Date(customer.created_at);
-			return customerDate >= new Date(startDate) && customerDate <= new Date(endDate);
-		});
-	}
-
-	// Process data for charts
-	$: orderData = processOrderData(filteredOrders);
-	$: customerData = processCustomerData(filteredCustomers);
-	$: currentRangeOrders = filteredOrders.length;
-	$: currentRangeCustomers = filteredCustomers.length;
-	$: currentRangeRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_price || 0), 0);
-
-	function processOrderData(orders) {
-		return orders.reduce((acc, order) => {
-			const date = new Date(order.created_at).toISOString().split("T")[0];
-			const existingDate = acc.find((item) => item.date === date);
-			if (existingDate) {
-				existingDate.count++;
-			} else {
-				acc.push({ date, count: 1 });
-			}
-			return acc;
-		}, []).sort((a, b) => a.date.localeCompare(b.date));
-	}
-
-	function processCustomerData(customers) {
-		return customers.reduce((acc, customer, index) => {
-			const date = new Date(customer.created_at).toISOString().split("T")[0];
-			acc.push({ date, count: index + 1 });
-			return acc;
-		}, []).sort((a, b) => a.date.localeCompare(b.date));
-	}
-
-	function formatCurrency(value) {
+	// Formatting functions
+	function formatCurrency(value: number) {
 		return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK' }).format(value);
 	}
 
-	function formatDateTime(dateString) {
+	function formatDateTime(dateString: string) {
 		return new Date(dateString).toLocaleString('cs-CZ', {
 			day: '2-digit',
 			month: '2-digit',
@@ -139,7 +46,7 @@
 		});
 	}
 
-	function getStatusColor(status) {
+	function getStatusColor(status: string) {
 		switch(status) {
 			case 'Nová': return 'bg-blue-100 text-blue-800';
 			case 'Zpracovává se': return 'bg-yellow-100 text-yellow-800';
@@ -149,152 +56,115 @@
 		}
 	}
 
-	function getPaymentStatusColor(status) {
-		return status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-	}
-
-	function viewOrderDetail(orderId) {
+	function viewOrderDetail(orderId: string) {
 		goto(`/admin/order/${orderId}`);
 	}
 
+	// Process data for chart (group by hour)
+	$: hourlyOrderData = last24hOrders.reduce((acc, order) => {
+		const date = new Date(order.created_at);
+		const hour = `${date.getHours()}:00`;
+		const existingHour = acc.find((item) => item.hour === hour);
+
+		if (existingHour) {
+			existingHour.count++;
+		} else {
+			acc.push({ hour, count: 1 });
+		}
+		return acc;
+	}, []).sort((a, b) => a.hour.localeCompare(b.hour));
+
 	$: orderChartData = {
-		labels: orderData.map((d) => d.date),
+		labels: hourlyOrderData.map((d) => d.hour),
 		datasets: [
 			{
-				label: "Počet objednávek",
-				data: orderData.map((d) => d.count),
+				label: "Objednávky za hodinu",
+				data: hourlyOrderData.map((d) => d.count),
 				fill: false,
 				borderColor: "rgb(75, 192, 192)",
 				tension: 0.1
 			}
 		]
 	};
-
-	$: customerChartData = {
-		labels: customerData.map((d) => d.date),
-		datasets: [
-			{
-				label: "Počet zákazníků",
-				data: customerData.map((d) => d.count),
-				fill: false,
-				borderColor: "rgb(37, 50, 17)",
-				tension: 0.1
-			}
-		]
-	};
-
-
 </script>
 
 <svelte:head>
-	<title>Dashboard</title>
+	<title>LEO - Dashboard</title>
 </svelte:head>
 
 <div class="p-4">
 	<h2 class="text-2xl font-bold mb-4">Dashboard</h2>
 
-	<!-- Date Range Selector -->
-	<DateRangeSelector on:rangeChange={handleRangeChange} />
-
-	<!-- Horní statistické karty -->
+	<!-- Statistiky -->
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-		<div class="card bg-base-100 shadow-xl border border-gray-300 hover:transform hover:scale-103 transition-transform duration-300">
-			<a href="{$ROUTES.ADMIN.ORDER.LIST}" class="">
+		<div class="card bg-base-100 shadow-xl">
 			<div class="card-body">
 				<h2 class="card-title">Objednávky</h2>
-				<p class="text-4xl font-bold">{currentRangeOrders}</p>
-				<p class="text-sm text-gray-500">
-					{currentDateRange || "Aktuální měsíc"}
-				</p>
+				<p class="text-4xl font-bold">{last24hOrdersCount}</p>
 			</div>
-			</a>
 		</div>
 
-		<div class="card bg-base-100 shadow-xl border border-gray-300">
+		<div class="card bg-base-100 shadow-xl">
 			<div class="card-body">
 				<h2 class="card-title">Tržby</h2>
-				<p class="text-4xl font-bold">{formatCurrency(currentRangeRevenue)}</p>
-				<p class="text-sm text-gray-500">
-					{currentDateRange || "Aktuální měsíc"}
-				</p>
+				<p class="text-4xl font-bold">{formatCurrency(last24hOrdersTotal)}</p>
 			</div>
 		</div>
 
-		<a href="{$ROUTES.ADMIN.CUSTOMER.LIST}" class="">
-		<div class="card bg-base-100 shadow-xl border border-gray-300 hover:transform hover:scale-103 transition-transform duration-300">
+		<div class="card bg-base-100 shadow-xl">
 			<div class="card-body">
 				<h2 class="card-title">Noví zákazníci</h2>
-				<p class="text-4xl font-bold">{currentRangeCustomers}</p>
-				<p class="text-sm text-gray-500">
-					{currentDateRange || "Aktuální měsíc"}
-				</p>
+				<p class="text-4xl font-bold">{allCustomers.length}</p>
 			</div>
 		</div>
-		</a>
 	</div>
 
-	<!-- Sekce dnešních objednávek -->
-	<div class="card bg-base-100 shadow-xl mb-8 border border-gray-300">
+	<!-- Graf objednávek po hodinách -->
+<!--	<div class="card bg-base-100 shadow-xl mb-8">
 		<div class="card-body">
-			<div class="flex justify-between items-center mb-4">
-				<h2 class="card-title">Objednávky za dnešní den</h2>
-				<div class="stats shadow bg-gray-200 border border-gray-300">
-					<div class="stat">
-						<div class="stat-title">Počet</div>
-						<div class="stat-value">{todayOrdersCount}</div>
-					</div>
-					<div class="stat">
-						<div class="stat-title">Celkem</div>
-						<div class="stat-value !divide-blue-300">{formatCurrency(todayOrdersTotal)}</div>
-					</div>
+			<h2 class="card-title">Objednávky po hodinách</h2>
+			{#if hourlyOrderData.length > 0}
+				<Line data={orderChartData} />
+			{:else}
+				<div class="alert alert-info">
+					Žádné objednávky v posledních 24 hodinách
 				</div>
-			</div>
+			{/if}
+		</div>
+	</div>-->
 
-			{#if todayOrdersCount > 0}
+	<!-- Seznam objednávek -->
+	<div class="card bg-base-100 shadow-xl">
+		<div class="card-body">
+			<h2 class="card-title">Poslední objednávky</h2>
+
+			{#if last24hOrdersCount > 0}
 				<div class="overflow-x-auto">
-					<table class="table table-zebra w-full">
+					<table class="table table-zebra">
 						<thead>
 						<tr>
 							<th>Číslo</th>
 							<th>Čas</th>
 							<th>Zákazník</th>
-							<th>Kontakt</th>
-							<th>Položek</th>
 							<th>Celkem</th>
 							<th>Stav</th>
-							<th>Platba</th>
 							<th>Akce</th>
 						</tr>
 						</thead>
 						<tbody>
-						{#each todayOrders as order}
-							<tr class="hover">
+						{#each last24hOrders as order}
+							<tr>
 								<td>#{order.order_number}</td>
 								<td>{formatDateTime(order.created_at)}</td>
 								<td>{order.customer_first_name} {order.customer_last_name}</td>
-								<td>
-									<div class="flex flex-col">
-										<span class="text-xs">{order.customer_email}</span>
-										<span class="text-xs">{order.customer_telephone}</span>
-									</div>
-								</td>
-								<td>{order.total_pieces}</td>
 								<td>{formatCurrency(order.total_price)}</td>
 								<td>
-										<span class="px-2 py-1 text-xs font-semibold rounded-full {getStatusColor(order.state)}">
-											{order.state}
-										</span>
+                                        <span class="badge {getStatusColor(order.state)}">
+                                            {order.state}
+                                        </span>
 								</td>
 								<td>
-										<span class="px-2 py-1 text-xs font-semibold rounded-full {getPaymentStatusColor(order.pay_state)}">
-											{order.pay_state ? 'Zaplaceno' : 'Nezaplaceno'}
-										</span>
-								</td>
-								<td>
-									<button
-										class="btn btn-xs btn-primary"
-										on:click={() => viewOrderDetail(order.id)}
-									>
+									<button on:click={() => viewOrderDetail(order.id)} class="btn btn-xs">
 										Detail
 									</button>
 								</td>
@@ -304,41 +174,10 @@
 					</table>
 				</div>
 			{:else}
-				<div class="alert">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-					</svg>
-					<span>Dnes zatím nebyly vytvořeny žádné objednávky.</span>
+				<div class="alert alert-info">
+					Žádné objednávky v posledních 24 hodinách
 				</div>
 			{/if}
-		</div>
-	</div>
-
-	<!-- Grafy -->
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-		<div class="card bg-base-100 shadow-xl border border-gray-300">
-			<div class="card-body">
-				<h2 class="card-title">Vývoj objednávek</h2>
-				{#if orderData.length > 0}
-					<Line data={orderChartData} options={{ responsive: true }} />
-				{:else}
-					<div class="alert mt-4">
-						<span>Žádná data pro zobrazení v tomto období.</span>
-					</div>
-				{/if}
-			</div>
-		</div>
-		<div class="card bg-base-100 shadow-xl border border-gray-300">
-			<div class="card-body">
-				<h2 class="card-title">Růst zákazníků</h2>
-				{#if customerData.length > 0}
-					<Line data={customerChartData} options={{ responsive: true }} />
-				{:else}
-					<div class="alert mt-4">
-						<span>Žádná data pro zobrazení v tomto období.</span>
-					</div>
-				{/if}
-			</div>
 		</div>
 	</div>
 </div>

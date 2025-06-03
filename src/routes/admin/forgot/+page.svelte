@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import type { ActionData } from "./$types";
+	import type { ActionData } from "./+page.server";
 
-	export let form: ActionData;
-
+	export let form: ActionData | null = null;
 	export let data;
 	let { supabase } = data;
 	$: ({ supabase } = data);
@@ -41,14 +40,14 @@
 			</div>
 			<div class="flex w-full my-4">
 				<button
-					{loading}
+					disabled={loading}
 					id="btn-success"
 					type="submit"
 					class="w-full my-10 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-					Reset hesla
+					{loading ? "Odesílám..." : "Reset hesla"}
 				</button>
 			</div>
-			{#if form?.message}
+			{#if form?.message?.display}
 				<div class="flex w-full p-2 my-4 border rounded-lg">
 					<p class="error">{form.message.display}</p>
 				</div>
