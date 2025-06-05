@@ -33,6 +33,7 @@
 		itemsOnCurrentPage,
 		itemsPerPage,
 		searchQuery,
+		dateQuery,
 		eshopSettings
 	} = data;
 	$: ({
@@ -46,11 +47,13 @@
 		itemsOnCurrentPage,
 		itemsPerPage,
 		searchQuery,
+		dateQuery,
 		eshopSettings
 	} = data);
 
 	let loading = false;
 	let searchInput = searchQuery || "";
+	let dateInput = dateQuery || "";
 	let selectedState = ""; // Lokální proměnná pro filtrování
 	let transitionKey = 0;
 
@@ -64,17 +67,6 @@
 		// Filtr podle stavu
 		if (selectedState && order.state !== selectedState) {
 			return false;
-		}
-		
-		// Filtr podle vyhledávání (pokud je potřeba lokální vyhledávání)
-		if (searchInput && !searchQuery) {
-			const searchLower = searchInput.toLowerCase();
-			return (
-				order.customer_first_name?.toLowerCase().includes(searchLower) ||
-				order.customer_last_name?.toLowerCase().includes(searchLower) ||
-				order.customer_email?.toLowerCase().includes(searchLower) ||
-				order.order_number?.toString().includes(searchInput)
-			);
 		}
 		
 		return true;
@@ -150,13 +142,17 @@
 		}
 	}
 
-	// Navigate to previous page - bez state parametru
+	// Navigate to previous page - s oběma parametry
 	async function previousPage() {
 		try {
 			loading = true;
 			if (currentPage > 1) {
 				transitionKey++;
-				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+				const params = new URLSearchParams();
+				params.set('page', (currentPage - 1).toString());
+				if (searchQuery) params.set('search', searchQuery);
+				if (dateQuery) params.set('date', dateQuery);
+				await goto(`?${params.toString()}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání předchozí stránky:", error);
@@ -165,13 +161,17 @@
 		}
 	}
 
-	// Navigate to next page - bez state parametru
+	// Navigate to next page - s oběma parametry  
 	async function nextPage() {
 		try {
 			loading = true;
 			if (currentPage < totalPages) {
 				transitionKey++;
-				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+				const params = new URLSearchParams();
+				params.set('page', (currentPage + 1).toString());
+				if (searchQuery) params.set('search', searchQuery);
+				if (dateQuery) params.set('date', dateQuery);
+				await goto(`?${params.toString()}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání další stránky:", error);
@@ -180,11 +180,15 @@
 		}
 	}
 
-	// Handle search - pouze server-side vyhledávání
+	// Handle search podle textu
 	async function handleSearch() {
 		loading = true;
 		try {
-			await goto(`?search=${searchInput}&page=1`);
+			const params = new URLSearchParams();
+			params.set('page', '1');
+			if (searchInput) params.set('search', searchInput);
+			if (dateQuery) params.set('date', dateQuery);
+			await goto(`?${params.toString()}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání:", error);
 		} finally {
@@ -192,8 +196,24 @@
 		}
 	}
 
+	// Handle search podle data
+	async function handleDateSearch() {
+		loading = true;
+		try {
+			const params = new URLSearchParams();
+			params.set('page', '1');
+			if (dateInput) params.set('date', dateInput);
+			if (searchQuery) params.set('search', searchQuery);
+			await goto(`?${params.toString()}`);
+		} catch (error) {
+			console.error("Chyba při vyhledávání podle data:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
 	function newOrderPage() {
-		goto($ROUTES.ORDER.NEW);
+		goto("/admin/order/new");
 	}
 
 	function formatPayState(pay_state: boolean) {
@@ -398,14 +418,26 @@
 				</button>
 			</div>-->
 			<div>
-				<input type="date" bind:value={searchInput} class="btn btn-outline" />
+				<input 
+					type="date" 
+					bind:value={dateInput} 
+					on:change={handleDateSearch}
+					class="input input-bordered border-black" 
+					placeholder="Filtrovat podle data"
+				/>
 			</div>
 			<div class="flex gap-2">
 				<input
 					type="text"
 					placeholder="Hledat..."
 					class="input input-bordered input-md w-full max-w-xs border-black"
-					bind:value={searchInput} />
+					bind:value={searchInput} 
+					on:keydown={(e) => {
+						if (e.key === 'Enter') {
+							handleSearch();
+						}
+					}}
+				/>
 				<button
 					class="btn btn-outline min-w-40"
 					on:click={handleSearch}

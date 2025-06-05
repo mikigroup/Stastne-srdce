@@ -9,10 +9,11 @@ export const load: PageServerLoad = async ({
 	const itemsPerPage = 20;
 	const start = (page - 1) * itemsPerPage;
 	const searchQuery = url.searchParams.get("search") || "";
+	const dateQuery = url.searchParams.get("date") || "";
 
 	let query = supabase.from("orders").select("*", { count: "exact" });
 
-	// Aplikujeme vyhledávání pouze pokud existuje searchQuery
+	// Aplikujeme vyhledávání podle textu
 	if (searchQuery) {
 		const parsedSearchQuery = parseInt(searchQuery, 10);
 
@@ -30,6 +31,20 @@ export const load: PageServerLoad = async ({
 
 		// Aplikujeme všechny podmínky najednou
 		query = query.or(searchConditions.join(","));
+	}
+
+	// Aplikujeme vyhledávání podle data - pouze v sloupci date
+	if (dateQuery) {
+		try {
+			// Převedeme datum na formát YYYY-MM-DD (přesně jak očekává Postgres DATE typ)
+			const searchDate = new Date(dateQuery);
+			if (!isNaN(searchDate.getTime())) {
+				const formattedDate = searchDate.toISOString().split('T')[0];
+				query = query.eq('date', formattedDate);
+			}
+		} catch (error) {
+			console.error("Invalid date format:", dateQuery, error);
+		}
 	}
 
 	// Přidáme řazení
@@ -71,6 +86,7 @@ export const load: PageServerLoad = async ({
 		itemsOnCurrentPage,
 		itemsPerPage,
 		searchQuery,
+		dateQuery,
 		eshopSettings
 	};
 };
