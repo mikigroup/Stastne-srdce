@@ -64,6 +64,7 @@ export const actions: Actions = {
 				{ field: profileData.first_name, name: "Jméno" },
 				{ field: profileData.last_name, name: "Příjmení" },
 				{ field: profileData.street, name: "Ulice" },
+				{ field: profileData.street_number, name: "Číslo popisné" },
 				{ field: profileData.city, name: "Město" },
 				{ field: profileData.zip_code, name: "PSČ" },
 				{ field: profileData.telephone, name: "Telefon" },

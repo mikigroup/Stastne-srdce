@@ -22,7 +22,7 @@ export function validateProfileForInvoicing(profile: {
 }): ProfileValidationResult {
   const missingFields: string[] = [];
   
-  // Required fields for all customers
+  // Required fields for all customers (based on signup/complete requirements)
   const requiredFields = [
     { field: profile.first_name, name: 'Jméno' },
     { field: profile.last_name, name: 'Příjmení' },
@@ -42,13 +42,6 @@ export function validateProfileForInvoicing(profile: {
       missingFields.push(name);
     }
   });
-
-  // If company is provided, check company-specific fields
-  if (profile.company && profile.company.trim() !== '') {
-    if (!profile.ico || profile.ico.trim() === '') {
-      missingFields.push('IČO');
-    }
-  }
 
   // Check allergies description if allergies is true
   if (profile.allergies === true) {

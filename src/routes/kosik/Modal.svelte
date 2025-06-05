@@ -18,7 +18,6 @@
 	export function close() {
 		if (dialog) {
 			dialog.close();
-			dispatch('close');
 		}
 	}
 </script>

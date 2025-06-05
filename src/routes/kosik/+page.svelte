@@ -50,7 +50,11 @@
 
 			const { data: customerData, error } = await supabase
 				.from("profiles")
-				.select("first_name, last_name, street, street_number, city, zip_code, telephone, delivery_method, payment_method")
+				.select(`
+					first_name, last_name, street, street_number, city, zip_code, 
+					telephone, delivery_method, payment_method, company, ico, dic, 
+					allergies, allergies_description
+				`)
 				.eq("id", user.id)
 				.single();
 
@@ -125,7 +129,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Košík</title>
+	<title>{generalSettings?.shopName ?? 'Obchod'} - Košík</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
 
