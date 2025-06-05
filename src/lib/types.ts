@@ -15,6 +15,19 @@ export interface PageData {
 	session: Session | null;
 	supabase: SupabaseClient;
 	user: User | null;
-	settings: any;
-	generalSettings: any;
+	settings: {
+		general: {
+			shopName: string;
+			shortName: string;
+			slogan: string;
+			legalName: string;
+		};
+		[key: string]: any;
+	};
+	generalSettings: {
+		shopName: string;
+		shortName: string;
+		slogan: string;
+		legalName: string;
+	};
 } 
