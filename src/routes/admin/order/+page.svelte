@@ -51,12 +51,146 @@
 
 	let loading = false;
 	let searchInput = searchQuery || "";
-	let transitionKey = 0; // Pro klíčované přechody
+	let selectedState = ""; // Lokální proměnná pro filtrování
+	let transitionKey = 0;
 
 	// Výchozí stav řazení
 	let sorting: SortingState = [
 		{ id: 'order_number', desc: true } // Výchozí řazení sestupně podle čísla objednávky
 	];
+
+	// Lokální filtrování objednávek podle vybraného stavu
+	$: filteredOrders = orders?.filter((order) => {
+		// Filtr podle stavu
+		if (selectedState && order.state !== selectedState) {
+			return false;
+		}
+		
+		// Filtr podle vyhledávání (pokud je potřeba lokální vyhledávání)
+		if (searchInput && !searchQuery) {
+			const searchLower = searchInput.toLowerCase();
+			return (
+				order.customer_first_name?.toLowerCase().includes(searchLower) ||
+				order.customer_last_name?.toLowerCase().includes(searchLower) ||
+				order.customer_email?.toLowerCase().includes(searchLower) ||
+				order.order_number?.toString().includes(searchInput)
+			);
+		}
+		
+		return true;
+	}) || [];
+
+	// Získáme unikátní stavy z načtených objednávek
+	$: availableStates = [...new Set(orders?.map(order => order.state).filter(state => state))];
+
+	// Funkce pro získání barvy stavu z eshopSettings
+	function getStateColor(stateName: string) {
+		if (!eshopSettings?.orderStates) return '#9ca3af';
+		const state = eshopSettings.orderStates.find((s: any) => s.name === stateName);
+		return state ? state.color : '#9ca3af';
+	}
+
+	// Funkce pro získání barvy stavu objednávky v tabulce
+	function getStatusColor(status: string) {
+		if (!eshopSettings?.orderStates) {
+			// Výchozí barvy pro základní stavy když nejsou v nastavení
+			const defaultColors: Record<string, string> = {
+				'Nová': '#0284c7',
+				'Expedovaná': '#eab308', 
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+			};
+			const color = defaultColors[status] || '#9ca3af';
+			return {
+				background: lightenColor(color, 0.85),
+				text: color
+			};
+		}
+		
+		const orderState = eshopSettings.orderStates.find((state: any) => state.name === status);
+		if (!orderState) {
+			// Fallback pro neznámé stavy
+			return {
+				background: '#f3f4f6',
+				text: '#6b7280'
+			};
+		}
+		
+		// Vygenerujeme světlejší odstín barvy pro pozadí
+		const hexColor = orderState.color;
+		return {
+			background: `${lightenColor(hexColor, 0.85)}`,
+			text: hexColor
+		};
+	}
+
+	// Pomocná funkce pro zesvětlení barvy
+	function lightenColor(hex: string, factor: number) {
+		// Převedeme hex na RGB
+		const r = parseInt(hex.slice(1, 3), 16);
+		const g = parseInt(hex.slice(3, 5), 16);
+		const b = parseInt(hex.slice(5, 7), 16);
+		
+		// Aplikujeme faktor zesvětlení
+		const r2 = Math.round(r + (255 - r) * factor);
+		const g2 = Math.round(g + (255 - g) * factor);
+		const b2 = Math.round(b + (255 - b) * factor);
+		
+		// Převedeme zpět na hex
+		return `#${r2.toString(16).padStart(2, '0')}${g2.toString(16).padStart(2, '0')}${b2.toString(16).padStart(2, '0')}`;
+	}
+
+	// Funkce pro změnu filtru stavu (lokálně)
+	function handleStateFilter(state: string) {
+		selectedState = state;
+		// Zavřeme dropdown po výběru
+		const dropdown = document.activeElement as HTMLElement;
+		if (dropdown) {
+			dropdown.blur();
+		}
+	}
+
+	// Navigate to previous page - bez state parametru
+	async function previousPage() {
+		try {
+			loading = true;
+			if (currentPage > 1) {
+				transitionKey++;
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání předchozí stránky:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Navigate to next page - bez state parametru
+	async function nextPage() {
+		try {
+			loading = true;
+			if (currentPage < totalPages) {
+				transitionKey++;
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+			}
+		} catch (error) {
+			console.error("Chyba při načítání další stránky:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Handle search - pouze server-side vyhledávání
+	async function handleSearch() {
+		loading = true;
+		try {
+			await goto(`?search=${searchInput}&page=1`);
+		} catch (error) {
+			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
 
 	function newOrderPage() {
 		goto($ROUTES.ORDER.NEW);
@@ -139,13 +273,6 @@
 		}
 	}
 
-	$: filteredOrders = orders?.filter((order) =>
-		searchQuery
-			? Object.values(order).some((value) =>
-				value?.toString().toLowerCase().includes(searchQuery.toLowerCase()))
-			: true
-	);
-
 	// Define table columns with TanStack column definition
 	let columns: ColumnDef<any>[] = columnOrder.map(key => ({
 		accessorKey: key,
@@ -170,56 +297,6 @@
 			return value ?? "";
 		}
 	}));
-
-	// Funkce pro získání barvy stavu objednávky
-	function getStatusColor(status: string) {
-		if (!eshopSettings?.orderStates) {
-			// Výchozí barvy pro základní stavy když nejsou v nastavení
-			const defaultColors: Record<string, string> = {
-				'Nová': '#0284c7',
-				'Expedovaná': '#eab308', 
-				'Fakturovaná': '#16a34a',
-				'Stornovaná': '#dc2626'
-			};
-			const color = defaultColors[status] || '#9ca3af';
-			return {
-				background: lightenColor(color, 0.85),
-				text: color
-			};
-		}
-		
-		const orderState = eshopSettings.orderStates.find((state: any) => state.name === status);
-		if (!orderState) {
-			// Fallback pro neznámé stavy
-			return {
-				background: '#f3f4f6',
-				text: '#6b7280'
-			};
-		}
-		
-		// Vygenerujeme světlejší odstín barvy pro pozadí
-		const hexColor = orderState.color;
-		return {
-			background: `${lightenColor(hexColor, 0.85)}`,
-			text: hexColor
-		};
-	}
-
-	// Pomocná funkce pro zesvětlení barvy
-	function lightenColor(hex: string, factor: number) {
-		// Převedeme hex na RGB
-		const r = parseInt(hex.slice(1, 3), 16);
-		const g = parseInt(hex.slice(3, 5), 16);
-		const b = parseInt(hex.slice(5, 7), 16);
-		
-		// Aplikujeme faktor zesvětlení
-		const r2 = Math.round(r + (255 - r) * factor);
-		const g2 = Math.round(g + (255 - g) * factor);
-		const b2 = Math.round(b + (255 - b) * factor);
-		
-		// Převedeme zpět na hex
-		return `#${r2.toString(16).padStart(2, '0')}${g2.toString(16).padStart(2, '0')}${b2.toString(16).padStart(2, '0')}`;
-	}
 
 	// Upravíme sloupec se stavem objednávky, aby používal barvy
 	columns = columns.map(column => {
@@ -306,48 +383,6 @@
 			data: filteredOrders,
 		}));
 	}
-
-	// Navigate to previous page
-	async function previousPage() {
-		try {
-			loading = true;
-			if (currentPage > 1) {
-				transitionKey++;
-				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
-			}
-		} catch (error) {
-			console.error("Chyba při načítání předchozí stránky:", error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	// Navigate to next page
-	async function nextPage() {
-		try {
-			loading = true;
-			if (currentPage < totalPages) {
-				transitionKey++;
-				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
-			}
-		} catch (error) {
-			console.error("Chyba při načítání další stránky:", error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	// Handle search
-	async function handleSearch() {
-		loading = true;
-		try {
-			await goto(`?search=${searchInput}&page=1`);
-		} catch (error) {
-			console.error("Chyba při vyhledávání:", error);
-		} finally {
-			loading = false;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -372,11 +407,41 @@
 					class="input input-bordered input-md w-full max-w-xs border-black"
 					bind:value={searchInput} />
 				<button
-					class="btn btn-outline"
+					class="btn btn-outline min-w-40"
 					on:click={handleSearch}
 					disabled={loading}>
 					{loading ? "Vyhledávám..." : "Vyhledat"}
 				</button>
+			</div>
+			<!-- Dropdown pro filtrování podle stavu -->
+			<div class="dropdown dropdown-end">
+				<label tabindex="0" class="btn btn-outline min-w-40">
+					{selectedState ? `Stav: ${selectedState}` : 'Filtr podle stavu'}
+				</label>
+				<ul tabindex="0" class="p-2 shadow dropdown-content menu bg-base-100 rounded-box w-52 z-10">
+					<li>
+						<button 
+							type="button"
+							on:click={() => handleStateFilter('')}
+							class="text-left"
+						>
+							Všechny stavy
+						</button>
+					</li>
+					{#if availableStates}
+						{#each availableStates as state}
+							<li>
+								<button 
+									type="button"
+									on:click={() => handleStateFilter(state)}
+									class="flex items-center gap-2 text-left"
+								>						
+									{state}
+								</button>
+							</li>
+						{/each}
+					{/if}
+				</ul>
 			</div>
 		</div>
 	</div>
