@@ -283,7 +283,7 @@
 						class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
 					/>
 					<label for="markPaid" class="ml-2 block text-sm text-gray-700">
-						Označit fakturu jako uhrazenou a změnit stav objednávky na "Vyfakturovaná"
+						Označit fakturu jako uhrazenou a změnit stav objednávky na "Fakturovaná"
 					</label>
 				</div>
 			</div>
