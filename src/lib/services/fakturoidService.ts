@@ -175,6 +175,19 @@ export class FakturoidService {
 		currency?: string;
 		note?: string;
 	}): Promise<FakturoidInvoice> {
+		console.log('Starting invoice creation process...');
+		
+		// Preventivní kontrola tokenu před začátkem
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		const accessToken = await getAccessTokenWithSupabase(this.supabase);
+		
+		if (!accessToken) {
+			console.error('No valid access token available');
+			throw new Error('Váš Fakturoid token není dostupný nebo vypršel. Prosím reconnectujte svůj Fakturoid účet.');
+		}
+		
+		console.log('Access token available, proceeding with API calls...');
+
 		// Nejdříve zkusíme testovací spojení
 		console.log('Testing Fakturoid connection...');
 		try {
@@ -182,6 +195,17 @@ export class FakturoidService {
 			console.log('Fakturoid connection successful:', userInfo);
 		} catch (error) {
 			console.error('Fakturoid connection test failed:', error);
+			
+			// Specifičtější chybové hlášky podle typu chyby
+			if (error instanceof Error) {
+				if (error.message.includes('401') || error.message.includes('unauthorized')) {
+					throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Prosím reconnectujte svůj Fakturoid účet.');
+				}
+				if (error.message.includes('403') || error.message.includes('forbidden')) {
+					throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
+				}
+			}
+			
 			throw new Error('Nepodařilo se připojit k Fakturoid API. Zkontrolujte připojení a oprávnění.');
 		}
 

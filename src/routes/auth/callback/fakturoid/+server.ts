@@ -177,7 +177,10 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			refresh_token: tokenData.refresh_token,
 			expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
 			account_email: userData.email,
-			account_name: userData.name
+			account_name: userData.name,
+			status: 'active',
+			refresh_attempts: 0,
+			last_used_at: new Date().toISOString()
 		}, {
 			onConflict: 'user_id'
 		});

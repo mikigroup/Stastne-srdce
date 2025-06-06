@@ -278,9 +278,56 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			console.error("Chyba při vytváření faktury:", err);
+			
+			// Specifické zpracování Fakturoid chyb
+			if (err instanceof Error) {
+				const errorMessage = err.message;
+				
+				// 401 Unauthorized - token vypršel nebo je neplatný
+				if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+					return fail(401, {
+						success: false,
+						message: "Váš Fakturoid token vypršel. Prosím reconnectujte svůj Fakturoid účet.",
+						reconnectUrl: "/admin/site-setting?tab=integrations",
+						errorType: "unauthorized"
+					});
+				}
+				
+				// 403 Forbidden - nedostatečná oprávnění
+				if (errorMessage.includes('403') || errorMessage.includes('forbidden')) {
+					return fail(403, {
+						success: false,
+						message: "Nemáte oprávnění vytvářet faktury v tomto Fakturoid účtu. Zkontrolujte nastavení účtu.",
+						reconnectUrl: "/admin/site-setting?tab=integrations",
+						errorType: "forbidden"
+					});
+				}
+				
+				// Chyba připojení
+				if (errorMessage.includes('připojit k Fakturoid API')) {
+					return fail(400, {
+						success: false,
+						message: "Nepodařilo se připojit k Fakturoid API. Zkontrolujte internetové připojení a zkuste reconnect.",
+						reconnectUrl: "/admin/site-setting?tab=integrations",
+						errorType: "connection"
+					});
+				}
+				
+				// Jiné specifické Fakturoid chyby
+				if (errorMessage.includes('Fakturoid')) {
+					return fail(400, {
+						success: false,
+						message: `Chyba Fakturoid: ${errorMessage}`,
+						reconnectUrl: "/admin/site-setting?tab=integrations",
+						errorType: "fakturoid"
+					});
+				}
+			}
+			
 			return fail(500, {
 				success: false,
-				message: "Nastala neočekávaná chyba při vytváření faktury"
+				message: "Nastala neočekávaná chyba při vytváření faktury",
+				errorType: "unknown"
 			});
 		}
 	}
