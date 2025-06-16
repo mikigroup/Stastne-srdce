@@ -558,8 +558,46 @@
 	<title>LEO - Nastavení webu</title>
 </svelte:head>
 
-<div class="p-5 bg-white rounded-lg shadow-md border border-gray-300">
-	<h1 class="text-2xl font-bold mb-6">Nastavení webu</h1>
+<style>
+	/* Custom scrollbar for mobile tabs */
+	.scrollbar-thin {
+		scrollbar-width: thin;
+		scrollbar-color: #cbd5e0 transparent;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar {
+		height: 4px;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background: #cbd5e0;
+		border-radius: 2px;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+		background: #a0aec0;
+	}
+
+	/* Mobile responsive inputs */
+	@media (max-width: 375px) {
+		.input-sm {
+			font-size: 0.75rem;
+			padding: 0.375rem 0.5rem;
+		}
+		
+		.btn-xs {
+			font-size: 0.625rem;
+			padding: 0.25rem 0.5rem;
+		}
+	}
+</style>
+
+<div class="p-3 sm:p-5 bg-white rounded-lg shadow-md border border-gray-300">
+	<h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Nastavení webu</h1>
 
 	<!-- Notification Message -->
 	{#if showMessage}
@@ -573,10 +611,26 @@
 	{/if}
 
 	<!-- Tabs and Content -->
-	<div class="flex flex-col md:flex-row gap-6">
+	<div class="flex flex-col lg:flex-row gap-4">
 		<!-- Tab Navigation -->
-		<div class="md:w-1/4">
-			<div class="bg-gray-100 rounded-lg p-2">
+		<div class="lg:w-1/4">
+			<!-- Mobile Tabs - Horizontal Scroll -->
+			<div class="lg:hidden mb-4">
+				<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+					{#each tabs as tab}
+						<button
+							on:click={() => setActiveTab(tab.id)}
+							class="flex-shrink-0 px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-1 whitespace-nowrap {activeTab === tab.id ? 'bg-cyan-700 text-white' : 'bg-gray-100 hover:bg-gray-200'}"
+						>
+							<i class="{tab.icon} text-xs"></i>
+							<span class="text-xs">{tab.label}</span>
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Desktop Tabs - Vertical -->
+			<div class="hidden lg:block bg-gray-100 rounded-lg p-2">
 				<ul>
 					{#each tabs as tab}
 						<li class="mb-1">
@@ -591,8 +645,8 @@
 					{/each}
 				</ul>
 
-				<!-- Action Buttons -->
-				<div class="mt-6 p-4 border-t border-gray-300 space-y-3">
+				<!-- Action Buttons (Desktop Only) -->
+				<div class="hidden lg:block mt-6 p-4 border-t border-gray-300 space-y-3">
 					<form method="POST" action="?/update" use:enhance>
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
@@ -615,8 +669,8 @@
 		</div>
 
 		<!-- Tab Content -->
-		<div class="md:w-3/4">
-			<div class="bg-gray-50 rounded-lg p-6 border border-gray-300">
+		<div class="lg:w-3/4">
+			<div class="bg-gray-50 rounded-lg p-3 sm:p-6 border border-gray-300">
 				<!-- General Settings -->
 				{#if activeTab === 'general' && $editableSettings.general}
 					<div in:fade={{ duration: 300 }}>
@@ -625,23 +679,23 @@
 						<div class="space-y-4">
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Název obchodu</span>
+									<span class="label-text text-sm sm:text-base">Název obchodu</span>
 								</label>
 								<input
 									type="text"
 									bind:value={$editableSettings.general.shopName}
-									class="input input-bordered w-full"
+									class="input input-bordered w-full input-sm sm:input-md"
 								/>
 							</div>
 
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Krátký název</span>
+									<span class="label-text text-sm sm:text-base">Krátký název</span>
 								</label>
 								<input
 									type="text"
 									bind:value={$editableSettings.general.shortName}
-									class="input input-bordered w-full"
+									class="input input-bordered w-full input-sm sm:input-md"
 								/>
 							</div>
 
@@ -658,34 +712,36 @@
 							
 							<!-- Měny -->
 							<div class="mb-6 border-t pt-4 mt-4">
-								<h3 class="text-lg font-medium mb-3">Měny</h3>
+								<h3 class="text-base sm:text-lg font-medium mb-3">Měny</h3>
 								
 								{#if !$editableSettings.eshop?.currencies || $editableSettings.eshop.currencies.length === 0}
-									<p class="text-gray-500 mb-2">Žádné měny nebyly definovány</p>
+									<p class="text-gray-500 mb-2 text-sm">Žádné měny nebyly definovány</p>
 								{:else}
 									<div class="space-y-2">
 										{#each $editableSettings.eshop.currencies as currency, index}
-											<div class="flex items-center gap-2">
-												<input 
-													type="text" 
-													bind:value={currency.code} 
-													class="input input-bordered w-20"
-													placeholder="Kód"
-												/>
-												<input 
-													type="text" 
-													bind:value={currency.symbol} 
-													class="input input-bordered w-20"
-													placeholder="Symbol"
-												/>
-												<input 
-													type="text" 
-													bind:value={currency.name} 
-													class="input input-bordered flex-grow"
-													placeholder="Název"
-												/>
+											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+												<div class="flex gap-2 flex-1">
+													<input 
+														type="text" 
+														bind:value={currency.code} 
+														class="input input-bordered input-sm w-16 flex-shrink-0"
+														placeholder="Kód"
+													/>
+													<input 
+														type="text" 
+														bind:value={currency.symbol} 
+														class="input input-bordered input-sm w-16 flex-shrink-0"
+														placeholder="Symbol"
+													/>
+													<input 
+														type="text" 
+														bind:value={currency.name} 
+														class="input input-bordered input-sm flex-grow min-w-0"
+														placeholder="Název"
+													/>
+												</div>
 												<button 
-													class="btn btn-sm btn-outline btn-error" 
+													class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
 													on:click={() => removeCurrency(index)}>
 													×
 												</button>
@@ -695,7 +751,7 @@
 								{/if}
 								
 								<button 
-									class="btn btn-sm btn-outline mt-2" 
+									class="btn btn-xs sm:btn-sm btn-outline mt-2 w-full sm:w-auto" 
 									on:click={addCurrency}>
 									Přidat měnu
 								</button>
@@ -1297,16 +1353,16 @@
 				<!-- Orders Settings -->
 				{#if activeTab === 'orders' && $editableSettings.orders}
 					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Nastavení zakázek</h2>
+						<h2 class="text-base sm:text-xl font-semibold mb-4">Nastavení zakázek</h2>
 						
 						<!-- Stavy zakázek -->
 						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Stavy zakázek</h3>
-							<p class="text-sm text-gray-600 mb-3">Definujte stavy objednávek, které se používají v systému. Stavy jsou automaticky načteny z existujících objednávek.</p>
+							<h3 class="text-base sm:text-lg font-medium mb-3">Stavy zakázek</h3>
+							<p class="text-xs sm:text-sm text-gray-600 mb-3">Definujte stavy objednávek, které se používají v systému. Stavy jsou automaticky načteny z existujících objednávek.</p>
 							
 							{#if !$editableSettings.orders.orderStates || $editableSettings.orders.orderStates.length === 0}
-								<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-									<p class="text-yellow-800 text-sm">
+								<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+									<p class="text-yellow-800 text-xs sm:text-sm">
 										<i class="fa-solid fa-exclamation-triangle"></i>
 										Žádné stavy zakázek nebyly definovány. Klikněte na "Načíst ze systému" pro automatické načtení stavů z existujících objednávek.
 									</p>
@@ -1314,21 +1370,23 @@
 							{:else}
 								<div class="space-y-2">
 									{#each $editableSettings.orders.orderStates as state, index}
-										<div class="flex items-center gap-2">
-											<input 
-												type="text" 
-												bind:value={state.name} 
-												class="input input-bordered flex-grow"
-												placeholder="Název stavu"
-											/>
-											<input 
-												type="color" 
-												bind:value={state.color} 
-												class="w-12 h-10"
-												title="Barva stavu"
-											/>
+										<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+											<div class="flex gap-2 flex-1">
+												<input 
+													type="text" 
+													bind:value={state.name} 
+													class="input input-bordered input-sm flex-grow min-w-0"
+													placeholder="Název stavu"
+												/>
+												<input 
+													type="color" 
+													bind:value={state.color} 
+													class="w-10 h-8 rounded border border-gray-300 flex-shrink-0"
+													title="Barva stavu"
+												/>
+											</div>
 											<button 
-												class="btn btn-sm btn-outline btn-error" 
+												class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
 												on:click={() => removeOrderState(index)}
 												title="Smazat stav">
 												×
@@ -1338,28 +1396,29 @@
 								</div>
 							{/if}
 							
-							<div class="flex gap-2 mt-3">
+							<div class="flex flex-col sm:flex-row gap-2 mt-3">
 								<button 
-									class="btn btn-sm btn-outline" 
+									class="btn btn-xs sm:btn-sm btn-outline w-full sm:w-auto" 
 									on:click={addOrderState}>
 									<i class="fa-solid fa-plus"></i>
-									Přidat stav zakázky
+									<span class="hidden sm:inline">Přidat stav zakázky</span>
+									<span class="sm:hidden">Přidat stav</span>
 								</button>								
 							</div>
 						</div>
 						
 						<!-- Další nastavení zakázek -->
 						<div class="mb-6">
-							<h3 class="text-lg font-medium mb-3">Notifikace</h3>
+							<h3 class="text-base sm:text-lg font-medium mb-3">Notifikace</h3>
 							
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">E-mail pro notifikace</span>
+									<span class="label-text text-sm sm:text-base">E-mail pro notifikace</span>
 								</label>
 								<input
 									type="email"
 									bind:value={$editableSettings.orders.notificationEmail}
-									class="input input-bordered w-full"
+									class="input input-bordered input-sm sm:input-md w-full"
 									placeholder="admin@example.com"
 								/>
 								<span class="text-xs text-gray-500 mt-1">
@@ -1581,4 +1640,28 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Mobile Action Buttons (Fixed Bottom) -->
+	<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 p-4 space-y-2 z-50">
+		<form method="POST" action="?/update" use:enhance>
+			<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
+			<button
+				type="submit"
+				disabled={loading}
+				class="w-full btn btn-sm btn-primary bg-green-800 text-white hover:bg-green-700"
+			>
+				{loading ? 'Ukládání...' : 'Uložit změny'}
+			</button>
+		</form>
+
+		<button
+			on:click={resetSettings}
+			class="w-full btn btn-sm btn-outline"
+		>
+			Obnovit výchozí
+		</button>
+	</div>
+
+	<!-- Mobile Bottom Padding -->
+	<div class="lg:hidden h-24"></div>
 </div>
