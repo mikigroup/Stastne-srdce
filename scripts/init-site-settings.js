@@ -1,6 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
+// Import function to get unified defaults
+async function getDefaultSettingsForInit() {
+  try {
+    const { getDefaultSettingsForInit: getDefaults } = await import('../src/lib/constants/defaultSettings.js');
+    return getDefaults();
+  } catch (e) {
+    console.warn('Could not import unified defaults, using fallback');
+    return [];
+  }
+}
+
 // Načteme environment proměnné
 dotenv.config();
 
@@ -14,149 +25,9 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Výchozí nastavení
-const DEFAULT_SETTINGS = [
-  {
-    key: 'general',
-    value: {
-      shopName: 'Šťastné srdce',
-      shortName: 'ŠS',
-      legalName: 'Šťastné srdce s.r.o.'
-    }
-  },
-  {
-    key: 'seo',
-    value: {
-      metaTitle: '',
-      metaDescription: '',
-      metaKeywords: '',
-      ogImage: '',
-      googleAnalyticsId: ''
-    }
-  },
-  {
-    key: 'contact',
-    value: {
-      email: '',
-      phone: '',
-      address: '',
-      mapCoordinates: { lat: 0, lng: 0 },
-      openingHours: {}
-    }
-  },
-  {
-    key: 'social',
-    value: {
-      facebook: '',
-      instagram: '',
-      twitter: '',
-      linkedin: '',
-      youtube: ''
-    }
-  },
-  {
-    key: 'appearance',
-    value: {
-      logo: '',
-      favicon: '',
-      primaryColor: '#10b981',
-      secondaryColor: '#3b82f6',
-      footerText: ''
-    }
-  },
-  {
-    key: 'business',
-    value: {
-      companyName: '',
-      street: '',
-      streetNumber: '',
-      zipCode: '',
-      city: '',
-      ico: '',
-      dic: '',
-      bankAccount: ''
-    }
-  },
-  {
-    key: 'email',
-    value: {
-      orderConfirmationTemplate: '',
-      contactFormTemplate: ''
-    }
-  },
-  {
-    key: 'integrations',
-    value: {
-      fakturoid: {
-        enabled: false,
-        connected: false,
-        accounts: [],
-        subdomain: '',
-        defaultLanguage: 'cz',
-        autoCreateInvoices: false,
-        invoiceDueDays: 14,
-        defaultPaymentMethod: 'bank',
-        sendInvoiceEmail: false,
-        invoiceNote: ''
-      },
-      googleAnalyticsEnabled: false,
-      googleAnalyticsTrackingId: '',
-      facebookPixelEnabled: false,
-      facebookPixelId: ''
-    }
-  },
-  {
-    key: 'eshop',
-    value: {
-      enabled: false,
-      orderStates: [
-        { name: 'Nová', color: '#0284c7' },
-        { name: 'Expedovaná', color: '#eab308' },
-        { name: 'Fakturovaná', color: '#16a34a' },
-        { name: 'Stornovaná', color: '#dc2626' }
-      ],
-      currencies: [
-        { code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
-      ]
-    }
-  },
-  {
-    key: 'doprava',
-    value: {
-      shippingMethods: [],
-      minimumOrderValue: 0,
-      freeDeliveryThreshold: 1000
-    }
-  },
-  {
-    key: 'products',
-    value: {
-      menuTitle: 'Obědy',
-      menuIntroText: '',
-      visibleDays: 7,
-      features: [],
-      showAllergens: true,
-      showAllergensTooltip: true
-    }
-  },
-  {
-    key: 'customer',
-    value: {
-      allowRegistration: true,
-      requireEmailVerification: true,
-      defaultRole: 'customer'
-    }
-  },
-  {
-    key: 'inventory',
-    value: {
-      trackInventory: false,
-      lowStockThreshold: 10
-    }
-  }
-];
-
 async function initializeSettings() {
+  // Use unified default settings from the central source
+  const DEFAULT_SETTINGS = await getDefaultSettingsForInit();
   console.log('🚀 Inicializace výchozích nastavení...');
 
   try {

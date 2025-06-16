@@ -162,108 +162,11 @@
 		}, 100);
 	}
 
-	// Výchozí hodnoty pro každou sekci
-	const DEFAULT_VALUES = {
-		general: {
-			shopName: 'Šťastné srdce',
-			shortName: 'ŠS',
-			legalName: 'Šťastné srdce s.r.o.'
-		},
-		seo: {
-			metaTitle: '',
-			metaDescription: '',
-			metaKeywords: '',
-			ogImage: '',
-			googleAnalyticsId: '',
-			googleAnalyticsEnabled: false,
-			facebookPixelEnabled: false,
-			facebookPixelId: ''
-		},
-		contact: {
-			email: 'info@stastnesrdce.cz',
-			phone: '777111222',
-			phone1: '+420 724 448 377 Kamila Kučerová',
-			phone2: '+420 732 722 115 Martin Forejt',
-			address: 'Potoční 16, Mikulovice 79084',
-			mapCoordinates: { lat: 50.299513, lng: 17.324304 },
-			openingHours: {
-				monday: '8:00-16:00',
-				tuesday: '8:00-16:00',
-				wednesday: '8:00-16:00',
-				thursday: '8:00-16:00',
-				friday: '8:00-16:00',
-				saturday: 'Zavřeno',
-				sunday: 'Zavřeno'
-			}
-		},
-		social: {
-			facebook: '',
-			instagram: '',
-			twitter: '',
-			linkedin: '',
-			youtube: ''
-		},
-		appearance: {
-			logo: '',
-			favicon: '/favi/favicon.ico',
-			primaryColor: '#10b981',
-			secondaryColor: '#3b82f6',
-			footerText: ''
-		},
-		business: {
-			companyName: '',
-			street: '',
-			streetNumber: '',
-			zipCode: '',
-			city: '',
-			ico: '',
-			dic: '',
-			bankAccount: ''
-		},
-		email: {
-			orderConfirmationTemplate: '',
-			contactFormTemplate: ''
-		},
-		integrations: {
-			fakturoid: {
-				enabled: false,
-				connected: false,
-				accounts: [],
-				subdomain: '',
-				defaultLanguage: 'cz',
-				autoCreateInvoices: false,
-				invoiceDueDays: 14,
-				defaultPaymentMethod: 'bank',
-				sendInvoiceEmail: false,
-				invoiceNote: ''
-			}
-		},
-		zakazky: {
-			enabled: false,
-			notificationEmail: ''
-		},
-		eshop: {
-			enabled: false,
-			currencies: [],
-			orderStates: []
-		},
-		doprava: {
-			enabled: false,
-			options: []
-		},
-		products: {
-			enabled: false,
-			perPage: 10
-		},
-		customer: {
-			enabled: false,
-			registration: true
-		},
-		inventory: {
-			enabled: false,
-			lowStock: 10
-		}
-	};
+	// Import unified default values
+	import { UNIFIED_DEFAULT_SETTINGS } from '$lib/constants/defaultSettings';
+
+	// Use unified defaults as the single source of truth
+	const DEFAULT_VALUES = UNIFIED_DEFAULT_SETTINGS;
 
 	// Structure the settings for easier editing
 	function structureSettings(settingsData: any) {

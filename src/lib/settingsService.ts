@@ -91,72 +91,11 @@ export interface AllSettings {
 	doprava: DopravaSettings;
 }
 
-// Výchozí hodnoty
-export const DEFAULT_SETTINGS: AllSettings = {
-	general: {
-		shopName: "Šťastné srdce",
-		shortName: "Šťastné",
-		slogan: "Zdravé stravování a rozvoz jídla",
-		legalName: "Šťastné srdce s.r.o."
-	},
-	seo: {
-		metaTitle: "Šťastné srdce - Zdravé stravování a rozvoz jídla",
-		metaDescription: "Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku.",
-		metaKeywords: "šťastné srdce, mikulovice, zdraví, dietolog, rozvoz jídla, jeseník"
-	},
-	contact: {
-		email: "info@stastnesrdce.cz",
-		phone: "+420 724 448 377",
-		address: "Potoční 16, Mikulovice 79084"
-	},
-	social: {
-		facebook: "https://facebook.com/stastnesrdce"
-	},
-	appearance: {
-		footerText: "Šťastné srdce s.r.o. 2022 - 2025",
-		headerText: "Šťastné srdce",
-		showLogo: true,
-		showFooter: true
-	},
-	business: {
-		ico: "21300674",
-		dic: "CZ21300674"
-	},
-	eshop: {
-		enabled: false,
-		orderStates: [
-			{ name: 'Nová', color: '#0284c7' },
-			{ name: 'Expedovaná', color: '#eab308' },
-			{ name: 'Fakturovaná', color: '#16a34a' },
-			{ name: 'Stornovaná', color: '#dc2626' }
-		],
-		currencies: [
-			{ code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
-		]
-	},
-	products: {
-		menuTitle: 'Obědy',
-		menuIntroText: '',
-		visibleDays: 7,
-		features: [],
-		showAllergens: true,
-		showAllergensTooltip: true
-	},
-	customer: {
-		allowRegistration: true,
-		requireEmailVerification: true,
-		defaultRole: 'customer'
-	},
-	inventory: {
-		trackInventory: false,
-		lowStockThreshold: 10
-	},
-	doprava: {
-		shippingMethods: [],
-		minimumOrderValue: 0,
-		freeDeliveryThreshold: 1000
-	}
-};
+// Import unified default values
+import { UNIFIED_DEFAULT_SETTINGS } from '$lib/constants/defaultSettings';
+
+// Use unified defaults as the single source of truth (deep copy to make mutable)
+export const DEFAULT_SETTINGS: AllSettings = JSON.parse(JSON.stringify(UNIFIED_DEFAULT_SETTINGS));
 
 // Definice potřebných settings pro jednotlivé stránky
 export const PAGE_SETTINGS = {
