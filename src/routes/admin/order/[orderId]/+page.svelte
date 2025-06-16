@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/date"
+	import { formatDateToCzech } from "$lib/utils/formatting"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";

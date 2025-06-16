@@ -4,59 +4,7 @@ import {
 	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
 import { getAccessToken } from "$lib/fakturoidAuth";
-
-// Pomocná funkce pro formátování názvu položky
-function formatItemName(item: any): string {
-	// Zkusíme získat datum z různých možných míst ve struktuře
-	let menuDate = null;
-	
-	// Priorita: menu_id > menu_version_id > jiné možnosti
-	if (item.variant_id?.menu_id?.date) {
-		menuDate = item.variant_id.menu_id.date;
-	} else if (item.variant_id?.menu_version_id?.date) {
-		menuDate = item.variant_id.menu_version_id.date;
-	} else if (item.menuVersionData?.date) {
-		menuDate = item.menuVersionData.date;
-	}
-	
-	// Získání čísla varianty
-	const variantNumber = item.variant_id?.variant_number || item.variant?.variant_number;
-	
-	// Formátování data do českého formátu
-	let formattedDate = '';
-	if (menuDate) {
-		try {
-			const date = new Date(menuDate);
-			if (!isNaN(date.getTime())) {
-				formattedDate = date.toLocaleDateString('cs-CZ', {
-					day: 'numeric',
-					month: 'numeric', 
-					year: 'numeric'
-				});
-			}
-		} catch (e) {
-			console.warn('Chyba při formátování data:', e);
-		}
-	}
-	
-	// Sestavení názvu - pouze datum, "Menu" a číslo
-	let itemName = '';
-	
-	// Přidáme datum pokud máme
-	if (formattedDate) {
-		itemName += `${formattedDate} `;
-	}
-	
-	// Přidáme "Menu" a číslo
-	if (variantNumber) {
-		itemName += `Menu ${variantNumber}`;
-	} else {
-		itemName += 'Menu';
-	}
-	
-	// Fallback pokud nemáme žádné údaje
-	return itemName || 'Položka objednávky';
-}
+import { formatOrderItemName } from "$lib/utils/formatting";
 
 export const POST: RequestHandler = async ({
 	request,
@@ -112,7 +60,7 @@ export const POST: RequestHandler = async ({
 			subject_id: null, // Budeme hledat nebo vytvoříme nového
 			subject_custom_id: order.customer_email,
 			lines: order.order_items.map((item: any) => ({
-				name: formatItemName(item),
+				name: formatOrderItemName(item),
 				quantity: item.quantity,
 				unit_price: item.price,
 				vat_rate: 21 // nebo podle nastavení

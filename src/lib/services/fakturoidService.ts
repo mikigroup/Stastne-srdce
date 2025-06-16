@@ -1,5 +1,6 @@
 import type { IntegrationsSettings } from '$lib/types/siteSettings';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { formatOrderItemName } from '$lib/utils/formatting';
 
 export interface FakturoidConfig {
 	enabled: boolean;
@@ -468,51 +469,4 @@ export async function markInvoiceAsPaid(invoiceId: number, supabase?: SupabaseCl
 		const errorText = await response.text();
 		throw new Error(`Chyba při označení faktury jako uhrazené: ${errorText}`);
 	}
-}
-
-// Pomocná funkce pro formátování názvu položky objednávky
-function formatOrderItemName(item: any): string {
-	// Zkusíme získat datum z různých možných míst ve struktuře
-	let menuDate = null;
-	
-	if (item.variant_id?.menu_id?.date) {
-		menuDate = item.variant_id.menu_id.date;
-	} else if (item.variant_id?.menu_version_id?.date) {
-		menuDate = item.variant_id.menu_version_id.date;
-	}
-	
-	// Získání čísla varianty
-	const variantNumber = item.variant_id?.variant_number;
-	
-	// Formátování data do českého formátu
-	let formattedDate = '';
-	if (menuDate) {
-		try {
-			const date = new Date(menuDate);
-			if (!isNaN(date.getTime())) {
-				formattedDate = date.toLocaleDateString('cs-CZ', {
-					day: 'numeric',
-					month: 'numeric', 
-					year: 'numeric'
-				});
-			}
-		} catch (e) {
-			console.warn('Chyba při formátování data:', e);
-		}
-	}
-	
-	// Sestavení názvu
-	let itemName = '';
-	
-	if (formattedDate) {
-		itemName += `${formattedDate} `;
-	}
-	
-	if (variantNumber) {
-		itemName += `Menu ${variantNumber}`;
-	} else {
-		itemName += 'Menu';
-	}
-	
-	return itemName || 'Položka menu';
 } 
