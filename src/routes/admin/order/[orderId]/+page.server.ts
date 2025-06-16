@@ -1,6 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { getEshopSettings } from "$lib/services/eshopSettingsService";
+import { getOrderSettings } from "$lib/services/eshopSettingsService";
 
 // Definujeme typovou strukturu pro business nastavení
 interface BusinessSettings {
@@ -50,12 +50,12 @@ export const load: PageServerLoad = async ({
 			console.log("Order data structure:", JSON.stringify(order, null, 2).substring(0, 500) + "...");
 		}
 
-		// Načteme nastavení e-shopu
-		const eshopSettings = await getEshopSettings(supabase);
+		// Načteme nastavení objednávek (dříve eshop)
+		const orderSettings = await getOrderSettings(supabase);
 
 		const returnData = {
 			order,
-			eshopSettings
+			orderSettings
 		};
 
 		console.log("Final return data keys:", Object.keys(returnData || {}));

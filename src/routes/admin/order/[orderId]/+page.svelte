@@ -10,8 +10,8 @@
 	console.log("====== ORDER PAGE CLIENT INIT ======");
 	console.log("Received data keys:", Object.keys(data || {}));
 
-	let { session, supabase, order, eshopSettings } = data;
-	$: ({ session, supabase, order, eshopSettings } = data);
+	let { session, supabase, order, orderSettings } = data;
+	$: ({ session, supabase, order, orderSettings } = data);
 
 	console.log("Order exists:", !!order);
 	if (order) {
@@ -53,9 +53,9 @@
 	let updateMessage = "";
 	let orderStates: string[] = [];
 
-	// Získáme seznam stavů objednávek - vždy zahrneme všechny možné stavy
+	// Získáme seznam stavů objednávek ze site_settings
 	$: {
-		const settingsStates = eshopSettings?.orderStates?.map((state: any) => state.name) || [];
+		const settingsStates = orderSettings?.orderStates?.map((state: any) => state.name) || [];
 		const allPossibleStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
 		
 		// Kombinujeme stavy z nastavení s všemi možnými stavy (bez duplikátů)
@@ -63,17 +63,17 @@
 		
 		console.log('Debug - orderStates:', orderStates);
 		console.log('Debug - current selectedOrderState:', selectedOrderState);
-		console.log('Debug - eshopSettings:', eshopSettings);
+		console.log('Debug - orderSettings:', orderSettings);
 	}
 
 	// Získáme seznam měn
-	$: currencies = eshopSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
+	$: currencies = orderSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
 
 	// Získáme seznam způsobů doručení
-	$: shippingMethods = eshopSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+	$: shippingMethods = orderSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
 
 	// Získáme seznam platebních metod
-	$: paymentMethods = eshopSettings?.paymentMethods?.map((method: any) => method.name) || ['Hotově', 'Kartou', 'Převodem'];
+	$: paymentMethods = orderSettings?.paymentMethods?.map((method: any) => method.name) || ['Hotově', 'Kartou', 'Převodem'];
 
 	// Vypočítáme celkovou cenu
 	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
@@ -173,7 +173,7 @@
 
 	// Získáme barvu pro stav objednávky - s fallbackem pro neznámé stavy
 	function getOrderStateColor(stateName: any) {
-		if (!eshopSettings?.orderStates) {
+		if (!orderSettings?.orderStates) {
 			// Výchozí barvy pro základní stavy když nejsou v nastavení
 			const defaultColors: Record<string, string> = {
 				'Nová': '#0284c7',
@@ -184,7 +184,7 @@
 			return defaultColors[stateName] || '#9ca3af';
 		}
 		
-		const state = eshopSettings.orderStates.find((state: any) => state.name === stateName);
+		const state = orderSettings.orderStates.find((state: any) => state.name === stateName);
 		return state ? state.color : '#9ca3af';
 	}
 

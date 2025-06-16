@@ -6,11 +6,11 @@
 	export let selectedPaymentMethod = "";
 	export let paymentMethods = ["Hotovost", "Faktura"];
 	export let selectedOrderState = "";
-	export let orderStates = ["Nová", "Expedovaná", "Fakturovaná", "Stornovaná"];
+	export let orderStates: Array<{name: string, color: string}> = [];
 	export let selectedCurrency = "";
-	export let currencies = ["CZK", "EUR", "USD"];
+	export let currencies: Array<{code: string, name: string, symbol: string}> = [];
 	export let selectedShippingMethod = "";
-	export let shippingMethods = ["Osobní odběr", "Kurýr", "Česká pošta"];
+	export let shippingMethods: Array<{name: string, price: number}> = [];
 	export let isPaid = false;
 
 	// Fakturační údaje
