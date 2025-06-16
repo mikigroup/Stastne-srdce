@@ -18,7 +18,7 @@
 	import type { Profile } from "$lib/types/profile";
 	import { writable } from "svelte/store";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/date";
+	import { formatDateToCzech } from "$lib/utils/formatting";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
 
