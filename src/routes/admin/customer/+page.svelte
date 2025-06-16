@@ -1,23 +1,26 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { writable } from "svelte/store";
+	import { fade, fly } from "svelte/transition";
+	import { page } from "$app/stores";
 	import {
-		createSvelteTable,
+		createTable,
+		createRender,
+		Render,
+		Subscribe,
 		getCoreRowModel,
-		getSortedRowModel,
-		flexRender
+		getFilteredRowModel,
+		getPaginationRowModel,
+		getSortedRowModel
 	} from "@tanstack/svelte-table";
-	import type {
-		ColumnDef,
-		TableOptions,
-		VisibilityState,
-		OnChangeFn,
-		SortingState
-	} from "@tanstack/svelte-table";
+	import type { TableOptions, ColumnDef } from "@tanstack/svelte-table";
+	import type { PageData } from "./$types";
+	import type { Profile } from "$lib/types/profile";
+	import { writable } from "svelte/store";
+	import { ROUTES } from "$lib/stores/store";
+	import { formatDateToCzech } from "$lib/date";
 	import { BarLoader } from "svelte-loading-spinners";
 	import { navigating } from "$app/stores";
-	import { fade, fly } from "svelte/transition";
-	import { ROUTES } from "$lib/stores/store";
 
 	export let data;
 
@@ -134,18 +137,6 @@
 				value?.toString().toLowerCase().includes(searchQuery.toLowerCase()))
 			: true
 	);
-
-	// Helper function: Format date to Czech format
-	function formatDateToCzech(date: string) {
-		if (!date) return "";
-		const dateObj = new Date(date);
-		const day = dateObj.getDate().toString().padStart(2, "0");
-		const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-		const year = dateObj.getFullYear();
-		const hours = dateObj.getHours().toString().padStart(2, "0");
-		const minutes = dateObj.getMinutes().toString().padStart(2, "0");
-		return `${day}.${month}.${year} ${hours}:${minutes}`;
-	}
 
 	// Define table columns
 	const columns: ColumnDef<any>[] = columnOrder.map(key => ({

@@ -5,7 +5,7 @@
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,

@@ -37,6 +37,46 @@ export interface BusinessSettings {
 	dic?: string;
 }
 
+// Rozšířené nastavení pro kompletní systém
+export interface EshopSettings {
+	enabled: boolean;
+	orderStates: Array<{
+		name: string;
+		color: string;
+	}>;
+	currencies: Array<{
+		code: string;
+		symbol: string;
+		name: string;
+	}>;
+}
+
+export interface ProductsSettings {
+	menuTitle: string;
+	menuIntroText: string;
+	visibleDays: number;
+	features: Array<any>;
+	showAllergens: boolean;
+	showAllergensTooltip: boolean;
+}
+
+export interface CustomerSettings {
+	allowRegistration: boolean;
+	requireEmailVerification: boolean;
+	defaultRole: string;
+}
+
+export interface InventorySettings {
+	trackInventory: boolean;
+	lowStockThreshold: number;
+}
+
+export interface DopravaSettings {
+	shippingMethods: Array<any>;
+	minimumOrderValue: number;
+	freeDeliveryThreshold: number;
+}
+
 export interface AllSettings {
 	general: GeneralSettings;
 	seo: SeoSettings;
@@ -44,6 +84,11 @@ export interface AllSettings {
 	social: SocialSettings;
 	appearance: AppearanceSettings;
 	business: BusinessSettings;
+	eshop: EshopSettings;
+	products: ProductsSettings;
+	customer: CustomerSettings;
+	inventory: InventorySettings;
+	doprava: DopravaSettings;
 }
 
 // Výchozí hodnoty
@@ -76,6 +121,40 @@ export const DEFAULT_SETTINGS: AllSettings = {
 	business: {
 		ico: "21300674",
 		dic: "CZ21300674"
+	},
+	eshop: {
+		enabled: false,
+		orderStates: [
+			{ name: 'Nová', color: '#0284c7' },
+			{ name: 'Expedovaná', color: '#eab308' },
+			{ name: 'Fakturovaná', color: '#16a34a' },
+			{ name: 'Stornovaná', color: '#dc2626' }
+		],
+		currencies: [
+			{ code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
+		]
+	},
+	products: {
+		menuTitle: 'Obědy',
+		menuIntroText: '',
+		visibleDays: 7,
+		features: [],
+		showAllergens: true,
+		showAllergensTooltip: true
+	},
+	customer: {
+		allowRegistration: true,
+		requireEmailVerification: true,
+		defaultRole: 'customer'
+	},
+	inventory: {
+		trackInventory: false,
+		lowStockThreshold: 10
+	},
+	doprava: {
+		shippingMethods: [],
+		minimumOrderValue: 0,
+		freeDeliveryThreshold: 1000
 	}
 };
 
@@ -115,6 +194,11 @@ export const contactSettings = derived(settingsStore, $settings => $settings.con
 export const socialSettings = derived(settingsStore, $settings => $settings.social);
 export const appearanceSettings = derived(settingsStore, $settings => $settings.appearance);
 export const businessSettings = derived(settingsStore, $settings => $settings.business);
+export const eshopSettings = derived(settingsStore, $settings => $settings.eshop);
+export const productsSettings = derived(settingsStore, $settings => $settings.products);
+export const customerSettings = derived(settingsStore, $settings => $settings.customer);
+export const inventorySettings = derived(settingsStore, $settings => $settings.inventory);
+export const dopravaSettings = derived(settingsStore, $settings => $settings.doprava);
 
 // Hlavní funkce pro načtení settings
 export async function loadSettings(

@@ -4,7 +4,7 @@
 	import { formatDateToCzech } from "$lib/date"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");

@@ -3,7 +3,7 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,

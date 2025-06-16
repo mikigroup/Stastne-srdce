@@ -13,7 +13,7 @@
 	import type { Profile } from "$lib/types/profile";
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import type { AllSettings, GeneralSettings } from '$lib/types/settings';
+	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
 
 	export let data: {
 		session: Session | null;

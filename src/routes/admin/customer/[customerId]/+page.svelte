@@ -1,7 +1,7 @@
 <script lang="ts">
 	import CustomerDetail from "../CustomerDetail.svelte";
 	import { goto } from "$app/navigation";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	
 	export let data: any;
 	
