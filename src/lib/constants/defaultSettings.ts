@@ -112,14 +112,25 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     ]
   },
 
-  zakazky: {
-    enabled: false,
-    notificationEmail: ''
+  orders: {
+    enabled: true,
+    orderStates: [
+      { name: 'Nová', color: '#0284c7' },
+      { name: 'Přijatá', color: '#059669' },
+      { name: 'Připravuje se', color: '#d97706' },
+      { name: 'Připraveno', color: '#7c3aed' },
+      { name: 'Expedovaná', color: '#eab308' },
+      { name: 'Doručena', color: '#16a34a' },
+      { name: 'Fakturovaná', color: '#10b981' },
+      { name: 'Zaplacena', color: '#059669' },
+      { name: 'Stornovaná', color: '#dc2626' },
+      { name: 'Dokončena', color: '#16a34a' }
+    ],
+    notificationEmail: 'admin@stastnesrdce.cz'
   },
 
-  doprava: {
-    enabled: false,
-    options: [],
+  delivery: {
+    enabled: true,
     shippingMethods: [
       { 
         name: 'Osobní odběr', 
@@ -258,8 +269,8 @@ export type BusinessSettings = SiteSettings['business'];
 export type EmailSettings = SiteSettings['email'];
 export type IntegrationsSettings = SiteSettings['integrations'];
 export type EshopSettings = SiteSettings['eshop'];
-export type ZakazkySettings = SiteSettings['zakazky'];
-export type DopravaSettings = SiteSettings['doprava'];
+export type OrdersSettings = SiteSettings['orders'];
+export type DeliverySettings = SiteSettings['delivery'];
 export type ProductsSettings = SiteSettings['products'];
 export type CustomerSettings = SiteSettings['customer'];
 export type InventorySettings = SiteSettings['inventory'];

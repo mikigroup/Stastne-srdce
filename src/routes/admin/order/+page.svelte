@@ -34,7 +34,7 @@
 		itemsPerPage,
 		searchQuery,
 		dateQuery,
-		eshopSettings
+		orderSettings
 	} = data;
 	$: ({
 		session,
@@ -48,7 +48,7 @@
 		itemsPerPage,
 		searchQuery,
 		dateQuery,
-		eshopSettings
+		orderSettings
 	} = data);
 
 	let loading = false;
@@ -75,16 +75,16 @@
 	// Získáme unikátní stavy z načtených objednávek
 	$: availableStates = [...new Set(orders?.map(order => order.state).filter(state => state))];
 
-	// Funkce pro získání barvy stavu z eshopSettings
+	// Funkce pro získání barvy stavu z orderSettings
 	function getStateColor(stateName: string) {
-		if (!eshopSettings?.orderStates) return '#9ca3af';
-		const state = eshopSettings.orderStates.find((s: any) => s.name === stateName);
+		if (!orderSettings?.orderStates) return '#9ca3af';
+		const state = orderSettings.orderStates.find((s: any) => s.name === stateName);
 		return state ? state.color : '#9ca3af';
 	}
 
 	// Funkce pro získání barvy stavu objednávky v tabulce
 	function getStatusColor(status: string) {
-		if (!eshopSettings?.orderStates) {
+		if (!orderSettings?.orderStates) {
 			// Výchozí barvy pro základní stavy když nejsou v nastavení
 			const defaultColors: Record<string, string> = {
 				'Nová': '#0284c7',
@@ -99,7 +99,7 @@
 			};
 		}
 		
-		const orderState = eshopSettings.orderStates.find((state: any) => state.name === status);
+		const orderState = orderSettings.orderStates.find((state: any) => state.name === status);
 		if (!orderState) {
 			// Fallback pro neznámé stavy
 			return {
@@ -339,9 +339,9 @@
 				...column,
 				cell: info => {
 					const code = info.getValue();
-					if (!eshopSettings?.currencies) return code;
+					if (!orderSettings?.currencies) return code;
 					
-					const currency = eshopSettings.currencies.find((c: any) => c.code === code);
+					const currency = orderSettings.currencies.find((c: any) => c.code === code);
 					return currency ? `${currency.name} (${currency.symbol})` : code;
 				}
 			};
@@ -352,9 +352,9 @@
 				...column, 
 				cell: info => {
 					const method = info.getValue();
-					if (!eshopSettings?.shippingMethods) return method;
+					if (!orderSettings?.shippingMethods) return method;
 					
-					const shippingMethod = eshopSettings.shippingMethods.find((m: any) => m.name === method);
+					const shippingMethod = orderSettings.shippingMethods.find((m: any) => m.name === method);
 					return shippingMethod ? method : method;
 				}
 			};

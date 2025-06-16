@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "./$types";
-import { getEshopSettings } from "$lib/services/eshopSettingsService";
+import { getOrderSettings } from "$lib/services/eshopSettingsService";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -59,8 +59,8 @@ export const load: PageServerLoad = async ({
 		throw error;
 	}
 
-	// Načteme nastavení e-shopu
-	const eshopSettings = await getEshopSettings(supabase);
+	// Načteme nastavení objednávek (dříve eshop)
+	const orderSettings = await getOrderSettings(supabase);
 
 	const totalItems = count ?? 0;
 	const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -87,6 +87,6 @@ export const load: PageServerLoad = async ({
 		itemsPerPage,
 		searchQuery,
 		dateQuery,
-		eshopSettings
+		orderSettings
 	};
 };

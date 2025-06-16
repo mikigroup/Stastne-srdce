@@ -80,7 +80,7 @@
 		const tab = $page.url.searchParams.get('tab');
 		
 		// Automatické přepnutí na zadanou záložku
-		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'zakazky', 'doprava', 'products', 'customer', 'inventory'].includes(tab)) {
+		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'orders', 'delivery', 'products', 'customer', 'inventory'].includes(tab)) {
 			activeTab = tab;
 		}
 		
@@ -304,8 +304,8 @@
 		{ id: 'business', label: 'Firemní údaje', icon: 'fa-solid fa-building' },
 		{ id: 'email', label: 'Šablony e-mailů', icon: 'fa-solid fa-envelope' },
 		{ id: 'integrations', label: 'Integrace', icon: 'fa-solid fa-plug' },
-		{ id: 'zakazky', label: 'Objednávky', icon: 'fa-solid fa-clipboard-list' },
-		{ id: 'doprava', label: 'Doprava', icon: 'fa-solid fa-truck' },
+		{ id: 'orders', label: 'Objednávky', icon: 'fa-solid fa-clipboard-list' },
+		{ id: 'delivery', label: 'Doprava', icon: 'fa-solid fa-truck' },
 		{ id: 'products', label: 'Produkty', icon: 'fa-solid fa-utensils' },
 		{ id: 'customer', label: 'Zákazníci', icon: 'fa-solid fa-users' },
 		{ id: 'inventory', label: 'Inventář', icon: 'fa-solid fa-boxes-stacked' }
@@ -405,23 +405,24 @@
 
 	// Add order state
 	function addOrderState() {
-		if (!$editableSettings.eshop) {
-			$editableSettings.eshop = {};
+		if (!$editableSettings.orders) {
+			$editableSettings.orders = {};
 		}
-		if (!$editableSettings.eshop.orderStates) {
-			$editableSettings.eshop.orderStates = [];
+		if (!$editableSettings.orders.orderStates) {
+			$editableSettings.orders.orderStates = [];
 		}
-		$editableSettings.eshop.orderStates.push({ name: '', color: '#ffffff' });
+		$editableSettings.orders.orderStates.push({ name: '', color: '#3b82f6' });
 		$editableSettings = $editableSettings;
 	}
 
 	// Remove order state
 	function removeOrderState(index: number) {
-		if ($editableSettings.eshop?.orderStates && $editableSettings.eshop.orderStates.length > index) {
-			$editableSettings.eshop.orderStates.splice(index, 1);
+		if ($editableSettings.orders?.orderStates && $editableSettings.orders.orderStates.length > index) {
+			$editableSettings.orders.orderStates.splice(index, 1);
 			$editableSettings = $editableSettings;
 		}
 	}
+
 
 	// Add currency
 	function addCurrency() {
@@ -445,20 +446,20 @@
 
 	// Add shipping method
 	function addShippingMethod() {
-		if (!$editableSettings.doprava) {
-			$editableSettings.doprava = {};
+		if (!$editableSettings.delivery) {
+			$editableSettings.delivery = {};
 		}
-		if (!$editableSettings.doprava.shippingMethods) {
-			$editableSettings.doprava.shippingMethods = [];
+		if (!$editableSettings.delivery.shippingMethods) {
+			$editableSettings.delivery.shippingMethods = [];
 		}
-		$editableSettings.doprava.shippingMethods.push({ name: '', price: 0 });
+		$editableSettings.delivery.shippingMethods.push({ name: '', price: 0 });
 		$editableSettings = $editableSettings;
 	}
 
 	// Remove shipping method
 	function removeShippingMethod(index: number) {
-		if ($editableSettings.doprava?.shippingMethods && $editableSettings.doprava.shippingMethods.length > index) {
-			$editableSettings.doprava.shippingMethods.splice(index, 1);
+		if ($editableSettings.delivery?.shippingMethods && $editableSettings.delivery.shippingMethods.length > index) {
+			$editableSettings.delivery.shippingMethods.splice(index, 1);
 			$editableSettings = $editableSettings;
 		}
 	}
@@ -1086,17 +1087,20 @@
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Firemní údaje</h2>
 
-						<div class="space-y-4 grid grid-cols-3 gap-2">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Název firmy</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.companyName}
-									class="input input-bordered w-full"
-								/>
-							</div>
+<div class="gap-8 grid">
+
+						<div class="form-control w-3/4">
+							<label class="label">
+								<span class="label-text">Název firmy</span>
+							</label>
+							<input
+								type="text"
+								bind:value={$editableSettings.business.companyName}
+								class="input input-bordered w-full"
+							/>
+						</div>
+						<div class="grid grid-cols-4 gap-8">
+							
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">Ulice</span>
@@ -1159,18 +1163,21 @@
 									class="input input-bordered w-full"
 								/>
 							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Bankovní účet</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.bankAccount}
-									class="input input-bordered w-full"
-								/>
-							</div>
+							
 						</div>
+						<div class="form-control w-1/3">
+							<label class="label">
+								<span class="label-text">Bankovní účet</span>
+							</label>
+							<input
+								type="text"
+								bind:value={$editableSettings.business.bankAccount}
+								class="input input-bordered w-full"
+							/>
+						</div>
+						
+					</div>
+
 					</div>
 				{/if}
 
@@ -1287,20 +1294,26 @@
 					</div>
 				{/if}
 
-				<!-- E-shop Settings -->
-				{#if activeTab === 'zakazky' && $editableSettings.eshop}
+				<!-- Orders Settings -->
+				{#if activeTab === 'orders' && $editableSettings.orders}
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Nastavení zakázek</h2>
 						
 						<!-- Stavy zakázek -->
 						<div class="mb-6 border-b pb-4">
 							<h3 class="text-lg font-medium mb-3">Stavy zakázek</h3>
+							<p class="text-sm text-gray-600 mb-3">Definujte stavy objednávek, které se používají v systému. Stavy jsou automaticky načteny z existujících objednávek.</p>
 							
-							{#if !$editableSettings.eshop.orderStates || $editableSettings.eshop.orderStates.length === 0}
-								<p class="text-gray-500 mb-2">Žádné stavy zakázek nebyly definovány</p>
+							{#if !$editableSettings.orders.orderStates || $editableSettings.orders.orderStates.length === 0}
+								<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+									<p class="text-yellow-800 text-sm">
+										<i class="fa-solid fa-exclamation-triangle"></i>
+										Žádné stavy zakázek nebyly definovány. Klikněte na "Načíst ze systému" pro automatické načtení stavů z existujících objednávek.
+									</p>
+								</div>
 							{:else}
 								<div class="space-y-2">
-									{#each $editableSettings.eshop.orderStates as state, index}
+									{#each $editableSettings.orders.orderStates as state, index}
 										<div class="flex items-center gap-2">
 											<input 
 												type="text" 
@@ -1312,10 +1325,12 @@
 												type="color" 
 												bind:value={state.color} 
 												class="w-12 h-10"
+												title="Barva stavu"
 											/>
 											<button 
 												class="btn btn-sm btn-outline btn-error" 
-												on:click={() => removeOrderState(index)}>
+												on:click={() => removeOrderState(index)}
+												title="Smazat stav">
 												×
 											</button>
 										</div>
@@ -1323,17 +1338,40 @@
 								</div>
 							{/if}
 							
-							<button 
-								class="btn btn-sm btn-outline mt-2" 
-								on:click={addOrderState}>
-								Přidat stav zakázky
-							</button>
+							<div class="flex gap-2 mt-3">
+								<button 
+									class="btn btn-sm btn-outline" 
+									on:click={addOrderState}>
+									<i class="fa-solid fa-plus"></i>
+									Přidat stav zakázky
+								</button>								
+							</div>
+						</div>
+						
+						<!-- Další nastavení zakázek -->
+						<div class="mb-6">
+							<h3 class="text-lg font-medium mb-3">Notifikace</h3>
+							
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">E-mail pro notifikace</span>
+								</label>
+								<input
+									type="email"
+									bind:value={$editableSettings.orders.notificationEmail}
+									class="input input-bordered w-full"
+									placeholder="admin@example.com"
+								/>
+								<span class="text-xs text-gray-500 mt-1">
+									E-mail, na který budou zasílány notifikace o nových objednávkách
+								</span>
+							</div>
 						</div>
 					</div>
 				{/if}
 
-				<!-- Doprava Settings -->
-				{#if activeTab === 'doprava'}
+				<!-- Delivery Settings -->
+				{#if activeTab === 'delivery'}
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Nastavení dopravy</h2>
 						
@@ -1341,11 +1379,11 @@
 						<div class="mb-6 border-b pb-4">
 							<h3 class="text-lg font-medium mb-3">Způsoby dopravy</h3>
 							
-							{#if !$editableSettings.doprava?.shippingMethods || $editableSettings.doprava.shippingMethods.length === 0}
+							{#if !$editableSettings.delivery?.shippingMethods || $editableSettings.delivery.shippingMethods.length === 0}
 								<p class="text-gray-500 mb-2">Žádné způsoby dopravy nebyly definovány</p>
 							{:else}
 								<div class="space-y-2">
-									{#each $editableSettings.doprava.shippingMethods as method, index}
+									{#each $editableSettings.delivery.shippingMethods as method, index}
 										<div class="flex items-center gap-2">
 											<input 
 												type="text" 
@@ -1387,7 +1425,7 @@
 								<div class="flex items-center gap-3">
 									<input
 										type="number"
-										bind:value={$editableSettings.doprava.minimumOrderValue}
+										bind:value={$editableSettings.delivery.minimumOrderValue}
 										class="input input-bordered w-32"
 										min="0"
 										step="10"
@@ -1406,7 +1444,7 @@
 								<div class="flex items-center gap-3">
 									<input
 										type="number"
-										bind:value={$editableSettings.doprava.freeDeliveryThreshold}
+										bind:value={$editableSettings.delivery.freeDeliveryThreshold}
 										class="input input-bordered w-32"
 										min="0"
 										step="100"

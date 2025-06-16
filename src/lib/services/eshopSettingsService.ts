@@ -2,7 +2,34 @@ import type { TypedSupabaseClient } from "$lib/supabase";
 import { getDefaultSettings } from '$lib/constants/defaultSettings';
 
 /**
- * Načte nastavení zakázek z databáze
+ * Načte nastavení objednávek z databáze (nový anglický název)
+ */
+export async function getOrderSettings(supabase: TypedSupabaseClient) {
+    try {
+        const { data, error } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'orders')
+            .single();
+        
+        if (error) {
+            console.error('Error loading order settings:', error);
+            return getDefaultOrderSettings();
+        }
+        
+        if (data && data.value) {
+            return typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+        }
+        
+        return getDefaultOrderSettings();
+    } catch (e) {
+        console.error('Error parsing order settings:', e);
+        return getDefaultOrderSettings();
+    }
+}
+
+/**
+ * Načte nastavení zakázek z databáze (starý český název pro zpětnou kompatibilitu)
  */
 export async function getZakazkySettings(supabase: TypedSupabaseClient) {
     try {
@@ -56,6 +83,20 @@ export async function getDopravaSettings(supabase: TypedSupabaseClient) {
   }
 
 /**
+ * Vrátí výchozí nastavení objednávek (nový anglický název)
+ */
+export function getDefaultOrderSettings() {
+    return getDefaultSettings('orders');
+}
+
+/**
+ * Vrátí výchozí nastavení dopravy (nový anglický název)
+ */
+export function getDefaultDeliverySettings() {
+    return getDefaultSettings('delivery');
+}
+
+/**
  * Vrátí výchozí nastavení zakázek (dříve e-shop), pokud v databázi nejsou žádná
  */
 export function getDefaultZakazkySettings() {
@@ -63,10 +104,10 @@ export function getDefaultZakazkySettings() {
 }
 
 /**
- * Vrátí výchozí nastavení dopravy, pokud v databázi nejsou žádná
+ * Vrátí výchozí nastavení dopravy, pokud v databázi nejsou žádná (starý český název)
  */
 export function getDefaultDopravaSettings() {
-    return getDefaultSettings('doprava');
+    return getDefaultSettings('delivery');
 }
 
 /**
