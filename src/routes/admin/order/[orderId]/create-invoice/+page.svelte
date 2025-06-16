@@ -321,7 +321,7 @@
 								{/if}
 							</h3>
 							<div class="mt-2 text-sm text-red-700">
-								{form.message}
+					{form.message}
 							</div>
 							{#if form.message?.includes('token vypršel') || form.message?.includes('oprávnění') || form.message?.includes('připojení') || form.message?.includes('Fakturoid')}
 								<div class="mt-4">

@@ -46,6 +46,14 @@
 				price: 0,
 				allergens: [],
 				ingredients: []
+			},
+			{
+				id: "",
+				variant_number: "3",
+				description: "",
+				price: 0,
+				allergens: [],
+				ingredients: []
 			}
 		]
 	};
