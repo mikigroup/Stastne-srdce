@@ -372,11 +372,7 @@
 				</svg>
 				Předchozí
 			</button>
-
-			<div class="flex items-center gap-2 text-sm text-gray-600">
-				<span>Navigace objednávkami</span>
-				<span class="text-xs text-gray-500">(← →)</span>
-			</div>
+			
 
 			<button
 				on:click={goToNextOrder}
@@ -677,11 +673,11 @@
 							{/each}
 						</tbody>
 						<tfoot class="bg-gray-50">
-							<tr>
-								<td colspan="5" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
-									Celkem:
+							<tr>								
+								<td colspan="4" class="px-6 py-4 text-right text-lg font-bold text-gray-900">
+									{totalItems} ks
 								</td>
-								<td class="px-6 py-4 text-right text-lg font-bold text-gray-900">
+								<td colspan="2"class="px-6 py-4 text-right text-lg font-bold text-gray-900">
 									{formatPrice(totalPrice)}
 								</td>
 							</tr>
