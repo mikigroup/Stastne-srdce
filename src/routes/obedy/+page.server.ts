@@ -5,6 +5,16 @@ import type { Menu } from "$lib/types/menu";
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
+		// Načtení nastavení produktů pro získání visibleDays
+		const { data: productsSettingsData } = await supabase
+			.from('site_settings')
+			.select('value')
+			.eq('key', 'products')
+			.single();
+
+		// Získání visibleDays z nastavení (výchozí hodnota 7)
+		const visibleDays = productsSettingsData?.value?.visibleDays || 7;
+
 		// Výpočet aktuálního data s kontrolou času
 		const now = new Date();
 		let currentDate = new Date(now);
@@ -77,24 +87,32 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			return new Date(a.date).getTime() - new Date(b.date).getTime();
 		});
 
-		// Omezení na maximálně 28 menu (4 týdny)
-		const limitedMenus = loadedMenus.slice(0, 28);
+		// Omezení podle nastavení visibleDays
+		const limitedMenus = loadedMenus.slice(0, visibleDays);
 
-		// Rozdělení menu do skupin
-		const menuGroups = {
-			7: limitedMenus.slice(0, 7),
-			14: limitedMenus.slice(0, 14),
-			21: limitedMenus.slice(0, 21),
-			28: limitedMenus,
-			70: limitedMenus.slice(0, 70)
-		};
+		// Vytvoření dynamických skupin na základě dostupných menu a visibleDays
+		const availableCount = limitedMenus.length;
+		const menuGroups: { [key: number]: Menu[] } = {};
+		
+		// Vytvoření skupin podle dostupných menu, ale maximálně do visibleDays
+		const groupSizes = [7, 14, 21, 28, 70].filter(size => size <= Math.max(visibleDays, availableCount));
+		
+		groupSizes.forEach(size => {
+			menuGroups[size] = limitedMenus.slice(0, Math.min(size, availableCount));
+		});
+
+		// Přidání skupiny pro aktuální visibleDays, pokud není v standardních velikostech
+		if (!groupSizes.includes(visibleDays) && visibleDays <= availableCount) {
+			menuGroups[visibleDays] = limitedMenus.slice(0, visibleDays);
+		}
 
 		return {
 			menus: limitedMenus,
 			menuGroups,
+			visibleDays, // Předání nastavení do frontendu
 			startDate: currentDate.toISOString(),
 			endDate: new Date(
-				currentDate.getTime() + 27 * 24 * 60 * 60 * 1000
+				currentDate.getTime() + (visibleDays - 1) * 24 * 60 * 60 * 1000
 			).toISOString(),
 			texts: textsResult.data?.[0] || null,
 			allergens: allergensResult.data || []

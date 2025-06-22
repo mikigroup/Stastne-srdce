@@ -1,6 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { getOrderSettings } from "$lib/services/eshopSettingsService";
+import { getOrderSettings, getDefaultDeliverySettings } from "$lib/services/eshopSettingsService";
 
 // Definujeme typovou strukturu pro business nastavení
 interface BusinessSettings {
@@ -50,15 +50,85 @@ export const load: PageServerLoad = async ({
 			console.log("Order data structure:", JSON.stringify(order, null, 2).substring(0, 500) + "...");
 		}
 
-		// Načteme nastavení objednávek (dříve eshop)
+		// Načteme nastavení objednávek
 		const orderSettings = await getOrderSettings(supabase);
+		
+		// Načteme nastavení dopravy
+		const { data: deliveryData, error: deliveryError } = await supabase
+			.from('site_settings')
+			.select('value')
+			.eq('key', 'delivery')
+			.single();
+		
+		let deliverySettings = getDefaultDeliverySettings();
+		if (!deliveryError && deliveryData?.value) {
+			try {
+				deliverySettings = typeof deliveryData.value === 'string' 
+					? JSON.parse(deliveryData.value) 
+					: deliveryData.value;
+			} catch (e) {
+				console.error('Error parsing delivery settings:', e);
+			}
+		}
+		
+		// Zkombinujeme měny z obecných nastavení
+		const { data: generalData, error: generalError } = await supabase
+			.from('site_settings')
+			.select('value')
+			.eq('key', 'general')
+			.single();
+		
+		let currencies = ['CZK', 'EUR'];
+		if (!generalError && generalData?.value) {
+			try {
+				const generalSettings = typeof generalData.value === 'string' 
+					? JSON.parse(generalData.value) 
+					: generalData.value;
+				if (generalSettings?.currencies && Array.isArray(generalSettings.currencies)) {
+					currencies = generalSettings.currencies;
+				}
+			} catch (e) {
+				console.error('Error parsing general settings:', e);
+			}
+		}
+		
+		// Načteme platební metody z business nastavení
+		const { data: businessData, error: businessError } = await supabase
+			.from('site_settings')
+			.select('value')
+			.eq('key', 'business')
+			.single();
+		
+		let paymentMethods = ['Hotově', 'Kartou', 'Převodem'];
+		if (!businessError && businessData?.value) {
+			try {
+				const businessSettings = typeof businessData.value === 'string' 
+					? JSON.parse(businessData.value) 
+					: businessData.value;
+				if (businessSettings?.paymentMethods) {
+					paymentMethods = businessSettings.paymentMethods;
+				}
+			} catch (e) {
+				console.error('Error parsing business settings:', e);
+			}
+		}
+
+		// Zkombinujeme všechna nastavení do jednoho objektu pro snadnější použití
+		const combinedOrderSettings = {
+			...orderSettings,
+			shippingMethods: deliverySettings?.shippingMethods || [],
+			currencies: currencies,
+			paymentMethods: paymentMethods
+		};
 
 		const returnData = {
 			order,
-			orderSettings
+			orderSettings: combinedOrderSettings
 		};
 
 		console.log("Final return data keys:", Object.keys(returnData || {}));
+		console.log("Order settings keys:", Object.keys(combinedOrderSettings || {}));
+		console.log("Shipping methods count:", combinedOrderSettings?.shippingMethods?.length || 0);
 		console.log("====== ORDER PAGE SERVER LOAD END ======");
 		
 		return returnData;

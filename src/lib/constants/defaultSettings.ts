@@ -14,7 +14,8 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     shopName: 'Šťastné srdce',
     shortName: 'ŠS', // Using the shorter version as it's more practical for UI
     slogan: 'Zdravé stravování a rozvoz jídla',
-    legalName: 'Šťastné srdce s.r.o.'
+    legalName: 'Šťastné srdce s.r.o.',
+    currencies: ['CZK', 'EUR']
   },
 
   seo: {
@@ -106,9 +107,6 @@ export const UNIFIED_DEFAULT_SETTINGS = {
       { name: 'Expedovaná', color: '#eab308' },
       { name: 'Fakturovaná', color: '#16a34a' },
       { name: 'Stornovaná', color: '#dc2626' }
-    ],
-    currencies: [
-      { code: 'CZK', symbol: 'Kč', name: 'Česká koruna' }
     ]
   },
 
@@ -158,7 +156,6 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   products: {
     enabled: false,
     perPage: 10,
-    menuTitle: 'Obědy',
     menuIntroText: 'Vyberte si z naší nabídky chutných a zdravých obědů.',
     visibleDays: 7,
     features: [

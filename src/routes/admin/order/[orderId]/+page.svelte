@@ -66,14 +66,20 @@
 		console.log('Debug - orderSettings:', orderSettings);
 	}
 
-	// Získáme seznam měn
-	$: currencies = orderSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
+	// Získáme seznam měn - nyní již jen stringy
+	$: currencies = Array.isArray(orderSettings?.currencies) 
+		? orderSettings.currencies 
+		: ['CZK', 'EUR'];
 
 	// Získáme seznam způsobů doručení
 	$: shippingMethods = orderSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
 
-	// Získáme seznam platebních metod
-	$: paymentMethods = orderSettings?.paymentMethods?.map((method: any) => method.name) || ['Hotově', 'Kartou', 'Převodem'];
+	// Získáme seznam platebních metod - pokud jsou to objekty, extrahujeme názvy, jinak použijeme přímo
+	$: paymentMethods = Array.isArray(orderSettings?.paymentMethods) 
+		? (typeof orderSettings.paymentMethods[0] === 'string' 
+			? orderSettings.paymentMethods 
+			: orderSettings.paymentMethods.map((method: any) => method.name || method))
+		: ['Hotově', 'Kartou', 'Převodem'];
 
 	// Vypočítáme celkovou cenu
 	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
@@ -225,6 +231,11 @@
 	onMount(() => {
 		console.log("====== ORDER PAGE CLIENT MOUNTED ======");
 		console.log("Order data available at mount:", !!order);
+		console.log("Order settings available:", !!orderSettings);
+		console.log("Order settings keys:", orderSettings ? Object.keys(orderSettings) : 'none');
+		console.log("Shipping methods:", orderSettings?.shippingMethods);
+		console.log("Payment methods:", orderSettings?.paymentMethods);
+		console.log("Currencies:", orderSettings?.currencies);
 		
 		// Detailní inspekce order_items pro zjištění chybějícího menu_id
 		if (order && order.order_items) {

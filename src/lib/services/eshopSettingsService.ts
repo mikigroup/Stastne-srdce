@@ -147,36 +147,19 @@ export function getOrderStateColor(stateName: string, settings: any) {
  * Formátuje cenu podle zadané měny
  */
 export function formatPrice(price: number, currencyCode: string = 'CZK', settings: any) {
-    let currencies = settings?.currencies;
+    // Jednoduché formátování s pevně definovanými symboly
+    const currencySymbols: { [key: string]: string } = {
+        'CZK': 'Kč',
+        'EUR': '€',
+        'USD': '$'
+    };
     
-    // Nejprve zkusíme najít měny v obecných nastaveních
-    if (!currencies && settings?.general?.currencies) {
-        currencies = settings.general.currencies;
-    }
+    const symbol = currencySymbols[currencyCode] || currencyCode;
     
-    // Pak zkusíme najít měny v eshop nastaveních (zpětná kompatibilita)
-    if (!currencies && settings?.eshop?.currencies) {
-        currencies = settings.eshop.currencies;
-    }
+    // Použijeme standard Intl.NumberFormat pro formátování čísla
+    const formattedNumber = new Intl.NumberFormat('cs-CZ').format(price);
     
-    if (!currencies) {
-        // Fallback pro formátování, když nejsou k dispozici nastavení
-        return new Intl.NumberFormat('cs-CZ', { 
-            style: 'currency', 
-            currency: currencyCode 
-        }).format(price);
-    }
-    
-    const currency = currencies.find((curr: any) => curr.code === currencyCode);
-    if (!currency) {
-        return new Intl.NumberFormat('cs-CZ', { 
-            style: 'currency', 
-            currency: currencyCode 
-        }).format(price);
-    }
-    
-    // Vlastní formátování s uživatelsky nastaveným symbolem
-    return `${new Intl.NumberFormat('cs-CZ').format(price)} ${currency.symbol}`;
+    return `${formattedNumber} ${symbol}`;
 }
 
 /**

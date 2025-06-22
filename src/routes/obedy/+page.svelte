@@ -4,39 +4,55 @@
 	import MenuItem from "./MenuItem.svelte";
 	import { page } from "$app/stores";
 	import { writable } from "svelte/store";
+	import type { Menu } from "$lib/types/menu";
 
-	export let data;
-	let { menus, menuGroups, texts } = data;
+	export let data: {
+		menus: Menu[];
+		menuGroups: { [key: number]: Menu[] };
+		texts: any;
+		visibleDays: number;
+		generalSettings: any;
+	};
+	
+	let { menus, menuGroups, texts, visibleDays, generalSettings } = data;
 
-	// Dostupné volby počtu menu, které můžeme zobrazit
-	const menuCountOptions = [7, 14, 21, 28, 70];
+	// Dynamické vytvoření dostupných voleb na základě visibleDays a dostupných menu
+	$: menuCountOptions = Object.keys(menuGroups || {})
+		.map(Number)
+		.filter(count => count <= visibleDays && menuGroups[count]?.length > 0)
+		.sort((a, b) => a - b);
 
-	// Výchozí počet menu k zobrazení
-	let selectedMenuCount = 70;
+	// Výchozí počet menu k zobrazení - použije visibleDays nebo nejmenší dostupnou volbu
+	$: selectedMenuCount = visibleDays && menuCountOptions.includes(visibleDays) 
+		? visibleDays 
+		: (menuCountOptions[0] || visibleDays || 7);
 
 	// Store pro aktuálně vybraná menu
-	const currentMenus = writable(menuGroups[selectedMenuCount]);
+	const currentMenus = writable<Menu[]>([]);
+	
+	// Aktualizace menu při změně dat nebo vybraného počtu
+	$: if (menuGroups && selectedMenuCount) {
+		$currentMenus = menuGroups[selectedMenuCount] || menus || [];
+	}
 
 	// Aktualizace menu při změně vybraného počtu
-	function handleMenuCountSelect(event) {
+	function handleMenuCountSelect(event: CustomEvent<{ count: number }>) {
 		selectedMenuCount = event.detail.count;
-		$currentMenus = menuGroups[selectedMenuCount];
+		$currentMenus = menuGroups[selectedMenuCount] || [];
 	}
 
 	$: totalPieces = $totalPiecesStore;
 
-	function scrollToTop(event) {
+	function scrollToTop(event: Event) {
 		event.preventDefault();
 		document
 			.getElementById("menu-content")
 			?.scrollIntoView({ behavior: "smooth" });
 	}
-
-	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Obědy</title>
+	<title>{generalSettings?.shopName || 'Šťastné srdce'} - Obědy</title>
 	<meta name="description" content="Obědy" />
 </svelte:head>
 
@@ -53,10 +69,13 @@
 
 		<div class="max-w-4xl mx-auto mt-5 bg-white border rounded-lg border-gray-400">
 			<div class="pb-10" id="menu-content">
-<!--				<MenuCountSelector
-					options={menuCountOptions}
-					selectedCount={selectedMenuCount}
-					on:select={handleMenuCountSelect} />-->
+				<!-- Zobrazení selektoru pouze pokud je více než jedna volba -->
+				{#if menuCountOptions.length > 1}
+					<MenuCountSelector
+						options={menuCountOptions}
+						selectedCount={selectedMenuCount}
+						on:select={handleMenuCountSelect} />
+				{/if}
 
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#if $currentMenus && $currentMenus.length > 0}
@@ -64,7 +83,13 @@
 							<MenuItem {menu} />
 						{/each}
 					{:else}
-						<p>Žádný jídelníček nenalezen</p>
+						<p class="p-4 text-center text-gray-600">
+							{#if visibleDays}
+								Žádný jídelníček nenalezen pro následujících {visibleDays} {visibleDays === 1 ? 'den' : visibleDays < 5 ? 'dny' : 'dnů'}.
+							{:else}
+								Žádný jídelníček nenalezen.
+							{/if}
+						</p>
 					{/if}
 				</div>
 			</div>

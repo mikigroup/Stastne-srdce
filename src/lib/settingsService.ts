@@ -7,6 +7,7 @@ export interface GeneralSettings {
 	shortName: string;
 	slogan: string;
 	legalName: string;
+	currencies: string[];
 }
 
 export interface SeoSettings {
@@ -44,15 +45,10 @@ export interface EshopSettings {
 		name: string;
 		color: string;
 	}>;
-	currencies: Array<{
-		code: string;
-		symbol: string;
-		name: string;
-	}>;
 }
 
 export interface ProductsSettings {
-	menuTitle: string;
+	menuTitle?: string;
 	menuIntroText: string;
 	visibleDays: number;
 	features: Array<any>;
@@ -102,6 +98,7 @@ export const PAGE_SETTINGS = {
 	'/': ['general', 'seo', 'appearance'],
 	'/kontakt': ['general', 'contact', 'seo', 'appearance'],
 	'/prednasky-a-kurzy': ['general', 'seo', 'appearance'],
+	'/obedy': ['general', 'products', 'appearance'],
 	'/kosik': ['general', 'business', 'appearance'],
 	'/admin': ['general', 'business'], // Admin část bez appearance
 	'*': ['general', 'appearance'] // výchozí pro ostatní stránky

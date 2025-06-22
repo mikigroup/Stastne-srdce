@@ -21,6 +21,7 @@
 
 	// State management
 	let loading = false;
+	let saved = false;
 	let activeTab = 'general';
 	let saveMessage = '';
 	let saveMessageType: 'success'|'error'|'info' = 'success';
@@ -424,22 +425,50 @@
 	}
 
 
-	// Add currency
-	function addCurrency() {
-		if (!$editableSettings.eshop) {
-			$editableSettings.eshop = {};
+	// Dostupné měny pro výběr
+	const availableCurrencies = [
+		{ code: 'CZK', name: 'Česká koruna' },
+		{ code: 'EUR', name: 'Euro' },
+		{ code: 'USD', name: 'Americký dolar' },
+		{ code: 'GBP', name: 'Britská libra' },
+		{ code: 'PLN', name: 'Polský zlotý' },
+		{ code: 'CHF', name: 'Švýcarský frank' }
+	];
+
+	// Získá název měny podle kódu
+	function getCurrencyName(code: string): string {
+		const currency = availableCurrencies.find(c => c.code === code);
+		return currency ? currency.name : code;
+	}
+
+	// Handle přidání měny z selectu
+	function handleCurrencyAdd(event: Event) {
+		const target = event.target as HTMLSelectElement;
+		const currencyCode = target.value;
+		
+		if (currencyCode && currencyCode.trim() !== '') {
+			if (!$editableSettings.general) {
+				$editableSettings.general = {};
+			}
+			if (!$editableSettings.general.currencies) {
+				$editableSettings.general.currencies = [];
+			}
+			
+			// Přidáme pouze pokud už tam není
+			if (!$editableSettings.general.currencies.includes(currencyCode)) {
+				$editableSettings.general.currencies.push(currencyCode);
+				$editableSettings = $editableSettings;
+			}
+			
+			// Reset selectu
+			target.value = '';
 		}
-		if (!$editableSettings.eshop.currencies) {
-			$editableSettings.eshop.currencies = [];
-		}
-		$editableSettings.eshop.currencies.push({ code: '', symbol: '', name: '' });
-		$editableSettings = $editableSettings;
 	}
 
 	// Remove currency
 	function removeCurrency(index: number) {
-		if ($editableSettings.eshop?.currencies && $editableSettings.eshop.currencies.length > index) {
-			$editableSettings.eshop.currencies.splice(index, 1);
+		if ($editableSettings.general?.currencies && $editableSettings.general.currencies.length > index) {
+			$editableSettings.general.currencies.splice(index, 1);
 			$editableSettings = $editableSettings;
 		}
 	}
@@ -552,49 +581,32 @@
 		document.body.appendChild(form);
 		form.submit();
 	}
+
+	// Handler pro enhance na save tlačítku
+	function handleSaveEnhance() {
+		loading = true;
+		saved = false;
+		
+		return async ({ result, update }: { result: any, update: () => Promise<void> }) => {
+			await update();
+			
+			loading = false;
+			
+			if (result.type === 'success') {
+				saved = true;
+				
+				// Po 2 sekundách resetujeme saved stav
+				setTimeout(() => {
+					saved = false;
+				}, 2000);
+			}
+		};
+	}
 </script>
 
 <svelte:head>
 	<title>LEO - Nastavení webu</title>
 </svelte:head>
-
-<style>
-	/* Custom scrollbar for mobile tabs */
-	.scrollbar-thin {
-		scrollbar-width: thin;
-		scrollbar-color: #cbd5e0 transparent;
-	}
-	
-	.scrollbar-thin::-webkit-scrollbar {
-		height: 4px;
-	}
-	
-	.scrollbar-thin::-webkit-scrollbar-track {
-		background: transparent;
-	}
-	
-	.scrollbar-thin::-webkit-scrollbar-thumb {
-		background: #cbd5e0;
-		border-radius: 2px;
-	}
-	
-	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-		background: #a0aec0;
-	}
-
-	/* Mobile responsive inputs */
-	@media (max-width: 375px) {
-		.input-sm {
-			font-size: 0.75rem;
-			padding: 0.375rem 0.5rem;
-		}
-		
-		.btn-xs {
-			font-size: 0.625rem;
-			padding: 0.25rem 0.5rem;
-		}
-	}
-</style>
 
 <div class="p-3 sm:p-5 bg-white rounded-lg shadow-md border border-gray-300">
 	<h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Nastavení webu</h1>
@@ -647,23 +659,31 @@
 
 				<!-- Action Buttons (Desktop Only) -->
 				<div class="hidden lg:block mt-6 p-4 border-t border-gray-300 space-y-3">
-					<form method="POST" action="?/update" use:enhance>
+					<form method="POST" action="?/update" use:enhance={handleSaveEnhance}>
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
 							type="submit"
 							disabled={loading}
 							class="w-full btn btn-primary bg-green-800 text-white hover:bg-green-700"
 						>
-							{loading ? 'Ukládání...' : 'Uložit změny'}
+							{#if loading}
+								Ukládání...
+							{:else if saved}
+								Uloženo
+							{:else}
+								Uložit změny
+							{/if}
 						</button>
 					</form>
 
-					<button
+			
+		<!--		<button
 						on:click={resetSettings}
 						class="w-full btn btn-outline"
 					>
 						Obnovit výchozí
 					</button>
+				-->
 				</div>
 			</div>
 		</div>
@@ -713,32 +733,37 @@
 							<!-- Měny -->
 							<div class="mb-6 border-t pt-4 mt-4">
 								<h3 class="text-base sm:text-lg font-medium mb-3">Měny</h3>
+								<p class="text-gray-500 mb-3 text-sm">Vyberte měny, které chcete podporovat v systému</p>
 								
-								{#if !$editableSettings.eshop?.currencies || $editableSettings.eshop.currencies.length === 0}
-									<p class="text-gray-500 mb-2 text-sm">Žádné měny nebyly definovány</p>
-								{:else}
-									<div class="space-y-2">
-										{#each $editableSettings.eshop.currencies as currency, index}
-											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-												<div class="flex gap-2 flex-1">
-													<input 
-														type="text" 
-														bind:value={currency.code} 
-														class="input input-bordered input-sm w-16 flex-shrink-0"
-														placeholder="Kód"
-													/>
-													<input 
-														type="text" 
-														bind:value={currency.symbol} 
-														class="input input-bordered input-sm w-16 flex-shrink-0"
-														placeholder="Symbol"
-													/>
-													<input 
-														type="text" 
-														bind:value={currency.name} 
-														class="input input-bordered input-sm flex-grow min-w-0"
-														placeholder="Název"
-													/>
+								<!-- Dostupné měny k výběru -->
+								<div class="mb-3">
+									<label class="label">
+										<span class="label-text text-sm sm:text-base">Přidat měnu</span>
+									</label>
+									<select 
+										class="select select-bordered input-sm sm:input-md w-full max-w-xs"
+										on:change={handleCurrencyAdd}>
+										<option value="">Vyberte měnu</option>
+										{#each availableCurrencies as currency}
+											{#if !$editableSettings.general?.currencies?.includes(currency.code)}
+												<option value={currency.code}>{currency.code} - {currency.name}</option>
+											{/if}
+										{/each}
+									</select>
+								</div>
+								
+								<!-- Vybrané měny -->
+								{#if $editableSettings.general?.currencies && $editableSettings.general.currencies.length > 0}
+									<div class="space-y-2 max-w-xs">
+										<label class="label">
+											<span class="label-text text-sm sm:text-base">Vybrané měny</span>
+										</label>
+										{#each $editableSettings.general.currencies as currency, index}
+											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
+												<div class="flex gap-2 flex-1 items-center">
+													<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
+														{currency}
+													</span>
 												</div>
 												<button 
 													class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
@@ -748,13 +773,9 @@
 											</div>
 										{/each}
 									</div>
+								{:else}
+									<p class="text-gray-500 text-sm">Žádné měny nebyly vybrány</p>
 								{/if}
-								
-								<button 
-									class="btn btn-xs sm:btn-sm btn-outline mt-2 w-full sm:w-auto" 
-									on:click={addCurrency}>
-									Přidat měnu
-								</button>
 							</div>
 						</div>
 					</div>
@@ -1526,30 +1547,9 @@
 						<!-- Jídelníček -->
 						<div class="mb-6 border-b pb-4">
 							<h3 class="text-lg font-medium mb-3">Nastavení jídelníčku</h3>
+												
 							
-							<div class="form-control mb-3">
-								<label class="label">
-									<span class="label-text">Nadpis stránky</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.products.menuTitle}
-									class="input input-bordered w-full"
-									placeholder="Obědy"
-								/>
-							</div>
-							
-							<div class="form-control mb-3">
-								<label class="label">
-									<span class="label-text">Úvodní text</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.products.menuIntroText}
-									class="textarea textarea-bordered w-full h-24"
-									placeholder="Úvodní text jídelníčku..."
-								></textarea>
-							</div>
-							
+						
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">Počet viditelných dnů</span>
@@ -1643,14 +1643,20 @@
 
 	<!-- Mobile Action Buttons (Fixed Bottom) -->
 	<div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 p-4 space-y-2 z-50">
-		<form method="POST" action="?/update" use:enhance>
+		<form method="POST" action="?/update" use:enhance={handleSaveEnhance}>
 			<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 			<button
 				type="submit"
 				disabled={loading}
 				class="w-full btn btn-sm btn-primary bg-green-800 text-white hover:bg-green-700"
 			>
-				{loading ? 'Ukládání...' : 'Uložit změny'}
+				{#if loading}
+					Ukládání...
+				{:else if saved}
+					Uloženo
+				{:else}
+					Uložit změny
+				{/if}
 			</button>
 		</form>
 
@@ -1665,3 +1671,42 @@
 	<!-- Mobile Bottom Padding -->
 	<div class="lg:hidden h-24"></div>
 </div>
+
+
+<style>
+	/* Custom scrollbar for mobile tabs */
+	.scrollbar-thin {
+		scrollbar-width: thin;
+		scrollbar-color: #cbd5e0 transparent;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar {
+		height: 4px;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background: #cbd5e0;
+		border-radius: 2px;
+	}
+	
+	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+		background: #a0aec0;
+	}
+
+	/* Mobile responsive inputs */
+	@media (max-width: 375px) {
+		.input-sm {
+			font-size: 0.75rem;
+			padding: 0.375rem 0.5rem;
+		}
+		
+		.btn-xs {
+			font-size: 0.625rem;
+			padding: 0.25rem 0.5rem;
+		}
+	}
+</style>
