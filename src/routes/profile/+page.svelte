@@ -5,6 +5,7 @@
 	import type { Database } from '$lib/types/database.types';
 	import { fly } from "svelte/transition";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	type Order = Database['public']['Tables']['orders']['Row'] & {
 		grouped_items: Array<{
@@ -45,13 +46,7 @@
 		expandedOrders[orderId] = !expandedOrders[orderId];
 	}
 
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString("cs-CZ", {
-			year: "numeric",
-			month: "long",
-			day: "numeric"
-		});
-	}
+
 
 	function calculateTotalItems(items: Array<{ quantity: number }>): number {
 		return items.reduce((total, item) => total + (item.quantity || 0), 0);
@@ -563,7 +558,7 @@
 										{order.order_number}
 									</div>
 									<div class="gap-4 flex">
-										<span class="font-semibold">{formatDate(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
+										<span class="font-semibold">{formatDateToCzech(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
 									</div>
 								</div>
 
@@ -605,7 +600,7 @@
 										{#each order.grouped_items as group}
 											<div class="border border-gray-200 rounded-lg overflow-hidden">
 												<div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
-													<div class="font-medium">Menu ze dne: {formatDate(group.date)}</div>
+													<div class="font-medium">Menu ze dne: {formatDateToCzech(group.date)}</div>
 													<div class="text-sm text-gray-500">
 														{calculateTotalItems(group.items)} položek
 													</div>

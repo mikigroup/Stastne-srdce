@@ -261,10 +261,7 @@
 
 	// Formátovací funkce - používáme centrální implementaci
 
-	function formatDate(date: string): string {
-		if (!date) return 'N/A';
-		return formatDateToCzech(date);
-	}
+	// Používáme centrální funkci pro formátování data přímo
 
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
@@ -628,11 +625,11 @@
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 										{#if item.menuVersionData}
-											{formatDate(item.menuVersionData.date)}
+											{formatDateToCzech(item.menuVersionData.date)}
 										{:else if item.variant_id?.menu_id?.date}
-											{formatDate(item.variant_id.menu_id.date)}
+											{formatDateToCzech(item.variant_id.menu_id.date)}
 										{:else if item.variant_id?.menu_version_id?.date}
-											{formatDate(item.variant_id.menu_version_id.date)}
+											{formatDateToCzech(item.variant_id.menu_version_id.date)}
 										{:else}
 											N/A
 										{/if}
@@ -679,11 +676,11 @@
 							</span>
 							<span class="text-sm font-medium text-gray-600">
 								{#if item.menuVersionData}
-									{formatDate(item.menuVersionData.date)}
+									{formatDateToCzech(item.menuVersionData.date)}
 								{:else if item.variant_id?.menu_id?.date}
-									{formatDate(item.variant_id.menu_id.date)}
+									{formatDateToCzech(item.variant_id.menu_id.date)}
 								{:else if item.variant_id?.menu_version_id?.date}
-									{formatDate(item.variant_id.menu_version_id.date)}
+									{formatDateToCzech(item.variant_id.menu_version_id.date)}
 								{:else}
 									N/A
 								{/if}

@@ -2,7 +2,7 @@
 	import CustomerDetail from "../CustomerDetail.svelte";
 	import { goto } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
-	import { formatPrice } from "$lib/utils/formatting";
+	import { formatPrice, formatDateToCzechShort } from "$lib/utils/formatting";
 	
 	export let data: any;
 	
@@ -17,9 +17,7 @@
 	// Importujeme centrální formatPrice funkci
 
 	// Helper funkce pro formátování data
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('cs-CZ');
-	}
+
 
 	// Helper funkce pro formátování období
 	function formatDays(days: number): string {
@@ -248,13 +246,13 @@
 					{#if stats.firstOrderDate}
 						<div>
 							<span class="font-medium">První objednávka:</span>
-							{formatDate(stats.firstOrderDate)}
+							{formatDateToCzechShort(stats.firstOrderDate)}
 						</div>
 					{/if}
 					{#if stats.lastOrderDate}
 						<div>
 							<span class="font-medium">Poslední objednávka:</span>
-							{formatDate(stats.lastOrderDate)}
+							{formatDateToCzechShort(stats.lastOrderDate)}
 						</div>
 					{/if}
 				</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateTimeToCzech } from "$lib/utils/formatting";
 	import AdminTable from "$lib/component/AdminTable.svelte";
 	import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/svelte-table";
 
