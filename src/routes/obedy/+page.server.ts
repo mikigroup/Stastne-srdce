@@ -1,41 +1,42 @@
 import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import { loadMenu } from "$lib/services/menuService";
+import { getSetting } from "$lib/services/siteSettingsService";
 import type { Menu } from "$lib/types/menu";
+
+// Helper funkce pro formátování data
+function formatDate(date: Date): string {
+	return [
+		date.getFullYear(),
+		String(date.getMonth() + 1).padStart(2, "0"),
+		String(date.getDate()).padStart(2, "0")
+	].join("-");
+}
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
-		// Načtení nastavení produktů pro získání visibleDays
-		const { data: productsSettingsData } = await supabase
-			.from('site_settings')
-			.select('value')
-			.eq('key', 'products')
-			.single();
+		// Načtení nastavení produktů
+		const productsSettings = await getSetting(supabase, 'products');
+		const visibleDays = productsSettings?.visibleDays || 7;
 
-		// Získání visibleDays z nastavení (výchozí hodnota 7)
-		const visibleDays = productsSettingsData?.value?.visibleDays || 7;
-
-		// Výpočet aktuálního data s kontrolou času
+		// Výpočet startovního data (po 17:00 = další den)
 		const now = new Date();
-		let currentDate = new Date(now);
-
-		// Pokud je po 17:00, přejdi na další den
+		const currentDate = new Date(now);
 		if (now.getHours() >= 17) {
 			currentDate.setDate(currentDate.getDate() + 1);
 		}
 
-		// Formátování data bez časové zóny (YYYY-MM-DD)
-		const currentDateStr = [
-			currentDate.getFullYear(),
-			String(currentDate.getMonth() + 1).padStart(2, "0"),
-			String(currentDate.getDate()).padStart(2, "0")
-		].join("-");
+		// Výpočet koncového data (větší rozsah pro nalezení dostatečného počtu menu)
+		const searchRangeDays = Math.max(visibleDays * 2, 100);
+		const endDate = new Date(currentDate);
+		endDate.setDate(endDate.getDate() + searchRangeDays - 1);
 
-		// Načtení verzí menu pouze pro budoucí data (včetně dnešního, pokud je před 17:00)
+		// Načtení verzí menu
 		const { data: futureVersions, error: versionsError } = await supabase
 			.from("menu_versions")
 			.select("menu_id, date")
-			.gt("date", currentDateStr) // Pouze STRICTLĚ větší než aktuální datum
+			.gte("date", formatDate(currentDate))
+			.lte("date", formatDate(endDate))
 			.is("valid_to", null)
 			.is("active", true)
 			.order("date", { ascending: true });
@@ -44,35 +45,19 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			throw error(500, "Nepodařilo se najít budoucí menu");
 		}
 
-		// Získání unikátních ID menu
-		const uniqueMenuIds = [
-			...new Set(futureVersions?.map((v) => v.menu_id) || [])
-		];
-
-		// Načtení základních informací o menu
-		const { data: menus, error: menusError } = await supabase
-			.from("menus")
-			.select("id")
-			.in("id", uniqueMenuIds)
-			.eq("deleted", false);
-
-		if (menusError) {
-			throw error(500, "Nepodařilo se načíst menu");
-		}
-
-		// Načtení kompletních dat menu
-		const menuPromises = uniqueMenuIds.map((menuId) =>
-			loadMenu(supabase, menuId)
-		);
-
-		// Filtrace načtených menu - odstranění null/undefined a menu se starším datem
-		const loadedMenus = (await Promise.all(menuPromises))
+		// Získání unikátních ID menu a načtení kompletních dat
+		const uniqueMenuIds = [...new Set(futureVersions?.map((v) => v.menu_id) || [])];
+		const menuPromises = uniqueMenuIds.map((menuId) => loadMenu(supabase, menuId));
+		const allLoadedMenus = await Promise.all(menuPromises);
+		
+		// Filtrace, seřazení a omezení
+		const loadedMenus = allLoadedMenus
 			.filter(Boolean)
-			.filter((menu) => {
-				if (!menu.date) return false;
-				const menuDate = new Date(menu.date);
-				return menuDate >= currentDate;
-			});
+			.sort((a, b) => {
+				if (!a.date || !b.date) return 0;
+				return new Date(a.date).getTime() - new Date(b.date).getTime();
+			})
+			.slice(0, visibleDays);
 
 		// Načtení doplňkových informací
 		const [textsResult, allergensResult] = await Promise.all([
@@ -80,40 +65,9 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			supabase.from("allergens").select("*").order("number")
 		]);
 
-		// Seřazení menu podle data
-		loadedMenus.sort((a, b) => {
-			if (!a.date) return 1;
-			if (!b.date) return -1;
-			return new Date(a.date).getTime() - new Date(b.date).getTime();
-		});
-
-		// Omezení podle nastavení visibleDays
-		const limitedMenus = loadedMenus.slice(0, visibleDays);
-
-		// Vytvoření dynamických skupin na základě dostupných menu a visibleDays
-		const availableCount = limitedMenus.length;
-		const menuGroups: { [key: number]: Menu[] } = {};
-		
-		// Vytvoření skupin podle dostupných menu, ale maximálně do visibleDays
-		const groupSizes = [7, 14, 21, 28, 70].filter(size => size <= Math.max(visibleDays, availableCount));
-		
-		groupSizes.forEach(size => {
-			menuGroups[size] = limitedMenus.slice(0, Math.min(size, availableCount));
-		});
-
-		// Přidání skupiny pro aktuální visibleDays, pokud není v standardních velikostech
-		if (!groupSizes.includes(visibleDays) && visibleDays <= availableCount) {
-			menuGroups[visibleDays] = limitedMenus.slice(0, visibleDays);
-		}
-
 		return {
-			menus: limitedMenus,
-			menuGroups,
-			visibleDays, // Předání nastavení do frontendu
-			startDate: currentDate.toISOString(),
-			endDate: new Date(
-				currentDate.getTime() + (visibleDays - 1) * 24 * 60 * 60 * 1000
-			).toISOString(),
+			menus: loadedMenus,
+			visibleDays,
 			texts: textsResult.data?.[0] || null,
 			allergens: allergensResult.data || []
 		};

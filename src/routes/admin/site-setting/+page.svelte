@@ -1190,7 +1190,7 @@
 							</div>
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Číslo ulice</span>
+									<span class="label-text">Číslo</span>
 								</label>
 								<input
 									type="text"
@@ -1198,16 +1198,7 @@
 									class="input input-bordered w-full"
 								/>
 							</div>
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">PSČ</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.zipCode}
-									class="input input-bordered w-full"
-								/>
-							</div>
+
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">Město</span>
@@ -1218,6 +1209,17 @@
 									class="input input-bordered w-full"
 								/>
 							</div>
+
+							<div class="form-control">
+								<label class="label">
+									<span class="label-text">PSČ</span>
+								</label>
+								<input
+									type="text"
+									bind:value={$editableSettings.business.zipCode}
+									class="input input-bordered w-full"
+								/>
+							</div>							
 
 							<div class="form-control">
 								<label class="label">
