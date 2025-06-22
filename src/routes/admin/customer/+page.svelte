@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech, formatDateTimeToCzech } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateTimeToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	import AdminTable from "$lib/component/AdminTable.svelte";
 	import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/svelte-table";
 
@@ -208,7 +208,7 @@
 	<svelte:fragment slot="cell" let:cell let:row>
 		{#if cell.column.id === "created_at"}
 			{@const value = cell.getValue()}
-			{formatDateToCzech(String(value ?? ''))}
+			{formatDateTimeToCzechShort(String(value ?? ''))}
 		{:else if cell.column.id === "actions"}
 			<div class="flex justify-end">
 				<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">

@@ -91,6 +91,29 @@ export function formatDateTimeToCzechShort(dateTime: string | Date): string {
 }
 
 /**
+ * Formátuje datum a čas do českého formátu (krátký bez úvodních nul)
+ * @param dateTime - datum a čas jako string nebo Date objekt
+ * @returns datum a čas ve formátu "1. 6. 2024 14:30"
+ */
+export function formatDateTimeToCzechShortNoZero(dateTime: string | Date): string {
+	if (!dateTime) return '';
+	
+	const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+	
+	if (isNaN(dateObj.getTime())) {
+		return '';
+	}
+	
+	return dateObj.toLocaleString('cs-CZ', {
+		day: 'numeric',
+		month: 'numeric',  
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+}
+
+/**
  * Formátuje pouze čas
  * @param time - čas jako string (HH:MM:SS nebo HH:MM) nebo Date objekt
  * @returns čas ve formátu "14:30"

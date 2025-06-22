@@ -17,7 +17,7 @@
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
 
 	export let data;
 
@@ -149,7 +149,7 @@
 		cell: info => {
 			const value = info.getValue();
 			if (key === "date") {
-				return formatDateToCzech(value);
+				return formatDateToCzechShort(String(value ?? ''));
 			} else if (key === "variants") {
 				return value;
 			}
@@ -422,7 +422,7 @@
 											{/each}
 										</div>
 									{:else if cell.column.id === "date"}
-										{formatDateToCzech(cell.getValue())}
+										{formatDateToCzechShort(String(cell.getValue() ?? ''))}
 									{:else if cell.column.id === "active"}
 										{cell.getValue() ? "ANO" : "NE"}  <!-- Přidáno speciální formátování -->
 									{:else if cell.column.id === "actions"}

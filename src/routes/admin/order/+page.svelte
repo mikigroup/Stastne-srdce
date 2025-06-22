@@ -17,7 +17,7 @@
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
 
 	export let data;
 
@@ -601,7 +601,7 @@
 									title={cell.column.id === 'note' ? cell.getValue() : ''}
 								>
 									{#if cell.column.id === "date" || cell.column.id === "created_at" || cell.column.id === "updated_at"}
-										{formatDateToCzech(cell.getValue())}
+										{formatDateToCzechShort(String(cell.getValue() ?? ''))}
 									{:else if cell.column.id === "pay_state"}
 										{formatPayState(cell.getValue())}
 									{:else if cell.column.id === "actions"}
