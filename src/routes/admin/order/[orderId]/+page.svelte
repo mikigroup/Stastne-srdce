@@ -726,7 +726,7 @@
 
 				<div class="bg-gray-50 rounded-lg p-4 mt-4">
 					<div class="flex justify-between items-center">
-						<span class="font-medium">Celkový počet položek: {totalItems}</span>
+						<span class="font-bold">{totalItems} ks</span>
 						<span class="text-lg font-bold">{formatPrice(totalPrice)}</span>
 					</div>
 				</div>
