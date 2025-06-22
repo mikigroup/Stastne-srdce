@@ -3,7 +3,6 @@
 	import { writable } from "svelte/store";
 	import {
 		createSvelteTable,
-		flexRender,
 		getCoreRowModel,
 		getSortedRowModel
 	} from "@tanstack/svelte-table";

@@ -4,8 +4,7 @@
 	import {
 		createSvelteTable,
 		getCoreRowModel,
-		getSortedRowModel,
-		flexRender
+		getSortedRowModel
 	} from "@tanstack/svelte-table";
 	import type {
 		ColumnDef,
