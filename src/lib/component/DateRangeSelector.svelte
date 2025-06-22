@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import { formatDateRange } from "$lib/utils/formatting";
 
   // Definice typů datových rozsahů
   type DateRangeType = 'day' | 'week' | 'month' | 'year' | 'custom';
@@ -180,30 +181,7 @@
     isCalendarOpen = false;
   }
 
-  // Formátování datového rozsahu pro zobrazení
-  function formatDateRange(start: Date, end: Date): string {
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    };
 
-    if (start.toDateString() === end.toDateString()) {
-      return start.toLocaleDateString('cs-CZ', formatOptions);
-    } else if (
-      start.getMonth() === end.getMonth() &&
-      start.getFullYear() === end.getFullYear()
-    ) {
-      // Stejný měsíc a rok
-      return `${start.getDate()} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-    } else if (start.getFullYear() === end.getFullYear()) {
-      // Stejný rok
-      return `${start.toLocaleDateString('cs-CZ', {day: '2-digit', month: 'long'})} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-    } else {
-      // Různé roky
-      return `${start.toLocaleDateString('cs-CZ', formatOptions)} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-    }
-  }
 
   // Kontrola, zda je koncové datum po počátečním datu
   $: isValidDateRange = customStartDate && customEndDate &&

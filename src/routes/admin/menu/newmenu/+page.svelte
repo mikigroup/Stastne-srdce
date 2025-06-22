@@ -3,7 +3,7 @@
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,
@@ -42,6 +42,14 @@
 			{
 				id: "",
 				variant_number: "2",
+				description: "",
+				price: 0,
+				allergens: [],
+				ingredients: []
+			},
+			{
+				id: "",
+				variant_number: "3",
 				description: "",
 				price: 0,
 				allergens: [],

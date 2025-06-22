@@ -3,6 +3,9 @@
 	import { enhance } from "$app/forms";
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import type { Database } from '$lib/types/database.types';
+	import { fly } from "svelte/transition";
+	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	type Order = Database['public']['Tables']['orders']['Row'] & {
 		grouped_items: Array<{
@@ -43,13 +46,7 @@
 		expandedOrders[orderId] = !expandedOrders[orderId];
 	}
 
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString("cs-CZ", {
-			year: "numeric",
-			month: "long",
-			day: "numeric"
-		});
-	}
+
 
 	function calculateTotalItems(items: Array<{ quantity: number }>): number {
 		return items.reduce((total, item) => total + (item.quantity || 0), 0);
@@ -138,48 +135,6 @@
 			loading = false;
 		};
 	};
-
-	function validateProfileForInvoicing(profile: {
-		first_name?: string;
-		last_name?: string;
-		street?: string;
-		street_number?: string;
-		city?: string;
-		zip_code?: string;
-		email?: string;
-		company?: string;
-		ico?: string;
-		dic?: string;
-		telephone?: string;
-		delivery_method?: string;
-		payment_method?: string;
-	}) {
-		const errors: string[] = [];
-
-		if (!profile.first_name) errors.push("Jméno je povinné");
-		if (!profile.last_name) errors.push("Příjmení je povinné");
-		if (!profile.street) errors.push("Ulice je povinná");
-		if (!profile.street_number) errors.push("Číslo popisné je povinné");
-		if (!profile.city) errors.push("Město je povinné");
-		if (!profile.zip_code) errors.push("PSČ je povinné");
-		if (!profile.email) errors.push("Email je povinný");
-		if (!profile.telephone) errors.push("Telefon je povinný");
-		if (!profile.delivery_method) errors.push("Způsob dodání je povinný");
-		if (!profile.payment_method) errors.push("Způsob platby je povinný");
-
-		if (profile.payment_method === 'bankWithInvoice') {
-			if (!profile.company) errors.push("Firma je povinná pro fakturaci");
-			if (!profile.ico) errors.push("IČO je povinné pro fakturaci");
-			if (!profile.dic) errors.push("DIČ je povinné pro fakturaci");
-		}
-
-		return errors;
-	}
-
-	function getProfileValidationMessage(errors: string[]): string {
-		if (errors.length === 0) return '';
-		return errors.join('\n');
-	}
 </script>
 
 <svelte:head>
@@ -603,7 +558,7 @@
 										{order.order_number}
 									</div>
 									<div class="gap-4 flex">
-										<span class="font-semibold">{formatDate(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
+										<span class="font-semibold">{formatDateToCzech(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
 									</div>
 								</div>
 
@@ -645,7 +600,7 @@
 										{#each order.grouped_items as group}
 											<div class="border border-gray-200 rounded-lg overflow-hidden">
 												<div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
-													<div class="font-medium">Menu ze dne: {formatDate(group.date)}</div>
+													<div class="font-medium">Menu ze dne: {formatDateToCzech(group.date)}</div>
 													<div class="text-sm text-gray-500">
 														{calculateTotalItems(group.items)} položek
 													</div>

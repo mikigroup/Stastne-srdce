@@ -6,10 +6,8 @@ import type {
 	ContactSettings,
 	SocialSettings,
 	AppearanceSettings,
-	BusinessSettings,
-	EmailSettings,
-	IntegrationSettings
-} from "$lib/services/settingsService";
+	BusinessSettings
+} from "$lib/settingsService";
 
 // Přidáváme typy pro $app/stores
 declare module "$app/stores" {

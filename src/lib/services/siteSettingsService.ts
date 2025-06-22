@@ -1,5 +1,6 @@
 import type { TypedSupabaseClient } from "$lib/supabase";
 import { validateIntegrationsSettings, getDefaultIntegrationsSettings } from "$lib/types/siteSettings";
+import { getDefaultSettings } from '$lib/constants/defaultSettings';
 
 /**
  * Helper funkce pro serializaci hodnoty pro site_settings
@@ -55,7 +56,7 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string) {
             const validation = validateIntegrationsSettings(value);
             if (!validation.success) {
                 console.error('Invalid integrations settings:', validation.error);
-                return getDefaultIntegrationsSettings();
+                return getDefaultSettings('integrations');
             }
             return validation.data;
         }

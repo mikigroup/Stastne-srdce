@@ -29,7 +29,8 @@ export const load: PageServerLoad = async ({
       allergies,
       allergies_description,
       delivery_method,
-      payment_method
+      payment_method,
+      registration_status
     `
 		)
 		.eq("id", id)

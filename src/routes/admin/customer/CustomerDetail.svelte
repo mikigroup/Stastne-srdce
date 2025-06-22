@@ -36,7 +36,7 @@
 	$: ({ supabase, session } = data);
 
 	// State variables s typizací
-	let loading = false;
+	export let loading = false;
 	let updateMessage = "";
 
 	// Customer data fields - initialize with existing customer data or empty strings
@@ -79,7 +79,7 @@
 		payment_method: string;
 	};
 
-	async function saveCustomer(): Promise<void> {
+	export async function saveCustomer(): Promise<void> {
 		try {
 			loading = true;
 			const customerData: CustomerData = {
@@ -137,7 +137,7 @@
 		}
 	}
 
-	async function deleteCustomer(): Promise<void> {
+	export async function deleteCustomer(): Promise<void> {
 		if (!customer?.id) return;
 
 		try {
@@ -163,43 +163,52 @@
 	}
 </script>
 
-<div class="bg-white rounded-lg shadow-md p-6">
-	<div class="flex items-center justify-between mb-6">
-		<h2 class="text-xl font-semibold">
-			{customer ? 'Detail zákazníka' : 'Nový zákazník'}
-		</h2>
-		<div class="flex gap-2">
-			<button on:click={back} class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-				Zpět
-			</button>
-			<button
-				disabled={loading}
-				on:click={saveCustomer}
-				class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors">
-				{loading ? 'Ukládá se...' : customer ? 'Uložit změny' : 'Vytvořit'}
-			</button>
-			{#if customer}
-				<button
-					disabled={loading}
-					on:click={deleteCustomer}
-					class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors">
-					Smazat
-				</button>
-			{/if}
-		</div>
-	</div>
+<!-- Tlačítka jsou nyní v AdminPageLayout headeru -->
 
-	{#if updateMessage}
-		<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
-			{updateMessage}
+{#if updateMessage}
+	<div class="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded">
+		{updateMessage}
+	</div>
+{/if}
+
+<!-- Status registrace -->
+{#if customer?.registration_status}
+	<div class="mb-4 p-3 rounded-lg border {customer.registration_status === 'pending' ? 'bg-red-100 border-red-200 text-red-800' : customer.registration_status === 'completed' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-gray-100 border-gray-200 text-gray-800'}">
+		<div class="flex items-center gap-2">
+			<span class="font-medium">Status registrace:</span>
+			<span class="px-2 py-1 rounded text-sm font-semibold {customer.registration_status === 'pending' ? 'bg-red-200 text-red-900' : customer.registration_status === 'completed' ? 'bg-green-200 text-green-900' : 'bg-gray-200 text-gray-900'}">
+				{customer.registration_status === 'pending' ? 'Čeká na dokončení' : customer.registration_status === 'completed' ? 'Dokončeno' : customer.registration_status}
+			</span>
 		</div>
-	{/if}
+		{#if customer.registration_status === 'pending'}
+			<p class="text-sm mt-1">Zákazník ještě nedokončil registraci. Může mít omezený přístup k některým funkcím.</p>
+		{/if}
+	</div>
+{/if}
 
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<!-- Osobní údaje -->
 		<div class="space-y-4">
-			<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Osobní údaje</h3>
-			
+			<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Osobní údaje</h3>			
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
+					<input
+						type="text"
+						bind:value={first_name}
+						placeholder="Zadejte jméno"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
+					<input
+						type="text"
+						bind:value={last_name}
+						placeholder="Zadejte příjmení"
+						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+				</div>
+			</div>
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -220,27 +229,10 @@
 						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
 				</div>
 			</div>
-
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
-					<input
-						type="text"
-						bind:value={first_name}
-						placeholder="Zadejte jméno"
-						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
-				</div>
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
-					<input
-						type="text"
-						bind:value={last_name}
-						placeholder="Zadejte příjmení"
-						class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
-				</div>
-			</div>
 		</div>
 
+
+		
 		<!-- Adresa -->
 		<div class="space-y-4">
 			<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Adresa</h3>
@@ -427,4 +419,3 @@
 			</div>
 		</div>
 	</div>
-</div>

@@ -104,7 +104,10 @@ export type Database = {
           created_at: string | null
           expires_at: string
           id: string
+          last_used_at: string | null
+          refresh_attempts: number | null
           refresh_token: string
+          status: string | null
           updated_at: string | null
           user_id: string
         }
@@ -115,7 +118,10 @@ export type Database = {
           created_at?: string | null
           expires_at: string
           id?: string
+          last_used_at?: string | null
+          refresh_attempts?: number | null
           refresh_token: string
+          status?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -126,7 +132,10 @@ export type Database = {
           created_at?: string | null
           expires_at?: string
           id?: string
+          last_used_at?: string | null
+          refresh_attempts?: number | null
           refresh_token?: string
+          status?: string | null
           updated_at?: string | null
           user_id?: string
         }

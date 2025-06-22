@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/date"
+	import { formatDateToCzech, formatPrice, formatDateToCzechShort } from "$lib/utils/formatting"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");
 	console.log("Received data keys:", Object.keys(data || {}));
 
-	let { session, supabase, order, eshopSettings } = data;
-	$: ({ session, supabase, order, eshopSettings } = data);
+	let { session, supabase, order, orderSettings, navigation } = data;
+	$: ({ session, supabase, order, orderSettings, navigation } = data);
 
 	console.log("Order exists:", !!order);
 	if (order) {
@@ -20,42 +20,78 @@
 	}
 
 	let loading = false;
-	let date: string = order?.date ?? "";
-	let orderId: string = order?.id;
-	let formattedDate = date ? formatSupabaseDate(date) : "";
-	let selectedPaymentMethod: string = order?.pay_method;
-	let selectedOrderState: string = order?.state;
-	let selectedCurrency: string = order?.currency;
-	let selectedShippingMethod: string = order?.shipping_method;
-	let isPaid: boolean = order?.pay_state || false;
-	let note: string = order?.note ?? "";
-	let text: string = order?.text ?? "";
+	let date: string = "";
+	let orderId: string = "";
+	let formattedDate = "";
+	let selectedPaymentMethod: string = "";
+	let selectedOrderState: string = "";
+	let selectedCurrency: string = "";
+	let selectedShippingMethod: string = "";
+	let isPaid: boolean = false;
+	let note: string = "";
 
 	// Fakturační údaje
-	let customer_email: string = order?.customer_email ?? "";
-	let customer_first_name: string = order?.customer_first_name ?? "";
-	let customer_last_name: string = order?.customer_last_name ?? "";
-	let customer_street: string = order?.customer_street ?? "";
-	let customer_street_number: string = order?.customer_street_number ?? "";
-	let customer_city: string = order?.customer_city ?? "";
-	let customer_zip_code: string = order?.customer_zip_code ?? "";
-	let customer_telephone: string = order?.customer_telephone ?? "";
+	let customer_email: string = "";
+	let customer_first_name: string = "";
+	let customer_last_name: string = "";
+	let customer_street: string = "";
+	let customer_street_number: string = "";
+	let customer_city: string = "";
+	let customer_zip_code: string = "";
+	let customer_telephone: string = "";
 
 	// Dodací údaje
-	let delivery_first_name: string = order?.delivery_first_name ?? "";
-	let delivery_last_name: string = order?.delivery_last_name ?? "";
-	let delivery_street: string = order?.delivery_street ?? "";
-	let delivery_street_number: string = order?.delivery_street_number ?? "";
-	let delivery_city: string = order?.delivery_city ?? "";
-	let delivery_zip_code: string = order?.delivery_zip_code ?? "";
-	let delivery_telephone: string = order?.delivery_telephone ?? "";
+	let delivery_first_name: string = "";
+	let delivery_last_name: string = "";
+	let delivery_street: string = "";
+	let delivery_street_number: string = "";
+	let delivery_city: string = "";
+	let delivery_zip_code: string = "";
+	let delivery_telephone: string = "";
 
 	let updateMessage = "";
 	let orderStates: string[] = [];
 
-	// Získáme seznam stavů objednávek - vždy zahrneme všechny možné stavy
+	// Reaktivní aktualizace všech polí při změně order dat
+	$: if (order) {
+		date = order.date ?? "";
+		orderId = order.id ?? "";
+		formattedDate = date ? formatSupabaseDate(date) : "";
+		selectedPaymentMethod = order.pay_method ?? "";
+		selectedOrderState = order.state ?? "";
+		selectedCurrency = order.currency ?? "";
+		selectedShippingMethod = order.shipping_method ?? "";
+		isPaid = order.pay_state || false;
+		note = order.note ?? "";
+
+		// Fakturační údaje
+		customer_email = order.customer_email ?? "";
+		customer_first_name = order.customer_first_name ?? "";
+		customer_last_name = order.customer_last_name ?? "";
+		customer_street = order.customer_street ?? "";
+		customer_street_number = order.customer_street_number ?? "";
+		customer_city = order.customer_city ?? "";
+		customer_zip_code = order.customer_zip_code ?? "";
+		customer_telephone = order.customer_telephone ?? "";
+
+		// Dodací údaje
+		delivery_first_name = order.delivery_first_name ?? "";
+		delivery_last_name = order.delivery_last_name ?? "";
+		delivery_street = order.delivery_street ?? "";
+		delivery_street_number = order.delivery_street_number ?? "";
+		delivery_city = order.delivery_city ?? "";
+		delivery_zip_code = order.delivery_zip_code ?? "";
+		delivery_telephone = order.delivery_telephone ?? "";
+
+		console.log("Order data updated - all fields refreshed");
+		console.log("Customer email:", customer_email);
+		console.log("Customer name:", customer_first_name, customer_last_name);
+		console.log("Customer phone:", customer_telephone);
+	}
+
+	// Získáme seznam stavů objednávek ze site_settings
 	$: {
-		const settingsStates = eshopSettings?.orderStates?.map((state: any) => state.name) || [];
+		const settingsStates = orderSettings?.orderStates?.map((state: any) => state.name) || [];
 		const allPossibleStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
 		
 		// Kombinujeme stavy z nastavení s všemi možnými stavy (bez duplikátů)
@@ -63,21 +99,57 @@
 		
 		console.log('Debug - orderStates:', orderStates);
 		console.log('Debug - current selectedOrderState:', selectedOrderState);
-		console.log('Debug - eshopSettings:', eshopSettings);
+		console.log('Debug - orderSettings:', orderSettings);
 	}
 
-	// Získáme seznam měn
-	$: currencies = eshopSettings?.currencies?.map((currency: any) => currency.code) || ['CZK'];
+	// Získáme seznam měn - nyní již jen stringy
+	$: currencies = Array.isArray(orderSettings?.currencies) 
+		? orderSettings.currencies 
+		: ['CZK', 'EUR'];
 
 	// Získáme seznam způsobů doručení
-	$: shippingMethods = eshopSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+	$: shippingMethods = orderSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
 
-	// Získáme seznam platebních metod
-	$: paymentMethods = eshopSettings?.paymentMethods?.map((method: any) => method.name) || ['Hotově', 'Kartou', 'Převodem'];
+	// Získáme seznam platebních metod - pokud jsou to objekty, extrahujeme názvy, jinak použijeme přímo
+	$: paymentMethods = Array.isArray(orderSettings?.paymentMethods) 
+		? (typeof orderSettings.paymentMethods[0] === 'string' 
+			? orderSettings.paymentMethods 
+			: orderSettings.paymentMethods.map((method: any) => method.name || method))
+		: ['Hotově', 'Kartou', 'Převodem'];
 
 	// Vypočítáme celkovou cenu
 	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
 	$: totalItems = order?.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+
+	// Navigační funkce
+	async function goToPreviousOrder() {
+		if (navigation?.prevOrderId) {
+			await goto(`/admin/order/${navigation.prevOrderId}`);
+		}
+	}
+
+	async function goToNextOrder() {
+		if (navigation?.nextOrderId) {
+			await goto(`/admin/order/${navigation.nextOrderId}`);
+		}
+	}
+
+	// Keyboard navigation
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.target && (event.target as HTMLElement).tagName === 'INPUT' || 
+			event.target && (event.target as HTMLElement).tagName === 'TEXTAREA' ||
+			event.target && (event.target as HTMLElement).tagName === 'SELECT') {
+			return; // Nenavigovat pokud je focus na input elementu
+		}
+
+		if (event.key === 'ArrowLeft' && navigation?.prevOrderId) {
+			event.preventDefault();
+			goToPreviousOrder();
+		} else if (event.key === 'ArrowRight' && navigation?.nextOrderId) {
+			event.preventDefault();
+			goToNextOrder();
+		}
+	}
 
 	async function updateOrder() {
 		try {
@@ -91,7 +163,6 @@
 				currency: selectedCurrency,
 				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
-				note,
 				customer_email,
 				customer_first_name,
 				customer_last_name,
@@ -173,7 +244,7 @@
 
 	// Získáme barvu pro stav objednávky - s fallbackem pro neznámé stavy
 	function getOrderStateColor(stateName: any) {
-		if (!eshopSettings?.orderStates) {
+		if (!orderSettings?.orderStates) {
 			// Výchozí barvy pro základní stavy když nejsou v nastavení
 			const defaultColors: Record<string, string> = {
 				'Nová': '#0284c7',
@@ -184,19 +255,13 @@
 			return defaultColors[stateName] || '#9ca3af';
 		}
 		
-		const state = eshopSettings.orderStates.find((state: any) => state.name === stateName);
+		const state = orderSettings.orderStates.find((state: any) => state.name === stateName);
 		return state ? state.color : '#9ca3af';
 	}
 
-	// Formátovací funkce
-	function formatPrice(price: number): string {
-		return `${price.toLocaleString('cs-CZ')}\u00A0Kč`;
-	}
+	// Formátovací funkce - používáme centrální implementaci
 
-	function formatDate(date: string): string {
-		if (!date) return 'N/A';
-		return formatDateToCzech(date);
-	}
+	// Používáme centrální funkci pro formátování data přímo
 
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
@@ -225,6 +290,29 @@
 	onMount(() => {
 		console.log("====== ORDER PAGE CLIENT MOUNTED ======");
 		console.log("Order data available at mount:", !!order);
+		console.log("Full order object:", order);
+		console.log("Order settings available:", !!orderSettings);
+		console.log("Order settings keys:", orderSettings ? Object.keys(orderSettings) : 'none');
+		console.log("Shipping methods:", orderSettings?.shippingMethods);
+		console.log("Payment methods:", orderSettings?.paymentMethods);
+		console.log("Currencies:", orderSettings?.currencies);
+		console.log("Navigation available:", !!navigation);
+		console.log("Prev order ID:", navigation?.prevOrderId);
+		console.log("Next order ID:", navigation?.nextOrderId);
+		
+		// Detailní výpis kontaktních údajů
+		if (order) {
+			console.log("=== CONTACT FIELDS DEBUG ===");
+			console.log("customer_email:", order.customer_email);
+			console.log("customer_first_name:", order.customer_first_name);
+			console.log("customer_last_name:", order.customer_last_name);
+			console.log("customer_telephone:", order.customer_telephone);
+			console.log("customer_street:", order.customer_street);
+			console.log("customer_street_number:", order.customer_street_number);
+			console.log("customer_city:", order.customer_city);
+			console.log("customer_zip_code:", order.customer_zip_code);
+			console.log("=== END CONTACT FIELDS DEBUG ===");
+		}
 		
 		// Detailní inspekce order_items pro zjištění chybějícího menu_id
 		if (order && order.order_items) {
@@ -245,8 +333,17 @@
 				}
 			});
 		}
+
+		// Přidání keyboard listeneru
+		document.addEventListener('keydown', handleKeydown);
+		
+		return () => {
+			document.removeEventListener('keydown', handleKeydown);
+		};
 	});
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <AdminPageLayout
 	title="Detail objednávky"
@@ -255,6 +352,34 @@
 	{actions}
 	successMessage={updateMessage}
 	{loading}>
+
+	<!-- Navigační šipky -->
+	{#if navigation?.prevOrderId || navigation?.nextOrderId}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousOrder}
+				disabled={!navigation?.prevOrderId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí objednávka (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+			
+
+			<button
+				on:click={goToNextOrder}
+				disabled={!navigation?.nextOrderId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující objednávka (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
 
 	{#if order}
 		<!-- Základní informace ve dvou sloupcích -->
@@ -313,26 +438,6 @@
 				
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-						<input
-							type="email"
-							bind:value={customer_email}
-							disabled
-							placeholder="Email zákazníka"
-							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-						<input
-							type="tel"
-							bind:value={customer_telephone}
-							placeholder="Telefon zákazníka"
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
-					</div>
-				</div>
-
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
 						<input
 							type="text"
@@ -349,6 +454,27 @@
 							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
 					</div>
 				</div>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+						<input
+							type="email"
+							bind:value={customer_email}
+							placeholder="Email zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+						<input
+							type="tel"
+							bind:value={customer_telephone}
+							placeholder="Telefon zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+				</div>
+
+				
 			</div>
 		</div>
 
@@ -403,21 +529,7 @@
 									<option value={method}>{method}</option>
 								{/each}
 							</select>
-						</div>
-						<div class="grid grid-cols-2 gap-2">
-							<div>
-								<label class="block text-sm text-gray-600 mb-1">Položek</label>
-								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
-									{totalItems} ks
-								</div>
-							</div>
-							<div>
-								<label class="block text-sm text-gray-600 mb-1">Cena/ks</label>
-								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
-									{totalItems > 0 ? formatPrice(Math.round(totalPrice / totalItems)) : '0 Kč'}
-								</div>
-							</div>
-						</div>
+						</div>						
 					</div>
 				</div>
 
@@ -478,23 +590,11 @@
 		<h3 class="text-lg font-medium text-gray-900 mb-4">Poznámky</h3>
 		
 		<div class="grid grid-cols-1 gap-6">
-			{#if text}
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Text z košíku</label>
-					<div class="w-full px-3 py-3 border border-gray-300 rounded-md bg-gray-50 text-sm text-gray-800 min-h-[80px]">
-						{text}
-					</div>
-				</div>
-			{/if}
-			
 			<div>
-
-				<textarea
-					bind:value={note}
-					placeholder="Poznámka k objednávce..."
-					rows="4"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
-				></textarea>
+				<label class="block text-sm font-medium text-gray-700 mb-2">Poznámka k objednávce</label>
+				<div class="w-full px-3 py-3 border border-gray-300 rounded-md bg-gray-50 text-sm text-gray-800 min-h-[100px] whitespace-pre-wrap">
+					{note}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -527,11 +627,11 @@
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 										{#if item.menuVersionData}
-											{formatDate(item.menuVersionData.date)}
+											{formatDateToCzechShort(item.menuVersionData.date)}
 										{:else if item.variant_id?.menu_id?.date}
-											{formatDate(item.variant_id.menu_id.date)}
+											{formatDateToCzechShort(item.variant_id.menu_id.date)}
 										{:else if item.variant_id?.menu_version_id?.date}
-											{formatDate(item.variant_id.menu_version_id.date)}
+											{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
 										{:else}
 											N/A
 										{/if}
@@ -555,11 +655,11 @@
 							{/each}
 						</tbody>
 						<tfoot class="bg-gray-50">
-							<tr>
-								<td colspan="5" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
-									Celkem:
+							<tr>								
+								<td colspan="4" class="px-6 py-4 text-right text-lg font-bold text-gray-900">
+									{totalItems} ks
 								</td>
-								<td class="px-6 py-4 text-right text-lg font-bold text-gray-900">
+								<td colspan="2"class="px-6 py-4 text-right text-lg font-bold text-gray-900">
 									{formatPrice(totalPrice)}
 								</td>
 							</tr>
@@ -578,11 +678,11 @@
 							</span>
 							<span class="text-sm font-medium text-gray-600">
 								{#if item.menuVersionData}
-									{formatDate(item.menuVersionData.date)}
+									{formatDateToCzechShort(item.menuVersionData.date)}
 								{:else if item.variant_id?.menu_id?.date}
-									{formatDate(item.variant_id.menu_id.date)}
+									{formatDateToCzechShort(item.variant_id.menu_id.date)}
 								{:else if item.variant_id?.menu_version_id?.date}
-									{formatDate(item.variant_id.menu_version_id.date)}
+									{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
 								{:else}
 									N/A
 								{/if}
@@ -608,7 +708,7 @@
 
 				<div class="bg-gray-50 rounded-lg p-4 mt-4">
 					<div class="flex justify-between items-center">
-						<span class="font-medium">Celkový počet položek: {totalItems}</span>
+						<span class="font-bold">{totalItems} ks</span>
 						<span class="text-lg font-bold">{formatPrice(totalPrice)}</span>
 					</div>
 				</div>

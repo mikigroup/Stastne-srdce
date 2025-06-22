@@ -1,9 +1,23 @@
 import { writable } from "svelte/store";
-import type {
-	CookieCategory,
-	CookieCategoryConfig,
-	CookieConsentConfig
-} from "../services/cookieService";
+
+// Cookie types (moved from cookieService.ts)
+export type CookieCategory =
+	| "necessary"
+	| "preferences"
+	| "statistics"
+	| "marketing";
+
+export interface CookieCategoryConfig {
+	id: CookieCategory;
+	label: string;
+	description: string;
+	value: boolean;
+	required: boolean;
+}
+
+export interface CookieConsentConfig {
+	[key: string]: CookieCategoryConfig;
+}
 
 // Výchozí kategorie cookies
 export const defaultCookieCategories: CookieConsentConfig = {

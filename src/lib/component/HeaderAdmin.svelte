@@ -3,6 +3,7 @@
 	import { readable } from "svelte/store";
 	import { Icon, FaceSmile } from "svelte-hero-icons";
 	import { ROUTES } from "$lib/stores/store";
+	import { createDateTimeFormatter } from "$lib/utils/formatting";
 
 	export let data;
 	let { supabase, session, user } = data;
@@ -37,12 +38,14 @@
 		"Sobota"
 	];
 
-	const formatterDate = new Intl.DateTimeFormat("cs", {
+
+	
+	const formatterDate = createDateTimeFormatter("cs", {
 		month: "short",
 		day: "numeric"
 	});
 
-	const formatterTime = new Intl.DateTimeFormat("cs", {
+	const formatterTime = createDateTimeFormatter("cs", {
 		hour12: false,
 		hour: "numeric",
 		minute: "2-digit"

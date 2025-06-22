@@ -1,9 +1,6 @@
 <script>
+	import { formatTime } from "$lib/utils/formatting";
 	export let rezcalendar;
-	function formatTime(timeString) {
-		const [hours, minutes] = timeString.split(":");
-		return `${hours}:${minutes}`;
-	}
 </script>
 
 <div class="w-2/4">
