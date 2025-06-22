@@ -14,7 +14,6 @@
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
-	import { invalidateSettingsCache } from '$lib/settingsService';
 
 	export let data: {
 		session: Session | null;
@@ -31,9 +30,6 @@
 	$: showRegistrationBanner = session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
 
 	onMount(() => {
-		// Invalidace cache pro testování
-		invalidateSettingsCache();
-		
 		const { data } = supabase.auth.onAuthStateChange((event) => {
 			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
 				invalidate("supabase:auth");
@@ -56,11 +52,6 @@
 	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;
 	$: generalSettings = data.settings?.general;
-	
-	// Debug log pro kontrolu SEO nastavení
-	$: if (seoSettings) {
-		console.log('SEO Settings loaded:', seoSettings);
-	}
 </script>
 
 <!-- Globální SEO meta tagy pro celý web -->
