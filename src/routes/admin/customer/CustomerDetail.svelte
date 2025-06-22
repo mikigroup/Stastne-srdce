@@ -171,6 +171,21 @@
 	</div>
 {/if}
 
+<!-- Status registrace -->
+{#if customer?.registration_status}
+	<div class="mb-4 p-3 rounded-lg border {customer.registration_status === 'pending' ? 'bg-red-100 border-red-200 text-red-800' : customer.registration_status === 'completed' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-gray-100 border-gray-200 text-gray-800'}">
+		<div class="flex items-center gap-2">
+			<span class="font-medium">Status registrace:</span>
+			<span class="px-2 py-1 rounded text-sm font-semibold {customer.registration_status === 'pending' ? 'bg-red-200 text-red-900' : customer.registration_status === 'completed' ? 'bg-green-200 text-green-900' : 'bg-gray-200 text-gray-900'}">
+				{customer.registration_status === 'pending' ? 'Čeká na dokončení' : customer.registration_status === 'completed' ? 'Dokončeno' : customer.registration_status}
+			</span>
+		</div>
+		{#if customer.registration_status === 'pending'}
+			<p class="text-sm mt-1">Zákazník ještě nedokončil registraci. Může mít omezený přístup k některým funkcím.</p>
+		{/if}
+	</div>
+{/if}
+
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 		<!-- Osobní údaje -->
 		<div class="space-y-4">
