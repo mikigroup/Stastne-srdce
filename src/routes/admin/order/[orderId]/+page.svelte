@@ -10,8 +10,8 @@
 	console.log("====== ORDER PAGE CLIENT INIT ======");
 	console.log("Received data keys:", Object.keys(data || {}));
 
-	let { session, supabase, order, orderSettings } = data;
-	$: ({ session, supabase, order, orderSettings } = data);
+	let { session, supabase, order, orderSettings, navigation } = data;
+	$: ({ session, supabase, order, orderSettings, navigation } = data);
 
 	console.log("Order exists:", !!order);
 	if (order) {
@@ -20,37 +20,74 @@
 	}
 
 	let loading = false;
-	let date: string = order?.date ?? "";
-	let orderId: string = order?.id;
-	let formattedDate = date ? formatSupabaseDate(date) : "";
-	let selectedPaymentMethod: string = order?.pay_method;
-	let selectedOrderState: string = order?.state;
-	let selectedCurrency: string = order?.currency;
-	let selectedShippingMethod: string = order?.shipping_method;
-	let isPaid: boolean = order?.pay_state || false;
-	let note: string = order?.note ?? "";
+	let date: string = "";
+	let orderId: string = "";
+	let formattedDate = "";
+	let selectedPaymentMethod: string = "";
+	let selectedOrderState: string = "";
+	let selectedCurrency: string = "";
+	let selectedShippingMethod: string = "";
+	let isPaid: boolean = false;
+	let note: string = "";
 
 	// Fakturační údaje
-	let customer_email: string = order?.customer_email ?? "";
-	let customer_first_name: string = order?.customer_first_name ?? "";
-	let customer_last_name: string = order?.customer_last_name ?? "";
-	let customer_street: string = order?.customer_street ?? "";
-	let customer_street_number: string = order?.customer_street_number ?? "";
-	let customer_city: string = order?.customer_city ?? "";
-	let customer_zip_code: string = order?.customer_zip_code ?? "";
-	let customer_telephone: string = order?.customer_telephone ?? "";
+	let customer_email: string = "";
+	let customer_first_name: string = "";
+	let customer_last_name: string = "";
+	let customer_street: string = "";
+	let customer_street_number: string = "";
+	let customer_city: string = "";
+	let customer_zip_code: string = "";
+	let customer_telephone: string = "";
 
 	// Dodací údaje
-	let delivery_first_name: string = order?.delivery_first_name ?? "";
-	let delivery_last_name: string = order?.delivery_last_name ?? "";
-	let delivery_street: string = order?.delivery_street ?? "";
-	let delivery_street_number: string = order?.delivery_street_number ?? "";
-	let delivery_city: string = order?.delivery_city ?? "";
-	let delivery_zip_code: string = order?.delivery_zip_code ?? "";
-	let delivery_telephone: string = order?.delivery_telephone ?? "";
+	let delivery_first_name: string = "";
+	let delivery_last_name: string = "";
+	let delivery_street: string = "";
+	let delivery_street_number: string = "";
+	let delivery_city: string = "";
+	let delivery_zip_code: string = "";
+	let delivery_telephone: string = "";
 
 	let updateMessage = "";
 	let orderStates: string[] = [];
+
+	// Reaktivní aktualizace všech polí při změně order dat
+	$: if (order) {
+		date = order.date ?? "";
+		orderId = order.id ?? "";
+		formattedDate = date ? formatSupabaseDate(date) : "";
+		selectedPaymentMethod = order.pay_method ?? "";
+		selectedOrderState = order.state ?? "";
+		selectedCurrency = order.currency ?? "";
+		selectedShippingMethod = order.shipping_method ?? "";
+		isPaid = order.pay_state || false;
+		note = order.note ?? "";
+
+		// Fakturační údaje
+		customer_email = order.customer_email ?? "";
+		customer_first_name = order.customer_first_name ?? "";
+		customer_last_name = order.customer_last_name ?? "";
+		customer_street = order.customer_street ?? "";
+		customer_street_number = order.customer_street_number ?? "";
+		customer_city = order.customer_city ?? "";
+		customer_zip_code = order.customer_zip_code ?? "";
+		customer_telephone = order.customer_telephone ?? "";
+
+		// Dodací údaje
+		delivery_first_name = order.delivery_first_name ?? "";
+		delivery_last_name = order.delivery_last_name ?? "";
+		delivery_street = order.delivery_street ?? "";
+		delivery_street_number = order.delivery_street_number ?? "";
+		delivery_city = order.delivery_city ?? "";
+		delivery_zip_code = order.delivery_zip_code ?? "";
+		delivery_telephone = order.delivery_telephone ?? "";
+
+		console.log("Order data updated - all fields refreshed");
+		console.log("Customer email:", customer_email);
+		console.log("Customer name:", customer_first_name, customer_last_name);
+		console.log("Customer phone:", customer_telephone);
+	}
 
 	// Získáme seznam stavů objednávek ze site_settings
 	$: {
@@ -83,6 +120,36 @@
 	// Vypočítáme celkovou cenu
 	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
 	$: totalItems = order?.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+
+	// Navigační funkce
+	async function goToPreviousOrder() {
+		if (navigation?.prevOrderId) {
+			await goto(`/admin/order/${navigation.prevOrderId}`);
+		}
+	}
+
+	async function goToNextOrder() {
+		if (navigation?.nextOrderId) {
+			await goto(`/admin/order/${navigation.nextOrderId}`);
+		}
+	}
+
+	// Keyboard navigation
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.target && (event.target as HTMLElement).tagName === 'INPUT' || 
+			event.target && (event.target as HTMLElement).tagName === 'TEXTAREA' ||
+			event.target && (event.target as HTMLElement).tagName === 'SELECT') {
+			return; // Nenavigovat pokud je focus na input elementu
+		}
+
+		if (event.key === 'ArrowLeft' && navigation?.prevOrderId) {
+			event.preventDefault();
+			goToPreviousOrder();
+		} else if (event.key === 'ArrowRight' && navigation?.nextOrderId) {
+			event.preventDefault();
+			goToNextOrder();
+		}
+	}
 
 	async function updateOrder() {
 		try {
@@ -229,11 +296,29 @@
 	onMount(() => {
 		console.log("====== ORDER PAGE CLIENT MOUNTED ======");
 		console.log("Order data available at mount:", !!order);
+		console.log("Full order object:", order);
 		console.log("Order settings available:", !!orderSettings);
 		console.log("Order settings keys:", orderSettings ? Object.keys(orderSettings) : 'none');
 		console.log("Shipping methods:", orderSettings?.shippingMethods);
 		console.log("Payment methods:", orderSettings?.paymentMethods);
 		console.log("Currencies:", orderSettings?.currencies);
+		console.log("Navigation available:", !!navigation);
+		console.log("Prev order ID:", navigation?.prevOrderId);
+		console.log("Next order ID:", navigation?.nextOrderId);
+		
+		// Detailní výpis kontaktních údajů
+		if (order) {
+			console.log("=== CONTACT FIELDS DEBUG ===");
+			console.log("customer_email:", order.customer_email);
+			console.log("customer_first_name:", order.customer_first_name);
+			console.log("customer_last_name:", order.customer_last_name);
+			console.log("customer_telephone:", order.customer_telephone);
+			console.log("customer_street:", order.customer_street);
+			console.log("customer_street_number:", order.customer_street_number);
+			console.log("customer_city:", order.customer_city);
+			console.log("customer_zip_code:", order.customer_zip_code);
+			console.log("=== END CONTACT FIELDS DEBUG ===");
+		}
 		
 		// Detailní inspekce order_items pro zjištění chybějícího menu_id
 		if (order && order.order_items) {
@@ -254,8 +339,17 @@
 				}
 			});
 		}
+
+		// Přidání keyboard listeneru
+		document.addEventListener('keydown', handleKeydown);
+		
+		return () => {
+			document.removeEventListener('keydown', handleKeydown);
+		};
 	});
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <AdminPageLayout
 	title="Detail objednávky"
@@ -264,6 +358,38 @@
 	{actions}
 	successMessage={updateMessage}
 	{loading}>
+
+	<!-- Navigační šipky -->
+	{#if navigation?.prevOrderId || navigation?.nextOrderId}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousOrder}
+				disabled={!navigation?.prevOrderId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí objednávka (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+
+			<div class="flex items-center gap-2 text-sm text-gray-600">
+				<span>Navigace objednávkami</span>
+				<span class="text-xs text-gray-500">(← →)</span>
+			</div>
+
+			<button
+				on:click={goToNextOrder}
+				disabled={!navigation?.nextOrderId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující objednávka (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
 
 	{#if order}
 		<!-- Základní informace ve dvou sloupcích -->
@@ -326,9 +452,8 @@
 						<input
 							type="email"
 							bind:value={customer_email}
-							disabled
 							placeholder="Email zákazníka"
-							class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 cursor-not-allowed" />
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
 					</div>
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
