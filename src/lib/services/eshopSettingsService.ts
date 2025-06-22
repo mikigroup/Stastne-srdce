@@ -143,24 +143,7 @@ export function getOrderStateColor(stateName: string, settings: any) {
     return state ? state.color : '#9ca3af';
 }
 
-/**
- * Formátuje cenu podle zadané měny
- */
-export function formatPrice(price: number, currencyCode: string = 'CZK', settings: any) {
-    // Jednoduché formátování s pevně definovanými symboly
-    const currencySymbols: { [key: string]: string } = {
-        'CZK': 'Kč',
-        'EUR': '€',
-        'USD': '$'
-    };
-    
-    const symbol = currencySymbols[currencyCode] || currencyCode;
-    
-    // Použijeme standard Intl.NumberFormat pro formátování čísla
-    const formattedNumber = new Intl.NumberFormat('cs-CZ').format(price);
-    
-    return `${formattedNumber} ${symbol}`;
-}
+
 
 /**
  * Vrátí výchozí nastavení zákazníků, pokud v databázi nejsou žádná

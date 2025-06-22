@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech } from "$lib/utils/formatting"
+	import { formatDateToCzech, formatPrice } from "$lib/utils/formatting"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
@@ -259,10 +259,7 @@
 		return state ? state.color : '#9ca3af';
 	}
 
-	// Formátovací funkce
-	function formatPrice(price: number): string {
-		return `${price.toLocaleString('cs-CZ')}\u00A0Kč`;
-	}
+	// Formátovací funkce - používáme centrální implementaci
 
 	function formatDate(date: string): string {
 		if (!date) return 'N/A';
@@ -533,21 +530,7 @@
 									<option value={method}>{method}</option>
 								{/each}
 							</select>
-						</div>
-						<div class="grid grid-cols-2 gap-2">
-							<div>
-								<label class="block text-sm text-gray-600 mb-1">Položek</label>
-								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
-									{totalItems} ks
-								</div>
-							</div>
-							<div>
-								<label class="block text-sm text-gray-600 mb-1">Cena/ks</label>
-								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50">
-									{totalItems > 0 ? formatPrice(Math.round(totalPrice / totalItems)) : '0 Kč'}
-								</div>
-							</div>
-						</div>
+						</div>						
 					</div>
 				</div>
 

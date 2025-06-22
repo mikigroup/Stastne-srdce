@@ -64,9 +64,16 @@ export function formatOrderItemName(item: any): string {
 }
 
 /**
- * Formátuje cenu podle zadané měny
+ * Formátuje cenu - buď jen číslo, nebo s měnou
  */
-export function formatPrice(price: number, currencyCode: string = 'CZK', settings?: any): string {
+export function formatPrice(price: number, includeCurrency: boolean = false, currencyCode: string = 'CZK'): string {
+	// Použijeme standard Intl.NumberFormat pro formátování čísla
+	const formattedNumber = new Intl.NumberFormat('cs-CZ').format(price);
+	
+	if (!includeCurrency) {
+		return formattedNumber;
+	}
+	
 	// Jednoduché formátování s pevně definovanými symboly
 	const currencySymbols: { [key: string]: string } = {
 		'CZK': 'Kč',
@@ -75,9 +82,6 @@ export function formatPrice(price: number, currencyCode: string = 'CZK', setting
 	};
 	
 	const symbol = currencySymbols[currencyCode] || currencyCode;
-	
-	// Použijeme standard Intl.NumberFormat pro formátování čísla
-	const formattedNumber = new Intl.NumberFormat('cs-CZ').format(price);
 	
 	return `${formattedNumber} ${symbol}`;
 } 

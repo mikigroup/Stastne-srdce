@@ -2,6 +2,7 @@
 	import CustomerDetail from "../CustomerDetail.svelte";
 	import { goto } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
+	import { formatPrice } from "$lib/utils/formatting";
 	
 	export let data: any;
 	
@@ -13,13 +14,7 @@
 	$: supabase = data.supabase;
 	$: session = data.session;
 
-	// Helper funkce pro formátování ceny
-	function formatPrice(price: number): string {
-		return new Intl.NumberFormat('cs-CZ', {
-			style: 'currency',
-			currency: 'CZK'
-		}).format(price);
-	}
+	// Importujeme centrální formatPrice funkci
 
 	// Helper funkce pro formátování data
 	function formatDate(dateString: string): string {
@@ -76,7 +71,7 @@
 							<div>
 								<h3 class="text-xl font-bold">{loyaltyInfo.label}</h3>
 								<p class="text-sm opacity-75">
-									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent)} celkem
+									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent, true)} celkem
 								</p>
 							</div>
 						</div>
@@ -143,7 +138,7 @@
 						{#if stats.averageOrderValue > 0}
 							<div class="flex justify-between">
 								<span class="text-gray-600">Průměr/objednávka:</span>
-								<span class="font-medium">{formatPrice(stats.averageOrderValue)}</span>
+								<span class="font-medium">{formatPrice(stats.averageOrderValue, true)}</span>
 							</div>
 						{/if}
 					</div>
@@ -206,7 +201,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-green-600">Celková útrata</p>
-						<p class="text-2xl font-bold text-green-900">{formatPrice(stats.totalSpent)}</p>
+						<p class="text-2xl font-bold text-green-900">{formatPrice(stats.totalSpent, true)}</p>
 					</div>
 				</div>
 			</div>
@@ -223,7 +218,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-purple-600">Průměr na objednávku</p>
-						<p class="text-2xl font-bold text-purple-900">{formatPrice(stats.averageOrderValue)}</p>
+						<p class="text-2xl font-bold text-purple-900">{formatPrice(stats.averageOrderValue, true)}</p>
 					</div>
 				</div>
 			</div>
@@ -240,7 +235,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-red-600">Nezaplacené</p>
-						<p class="text-lg font-bold text-red-900">{stats.unpaidOrders} ({formatPrice(stats.unpaidAmount)})</p>
+						<p class="text-lg font-bold text-red-900">{stats.unpaidOrders} ({formatPrice(stats.unpaidAmount, true)})</p>
 					</div>
 				</div>
 			</div>

@@ -4,16 +4,12 @@
 	import { fade, fly } from "svelte/transition";
 	import { page } from "$app/stores";
 	import {
-		createTable,
-		createRender,
-		Render,
-		Subscribe,
+		createSvelteTable,
+		flexRender,
 		getCoreRowModel,
-		getFilteredRowModel,
-		getPaginationRowModel,
 		getSortedRowModel
 	} from "@tanstack/svelte-table";
-	import type { TableOptions, ColumnDef } from "@tanstack/svelte-table";
+	import type { TableOptions, ColumnDef, SortingState, VisibilityState, OnChangeFn } from "@tanstack/svelte-table";
 	import type { PageData } from "./$types";
 	import type { Profile } from "$lib/types/profile";
 	import { writable } from "svelte/store";
@@ -75,10 +71,10 @@
 	// Initialize visible columns based on profile settings or default to all columns
 	let visibleColumns: VisibilityState =
 		profileTableSettings?.table_settings_customers ??
-		columnOrder.reduce((obj, column) => {
+		columnOrder.reduce((obj: Record<string, boolean>, column) => {
 			obj[column] = true;
 			return obj;
-		}, {});
+		}, {} as Record<string, boolean>);
 
 	// Callback funkce pro aktualizaci viditelnosti sloupců
 	const setColumnVisibility: OnChangeFn<VisibilityState> = updater => {
@@ -153,7 +149,7 @@
 		cell: info => {
 			const value = info.getValue();
 			if (key === "created_at") {
-				return formatDateToCzech(value);
+				return formatDateToCzech(value as string);
 			}
 			return value ?? "";
 		}
@@ -394,10 +390,11 @@
 								<td
 									class="px-4 py-3 {cell.column.id === 'email' ? 'truncate max-w-xs' : ''}"
 									style="width: {cell.column.getSize()}px;"
-									title={cell.column.id === 'email' ? cell.getValue() : ''}
+									title={cell.column.id === 'email' ? String(cell.getValue() ?? '') : ''}
 								>
 									{#if cell.column.id === "created_at"}
-										{formatDateToCzech(cell.getValue())}
+										{@const value = cell.getValue()}
+										{formatDateToCzech(value)}
 									{:else if cell.column.id === "actions"}
 										<div class="flex justify-end">
 											<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
