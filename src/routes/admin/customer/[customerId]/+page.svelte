@@ -2,7 +2,7 @@
 	import CustomerDetail from "../CustomerDetail.svelte";
 	import { goto } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
-	import { formatPrice, formatDateToCzechShort } from "$lib/utils/formatting";
+	import { formatPrice, formatDateToCzechShort, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	
 	export let data: any;
 	
@@ -41,6 +41,28 @@
 	async function back() {
 		await goto("/admin/customer");
 	}
+
+	// Reference na CustomerDetail komponentu pro volání funkcí
+	let customerDetailComponent: any;
+	let loading = false;
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			onClick: () => customerDetailComponent?.saveCustomer(),
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: loading ? 'Maže se...' : 'Smazat',
+			onClick: () => customerDetailComponent?.deleteCustomer(),
+			variant: 'danger' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
 <svelte:head>
@@ -51,9 +73,9 @@
 	title="Detail zákazníka"
 	subtitle="{customer?.first_name ?? ''} {customer?.last_name ?? ''}"
 	backUrl="/admin/customer"
-	actions={[]}>
+	{actions}>
 
-	<CustomerDetail data={{ supabase, session }} {customer} />
+	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
 
 	<!-- Věrnostní systém zákazníka -->
 	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
@@ -262,7 +284,7 @@
 
 	<!-- Historie objednávek -->
 	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
-		<h2 class="text-xl font-semibold mb-4">Historie objednávek</h2>
+		<h2 class="text-xl font-semibold mb-4">Objednávky</h2>
 		{#if orders && orders.length > 0}
 			<div class="overflow-x-auto">
 				<table class="min-w-full divide-y divide-gray-200">
@@ -295,7 +317,7 @@
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="text-sm text-gray-900">
-										{new Date(order.created_at).toLocaleDateString('cs-CZ')}
+										{formatDateTimeToCzechShort(order.created_at)}
 									</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">

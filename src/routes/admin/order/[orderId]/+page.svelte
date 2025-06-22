@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech, formatPrice } from "$lib/utils/formatting"
+	import { formatDateToCzech, formatPrice, formatDateToCzechShort } from "$lib/utils/formatting"
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
@@ -438,6 +438,25 @@
 				
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
+						<input
+							type="text"
+							bind:value={customer_first_name}
+							placeholder="Jméno zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
+						<input
+							type="text"
+							bind:value={customer_last_name}
+							placeholder="Příjmení zákazníka"
+							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
 						<input
 							type="email"
@@ -455,24 +474,7 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Jméno</label>
-						<input
-							type="text"
-							bind:value={customer_first_name}
-							placeholder="Jméno zákazníka"
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Příjmení</label>
-						<input
-							type="text"
-							bind:value={customer_last_name}
-							placeholder="Příjmení zákazníka"
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500" />
-					</div>
-				</div>
+				
 			</div>
 		</div>
 
@@ -625,11 +627,11 @@
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 										{#if item.menuVersionData}
-											{formatDateToCzech(item.menuVersionData.date)}
+											{formatDateToCzechShort(item.menuVersionData.date)}
 										{:else if item.variant_id?.menu_id?.date}
-											{formatDateToCzech(item.variant_id.menu_id.date)}
+											{formatDateToCzechShort(item.variant_id.menu_id.date)}
 										{:else if item.variant_id?.menu_version_id?.date}
-											{formatDateToCzech(item.variant_id.menu_version_id.date)}
+											{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
 										{:else}
 											N/A
 										{/if}
@@ -676,11 +678,11 @@
 							</span>
 							<span class="text-sm font-medium text-gray-600">
 								{#if item.menuVersionData}
-									{formatDateToCzech(item.menuVersionData.date)}
+									{formatDateToCzechShort(item.menuVersionData.date)}
 								{:else if item.variant_id?.menu_id?.date}
-									{formatDateToCzech(item.variant_id.menu_id.date)}
+									{formatDateToCzechShort(item.variant_id.menu_id.date)}
 								{:else if item.variant_id?.menu_version_id?.date}
-									{formatDateToCzech(item.variant_id.menu_version_id.date)}
+									{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
 								{:else}
 									N/A
 								{/if}
