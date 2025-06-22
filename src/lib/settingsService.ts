@@ -14,6 +14,11 @@ export interface SeoSettings {
 	metaTitle: string;
 	metaDescription: string;
 	metaKeywords: string;
+	ogImage?: string;
+	googleAnalyticsId?: string;
+	googleAnalyticsEnabled: boolean;
+	facebookPixelEnabled: boolean;
+	facebookPixelId?: string;
 }
 
 export interface ContactSettings {
@@ -98,7 +103,7 @@ export const PAGE_SETTINGS = {
 	'/': ['general', 'seo', 'appearance'],
 	'/kontakt': ['general', 'contact', 'seo', 'appearance'],
 	'/prednasky-a-kurzy': ['general', 'seo', 'appearance'],
-	'/obedy': ['general', 'products', 'appearance'],
+	'/obedy': ['general', 'products', 'seo', 'appearance'],
 	'/kosik': ['general', 'business', 'appearance'],
 	'/admin': ['general', 'business'], // Admin část bez appearance
 	'*': ['general', 'appearance'] // výchozí pro ostatní stránky

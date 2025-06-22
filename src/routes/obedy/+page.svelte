@@ -18,8 +18,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.generalSettings?.shopName || 'Šťastné srdce'} - Obědy</title>
-	<meta name="description" content="Obědy" />
+	<title>Obědy - {data.generalSettings?.shopName || 'Šťastné srdce'}</title>
 </svelte:head>
 
 <main>
