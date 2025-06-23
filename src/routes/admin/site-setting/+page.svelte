@@ -1166,8 +1166,7 @@
 								
 								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
 									<input type="hidden" name="fileType" value="logo" />
-									<fieldset class="fieldset">
-										<legend class="fieldset-legend">Nahrát nový soubor</legend>
+									<fieldset class="fieldset">										
 										<input 
 											type="file" 
 											name="file"
@@ -1208,8 +1207,7 @@
 								
 								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
 									<input type="hidden" name="fileType" value="favicon" />
-									<fieldset class="fieldset">
-										<legend class="fieldset-legend">Nahrát nový soubor</legend>
+									<fieldset class="fieldset">										
 										<input 
 											type="file" 
 											name="file"
@@ -1374,9 +1372,61 @@
 								</div>
 							</div>
 
-							<!-- Scripts sekce -->
-							<div class="divider">SCRIPTS</div>
-						
+							<!-- Custom Scripts sekce -->
+							<div class="divider">VLASTNÍ SCRIPTY</div>
+							
+							<div class="space-y-6">
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Scripty do HEAD sekce</span>
+										<span class="label-text-alt">Pixels (GA a FB jsou v sekci SEO)</span>
+									</label>
+									<textarea
+										bind:value={$editableSettings.appearance.customHeadScripts}
+										class="textarea textarea-bordered h-32 font-mono text-sm"
+										placeholder={`<script>
+  // Váš kód zde
+  console.log('Head script loaded');
+</script>
+
+<meta name="custom-meta" content="value" />`}
+									></textarea>
+									<label class="label">
+										<span class="label-text-alt">Můžete vkládat &lt;script&gt;, &lt;meta&gt;, &lt;link&gt; a jiné HTML tagy</span>
+									</label>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Scripty na konec BODY</span>
+										<span class="label-text-alt">Tracking kódy, chat widgety, atd.</span>
+									</label>
+									<textarea
+										bind:value={$editableSettings.appearance.customBodyScripts}
+										class="textarea textarea-bordered h-32 font-mono text-sm"
+										placeholder={`<script>
+  // Váš kód zde
+  console.log('Body script loaded');
+</script>
+
+<!-- Chat widget nebo jiné -->
+<div id="custom-widget"></div>`}
+									></textarea>
+									<label class="label">
+										<span class="label-text-alt">Scripty se vloží před konec &lt;/body&gt; tagu</span>
+									</label>
+								</div>
+
+								<div class="alert alert-warning">
+									<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+									</svg>
+									<div>
+										<h3 class="font-bold">Upozornění!</h3>
+										<div class="text-sm">Vkládejte pouze kód z důvěryhodných zdrojů. Neplatný kód může poškodit funkčnost webu.</div>
+									</div>
+								</div>
+							</div>
 
 							<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div class="form-control">

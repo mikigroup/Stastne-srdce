@@ -59,6 +59,9 @@ export interface AppearanceSettings {
 	fontAwesomeKit?: string;
 	// Lottie player
 	lottiePlayerEnabled?: boolean;
+	// Custom scripts
+	customHeadScripts?: string;
+	customBodyScripts?: string;
 }
 
 export interface BusinessSettings {

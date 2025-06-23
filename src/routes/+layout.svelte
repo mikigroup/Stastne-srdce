@@ -142,10 +142,19 @@
 	{/if}
 	
 	<!-- Scripts -->
-	{#if appearanceSettings?.fontAwesomeEnabled && appearanceSettings?.fontAwesomeKit}
-		<script
-			src="https://kit.fontawesome.com/{appearanceSettings.fontAwesomeKit}.js"
-			crossorigin="anonymous"></script>
+	<!-- FontAwesome - vždy zapnuté -->
+	<script
+		src="https://kit.fontawesome.com/e5ce1babf6.js"
+		crossorigin="anonymous"></script>
+	
+	<!-- Lottie Player - vždy zapnuté -->
+	<script
+		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+		type="module"></script>
+	
+	<!-- Custom Head Scripts -->
+	{#if appearanceSettings?.customHeadScripts}
+		{@html appearanceSettings.customHeadScripts}
 	{/if}
 	
 	<!-- Google Analytics -->
@@ -237,11 +246,9 @@
 
 <Footer />
 
-<!-- Scripts do těla stránky -->
-{#if appearanceSettings?.lottiePlayerEnabled}
-	<script
-		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
-		type="module"></script>
+<!-- Custom Body Scripts -->
+{#if appearanceSettings?.customBodyScripts}
+	{@html appearanceSettings.customBodyScripts}
 {/if}
 
 <style lang="postcss">
