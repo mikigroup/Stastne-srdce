@@ -19,7 +19,8 @@
 		}
 	}
 
-	let src = "/srdce.png";
+	// Logo ze site settings, fallback na default  
+	$: src = data.settings?.appearance?.logo || "/srdce.png";
 
 	const formatter = new Intl.DateTimeFormat("en", {
 		hour12: false,

@@ -1389,4 +1389,56 @@ Contributions are welcome! If you have ideas for improvements or have found a bu
 - One-Time Password (OTP): https://en.wikipedia.org/wiki/One-time_password
 - cl-editor (WYSIWYG): https://github.com/ckeditor/ckeditor5
 
+## Supabase Storage Configuration
+
+### Vytvoření Storage Bucket pro nahrávání souborů
+
+Pro správné fungování nahrávání souborů v site-setting sekci je potřeba nakonfigurovat Supabase Storage:
+
+1. **Vytvoření bucket**:
+   - Přihlaste se do Supabase Dashboard
+   - Přejděte na Storage > Buckets
+   - Vytvořte nový bucket s názvem `site-assets`
+   - Nastavte bucket jako **public**
+
+2. **Nastavení RLS (Row Level Security)**:
+   ```sql
+   -- Povolení nahrávání pouze autentizovaným administrátorům
+   CREATE POLICY "Allow authenticated users to upload site assets" ON storage.objects
+   FOR INSERT TO authenticated
+   WITH CHECK (bucket_id = 'site-assets');
+
+   -- Povolení čtení všem uživatelům
+   CREATE POLICY "Allow public access to site assets" ON storage.objects
+   FOR SELECT TO public
+   USING (bucket_id = 'site-assets');
+
+   -- Povolení smazání pouze autentizovaným administrátorům
+   CREATE POLICY "Allow authenticated users to delete site assets" ON storage.objects
+   FOR DELETE TO authenticated
+   USING (bucket_id = 'site-assets');
+   ```
+
+3. **Struktura souborů**:
+   ```
+   site-assets/
+   └── uploads/
+       ├── logo-[timestamp].png
+       ├── favicon-[timestamp].ico
+       └── ...
+   ```
+
+### Použití Upload funkce
+
+V site-setting sekci "Vzhled" můžete:
+
+1. **Zadat URL ručně** - klasický způsob s externími URL
+2. **Nahrát soubor** - nový způsob pomocí file uploadu do Supabase Storage
+
+Nahrávaný soubor:
+- Maximální velikost: 2MB
+- Podporované formáty: PNG, JPG, SVG, ICO
+- Automaticky se uloží do Supabase Storage
+- URL se automaticky vloží do příslušného nastavení
+
 ver1_17102024

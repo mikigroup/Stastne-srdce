@@ -329,5 +329,94 @@ export const actions: Actions = {
 			console.error("Chyba při zpracování stavů objednávek:", error);
 			return fail(500, { error: "Chyba při zpracování stavů objednávek" });
 		}
+	},
+
+	upload: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) throw redirect(303, "/login");
+
+		const formData = await request.formData();
+		const file = formData.get('file') as File;
+		const fileType = formData.get('fileType') as string; // 'logo' or 'favicon'
+
+		if (!file || file.size === 0) {
+			return fail(400, { error: "Nebyl vybrán žádný soubor" });
+		}
+
+		// Validace souboru
+		if (!file.type.startsWith('image/')) {
+			return fail(400, { error: "Soubor musí být obrázek" });
+		}
+
+		if (file.size > 2 * 1024 * 1024) { // 2MB limit
+			return fail(400, { error: "Soubor je příliš velký (max 2MB)" });
+		}
+
+		try {
+			// Generujeme jedinečný název souboru
+			const fileExt = file.name.split('.').pop();
+			const fileName = `${fileType}-${Date.now()}.${fileExt}`;
+			const filePath = `uploads/${fileName}`;
+
+			// Převedeme File na ArrayBuffer
+			const fileArrayBuffer = await file.arrayBuffer();
+
+			// Nahrajeme do Supabase Storage
+			const { data, error } = await supabase.storage
+				.from('site-assets')
+				.upload(filePath, fileArrayBuffer, {
+					contentType: file.type,
+					upsert: false
+				});
+
+			if (error) {
+				console.error('Chyba při nahrávání souboru:', error);
+				return fail(500, { error: "Nepodařilo se nahrát soubor" });
+			}
+
+			// Získáme veřejnou URL
+			const { data: urlData } = supabase.storage
+				.from('site-assets')
+				.getPublicUrl(filePath);
+
+			// Aktualizujeme příslušné nastavení
+			const settingKey = 'appearance';
+			const currentSetting = await getSetting(supabase, settingKey);
+			
+			const updatedAppearance = {
+				...currentSetting,
+				[fileType]: urlData.publicUrl
+			};
+
+			const { error: updateError } = await supabase
+				.from("site_settings")
+				.upsert({
+					key: settingKey,
+					value: serializeSettingValue(updatedAppearance),
+					updated_at: new Date().toISOString(),
+					updated_by: session.user.id,
+					user_id: session.user.id
+				}, {
+					onConflict: 'key'
+				});
+
+			if (updateError) {
+				console.error("Chyba při ukládání nastavení:", updateError);
+				return fail(500, { error: "Nepodařilo se uložit nastavení" });
+			}
+
+			// Vyčistíme cache
+			settingsCache.clear();
+
+			return { 
+				success: true, 
+				fileUrl: urlData.publicUrl,
+				message: `${fileType === 'logo' ? 'Logo' : 'Favicon'} bylo úspěšně nahráno`
+			};
+
+		} catch (error) {
+			console.error("Chyba při zpracování uploadu:", error);
+			return fail(500, { error: "Chyba při zpracování souboru" });
+		}
 	}
 };

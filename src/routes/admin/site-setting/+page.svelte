@@ -28,6 +28,12 @@
 	let showMessage = false;
 	let loadingTab = false;
 
+	// File upload state
+	let uploadingLogo = false;
+	let uploadingFavicon = false;
+	let logoFileInput: HTMLInputElement;
+	let faviconFileInput: HTMLInputElement;
+
 	// Cache management
 	const CACHE_KEY = 'site_settings_cache';
 	const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
@@ -602,6 +608,80 @@
 			}
 		};
 	}
+
+	// Handler pro enhance na upload formulářích
+	function handleUploadEnhance({ formData }: any) {
+		const fileType = formData.get('fileType') as string;
+		
+		if (fileType === 'logo') {
+			uploadingLogo = true;
+		} else if (fileType === 'favicon') {
+			uploadingFavicon = true;
+		}
+
+		return async ({ result, update }: { result: any, update: () => Promise<void> }) => {
+			await update();
+
+			// Reset loading states
+			uploadingLogo = false;
+			uploadingFavicon = false;
+
+			if (result.type === 'success' && result.data?.success) {
+				// Zobrazíme success zprávu
+				saveMessage = result.data.message || 'Soubor byl úspěšně nahrán';
+				saveMessageType = 'success';
+				showMessage = true;
+
+				// Aktualizujeme nastavení s novou URL
+				if (result.data.fileUrl) {
+					if (fileType === 'logo') {
+						$editableSettings.appearance.logo = result.data.fileUrl;
+						if (logoFileInput) logoFileInput.value = '';
+					} else if (fileType === 'favicon') {
+						$editableSettings.appearance.favicon = result.data.fileUrl;
+						if (faviconFileInput) faviconFileInput.value = '';
+					}
+				}
+
+				setTimeout(() => {
+					showMessage = false;
+				}, 5000);
+			} else if (result.type === 'failure') {
+				// Zobrazíme error zprávu
+				saveMessage = result.data?.error || 'Chyba při nahrávání souboru';
+				saveMessageType = 'error';
+				showMessage = true;
+
+				setTimeout(() => {
+					showMessage = false;
+				}, 8000);
+			}
+		};
+	}
+
+	// Automatické spuštění uploadu při výběru logo souboru
+	function handleLogoFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			// Najdeme formulář a odešleme ho
+			const form = target.closest('form');
+			if (form) {
+				form.requestSubmit();
+			}
+		}
+	}
+
+	// Automatické spuštění uploadu při výběru favicon souboru
+	function handleFaviconFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			// Najdeme formulář a odešleme ho
+			const form = target.closest('form');
+			if (form) {
+				form.requestSubmit();
+			}
+		}
+	}
 </script>
 
 <svelte:head>
@@ -1069,42 +1149,92 @@
 						<div class="space-y-4">
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Logo URL</span>
+									<span class="label-text">Logo</span>
 								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.appearance.logo}
-									class="input input-bordered w-full"
-								/>
+								
+								<!-- Current logo display -->
 								{#if $editableSettings.appearance.logo}
-									<div class="mt-2">
+									<div class="mb-4 p-4 border rounded-lg bg-gray-50">
 										<img
 											src={$editableSettings.appearance.logo}
 											alt="Logo"
-											class="h-16 object-contain"
+											class="h-16 object-contain mb-2"
 										/>
+										<p class="text-sm text-gray-600">Současné logo</p>
 									</div>
-								{/if}
+								{/if}								
+
+								<!-- File upload section -->
+								<div class="divider">NEBO</div>
+								
+								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
+									<input type="hidden" name="fileType" value="logo" />
+									<fieldset class="fieldset">
+										<legend class="fieldset-legend">Nahrát nový soubor</legend>
+										<input 
+											type="file" 
+											name="file"
+											accept="image/*"
+											class="file-input file-input-bordered w-full" 
+											bind:this={logoFileInput}
+											on:change={handleLogoFileChange}
+										/>
+										<label class="label">
+											<span class="label-text-alt">Max velikost 2MB, podporované formáty: PNG, JPG, SVG</span>
+										</label>
+										{#if uploadingLogo}
+											<div class="flex items-center gap-2 mt-2">
+												<span class="loading loading-spinner loading-sm"></span>
+												<span class="text-sm">Nahrávám logo...</span>
+											</div>
+										{/if}
+									</fieldset>
+								</form>
 							</div>
 
 							<div class="form-control">
 								<label class="label">
-									<span class="label-text">Favicon URL</span>
+									<span class="label-text">Favicon</span>
 								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.appearance.favicon}
-									class="input input-bordered w-full"
-								/>
+								
+								<!-- Current favicon display -->
 								{#if $editableSettings.appearance.favicon}
-									<div class="mt-2">
+									<div class="mb-4 p-4 border rounded-lg bg-gray-50">
 										<img
 											src={$editableSettings.appearance.favicon}
 											alt="Favicon"
-											class="h-8 object-contain"
+											class="h-8 object-contain mb-2"
 										/>
+										<p class="text-sm text-gray-600">Současný favicon</p>
 									</div>
-								{/if}
+								{/if}								
+
+								<!-- File upload section -->
+								<div class="divider">NEBO</div>
+								
+								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
+									<input type="hidden" name="fileType" value="favicon" />
+									<fieldset class="fieldset">
+										<legend class="fieldset-legend">Nahrát nový soubor</legend>
+										<input 
+											type="file" 
+											name="file"
+											accept="image/*"
+											class="file-input file-input-bordered w-full" 
+											bind:this={faviconFileInput}
+											on:change={handleFaviconFileChange}
+										/>
+										<label class="label">
+											<span class="label-text-alt">Max velikost 2MB, doporučujeme ICO nebo PNG formát</span>
+										</label>
+										{#if uploadingFavicon}
+											<div class="flex items-center gap-2 mt-2">
+												<span class="loading loading-spinner loading-sm"></span>
+												<span class="text-sm">Nahrávám favicon...</span>
+											</div>
+										{/if}
+									</fieldset>
+								</form>
 							</div>
 
 							<div class="form-control">

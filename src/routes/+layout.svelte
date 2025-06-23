@@ -52,6 +52,7 @@
 	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;
 	$: generalSettings = data.settings?.general;
+	$: appearanceSettings = data.settings?.appearance;
 </script>
 
 <!-- Globální SEO meta tagy pro celý web -->
@@ -83,6 +84,11 @@
 	
 	{#if seoSettings?.ogImage}
 		<meta property="og:image" content={seoSettings.ogImage} />
+	{/if}
+	
+	<!-- Dynamické favicon z site settings -->
+	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}
+		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
 	{/if}
 	
 	<!-- Twitter meta tagy -->
