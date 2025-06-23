@@ -1882,45 +1882,6 @@
 							</div>
 						</div>
 						
-						<!-- Funkce produktů -->
-						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Funkce produktů</h3>
-							
-							<div class="space-y-3">
-								{#if !$editableSettings.products.features || $editableSettings.products.features.length === 0}
-									<p class="text-gray-500 mb-2">Žádné funkce nebyly definovány</p>
-								{:else}
-									{#each $editableSettings.products.features as feature, index}
-										<div class="flex items-center gap-2">
-											<input 
-												type="text" 
-												bind:value={feature.title} 
-												class="input input-bordered w-1/3"
-												placeholder="Název funkce"
-											/>
-											<input 
-												type="text" 
-												bind:value={feature.description} 
-												class="input input-bordered flex-grow"
-												placeholder="Popis funkce"
-											/>
-											<button 
-												class="btn btn-sm btn-outline btn-error" 
-												on:click={() => removeProductFeature(index)}>
-												×
-											</button>
-										</div>
-									{/each}
-								{/if}
-								
-								<button 
-									class="btn btn-sm btn-outline mt-2" 
-									on:click={addProductFeature}>
-									Přidat funkci
-								</button>
-							</div>
-						</div>
-						
 						<!-- Zobrazení alergenů -->
 						<div class="mb-6">
 							<h3 class="text-lg font-medium mb-3">Zobrazení alergenů</h3>
