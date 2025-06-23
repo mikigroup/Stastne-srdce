@@ -63,7 +63,29 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     favicon: '/favi/favicon.ico',
     primaryColor: '#3CB371',
     secondaryColor: '#4A5568',
-    footerText: 'Šťastné srdce s.r.o. 2022 - 2025'
+    footerText: 'Šťastné srdce s.r.o. 2022 - 2025',
+    // Meta tagy
+    metaAuthor: 'malyleo.cz',
+    metaCopyright: 'Šťastné srdce',
+    metaRobots: 'index, follow',
+    // Open Graph
+    ogType: 'website',
+    ogUrl: 'https://www.stastnesrdce.cz',
+    ogLocale: 'cs_CZ',
+    // Twitter
+    twitterCard: 'summary_large_image',
+    // Apple touch icon
+    appleTouchIcon: '/favi/apple-touch-icon.png',
+    // Web manifest
+    webManifest: '/favi/site.webmanifest',
+    // FontAwesome
+    fontAwesomeEnabled: true,
+    fontAwesomeKit: 'e5ce1babf6',
+    // Lottie player
+    lottiePlayerEnabled: true,
+    // Custom scripts
+    customHeadScripts: '',
+    customBodyScripts: ''
   },
 
   business: {

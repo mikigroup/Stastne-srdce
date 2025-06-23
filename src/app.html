@@ -1,30 +1,14 @@
 <!doctype html>
 <html lang="cs" dir="ltr" data-theme="light">
 	<head>
-			<meta charset="UTF-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1" />
-			<meta name="author" content="malyleo.cz" />
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		%sveltekit.head%
-			<meta name="copyright" content="Šťastné srdce" />
-			<meta name="robots" content="index, follow" />
-			<meta property="og:type" content="website" />
-			<meta property="og:url" content="https://www.stastnesrdce.cz" />
-			<meta property="og:locale" content="cs_CZ" />
-			<meta name="twitter:card" content="summary_large_image" />
-
-		<!-- Favicon se nastavuje dynamicky v +layout.svelte ze site settings -->
-		<link rel="apple-touch-icon" href="%sveltekit.assets%/favi/apple-touch-icon.png" />
-		<link rel="manifest" href="%sveltekit.assets%/favi/site.webmanifest" />
+		
+		<!-- Fallback ikony pro případ, že nejsou nakonfigurované v nastaveních -->
 		<link rel="icon" type="image/png" sizes="192x192" href="/favi/android-chrome-192x192.png" />
-
-			<script
-				src="https://kit.fontawesome.com/e5ce1babf6.js"
-				crossorigin="anonymous"></script>
 	</head>
 	<body class="">
 		<div style="display: contents">%sveltekit.body%</div>
-		<script
-			src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
-			type="module"></script>
 	</body>
 </html>

@@ -2,6 +2,7 @@
 	import "./app.css";
 	import "./banner.css";
 	import { page } from "$app/stores";
+	import { browser } from "$app/environment";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
@@ -27,7 +28,7 @@
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -38,7 +39,7 @@
 		return () => data.subscription.unsubscribe();
 	});
 
-	$: isAdminRoute = $page.url.pathname.startsWith("/admin");
+	$: isAdminRoute = browser && $page.url.pathname.startsWith("/admin");
 	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
@@ -57,6 +58,20 @@
 
 <!-- Globální SEO meta tagy pro celý web -->
 <svelte:head>
+	<!-- Základní meta tagy -->
+	{#if appearanceSettings?.metaAuthor}
+		<meta name="author" content={appearanceSettings.metaAuthor} />
+	{/if}
+	
+	{#if appearanceSettings?.metaCopyright}
+		<meta name="copyright" content={appearanceSettings.metaCopyright} />
+	{/if}
+	
+	{#if appearanceSettings?.metaRobots}
+		<meta name="robots" content={appearanceSettings.metaRobots} />
+	{/if}
+
+	<!-- SEO meta tagy -->
 	{#if seoSettings?.metaTitle}
 		<title>{seoSettings.metaTitle}</title>
 	{:else if generalSettings?.shopName}
@@ -72,6 +87,18 @@
 	{/if}
 	
 	<!-- Open Graph meta tagy -->
+	{#if appearanceSettings?.ogType}
+		<meta property="og:type" content={appearanceSettings.ogType} />
+	{/if}
+	
+	{#if appearanceSettings?.ogUrl}
+		<meta property="og:url" content={appearanceSettings.ogUrl} />
+	{/if}
+	
+	{#if appearanceSettings?.ogLocale}
+		<meta property="og:locale" content={appearanceSettings.ogLocale} />
+	{/if}
+	
 	{#if seoSettings?.metaTitle}
 		<meta property="og:title" content={seoSettings.metaTitle} />
 	{:else if generalSettings?.shopName}
@@ -86,12 +113,11 @@
 		<meta property="og:image" content={seoSettings.ogImage} />
 	{/if}
 	
-	<!-- Dynamické favicon z site settings -->
-	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}
-		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
+	<!-- Twitter meta tagy -->
+	{#if appearanceSettings?.twitterCard}
+		<meta name="twitter:card" content={appearanceSettings.twitterCard} />
 	{/if}
 	
-	<!-- Twitter meta tagy -->
 	{#if seoSettings?.metaTitle}
 		<meta name="twitter:title" content={seoSettings.metaTitle} />
 	{:else if generalSettings?.shopName}
@@ -100,6 +126,26 @@
 	
 	{#if seoSettings?.metaDescription}
 		<meta name="twitter:description" content={seoSettings.metaDescription} />
+	{/if}
+	
+	<!-- Favicon a ikony -->
+	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}
+		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
+	{/if}
+	
+	{#if appearanceSettings?.appleTouchIcon}
+		<link rel="apple-touch-icon" href={appearanceSettings.appleTouchIcon} />
+	{/if}
+	
+	{#if appearanceSettings?.webManifest}
+		<link rel="manifest" href={appearanceSettings.webManifest} />
+	{/if}
+	
+	<!-- Scripts -->
+	{#if appearanceSettings?.fontAwesomeEnabled && appearanceSettings?.fontAwesomeKit}
+		<script
+			src="https://kit.fontawesome.com/{appearanceSettings.fontAwesomeKit}.js"
+			crossorigin="anonymous"></script>
 	{/if}
 	
 	<!-- Google Analytics -->
@@ -190,6 +236,13 @@
 />
 
 <Footer />
+
+<!-- Scripts do těla stránky -->
+{#if appearanceSettings?.lottiePlayerEnabled}
+	<script
+		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+		type="module"></script>
+{/if}
 
 <style lang="postcss">
 	.textmenu {

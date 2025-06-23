@@ -20,10 +20,6 @@
 	let { session, supabase, menu, allAllergens, allIngredients } = data;
 	$: ({ session, supabase, menu, allAllergens, allIngredients } = data);
 
-	// Přidejte kód pro zobrazení dat v konzoli
-	console.log("Menu data:", menu);
-	console.log("Menu variants:", menu.variants);
-
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";

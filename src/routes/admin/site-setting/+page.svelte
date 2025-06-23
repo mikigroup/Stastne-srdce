@@ -1163,9 +1163,6 @@
 										<p class="text-sm text-gray-600">Současné logo</p>
 									</div>
 								{/if}								
-
-								<!-- File upload section -->
-								<div class="divider">NEBO</div>
 								
 								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
 									<input type="hidden" name="fileType" value="logo" />
@@ -1208,9 +1205,6 @@
 										<p class="text-sm text-gray-600">Současný favicon</p>
 									</div>
 								{/if}								
-
-								<!-- File upload section -->
-								<div class="divider">NEBO</div>
 								
 								<form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUploadEnhance}>
 									<input type="hidden" name="fileType" value="favicon" />
@@ -1247,6 +1241,142 @@
 									class="input input-bordered w-full"
 								/>
 							</div>
+
+							<!-- Meta tagy sekce -->
+							<div class="divider">META TAGY</div>
+							
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Autor (meta author)</span>
+									</label>
+									<input
+										type="text"
+										bind:value={$editableSettings.appearance.metaAuthor}
+										class="input input-bordered w-full"
+										placeholder="malyleo.cz"
+									/>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Copyright (meta copyright)</span>
+									</label>
+									<input
+										type="text"
+										bind:value={$editableSettings.appearance.metaCopyright}
+										class="input input-bordered w-full"
+										placeholder="Šťastné srdce"
+									/>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Robots (meta robots)</span>
+									</label>
+									<select
+										bind:value={$editableSettings.appearance.metaRobots}
+										class="select select-bordered w-full"
+									>
+										<option value="index, follow">Index, Follow</option>
+										<option value="noindex, nofollow">Noindex, Nofollow</option>
+										<option value="index, nofollow">Index, Nofollow</option>
+										<option value="noindex, follow">Noindex, Follow</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- Open Graph sekce -->
+							<div class="divider">OPEN GRAPH</div>
+							
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">OG Type</span>
+									</label>
+									<select
+										bind:value={$editableSettings.appearance.ogType}
+										class="select select-bordered w-full"
+									>
+										<option value="website">Website</option>
+										<option value="article">Article</option>
+										<option value="product">Product</option>
+									</select>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">OG URL</span>
+									</label>
+									<input
+										type="url"
+										bind:value={$editableSettings.appearance.ogUrl}
+										class="input input-bordered w-full"
+										placeholder="https://www.stastnesrdce.cz"
+									/>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">OG Locale</span>
+									</label>
+									<select
+										bind:value={$editableSettings.appearance.ogLocale}
+										class="select select-bordered w-full"
+									>
+										<option value="cs_CZ">cs_CZ</option>
+										<option value="en_US">en_US</option>
+										<option value="sk_SK">sk_SK</option>
+									</select>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Twitter Card</span>
+									</label>
+									<select
+										bind:value={$editableSettings.appearance.twitterCard}
+										class="select select-bordered w-full"
+									>
+										<option value="summary_large_image">Summary Large Image</option>
+										<option value="summary">Summary</option>
+										<option value="app">App</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- Web App sekce -->
+							<div class="divider">WEB APP</div>
+							
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Apple Touch Icon</span>
+									</label>
+									<input
+										type="text"
+										bind:value={$editableSettings.appearance.appleTouchIcon}
+										class="input input-bordered w-full"
+										placeholder="/favi/apple-touch-icon.png"
+									/>
+								</div>
+
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Web Manifest</span>
+									</label>
+									<input
+										type="text"
+										bind:value={$editableSettings.appearance.webManifest}
+										class="input input-bordered w-full"
+										placeholder="/favi/site.webmanifest"
+									/>
+								</div>
+							</div>
+
+							<!-- Scripts sekce -->
+							<div class="divider">SCRIPTS</div>
+						
 
 							<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div class="form-control">

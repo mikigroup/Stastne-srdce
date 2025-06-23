@@ -256,8 +256,7 @@
 		const newSort = sort === 'date_desc' ? 'date_asc' : 'date_desc';
 		goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}&sort=${newSort}`);
 	}
-
-	$: console.log('Menu data:', menus?.map(m => ({id: m.id, active: m.active})));
+	
 </script>
 
 <svelte:head>

@@ -32,10 +32,33 @@ export interface SocialSettings {
 }
 
 export interface AppearanceSettings {
+	logo?: string;
+	favicon?: string;
+	primaryColor?: string;
+	secondaryColor?: string;
 	footerText?: string;
 	headerText?: string;
 	showLogo?: boolean;
 	showFooter?: boolean;
+	// Meta tagy
+	metaAuthor?: string;
+	metaCopyright?: string;
+	metaRobots?: string;
+	// Open Graph
+	ogType?: string;
+	ogUrl?: string;
+	ogLocale?: string;
+	// Twitter
+	twitterCard?: string;
+	// Apple touch icon
+	appleTouchIcon?: string;
+	// Web manifest
+	webManifest?: string;
+	// FontAwesome
+	fontAwesomeEnabled?: boolean;
+	fontAwesomeKit?: string;
+	// Lottie player
+	lottiePlayerEnabled?: boolean;
 }
 
 export interface BusinessSettings {
