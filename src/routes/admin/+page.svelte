@@ -12,6 +12,7 @@
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
 	import { page } from "$app/stores";
+	import { formatCurrency, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 
 	Chart.register(
 		Title,
@@ -31,20 +32,7 @@
 	$: last24hOrdersCount = data.last24hOrdersCount || 0;
 	$: last24hOrdersTotal = data.last24hOrdersTotal || 0;
 
-	// Formatting functions
-	function formatCurrency(value: number) {
-		return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK' }).format(value);
-	}
 
-	function formatDateTime(dateString: string) {
-		return new Date(dateString).toLocaleString('cs-CZ', {
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
 
 	function getStatusColor(status: string) {
 		switch(status) {
@@ -155,7 +143,7 @@
 						{#each last24hOrders as order}
 							<tr>
 								<td>#{order.order_number}</td>
-								<td>{formatDateTime(order.created_at)}</td>
+								<td>{formatDateTimeToCzechShort(order.created_at)}</td>
 								<td>{order.customer_first_name} {order.customer_last_name}</td>
 								<td>{formatCurrency(order.total_price)}</td>
 								<td>

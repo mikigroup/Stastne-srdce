@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import type { SubmitFunction } from "@sveltejs/kit";
-	import type { ActionData, PageData } from "./$types";
-	import type { Text } from "./+page.server";
+	import type { ActionData, PageData } from "./$types";	
 	import { onMount } from "svelte";
 
 	export let data: PageData;
@@ -293,7 +292,7 @@
 					<select
 						id="page-select"
 						name="page"
-						class="w-full md:w-auto mr-5 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+						class="min-w-32 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 						bind:value={selectedPage}
 						on:change={handlePageChange}
 						required>
@@ -303,33 +302,6 @@
 					</select>
 				</div>
 
-				<!-- Výběr textu -->
-				<!--{#if selectedPage === "hlavni"}
-				<div class="mb-6">
-					<label for="text-select" class="block text-sm font-medium text-gray-700 mb-2">
-						{selectedPage === "jidelnicek" || selectedPage === "obedy" ? "Jídelníček" : "Vyberte text"}
-					</label>
-					<div class="flex flex-col md:flex-row md:items-center gap-4">
-						<input type="hidden" name="id" value={selectedTextId} />
-						<select
-							id="text-select"
-							class="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-auto"
-							bind:value={selectedTextId}
-							on:change={() => loadText(selectedTextId)}
-							disabled={!selectedPage}>
-							{#if filteredTexts.length === 0}
-								<option value={0}>Text pro tuto stránku</option>
-							{:else}
-								{#each filteredTexts as text}
-									<option value={text.id} selected={selectedTextId === text.id}>
-										{text.title || `ID ${text.id} (bez nadpisu)`}
-									</option>
-								{/each}
-							{/if}
-						</select>
-					</div>
-				</div>
-				{/if}-->
 				<!-- Umístění (pouze pro stránku "hlavni") -->
 				{#if selectedPage === "hlavni"}
 					<div class="mb-6">

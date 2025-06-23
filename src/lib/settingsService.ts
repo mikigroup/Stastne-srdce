@@ -7,12 +7,18 @@ export interface GeneralSettings {
 	shortName: string;
 	slogan: string;
 	legalName: string;
+	currencies: string[];
 }
 
 export interface SeoSettings {
 	metaTitle: string;
 	metaDescription: string;
 	metaKeywords: string;
+	ogImage?: string;
+	googleAnalyticsId?: string;
+	googleAnalyticsEnabled: boolean;
+	facebookPixelEnabled: boolean;
+	facebookPixelId?: string;
 }
 
 export interface ContactSettings {
@@ -37,6 +43,41 @@ export interface BusinessSettings {
 	dic?: string;
 }
 
+// Rozšířené nastavení pro kompletní systém
+export interface EshopSettings {
+	enabled: boolean;
+	orderStates: Array<{
+		name: string;
+		color: string;
+	}>;
+}
+
+export interface ProductsSettings {
+	menuTitle?: string;
+	menuIntroText: string;
+	visibleDays: number;
+	features: Array<any>;
+	showAllergens: boolean;
+	showAllergensTooltip: boolean;
+}
+
+export interface CustomerSettings {
+	allowRegistration: boolean;
+	requireEmailVerification: boolean;
+	defaultRole: string;
+}
+
+export interface InventorySettings {
+	trackInventory: boolean;
+	lowStockThreshold: number;
+}
+
+export interface DopravaSettings {
+	shippingMethods: Array<any>;
+	minimumOrderValue: number;
+	freeDeliveryThreshold: number;
+}
+
 export interface AllSettings {
 	general: GeneralSettings;
 	seo: SeoSettings;
@@ -44,46 +85,25 @@ export interface AllSettings {
 	social: SocialSettings;
 	appearance: AppearanceSettings;
 	business: BusinessSettings;
+	eshop: EshopSettings;
+	products: ProductsSettings;
+	customer: CustomerSettings;
+	inventory: InventorySettings;
+	doprava: DopravaSettings;
 }
 
-// Výchozí hodnoty
-export const DEFAULT_SETTINGS: AllSettings = {
-	general: {
-		shopName: "Šťastné srdce",
-		shortName: "Šťastné",
-		slogan: "Zdravé stravování a rozvoz jídla",
-		legalName: "Šťastné srdce s.r.o."
-	},
-	seo: {
-		metaTitle: "Šťastné srdce - Zdravé stravování a rozvoz jídla",
-		metaDescription: "Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku.",
-		metaKeywords: "šťastné srdce, mikulovice, zdraví, dietolog, rozvoz jídla, jeseník"
-	},
-	contact: {
-		email: "info@stastnesrdce.cz",
-		phone: "+420 724 448 377",
-		address: "Potoční 16, Mikulovice 79084"
-	},
-	social: {
-		facebook: "https://facebook.com/stastnesrdce"
-	},
-	appearance: {
-		footerText: "Šťastné srdce s.r.o. 2022 - 2025",
-		headerText: "Šťastné srdce",
-		showLogo: true,
-		showFooter: true
-	},
-	business: {
-		ico: "21300674",
-		dic: "CZ21300674"
-	}
-};
+// Import unified default values
+import { UNIFIED_DEFAULT_SETTINGS } from '$lib/constants/defaultSettings';
+
+// Use unified defaults as the single source of truth (deep copy to make mutable)
+export const DEFAULT_SETTINGS: AllSettings = JSON.parse(JSON.stringify(UNIFIED_DEFAULT_SETTINGS));
 
 // Definice potřebných settings pro jednotlivé stránky
 export const PAGE_SETTINGS = {
 	'/': ['general', 'seo', 'appearance'],
 	'/kontakt': ['general', 'contact', 'seo', 'appearance'],
 	'/prednasky-a-kurzy': ['general', 'seo', 'appearance'],
+	'/obedy': ['general', 'products', 'seo', 'appearance'],
 	'/kosik': ['general', 'business', 'appearance'],
 	'/admin': ['general', 'business'], // Admin část bez appearance
 	'*': ['general', 'appearance'] // výchozí pro ostatní stránky
@@ -115,6 +135,11 @@ export const contactSettings = derived(settingsStore, $settings => $settings.con
 export const socialSettings = derived(settingsStore, $settings => $settings.social);
 export const appearanceSettings = derived(settingsStore, $settings => $settings.appearance);
 export const businessSettings = derived(settingsStore, $settings => $settings.business);
+export const eshopSettings = derived(settingsStore, $settings => $settings.eshop);
+export const productsSettings = derived(settingsStore, $settings => $settings.products);
+export const customerSettings = derived(settingsStore, $settings => $settings.customer);
+export const inventorySettings = derived(settingsStore, $settings => $settings.inventory);
+export const dopravaSettings = derived(settingsStore, $settings => $settings.doprava);
 
 // Hlavní funkce pro načtení settings
 export async function loadSettings(

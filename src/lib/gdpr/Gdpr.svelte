@@ -2,8 +2,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { cookieStore } from '../stores/cookieStore';
-	import type { CookieCategory } from '../services/cookieService';
+	import { cookieStore, type CookieCategory } from '../stores/cookieStore';
 
 	const dispatch = createEventDispatcher();
 

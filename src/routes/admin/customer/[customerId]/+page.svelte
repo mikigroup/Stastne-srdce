@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CustomerDetail from "../CustomerDetail.svelte";
 	import { goto } from "$app/navigation";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
+	import { formatPrice, formatDateToCzechShort, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	
 	export let data: any;
 	
@@ -13,18 +14,10 @@
 	$: supabase = data.supabase;
 	$: session = data.session;
 
-	// Helper funkce pro formátování ceny
-	function formatPrice(price: number): string {
-		return new Intl.NumberFormat('cs-CZ', {
-			style: 'currency',
-			currency: 'CZK'
-		}).format(price);
-	}
+	// Importujeme centrální formatPrice funkci
 
 	// Helper funkce pro formátování data
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('cs-CZ');
-	}
+
 
 	// Helper funkce pro formátování období
 	function formatDays(days: number): string {
@@ -48,6 +41,28 @@
 	async function back() {
 		await goto("/admin/customer");
 	}
+
+	// Reference na CustomerDetail komponentu pro volání funkcí
+	let customerDetailComponent: any;
+	let loading = false;
+
+	// Definice akcí pro AdminPageLayout
+	$: actions = [
+		{
+			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			onClick: () => customerDetailComponent?.saveCustomer(),
+			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: loading ? 'Maže se...' : 'Smazat',
+			onClick: () => customerDetailComponent?.deleteCustomer(),
+			variant: 'danger' as const,
+			loading,
+			disabled: loading
+		}
+	];
 </script>
 
 <svelte:head>
@@ -58,9 +73,9 @@
 	title="Detail zákazníka"
 	subtitle="{customer?.first_name ?? ''} {customer?.last_name ?? ''}"
 	backUrl="/admin/customer"
-	actions={[]}>
+	{actions}>
 
-	<CustomerDetail data={{ supabase, session }} {customer} />
+	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
 
 	<!-- Věrnostní systém zákazníka -->
 	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
@@ -76,7 +91,7 @@
 							<div>
 								<h3 class="text-xl font-bold">{loyaltyInfo.label}</h3>
 								<p class="text-sm opacity-75">
-									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent)} celkem
+									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent, true)} celkem
 								</p>
 							</div>
 						</div>
@@ -143,7 +158,7 @@
 						{#if stats.averageOrderValue > 0}
 							<div class="flex justify-between">
 								<span class="text-gray-600">Průměr/objednávka:</span>
-								<span class="font-medium">{formatPrice(stats.averageOrderValue)}</span>
+								<span class="font-medium">{formatPrice(stats.averageOrderValue, true)}</span>
 							</div>
 						{/if}
 					</div>
@@ -206,7 +221,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-green-600">Celková útrata</p>
-						<p class="text-2xl font-bold text-green-900">{formatPrice(stats.totalSpent)}</p>
+						<p class="text-2xl font-bold text-green-900">{formatPrice(stats.totalSpent, true)}</p>
 					</div>
 				</div>
 			</div>
@@ -223,7 +238,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-purple-600">Průměr na objednávku</p>
-						<p class="text-2xl font-bold text-purple-900">{formatPrice(stats.averageOrderValue)}</p>
+						<p class="text-2xl font-bold text-purple-900">{formatPrice(stats.averageOrderValue, true)}</p>
 					</div>
 				</div>
 			</div>
@@ -240,7 +255,7 @@
 					</div>
 					<div class="ml-4">
 						<p class="text-sm font-medium text-red-600">Nezaplacené</p>
-						<p class="text-lg font-bold text-red-900">{stats.unpaidOrders} ({formatPrice(stats.unpaidAmount)})</p>
+						<p class="text-lg font-bold text-red-900">{stats.unpaidOrders} ({formatPrice(stats.unpaidAmount, true)})</p>
 					</div>
 				</div>
 			</div>
@@ -253,13 +268,13 @@
 					{#if stats.firstOrderDate}
 						<div>
 							<span class="font-medium">První objednávka:</span>
-							{formatDate(stats.firstOrderDate)}
+							{formatDateToCzechShort(stats.firstOrderDate)}
 						</div>
 					{/if}
 					{#if stats.lastOrderDate}
 						<div>
 							<span class="font-medium">Poslední objednávka:</span>
-							{formatDate(stats.lastOrderDate)}
+							{formatDateToCzechShort(stats.lastOrderDate)}
 						</div>
 					{/if}
 				</div>
@@ -269,7 +284,7 @@
 
 	<!-- Historie objednávek -->
 	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
-		<h2 class="text-xl font-semibold mb-4">Historie objednávek</h2>
+		<h2 class="text-xl font-semibold mb-4">Objednávky</h2>
 		{#if orders && orders.length > 0}
 			<div class="overflow-x-auto">
 				<table class="min-w-full divide-y divide-gray-200">
@@ -302,7 +317,7 @@
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="text-sm text-gray-900">
-										{new Date(order.created_at).toLocaleDateString('cs-CZ')}
+										{formatDateTimeToCzechShort(order.created_at)}
 									</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">

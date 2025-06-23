@@ -273,5 +273,61 @@ export const actions: Actions = {
 			success: true,
 			setting: data
 		};
+	},
+
+	// Načtení stavů objednávek z existujících objednávek
+	loadOrderStates: async ({ locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			return fail(401, { error: "Nepřihlášen" });
+		}
+
+		try {
+			// Načteme všechny unikátní stavy z objednávek
+			const { data: orderStates, error } = await supabase
+				.from("orders")
+				.select("state")
+				.not("state", "is", null)
+				.not("state", "eq", "");
+
+			if (error) {
+				console.error("Chyba při načítání stavů z objednávek:", error);
+				return fail(500, { error: "Nepodařilo se načíst stavy objednávek" });
+			}
+
+			// Vytvoříme unikátní seznam stavů
+			const uniqueStates = [...new Set(orderStates?.map(order => order.state) || [])];
+			
+			// Výchozí barvy pro stavy
+			const defaultColors: Record<string, string> = {
+				'Nová': '#0284c7',
+				'Přijatá': '#059669', 
+				'Připravuje se': '#d97706',
+				'Připraveno': '#7c3aed',
+				'Expedovaná': '#eab308',
+				'Doručena': '#16a34a',
+				'Fakturovaná': '#10b981',
+				'Zaplacena': '#059669',
+				'Stornovaná': '#dc2626',
+				'Dokončena': '#16a34a'
+			};
+
+			// Vytvoříme objekty stavů s barvami
+			const orderStatesWithColors = uniqueStates.map(stateName => ({
+				name: stateName,
+				color: defaultColors[stateName] || '#6b7280' // Výchozí šedá pro neznámé stavy
+			}));
+
+			console.log(`Načteno ${orderStatesWithColors.length} stavů z objednávek:`, orderStatesWithColors);
+
+			return {
+				success: true,
+				orderStates: orderStatesWithColors
+			};
+
+		} catch (error) {
+			console.error("Chyba při zpracování stavů objednávek:", error);
+			return fail(500, { error: "Chyba při zpracování stavů objednávek" });
+		}
 	}
 };

@@ -13,7 +13,7 @@
 	import type { Profile } from "$lib/types/profile";
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import type { AllSettings, GeneralSettings } from '$lib/types/settings';
+	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
 
 	export let data: {
 		session: Session | null;
@@ -48,7 +48,85 @@
 		const cookieConsent = cookieStore.hasConsent();
 		showBanner = !cookieConsent;
 	});
+
+	// SEO data z nastavení
+	$: seoSettings = data.settings?.seo;
+	$: generalSettings = data.settings?.general;
 </script>
+
+<!-- Globální SEO meta tagy pro celý web -->
+<svelte:head>
+	{#if seoSettings?.metaTitle}
+		<title>{seoSettings.metaTitle}</title>
+	{:else if generalSettings?.shopName}
+		<title>{generalSettings.shopName} - Zdravé stravování a rozvoz jídla</title>
+	{/if}
+	
+	{#if seoSettings?.metaDescription}
+		<meta name="description" content={seoSettings.metaDescription} />
+	{/if}
+	
+	{#if seoSettings?.metaKeywords}
+		<meta name="keywords" content={seoSettings.metaKeywords} />
+	{/if}
+	
+	<!-- Open Graph meta tagy -->
+	{#if seoSettings?.metaTitle}
+		<meta property="og:title" content={seoSettings.metaTitle} />
+	{:else if generalSettings?.shopName}
+		<meta property="og:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+	{/if}
+	
+	{#if seoSettings?.metaDescription}
+		<meta property="og:description" content={seoSettings.metaDescription} />
+	{/if}
+	
+	{#if seoSettings?.ogImage}
+		<meta property="og:image" content={seoSettings.ogImage} />
+	{/if}
+	
+	<!-- Twitter meta tagy -->
+	{#if seoSettings?.metaTitle}
+		<meta name="twitter:title" content={seoSettings.metaTitle} />
+	{:else if generalSettings?.shopName}
+		<meta name="twitter:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+	{/if}
+	
+	{#if seoSettings?.metaDescription}
+		<meta name="twitter:description" content={seoSettings.metaDescription} />
+	{/if}
+	
+	<!-- Google Analytics -->
+	{#if seoSettings?.googleAnalyticsEnabled && seoSettings?.googleAnalyticsId}
+		<script async src="https://www.googletagmanager.com/gtag/js?id={seoSettings.googleAnalyticsId}"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', '{seoSettings.googleAnalyticsId}');
+		</script>
+	{/if}
+	
+	<!-- Facebook Pixel -->
+	{#if seoSettings?.facebookPixelEnabled && seoSettings?.facebookPixelId}
+		<script>
+			!function(f,b,e,v,n,t,s)
+			{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+			n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+			if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+			n.queue=[];t=b.createElement(e);t.async=!0;
+			t.src=v;s=b.getElementsByTagName(e)[0];
+			s.parentNode.insertBefore(t,s)}(window, document,'script',
+			'https://connect.facebook.net/en_US/fbevents.js');
+			fbq('init', '{seoSettings.facebookPixelId}');
+			fbq('track', 'PageView');
+		</script>
+		<noscript>
+			<img height="1" width="1" style="display:none" 
+				 src="https://www.facebook.com/tr?id={seoSettings.facebookPixelId}&ev=PageView&noscript=1" />
+		</noscript>
+	{/if}
+</svelte:head>
 
 {#if !isAdminRoute}
 	<HeaderCustomer {data} />
@@ -103,10 +181,9 @@
 		cookieStore.saveSelection();
 		showBanner = false;
 	}}
-	class="fixed bottom-4 left-4 z-50"
 />
 
-<Footer {data} />
+<Footer />
 
 <style lang="postcss">
 	.textmenu {

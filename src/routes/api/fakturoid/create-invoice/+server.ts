@@ -4,59 +4,7 @@ import {
 	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
 import { getAccessToken } from "$lib/fakturoidAuth";
-
-// Pomocná funkce pro formátování názvu položky
-function formatItemName(item: any): string {
-	// Zkusíme získat datum z různých možných míst ve struktuře
-	let menuDate = null;
-	
-	// Priorita: menu_id > menu_version_id > jiné možnosti
-	if (item.variant_id?.menu_id?.date) {
-		menuDate = item.variant_id.menu_id.date;
-	} else if (item.variant_id?.menu_version_id?.date) {
-		menuDate = item.variant_id.menu_version_id.date;
-	} else if (item.menuVersionData?.date) {
-		menuDate = item.menuVersionData.date;
-	}
-	
-	// Získání čísla varianty
-	const variantNumber = item.variant_id?.variant_number || item.variant?.variant_number;
-	
-	// Formátování data do českého formátu
-	let formattedDate = '';
-	if (menuDate) {
-		try {
-			const date = new Date(menuDate);
-			if (!isNaN(date.getTime())) {
-				formattedDate = date.toLocaleDateString('cs-CZ', {
-					day: 'numeric',
-					month: 'numeric', 
-					year: 'numeric'
-				});
-			}
-		} catch (e) {
-			console.warn('Chyba při formátování data:', e);
-		}
-	}
-	
-	// Sestavení názvu - pouze datum, "Menu" a číslo
-	let itemName = '';
-	
-	// Přidáme datum pokud máme
-	if (formattedDate) {
-		itemName += `${formattedDate} `;
-	}
-	
-	// Přidáme "Menu" a číslo
-	if (variantNumber) {
-		itemName += `Menu ${variantNumber}`;
-	} else {
-		itemName += 'Menu';
-	}
-	
-	// Fallback pokud nemáme žádné údaje
-	return itemName || 'Položka objednávky';
-}
+import { formatOrderItemName } from "$lib/utils/formatting";
 
 export const POST: RequestHandler = async ({
 	request,
@@ -73,6 +21,18 @@ export const POST: RequestHandler = async ({
 		if (authError || !user || user.id !== userId) {
 			return json({ error: "Unauthorized" }, { status: 401 });
 		}
+
+		// Explicitní ověření a refresh Fakturoid tokenu
+		console.log('Verifying and refreshing Fakturoid token...');
+		const accessToken = await getAccessToken();
+		if (!accessToken) {
+			console.error('Failed to get valid Fakturoid access token');
+			return json({ 
+				error: "Fakturoid není připojen nebo token nelze obnovit. Zkuste se znovu připojit k Fakturoidu.",
+				action: "reconnect_fakturoid"
+			}, { status: 401 });
+		}
+		console.log('Fakturoid token verified successfully');
 
 		// 1. Načíst objednávku z DB
 		const { data: order, error } = await supabase
@@ -95,15 +55,12 @@ export const POST: RequestHandler = async ({
 		if (error) throw error;
 		if (!order) throw new Error("Order not found");
 
-		// Získáme access token pro Fakturoid API
-		const accessToken = await getAccessToken();
-
 		// 2. Připravit data pro fakturu s upraveným názvem položek
 		const invoiceData = {
 			subject_id: null, // Budeme hledat nebo vytvoříme nového
 			subject_custom_id: order.customer_email,
 			lines: order.order_items.map((item: any) => ({
-				name: formatItemName(item),
+				name: formatOrderItemName(item),
 				quantity: item.quantity,
 				unit_price: item.price,
 				vat_rate: 21 // nebo podle nastavení
@@ -158,18 +115,51 @@ export const POST: RequestHandler = async ({
 		const invoiceResult = await invoiceResponse.json();
 		if (!invoiceResponse.ok) throw invoiceResult;
 
-		// 6. Vrátit URL faktury
+		// 6. Aktualizovat objednávku s informacemi o faktuře
+		console.log('Updating order with invoice information...');
+		const { error: updateError } = await supabase
+			.from('orders')
+			.update({
+				invoice_url: invoiceResult.html_url,
+				invoice_number: invoiceResult.number,
+				invoice_created_at: new Date().toISOString(),
+				status: 'invoiced' // Označíme objednávku jako vyfakturovanou
+			})
+			.eq('id', orderId);
+
+		if (updateError) {
+			console.error('Failed to update order with invoice info:', updateError);
+			// Není kritická chyba - faktura byla vytvořena úspěšně
+		} else {
+			console.log('Order updated successfully with invoice information');
+		}
+
+		// 7. Vrátit URL faktury a potvrzení
 		return json({
 			success: true,
 			invoice_url: invoiceResult.html_url,
-			invoice_number: invoiceResult.number
+			invoice_number: invoiceResult.number,
+			order_updated: !updateError,
+			message: 'Faktura byla úspěšně vytvořena a objednávka aktualizována'
 		});
-	} catch (error) {
+
+	} catch (error: unknown) {
 		console.error("Error creating invoice:", error);
+		
+		// Rozlišíme různé typy chyb
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		if (errorMessage?.includes('token') || errorMessage?.includes('unauthorized')) {
+			return json({
+				success: false,
+				error: "Problém s Fakturoid autentizací. Zkuste se znovu připojit.",
+				action: "reconnect_fakturoid"
+			}, { status: 401 });
+		}
+		
 		return json(
 			{
 				success: false,
-				error: error instanceof Error ? error.message : "Unknown error"
+				error: error instanceof Error ? error.message : "Neznámá chyba při vytváření faktury"
 			},
 			{ status: 500 }
 		);

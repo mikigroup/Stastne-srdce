@@ -5,7 +5,8 @@
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
-	import AdminPageLayout from "$lib/components/AdminPageLayout.svelte";
+	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
+	import { formatDateToCzechShort } from "$lib/utils/formatting";
 	import {
 		createMenuVersion,
 		updateMenuAllergens,
@@ -128,9 +129,10 @@
 	}
 
 	// Formátovací funkce pro datum
+	
 	function formatDate(dateString: string | null): string {
 		if (!dateString) return 'N/A';
-		return new Date(dateString).toLocaleDateString('cs-CZ');
+		return formatDateToCzechShort(dateString);
 	}
 
 	// Definice akcí pro AdminPageLayout

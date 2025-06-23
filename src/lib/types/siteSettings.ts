@@ -57,21 +57,11 @@ export function validateIntegrationsSettings(data: unknown): {
     }
 }
 
+import { getDefaultSettings } from '$lib/constants/defaultSettings';
+
 /**
  * Vytvoří výchozí integrations nastavení
  */
 export function getDefaultIntegrationsSettings(): IntegrationsSettings {
-    return {
-        fakturoid: {
-            enabled: false,
-            connected: false,
-            accounts: [],
-            defaultLanguage: 'cz',
-            autoCreateInvoices: false,
-            invoiceDueDays: 14,
-            defaultPaymentMethod: 'bank',
-            sendInvoiceEmail: false,
-            invoiceNote: ''
-        }
-    };
+    return JSON.parse(JSON.stringify(getDefaultSettings('integrations')));
 } 

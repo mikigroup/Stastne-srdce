@@ -33,7 +33,7 @@
 				<a href="https://www.malyleo.cz/" target="_blank" class="text-sm flex items-center">
 					<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo™
 				</a>
-				<span class="text-gray-400 text-xs">core1.1a</span>
+				<span class="text-gray-400 text-xs">core1.1b</span>
 			</div>
 			<p>Tento web používá cookies pro lepší uživatelský zážitek.</p>
 		</div>

@@ -1,5 +1,6 @@
 import type { IntegrationsSettings } from '$lib/types/siteSettings';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { formatOrderItemName } from '$lib/utils/formatting';
 
 export interface FakturoidConfig {
 	enabled: boolean;
@@ -175,6 +176,19 @@ export class FakturoidService {
 		currency?: string;
 		note?: string;
 	}): Promise<FakturoidInvoice> {
+		console.log('Starting invoice creation process...');
+		
+		// Preventivní kontrola tokenu před začátkem
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		const accessToken = await getAccessTokenWithSupabase(this.supabase);
+		
+		if (!accessToken) {
+			console.error('No valid access token available');
+			throw new Error('Váš Fakturoid token není dostupný nebo vypršel. Prosím reconnectujte svůj Fakturoid účet.');
+		}
+		
+		console.log('Access token available, proceeding with API calls...');
+
 		// Nejdříve zkusíme testovací spojení
 		console.log('Testing Fakturoid connection...');
 		try {
@@ -182,6 +196,17 @@ export class FakturoidService {
 			console.log('Fakturoid connection successful:', userInfo);
 		} catch (error) {
 			console.error('Fakturoid connection test failed:', error);
+			
+			// Specifičtější chybové hlášky podle typu chyby
+			if (error instanceof Error) {
+				if (error.message.includes('401') || error.message.includes('unauthorized')) {
+					throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Prosím reconnectujte svůj Fakturoid účet.');
+				}
+				if (error.message.includes('403') || error.message.includes('forbidden')) {
+					throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
+				}
+			}
+			
 			throw new Error('Nepodařilo se připojit k Fakturoid API. Zkontrolujte připojení a oprávnění.');
 		}
 
@@ -444,51 +469,4 @@ export async function markInvoiceAsPaid(invoiceId: number, supabase?: SupabaseCl
 		const errorText = await response.text();
 		throw new Error(`Chyba při označení faktury jako uhrazené: ${errorText}`);
 	}
-}
-
-// Pomocná funkce pro formátování názvu položky objednávky
-function formatOrderItemName(item: any): string {
-	// Zkusíme získat datum z různých možných míst ve struktuře
-	let menuDate = null;
-	
-	if (item.variant_id?.menu_id?.date) {
-		menuDate = item.variant_id.menu_id.date;
-	} else if (item.variant_id?.menu_version_id?.date) {
-		menuDate = item.variant_id.menu_version_id.date;
-	}
-	
-	// Získání čísla varianty
-	const variantNumber = item.variant_id?.variant_number;
-	
-	// Formátování data do českého formátu
-	let formattedDate = '';
-	if (menuDate) {
-		try {
-			const date = new Date(menuDate);
-			if (!isNaN(date.getTime())) {
-				formattedDate = date.toLocaleDateString('cs-CZ', {
-					day: 'numeric',
-					month: 'numeric', 
-					year: 'numeric'
-				});
-			}
-		} catch (e) {
-			console.warn('Chyba při formátování data:', e);
-		}
-	}
-	
-	// Sestavení názvu
-	let itemName = '';
-	
-	if (formattedDate) {
-		itemName += `${formattedDate} `;
-	}
-	
-	if (variantNumber) {
-		itemName += `Menu ${variantNumber}`;
-	} else {
-		itemName += 'Menu';
-	}
-	
-	return itemName || 'Položka menu';
 } 

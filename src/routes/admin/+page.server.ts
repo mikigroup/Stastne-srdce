@@ -10,15 +10,10 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		return { start, end: now };
 	};
 
-	// Helper function to format date as ISO string
-	const formatDateToISO = (date: Date): string => {
-		return date.toISOString();
-	};
-
 	// Use last 24 hours range by default
 	const { start, end } = getLast24HoursRange();
-	const startDate = formatDateToISO(start);
-	const endDate = formatDateToISO(end);
+	const startDate = start.toISOString();
+	const endDate = end.toISOString();
 
 	// Fetch orders from last 24 hours
 	const { data: orders, error: ordersError } = await supabase

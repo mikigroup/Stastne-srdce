@@ -7,6 +7,7 @@
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	export let data;
 	export let form: Actions;
@@ -192,10 +193,7 @@
 									</div>
 									<div class="m-2 text-center">
 										<p>
-											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
-												month: "long",
-												day: "numeric"
-											})}
+											{formatDateToCzech(cartItem.date)}
 										</p>
 									</div>
 									<hr />
