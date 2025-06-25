@@ -17,12 +17,12 @@ export default defineConfig({
     sveltekit(),
   ],
   server: {
-    host: "mystastnesrdce.local",
+    host: "leo-dev.local",
     port: 5173,
     strictPort: true,
     https: {
-      key: fs.readFileSync(path.resolve("./mystastnesrdce.local-key.pem")),
-      cert: fs.readFileSync(path.resolve("./mystastnesrdce.local.pem"))
+      key: fs.readFileSync(path.resolve("./leo-dev.local-key.pem")),
+      cert: fs.readFileSync(path.resolve("./leo-dev.local.pem"))
     }
   },
 });
