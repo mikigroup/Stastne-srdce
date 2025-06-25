@@ -23,10 +23,10 @@
 	let date: string = "";
 	let orderId: string = "";
 	let formattedDate = "";
-	let selectedPaymentMethod: string = "";
-	let selectedOrderState: string = "";
-	let selectedCurrency: string = "";
-	let selectedShippingMethod: string = "";
+	let selectedPaymentMethod: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedOrderState: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedCurrency: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedShippingMethod: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
 	let isPaid: boolean = false;
 	let note: string = "";
 
@@ -51,17 +51,19 @@
 
 	let updateMessage = "";
 	let orderStates: string[] = [];
+	let isInitialLoad = true;
 
-	// Reaktivní aktualizace všech polí při změně order dat
+	// Reaktivní aktualizace všech polí při změně order dat (kromě dropdown hodnot které se synchronizují zvlášť)
 	$: if (order) {
 		date = order.date ?? "";
 		orderId = order.id ?? "";
 		formattedDate = date ? formatSupabaseDate(date) : "";
-		selectedPaymentMethod = order.pay_method ?? "";
-		selectedOrderState = order.state ?? "";
-		selectedCurrency = order.currency ?? "";
-		selectedShippingMethod = order.shipping_method ?? "";
-		isPaid = order.pay_state || false;
+		// Dropdown hodnoty se nastavují zvlášť v synchronizačních funkcích
+		// selectedPaymentMethod = order.pay_method ?? "";
+		// selectedOrderState se nastavuje zvlášť v synchronizačním bloku
+		// selectedCurrency = order.currency ?? "";
+		// selectedShippingMethod = order.shipping_method ?? "";
+		// isPaid = order.pay_state || false;
 		note = order.note ?? "";
 
 		// Fakturační údaje
@@ -98,8 +100,121 @@
 		orderStates = [...new Set([...settingsStates, ...allPossibleStates])];
 		
 		console.log('Debug - orderStates:', orderStates);
-		console.log('Debug - current selectedOrderState:', selectedOrderState);
 		console.log('Debug - orderSettings:', orderSettings);
+	}
+
+	// Synchronizace selectedOrderState pomocí onMount (vyhneme se cyclické závislosti)
+	function initializeSelectedOrderState() {
+		if (order && orderStates.length > 0) {
+			const orderState = order.state;
+			
+			// Pouze pokud existuje order.state (nejedná se o novou objednávku)
+			if (orderState && orderStates.includes(orderState)) {
+				selectedOrderState = orderState;
+				console.log('Initial sync: selectedOrderState set to:', selectedOrderState);
+			} else if (orderState && !orderStates.includes(orderState)) {
+				console.warn('Order state not found in orderStates:', orderState, 'Available:', orderStates);
+				// Fallback na první dostupný stav pouze pokud order.state není v seznamu
+				selectedOrderState = orderStates[0] || "";
+			} else if (!orderState) {
+				// Pokud order.state je null/undefined/empty, použij první stav (nová objednávka)
+				selectedOrderState = orderStates[0] || "";
+				console.log('New order - selectedOrderState set to first available:', selectedOrderState);
+			}
+			
+			console.log('Final selectedOrderState after initial sync:', selectedOrderState);
+		}
+	}
+
+	// Synchronizace selectedPaymentMethod
+	function initializeSelectedPaymentMethod() {
+		if (order && paymentMethods.length > 0) {
+			const orderPaymentMethod = order.pay_method;
+			console.log('=== PAYMENT METHOD INIT ===');
+			console.log('order.pay_method:', orderPaymentMethod);
+			console.log('paymentMethods:', paymentMethods);
+			
+			if (orderPaymentMethod && paymentMethods.includes(orderPaymentMethod)) {
+				selectedPaymentMethod = orderPaymentMethod;
+				console.log('Initial sync: selectedPaymentMethod set to:', selectedPaymentMethod);
+			} else if (orderPaymentMethod && !paymentMethods.includes(orderPaymentMethod)) {
+				console.warn('Payment method not found in paymentMethods:', orderPaymentMethod, 'Available:', paymentMethods);
+				selectedPaymentMethod = paymentMethods[0] || "";
+			} else {
+				selectedPaymentMethod = paymentMethods[0] || "";
+				console.log('New order - selectedPaymentMethod set to first available:', selectedPaymentMethod);
+			}
+			console.log('=== END PAYMENT METHOD INIT ===');
+		}
+	}
+
+	// Synchronizace selectedCurrency
+	function initializeSelectedCurrency() {
+		if (order && currencies.length > 0) {
+			const orderCurrency = order.currency;
+			
+			if (orderCurrency && currencies.includes(orderCurrency)) {
+				selectedCurrency = orderCurrency;
+				console.log('Initial sync: selectedCurrency set to:', selectedCurrency);
+			} else if (orderCurrency && !currencies.includes(orderCurrency)) {
+				console.warn('Currency not found in currencies:', orderCurrency, 'Available:', currencies);
+				selectedCurrency = currencies[0] || "";
+			} else {
+				selectedCurrency = currencies[0] || "";
+				console.log('New order - selectedCurrency set to first available:', selectedCurrency);
+			}
+		}
+	}
+
+	// Synchronizace selectedShippingMethod
+	function initializeSelectedShippingMethod() {
+		if (order && shippingMethods.length > 0) {
+			const orderShippingMethod = order.shipping_method;
+			
+			if (orderShippingMethod && shippingMethods.includes(orderShippingMethod)) {
+				selectedShippingMethod = orderShippingMethod;
+				console.log('Initial sync: selectedShippingMethod set to:', selectedShippingMethod);
+			} else if (orderShippingMethod && !shippingMethods.includes(orderShippingMethod)) {
+				console.warn('Shipping method not found in shippingMethods:', orderShippingMethod, 'Available:', shippingMethods);
+				selectedShippingMethod = shippingMethods[0] || "";
+			} else {
+				selectedShippingMethod = shippingMethods[0] || "";
+				console.log('New order - selectedShippingMethod set to first available:', selectedShippingMethod);
+			}
+		}
+	}
+
+	// Synchronizace isPaid
+	function initializeIsPaid() {
+		if (order) {
+			isPaid = order.pay_state || false;
+			console.log('Initial sync: isPaid set to:', isPaid);
+		}
+	}
+
+	// Sleduje změny v order a orderStates pro inicializaci
+	// KRITICKÉ: Musí počkat na oba - order data i orderStates
+	$: if (order && orderStates.length > 0 && isInitialLoad) {
+		console.log('=== INITIALIZING ALL DROPDOWNS ===');
+		initializeSelectedOrderState();
+		
+		// Inicializace ostatních dropdown pokud jsou data dostupná
+		if (paymentMethods.length > 0) {
+			initializeSelectedPaymentMethod();
+		}
+		
+		if (currencies.length > 0) {
+			initializeSelectedCurrency();
+		}
+		
+		if (shippingMethods.length > 0) {
+			initializeSelectedShippingMethod();
+		}
+		
+		initializeIsPaid();
+		
+		isInitialLoad = false;
+		console.log('=== ALL DROPDOWNS INITIALIZED ===');
 	}
 
 	// Získáme seznam měn - nyní již jen stringy
@@ -155,6 +270,15 @@
 		try {
 			loading = true;
 
+			// Debug informace před uložením
+			console.log("=== UPDATE ORDER DEBUG ===");
+			console.log("selectedOrderState:", selectedOrderState);
+			console.log("isPaid:", isPaid);
+			console.log("selectedCurrency:", selectedCurrency);
+			console.log("selectedShippingMethod:", selectedShippingMethod);
+			console.log("selectedPaymentMethod:", selectedPaymentMethod);
+			console.log("=== END UPDATE ORDER DEBUG ===");
+
 			const update = {
 				updated_at: new Date().toISOString(),
 				date: date ? new Date(date).toISOString() : null,
@@ -191,6 +315,7 @@
 				throw error;
 			} else {
 				console.log("Order saved successfully!");
+				console.log("Saved data:", data);
 				updateMessage = "Objednávka úspěšně uložena !";
 			}
 		} catch (error) {
@@ -412,22 +537,36 @@
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Stav objednávky</label>
-						<select
-							bind:value={selectedOrderState}
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							{#each orderStates as state}
-								<option value={state}>{state}</option>
-							{/each}
-						</select>
+						{#if !isInitialLoad && selectedOrderState !== ""}
+							<select
+								bind:value={selectedOrderState}
+								on:change={() => console.log('SELECT CHANGED to:', selectedOrderState)}
+								class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								{#each orderStates as state}
+									<option value={state}>{state}</option>
+								{/each}
+							</select>
+						{:else}
+							<!-- Loading placeholder -->
+							<div class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500">
+								Načítá se...
+							</div>
+						{/if}						
 					</div>
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Stav platby</label>
-						<select 
-							bind:value={isPaid}
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							<option value={false}>Neuhrazena</option>
-							<option value={true}>Uhrazena</option>
-						</select>
+						{#if !isInitialLoad && order}
+							<select 
+								bind:value={isPaid}
+								class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								<option value={false}>Neuhrazena</option>
+								<option value={true}>Uhrazena</option>
+							</select>
+						{:else}
+							<div class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500">
+								Načítá se...
+							</div>
+						{/if}
 					</div>
 				</div>
 			</div>
@@ -487,24 +626,36 @@
 					<div class="space-y-3">
 						<div>
 							<label class="block text-sm text-gray-600 mb-1">Způsob platby</label>
-							<select
-								bind:value={selectedPaymentMethod}
-								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-								{#each paymentMethods as method}
-									<option value={method}>{method}</option>
-								{/each}
-							</select>
+							{#if !isInitialLoad && paymentMethods.length > 0}
+								<select
+									bind:value={selectedPaymentMethod}
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+									{#each paymentMethods as method}
+										<option value={method}>{method}</option>
+									{/each}
+								</select>
+							{:else}
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+									Načítá se...
+								</div>
+							{/if}
 						</div>
 						<div class="grid grid-cols-2 gap-2">
 							<div>
 								<label class="block text-sm text-gray-600 mb-1">Měna</label>
-								<select
-									bind:value={selectedCurrency}
-									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-									{#each currencies as currency}
-										<option value={currency}>{currency}</option>
-									{/each}
-								</select>
+								{#if !isInitialLoad && currencies.length > 0}
+									<select
+										bind:value={selectedCurrency}
+										class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+										{#each currencies as currency}
+											<option value={currency}>{currency}</option>
+										{/each}
+									</select>
+								{:else}
+									<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+										Načítá se...
+									</div>
+								{/if}
 							</div>
 							<div>
 								<label class="block text-sm text-gray-600 mb-1">Celkem</label>
@@ -522,13 +673,19 @@
 					<div class="space-y-3">
 						<div>
 							<label class="block text-sm text-gray-600 mb-1">Doprava</label>
-							<select
-								bind:value={selectedShippingMethod}
-								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-								{#each shippingMethods as method}
-									<option value={method}>{method}</option>
-								{/each}
-							</select>
+							{#if !isInitialLoad && shippingMethods.length > 0}
+								<select
+									bind:value={selectedShippingMethod}
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+									{#each shippingMethods as method}
+										<option value={method}>{method}</option>
+									{/each}
+								</select>
+							{:else}
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+									Načítá se...
+								</div>
+							{/if}
 						</div>						
 					</div>
 				</div>
