@@ -23,6 +23,9 @@ export default defineConfig({
     https: {
       key: fs.readFileSync(path.resolve("./mystastnesrdce.local-key.pem")),
       cert: fs.readFileSync(path.resolve("./mystastnesrdce.local.pem"))
+    },
+    hmr: {
+      protocol: "wss", 
     }
   },
 });

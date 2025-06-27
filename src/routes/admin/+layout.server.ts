@@ -5,7 +5,7 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession } }) => 
 	const { session } = await safeGetSession();
 	
 	if (!session) {
-		throw redirect(303, '/login');
+		throw redirect(303, '/admin/signin');
 	}
 	
 	// Můžete také zkontrolovat role uživatele

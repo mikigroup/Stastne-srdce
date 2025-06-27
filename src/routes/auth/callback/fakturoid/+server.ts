@@ -162,6 +162,35 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	try {
 		userData = await userResponse.json();
 		console.log('Fakturoid user data:', JSON.stringify(userData, null, 2));
+		
+		// Detailní analýza accounts dat
+		console.log('=== FAKTUROID ACCOUNTS ANALYSIS ===');
+		console.log('User email:', userData.email);
+		console.log('User name:', userData.name);
+		console.log('Accounts in response:', userData.accounts);
+		console.log('Accounts count:', userData.accounts?.length || 0);
+		
+		if (userData.accounts && userData.accounts.length > 0) {
+			console.log('=== INDIVIDUAL ACCOUNTS FROM API ===');
+			userData.accounts.forEach((account, index) => {
+				console.log(`API Account ${index}:`, {
+					id: account.id,
+					name: account.name,
+					slug: account.slug,
+					subdomain: account.subdomain,
+					email: account.email,
+					phone: account.phone,
+					web: account.web,
+					currency: account.currency,
+					active: account.active,
+					plan: account.plan
+				});
+			});
+		} else {
+			console.log('No accounts found in userData.accounts');
+		}
+		console.log('=== END API ACCOUNTS ANALYSIS ===');
+		
 	} catch (parseError) {
 		console.error('Failed to parse user response:', parseError);
 		return redirect(303, "/admin/site-setting?error=user_info_failed");
@@ -196,19 +225,27 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	const integrationsData = await getSetting(supabase, 'integrations') || {};
 	console.log('Current integrations data before update:', JSON.stringify(integrationsData, null, 2));
 	
+	// Připravíme pole všech účtů
+	const allAccounts = (userData.accounts || []).map((account, index) => ({
+		name: account.name || userData.name || userData.email,
+		email: account.email || userData.email,
+		subdomain: account.slug || account.subdomain || '',
+		isActive: index === 0, // První účet bude aktivní jako výchozí
+		connectedAt: new Date().toISOString(),
+		accountId: account.id,
+		currency: account.currency,
+		plan: account.plan
+	}));
+	
+	console.log('Prepared accounts array:', JSON.stringify(allAccounts, null, 2));
+	
 	const updatedIntegrations = {
 		...integrationsData,
 		fakturoid: {
 			enabled: true,
 			connected: true,
-			subdomain: userData.accounts[0].slug || '',
-			accounts: [{
-				name: userData.email || userData.name,
-				email: userData.email,
-				subdomain: userData.accounts[0].slug || '',
-				isActive: true,
-				connectedAt: new Date().toISOString()
-			}]
+			subdomain: userData.accounts[0]?.slug || '',
+			accounts: allAccounts
 		}
 	};
 	

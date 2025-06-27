@@ -588,6 +588,39 @@
 		form.submit();
 	}
 
+	// Funkce pro přepnutí aktivního Fakturoid účtu
+	async function switchFakturoidAccount(accountIndex: number) {
+		console.log('Switching to account index:', accountIndex);
+		
+		// Přepneme aktivní účet
+		$editableSettings.integrations.fakturoid.accounts.forEach((acc, i) => {
+			acc.isActive = i === accountIndex;
+		});
+		
+		// Aktualizujeme také subdoménu v hlavním objektu
+		const activeAccount = $editableSettings.integrations.fakturoid.accounts[accountIndex];
+		$editableSettings.integrations.fakturoid.subdomain = activeAccount.subdomain;
+		
+		$editableSettings = $editableSettings;
+		
+		console.log('Active account switched to:', activeAccount);
+		
+		// Automaticky uložíme změnu
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/update';
+		form.style.display = 'none';
+		
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'settings';
+		input.value = JSON.stringify($editableSettings);
+		form.appendChild(input);
+		
+		document.body.appendChild(form);
+		form.submit();
+	}
+
 	// Handler pro enhance na save tlačítku
 	function handleSaveEnhance() {
 		loading = true;
@@ -681,6 +714,29 @@
 				form.requestSubmit();
 			}
 		}
+	}
+
+	// Přidáme console log pro analýzu Fakturoid dat
+	$: if ($editableSettings?.integrations?.fakturoid) {
+		console.log('=== FAKTUROID DATA ANALYSIS ===');
+		console.log('Enabled:', $editableSettings.integrations.fakturoid.enabled);
+		console.log('Connected:', $editableSettings.integrations.fakturoid.connected);
+		console.log('Accounts array:', $editableSettings.integrations.fakturoid.accounts);
+		console.log('Accounts count:', $editableSettings.integrations.fakturoid.accounts?.length || 0);
+		
+		if ($editableSettings.integrations.fakturoid.accounts?.length > 0) {
+			console.log('=== INDIVIDUAL ACCOUNTS ===');
+			$editableSettings.integrations.fakturoid.accounts.forEach((account, index) => {
+				console.log(`Account ${index}:`, {
+					name: account.name,
+					email: account.email,
+					subdomain: account.subdomain,
+					isActive: account.isActive,
+					connectedAt: account.connectedAt
+				});
+			});
+		}
+		console.log('=== END FAKTUROID ANALYSIS ===');
 	}
 </script>
 
@@ -1647,7 +1703,11 @@
 										<div>
 											<h3 class="text-lg font-medium">Fakturoid</h3>
 											{#if $editableSettings.integrations?.fakturoid?.connected}
-												<p class="text-sm text-gray-500">Připojeno k účtu: {$editableSettings.integrations.fakturoid.accounts[0]?.email}</p>
+												{#if $editableSettings.integrations.fakturoid.accounts?.length > 1}
+													<p class="text-sm text-gray-500">Připojeno více účtů ({$editableSettings.integrations.fakturoid.accounts.length})</p>
+												{:else}
+													<p class="text-sm text-gray-500">Připojeno k účtu: {$editableSettings.integrations.fakturoid.accounts[0]?.email}</p>
+												{/if}
 											{:else}
 												<p class="text-sm text-gray-500">Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.</p>
 											{/if}
@@ -1675,6 +1735,46 @@
 											{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
 												<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
 											{/if}
+										</div>
+									{/if}
+									
+									<!-- Detailní zobrazení všech účtů -->
+									{#if $editableSettings.integrations.fakturoid.connected && $editableSettings.integrations.fakturoid.accounts?.length > 0}
+										<div class="mt-4 border-t pt-4">
+											<h4 class="text-sm font-medium mb-3">Dostupné Fakturoid účty:</h4>
+											<div class="space-y-2">
+												{#each $editableSettings.integrations.fakturoid.accounts as account, index}
+													<div class="flex items-center justify-between p-3 border rounded-lg {account.isActive ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}">
+														<div class="flex-1">
+															<div class="flex items-center gap-2">
+																<span class="font-medium text-sm">{account.name || account.email}</span>
+																{#if account.isActive}
+																	<span class="px-2 py-1 text-xs bg-green-600 text-white rounded">Aktivní</span>
+																{/if}
+															</div>
+															<div class="text-xs text-gray-600 mt-1">
+																<div><strong>Email:</strong> {account.email}</div>
+																<div><strong>Subdoména:</strong> {account.subdomain}</div>
+																{#if account.currency}
+																	<div><strong>Měna:</strong> {account.currency}</div>
+																{/if}
+																{#if account.plan}
+																	<div><strong>Tarif:</strong> {account.plan}</div>
+																{/if}
+																<div><strong>Připojeno:</strong> {new Date(account.connectedAt).toLocaleString('cs-CZ')}</div>
+															</div>
+														</div>
+														{#if !account.isActive}
+															<button
+																class="btn btn-xs btn-outline btn-primary"
+																on:click={() => switchFakturoidAccount(index)}
+															>
+																Použít
+															</button>
+														{/if}
+													</div>
+												{/each}
+											</div>
 										</div>
 									{/if}
 								</div>
