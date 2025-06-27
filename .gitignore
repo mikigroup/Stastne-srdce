@@ -6,7 +6,8 @@ node_modules
 .vercel
 .output
 package-lock.json
-.env
+*.env
+*.pem
 # Sentry Config File
 .sentryclirc
 

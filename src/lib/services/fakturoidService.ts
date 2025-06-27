@@ -339,16 +339,32 @@ export function getFakturoidConfigFromSettings(settings: { integrations: Integra
 		return null;
 	}
 
-	const activeAccount = integrations.fakturoid.accounts.find(acc => acc.isActive);
-	if (!activeAccount) {
-		return null;
+	// PRIORITA: Použij hlavní subdomain ze settings (ruční zadání), nebo najdi aktivní účet
+	let subdomain = integrations.fakturoid.subdomain; // Ruční zadání
+	let accountName = '';
+
+	if (!subdomain) {
+		// Pokud není ručně zadán slug, najdeme aktivní účet
+		const activeAccount = integrations.fakturoid.accounts?.find(acc => acc.isActive);
+		if (!activeAccount) {
+			console.warn('Fakturoid: Žádný aktivní účet ani ručně zadaný slug nenalezen');
+			return null;
+		}
+		subdomain = activeAccount.subdomain;
+		accountName = activeAccount.name;
+	} else {
+		// Pokud je zadán ruční slug, zkusíme najít název účtu
+		const matchingAccount = integrations.fakturoid.accounts?.find(acc => acc.subdomain === subdomain);
+		accountName = matchingAccount?.name || 'Ruční nastavení';
 	}
+
+	console.log('Fakturoid config - Using subdomain:', subdomain, 'Account:', accountName);
 
 	return {
 		enabled: integrations.fakturoid.enabled,
 		connected: integrations.fakturoid.connected,
-		accountName: activeAccount.name,
-		subdomain: activeAccount.subdomain,
+		accountName: accountName,
+		subdomain: subdomain,
 		defaultLanguage: integrations.fakturoid.defaultLanguage || 'cz',
 		autoCreateInvoices: integrations.fakturoid.autoCreateInvoices || false,
 		invoiceDueDays: integrations.fakturoid.invoiceDueDays || 14,

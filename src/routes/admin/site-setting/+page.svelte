@@ -597,13 +597,17 @@
 			acc.isActive = i === accountIndex;
 		});
 		
-		// Aktualizujeme také subdoménu v hlavním objektu
+		// Aktualizujeme také subdoménu v hlavním objektu (DŮLEŽITÉ!)
 		const activeAccount = $editableSettings.integrations.fakturoid.accounts[accountIndex];
 		$editableSettings.integrations.fakturoid.subdomain = activeAccount.subdomain;
 		
-		$editableSettings = $editableSettings;
+		console.log('🔄 Account switched:', {
+			newActiveIndex: accountIndex,
+			newActiveAccount: activeAccount.name,
+			newSubdomain: activeAccount.subdomain
+		});
 		
-		console.log('Active account switched to:', activeAccount);
+		$editableSettings = $editableSettings;
 		
 		// Automaticky uložíme změnu
 		const form = document.createElement('form');
@@ -619,6 +623,197 @@
 		
 		document.body.appendChild(form);
 		form.submit();
+	}
+
+	// State pro validaci slugu
+	let slugValidation = {
+		message: '',
+		success: false,
+		loading: false
+	};
+
+	// State pro token diagnostiku
+	let tokenStatus = {
+		message: '',
+		success: false
+	};
+	let tokenStatusLoading = false;
+	let tokenRefreshLoading = false;
+
+	// Funkce pro kontrolu stavu tokenu
+	async function checkTokenStatus() {
+		tokenStatusLoading = true;
+		tokenStatus = { message: '', success: false };
+
+		try {
+			const response = await fetch('/api/fakturoid/token-status', {
+				method: 'GET'
+			});
+
+			const result = await response.json();
+
+			if (response.ok && result.success) {
+				const expiryDate = new Date(result.tokenInfo.expires_at);
+				const now = new Date();
+				const isExpired = now >= expiryDate;
+				
+				tokenStatus = {
+					message: isExpired 
+						? `❌ Token VYPRŠEL ${expiryDate.toLocaleString('cs-CZ')}. Klikněte "Force refresh"!`
+						: `✅ Token je platný. Expirace: ${expiryDate.toLocaleString('cs-CZ')}`,
+					success: !isExpired
+				};
+			} else {
+				tokenStatus = {
+					message: `❌ ${result.error || 'Token má problém'}`,
+					success: false
+				};
+			}
+
+		} catch (error) {
+			console.error('Chyba při kontrole tokenu:', error);
+			tokenStatus = {
+				message: `❌ Chyba při kontrole: ${error.message}`,
+				success: false
+			};
+		} finally {
+			tokenStatusLoading = false;
+		}
+	}
+
+	// Funkce pro force refresh tokenu
+	async function forceRefreshToken() {
+		tokenRefreshLoading = true;
+		tokenStatus = { message: '', success: false };
+
+		try {
+			const response = await fetch('/api/fakturoid/force-refresh', {
+				method: 'POST'
+			});
+
+			const result = await response.json();
+
+			if (response.ok && result.success) {
+				tokenStatus = {
+					message: `✅ Token úspěšně obnoven! Nová expirace: ${new Date(result.newExpiry).toLocaleString('cs-CZ')}`,
+					success: true
+				};
+
+				// Po úspěšném refresh zkusíme znovu test slugu
+				setTimeout(() => {
+					if ($editableSettings.integrations.fakturoid.subdomain) {
+						validateFakturoidSlug();
+					}
+				}, 2000);
+
+			} else {
+				tokenStatus = {
+					message: `❌ ${result.error || 'Nepodařilo se obnovit token'}. ${result.requiresReauth ? 'Nutné nové připojení účtu.' : ''}`,
+					success: false
+				};
+			}
+
+		} catch (error) {
+			console.error('Chyba při refresh tokenu:', error);
+			tokenStatus = {
+				message: `❌ Chyba při obnově: ${error.message}`,
+				success: false
+			};
+		} finally {
+			tokenRefreshLoading = false;
+		}
+	}
+
+	// Funkce pro validaci Fakturoid slugu
+	async function validateFakturoidSlug() {
+		const slug = $editableSettings.integrations.fakturoid.subdomain;
+		
+		if (!slug || slug.trim() === '') {
+			slugValidation = {
+				message: 'Zadejte slug pro ověření',
+				success: false,
+				loading: false
+			};
+			return;
+		}
+
+		// Validace formátu slugu
+		const slugPattern = /^[a-z0-9-]+$/;
+		if (!slugPattern.test(slug)) {
+			slugValidation = {
+				message: 'Slug může obsahovat pouze malá písmena, čísla a pomlčky',
+				success: false,
+				loading: false
+			};
+			return;
+		}
+
+		slugValidation.loading = true;
+		slugValidation.message = 'Ověřuji slug...';
+
+		try {
+			// Test API volání na Fakturoid
+			const response = await fetch('/api/fakturoid/test-slug', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ slug })
+			});
+
+			const result = await response.json();
+
+			if (response.ok && result.success) {
+				slugValidation = {
+					message: `✅ Slug "${slug}" je platný! ${result.accountName ? `Účet: ${result.accountName}` : ''}`,
+					success: true,
+					loading: false
+				};
+
+				// Automaticky uložíme platný slug
+				setTimeout(() => {
+					const form = document.createElement('form');
+					form.method = 'POST';
+					form.action = '?/update';
+					form.style.display = 'none';
+					
+					const input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = 'settings';
+					input.value = JSON.stringify($editableSettings);
+					form.appendChild(input);
+					
+					document.body.appendChild(form);
+					form.submit();
+				}, 1000);
+
+			} else {
+				let errorMessage = `❌ Slug "${slug}" není platný nebo není dostupný.`;
+				
+				// Pokud máme dostupné slugy, zobrazíme je
+				if (result.availableSlugs && result.availableSlugs.length > 0) {
+					errorMessage += `\n\n📋 Dostupné slugy: ${result.availableSlugs.join(', ')}`;
+				}
+				
+				if (result.error) {
+					errorMessage += `\n\n🔍 Detail: ${result.error}`;
+				}
+
+				slugValidation = {
+					message: errorMessage,
+					success: false,
+					loading: false
+				};
+			}
+
+		} catch (error) {
+			console.error('Chyba při validaci slugu:', error);
+			slugValidation = {
+				message: `❌ Chyba při ověřování slugu: ${error.message}`,
+				success: false,
+				loading: false
+			};
+		}
 	}
 
 	// Handler pro enhance na save tlačítku
@@ -724,6 +919,15 @@
 		console.log('Accounts array:', $editableSettings.integrations.fakturoid.accounts);
 		console.log('Accounts count:', $editableSettings.integrations.fakturoid.accounts?.length || 0);
 		
+		// AUTOMATICKÁ OPRAVA: Pokud je connected=true ale žádné účty, reset stavu
+		if ($editableSettings.integrations.fakturoid.connected && 
+			(!$editableSettings.integrations.fakturoid.accounts || $editableSettings.integrations.fakturoid.accounts.length === 0)) {
+			console.warn('🔧 FIXING: Connected=true but no accounts found, resetting connected status');
+			$editableSettings.integrations.fakturoid.connected = false;
+			$editableSettings.integrations.fakturoid.subdomain = '';
+			$editableSettings = $editableSettings;
+		}
+		
 		if ($editableSettings.integrations.fakturoid.accounts?.length > 0) {
 			console.log('=== INDIVIDUAL ACCOUNTS ===');
 			$editableSettings.integrations.fakturoid.accounts.forEach((account, index) => {
@@ -737,6 +941,88 @@
 			});
 		}
 		console.log('=== END FAKTUROID ANALYSIS ===');
+	}
+
+	// Real-time token verification flag
+	let tokenVerificationInProgress = false;
+	let tokenVerificationComplete = false;
+
+	// Auto-verify tokens when page loads
+	onMount(async () => {
+		// Auto-check token on page load if Fakturoid appears connected
+		if ($editableSettings?.integrations?.fakturoid?.connected) {
+			await verifyTokenOnPageLoad();
+		}
+	});
+
+	// Funkce pro ověření tokenu při načtení stránky (production safety)
+	async function verifyTokenOnPageLoad() {
+		if (tokenVerificationInProgress || tokenVerificationComplete) return;
+		
+		// Extra protection: pokud už nejsou data připojena, nepokračuj
+		if (!$editableSettings?.integrations?.fakturoid?.connected || 
+			!$editableSettings?.integrations?.fakturoid?.accounts?.length) {
+			console.log('🚫 Skipping token verification - already disconnected');
+			tokenVerificationComplete = true;
+			return;
+		}
+		
+		tokenVerificationInProgress = true;
+		console.log('🔍 Production safety: Verifying Fakturoid token on page load...');
+
+		try {
+			const response = await fetch('/api/fakturoid/token-status', { method: 'GET' });
+			const result = await response.json();
+
+			if (!response.ok || !result.success) {
+				// Token neexistuje nebo je neplatný
+				console.warn('🧹 Production fix: Token verification failed, resetting Fakturoid state');
+				console.warn('Token error:', result.error);
+
+				// Auto-reset nekonzistentního stavu
+				$editableSettings.integrations.fakturoid.connected = false;
+				$editableSettings.integrations.fakturoid.subdomain = '';
+				$editableSettings.integrations.fakturoid.accounts = [];
+				$editableSettings = $editableSettings;
+
+				// KRITICKÉ: Uložit reset do databáze, aby se data nevrátila
+				console.log('💾 Saving reset state to database to prevent data restoration...');
+				try {
+					const resetResponse = await fetch('?/update', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+						},
+						body: new URLSearchParams({
+							settings: JSON.stringify($editableSettings)
+						})
+					});
+
+					if (resetResponse.ok) {
+						console.log('✅ Reset state saved to database');
+					} else {
+						console.warn('⚠️ Failed to save reset state, data might restore from server');
+					}
+				} catch (saveError) {
+					console.error('❌ Error saving reset state:', saveError);
+				}
+
+				// Show user-friendly message
+				saveMessage = '⚠️ Fakturoid připojení bylo resetováno (token vypršel). Prosím připojte účet znovu.';
+				saveMessageType = 'error';
+				showMessage = true;
+				setTimeout(() => showMessage = false, 8000);
+			} else {
+				console.log('✅ Token verification passed on page load');
+			}
+
+		} catch (error) {
+			console.error('Token verification failed:', error);
+			// V případě network error nebo jiné chyby neprovádíme reset
+		} finally {
+			tokenVerificationInProgress = false;
+			tokenVerificationComplete = true;
+		}
 	}
 </script>
 
@@ -1702,7 +1988,7 @@
 									<div class="flex items-center justify-between">
 										<div>
 											<h3 class="text-lg font-medium">Fakturoid</h3>
-											{#if $editableSettings.integrations?.fakturoid?.connected}
+											{#if $editableSettings.integrations?.fakturoid?.connected && $editableSettings.integrations.fakturoid.accounts?.length > 0}
 												{#if $editableSettings.integrations.fakturoid.accounts?.length > 1}
 													<p class="text-sm text-gray-500">Připojeno více účtů ({$editableSettings.integrations.fakturoid.accounts.length})</p>
 												{:else}
@@ -1712,7 +1998,7 @@
 												<p class="text-sm text-gray-500">Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.</p>
 											{/if}
 										</div>
-										{#if $editableSettings.integrations?.fakturoid?.connected}
+										{#if $editableSettings.integrations?.fakturoid?.connected && $editableSettings.integrations.fakturoid.accounts?.length > 0}
 											<button
 												on:click={() => disconnectFakturoid()}
 												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -1720,12 +2006,31 @@
 												Odpojit účet
 											</button>
 										{:else}
-											<button
-												on:click={() => connectFakturoid()}
-												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-											>
-												Připojit účet
-											</button>
+											<div class="flex gap-2">
+												<button
+													on:click={() => connectFakturoid()}
+													class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+												>
+													Připojit účet
+												</button>
+												
+												<!-- Emergency reset tlačítko -->
+												{#if $editableSettings.integrations?.fakturoid?.connected}
+													<button
+														on:click={() => {
+															console.log('🧹 Manual reset of Fakturoid connection state');
+															$editableSettings.integrations.fakturoid.connected = false;
+															$editableSettings.integrations.fakturoid.subdomain = '';
+															$editableSettings.integrations.fakturoid.accounts = [];
+															$editableSettings = $editableSettings;
+														}}
+														class="inline-flex items-center px-3 py-2 border border-yellow-500 text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+														title="Reset nekonzistentního stavu"
+													>
+														🧹 Reset
+													</button>
+												{/if}
+											</div>
 										{/if}
 									</div>
 									
@@ -1742,6 +2047,52 @@
 									{#if $editableSettings.integrations.fakturoid.connected && $editableSettings.integrations.fakturoid.accounts?.length > 0}
 										<div class="mt-4 border-t pt-4">
 											<h4 class="text-sm font-medium mb-3">Dostupné Fakturoid účty:</h4>
+											
+											<!-- Token status diagnostika -->
+											<div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+												<div class="flex items-center justify-between">
+													<div>
+														<h5 class="text-sm font-medium text-yellow-800">🔐 Stav OAuth tokenu</h5>
+														<p class="text-xs text-yellow-700 mt-1">
+															Pokud máte problémy s přístupem, token možná vypršel
+														</p>
+													</div>
+													<div class="flex gap-2">
+														<button
+															class="btn btn-xs btn-outline btn-warning"
+															on:click={checkTokenStatus}
+															disabled={tokenStatusLoading}
+														>
+															{#if tokenStatusLoading}
+																<span class="loading loading-spinner loading-xs"></span>
+																Kontroluji...
+															{:else}
+																Zkontrolovat token
+															{/if}
+														</button>
+														
+														<button
+															class="btn btn-xs btn-outline btn-error"
+															on:click={forceRefreshToken}
+															disabled={tokenRefreshLoading}
+														>
+															{#if tokenRefreshLoading}
+																<span class="loading loading-spinner loading-xs"></span>
+																Obnovuji...
+															{:else}
+																Force refresh
+															{/if}
+														</button>
+													</div>
+												</div>
+												
+												{#if tokenStatus.message}
+													<div class="mt-2 text-xs {tokenStatus.success ? 'text-green-600' : 'text-red-600'}">
+														{tokenStatus.message}
+													</div>
+												{/if}
+											</div>
+
 											<div class="space-y-2">
 												{#each $editableSettings.integrations.fakturoid.accounts as account, index}
 													<div class="flex items-center justify-between p-3 border rounded-lg {account.isActive ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}">
@@ -1774,6 +2125,62 @@
 														{/if}
 													</div>
 												{/each}
+											</div>
+
+											<!-- Ruční zadání slugu -->
+											<div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+												<h5 class="text-sm font-medium mb-3">🔧 Ruční nastavení slugu</h5>
+												<p class="text-xs text-gray-600 mb-3">
+													Pokud máte více Fakturoid účtů nebo potřebujete zadat specifický slug, můžete ho změnit zde.
+												</p>
+												
+												<div class="space-y-3">
+													<div class="form-control">
+														<label class="label">
+															<span class="label-text text-sm">Aktivní slug/subdoména</span>
+														</label>
+														<div class="flex gap-2">
+															<input
+																type="text"
+																bind:value={$editableSettings.integrations.fakturoid.subdomain}
+																class="input input-bordered input-sm flex-grow"
+																placeholder="kamilakucerova"
+																pattern="[a-z0-9-]+"
+																title="Pouze malá písmena, čísla a pomlčky"
+															/>
+															<button
+																class="btn btn-sm btn-outline"
+																on:click={validateFakturoidSlug}
+																disabled={!$editableSettings.integrations.fakturoid.subdomain || slugValidation.loading}
+															>
+																{#if slugValidation.loading}
+																	<span class="loading loading-spinner loading-xs"></span>
+																	Ověřuji...
+																{:else}
+																	Ověřit
+																{/if}
+															</button>
+														</div>
+														<label class="label">
+															<span class="label-text-alt text-xs">
+																Aktuální: <strong>{$editableSettings.integrations.fakturoid.subdomain || 'Není nastaveno'}</strong>
+															</span>
+														</label>
+													</div>
+
+													{#if slugValidation.message}
+														<div class="alert {slugValidation.success ? 'alert-success' : 'alert-error'} p-2">
+															<span class="text-sm">{slugValidation.message}</span>
+														</div>
+													{/if}
+
+													<div class="text-xs text-gray-500">
+														<strong>Testovací URL:</strong> 
+														<code class="bg-gray-200 px-1 rounded">
+															https://app.fakturoid.cz/api/v3/accounts/{$editableSettings.integrations.fakturoid.subdomain || 'SLUG'}/
+														</code>
+													</div>
+												</div>
 											</div>
 										</div>
 									{/if}
