@@ -388,6 +388,46 @@
 
 	// Používáme centrální funkci pro formátování data přímo
 
+	// Reaktivní kontrola Fakturoid stavu
+	$: fakturoidReady = orderSettings?.fakturoid?.enabled && 
+	                   orderSettings?.fakturoid?.connected && 
+	                   orderSettings?.fakturoid?.tokenValid && 
+	                   orderSettings?.fakturoid?.subdomain; // Musí mít konkrétní subdomain
+
+	// Helper funkce pro práci s fakturami
+	function getCurrentSlugInvoice(order: any, currentSlug: string) {
+		if (!order?.fakturoid_data || !currentSlug) return null;
+		
+		// Nová struktura - pole faktur
+		if (order.fakturoid_data.invoices && Array.isArray(order.fakturoid_data.invoices)) {
+			return order.fakturoid_data.invoices.find((invoice: any) => invoice.account_id === currentSlug);
+		}
+		
+		// Stará struktura - jednotlivá faktura (zpětná kompatibilita)
+		if (order.fakturoid_data.invoice_id && order.fakturoid_data.account_id === currentSlug) {
+			return {
+				invoice_id: order.fakturoid_data.invoice_id,
+				invoice_number: order.fakturoid_data.invoice_number,
+				invoice_url: order.fakturoid_data.invoice_url,
+				account_id: order.fakturoid_data.account_id
+			};
+		}
+		
+		return null;
+	}
+
+	// Kontrola zda faktura existuje pro aktuální slug
+	$: currentSlugInvoice = getCurrentSlugInvoice(order, orderSettings?.fakturoid?.subdomain);
+	$: invoiceExistsForCurrentSlug = !!currentSlugInvoice;
+	
+	// Kontrola zda existují faktury pro jiné slugy
+	$: invoiceExistsForDifferentSlug = order?.fakturoid_data && !invoiceExistsForCurrentSlug && (
+		// Nová struktura
+		(order.fakturoid_data.invoices && order.fakturoid_data.invoices.length > 0) ||
+		// Stará struktura
+		(order.fakturoid_data.invoice_id && order.fakturoid_data.account_id !== orderSettings?.fakturoid?.subdomain)
+	);
+
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
 		{
@@ -398,10 +438,24 @@
 			disabled: loading
 		},
 		{
-			label: order?.fakturoid_data?.invoice_id ? 'Faktura vytvořena' : 'Vytvořit fakturu',
-			onClick: createInvoice,
+			label: invoiceExistsForCurrentSlug 
+				? `Faktura ${currentSlugInvoice?.invoice_number || currentSlugInvoice?.invoice_id}` 
+				: !orderSettings?.fakturoid?.enabled 
+					? 'Fakturoid není povolen'
+					: !orderSettings?.fakturoid?.connected
+						? 'Fakturoid není připojen'
+						: !orderSettings?.fakturoid?.tokenValid
+							? 'Fakturoid token vypršel'
+							: !orderSettings?.fakturoid?.subdomain
+								? 'Není vybrán slug/účet'
+								: 'Vytvořit fakturu',
+			onClick: invoiceExistsForCurrentSlug ? () => {
+				if (currentSlugInvoice?.invoice_url) {
+					window.open(currentSlugInvoice.invoice_url, '_blank');
+				}
+			} : createInvoice,
 			variant: 'secondary' as const,
-			disabled: loading || order?.fakturoid_data?.invoice_id
+			disabled: loading || invoiceExistsForCurrentSlug || (!fakturoidReady && !invoiceExistsForCurrentSlug)
 		},
 		{
 			label: loading ? 'Maže se...' : 'Smazat',
@@ -424,6 +478,25 @@
 		console.log("Navigation available:", !!navigation);
 		console.log("Prev order ID:", navigation?.prevOrderId);
 		console.log("Next order ID:", navigation?.nextOrderId);
+		
+		// Debug Fakturoid stavu
+		console.log("=== FAKTUROID DEBUG ===");
+		console.log("Fakturoid config:", orderSettings?.fakturoid);
+		console.log("Fakturoid ready:", fakturoidReady);
+		console.log("Invoice exists for current slug:", invoiceExistsForCurrentSlug);
+		console.log("Invoice exists for different slug:", invoiceExistsForDifferentSlug);
+		console.log("Current subdomain:", orderSettings?.fakturoid?.subdomain);
+		console.log("Configured subdomain:", orderSettings?.fakturoid?.configuredSubdomain);
+		console.log("Available accounts:", orderSettings?.fakturoid?.availableAccounts);
+		if (order?.fakturoid_data) {
+			console.log("Existing invoice data:", order.fakturoid_data);
+			console.log("Invoice account vs current:", {
+				invoiceAccount: order.fakturoid_data.account_id,
+				currentAccount: orderSettings?.fakturoid?.subdomain,
+				match: order.fakturoid_data.account_id === orderSettings?.fakturoid?.subdomain
+			});
+		}
+		console.log("=== END FAKTUROID DEBUG ===");
 		
 		// Detailní výpis kontaktních údajů
 		if (order) {
@@ -733,12 +806,51 @@
 					</div>
 				</div>
 			</div>
-			{#if order?.fakturoid_data?.invoice_url}
+			{#if invoiceExistsForCurrentSlug && currentSlugInvoice?.invoice_url}
 							<div class="mt-2">
-								<a href={order.fakturoid_data.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 text-sm">
+								<a href={currentSlugInvoice.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 text-sm">
 									Otevřít fakturu ve Fakturoidu
 								</a>
 							</div>
+						{/if}
+
+						<!-- Zobrazení všech faktur pro tuto objednávku -->
+						{#if order?.fakturoid_data}
+							{@const allInvoices = order.fakturoid_data.invoices && Array.isArray(order.fakturoid_data.invoices) 
+								? order.fakturoid_data.invoices 
+								: order.fakturoid_data.invoice_id 
+									? [{
+										invoice_id: order.fakturoid_data.invoice_id,
+										invoice_number: order.fakturoid_data.invoice_number,
+										invoice_url: order.fakturoid_data.invoice_url,
+										account_id: order.fakturoid_data.account_id,
+										created_at: order.fakturoid_data.created_at || 'neznámé'
+									}]
+									: []
+							}
+							{#if allInvoices.length > 1}
+								<div class="mt-4 p-3 bg-gray-50 rounded-lg">
+									<h5 class="text-sm font-medium text-gray-700 mb-2">Všechny faktury pro tuto objednávku:</h5>
+									<div class="space-y-2">
+										{#each allInvoices as invoice}
+											<div class="flex items-center justify-between text-sm">
+												<span class="font-medium">
+													{invoice.invoice_number || invoice.invoice_id}
+													<span class="text-gray-500">({invoice.account_id})</span>
+													{#if invoice.account_id === orderSettings?.fakturoid?.subdomain}
+														<span class="ml-1 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded">aktivní</span>
+													{/if}
+												</span>
+												{#if invoice.invoice_url}
+													<a href={invoice.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
+														Otevřít
+													</a>
+												{/if}
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						{/if}
 		</div>
 

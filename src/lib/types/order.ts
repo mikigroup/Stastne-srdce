@@ -32,13 +32,22 @@ export interface Order {
         fakturoid_invoice_number?: string;
         fakturoid_created_at?: string;
     };
-    // Multi-account Fakturoid data
+    
+    // Multi-account Fakturoid data - NOVÁ STRUKTURA
     fakturoid_data?: {
-        invoice_id: string;
-        invoice_number: string;
+        invoices: Array<{
+            invoice_id: string;
+            invoice_number: string;
+            invoice_url?: string;
+            created_at: string;
+            account_id: string; // ID účtu který fakturu vytvořil
+        }>;
+        // Zachováme zpětnou kompatibilitu pro starší objednávky
+        invoice_id?: string;
+        invoice_number?: string;
         invoice_url?: string;
-        created_at: string;
-        account_id: string; // ID účtu který fakturu vytvořil
+        account_id?: string;
     } | null;
+    
     order_items: OrderItem[];
 } 

@@ -183,25 +183,25 @@ export const actions: Actions = {
 			}
 
 			// 3. Kontrola, zda faktura už nebyla vytvořena PRO SOUČASNÝ ÚČET
-			if (order.fakturoid_data?.invoice_id) {
-				let isFromCurrentAccount = false;
-				
-				if (order.fakturoid_data.account_id) {
-					isFromCurrentAccount = order.fakturoid_data.account_id === activeAccountId;
-				} else {
-					// Stará faktura bez account_id - považuj za z jiného účtu
-					isFromCurrentAccount = false;
-				}
+			let existingInvoiceForCurrentAccount = null;
+			
+			if (order.fakturoid_data?.invoices && Array.isArray(order.fakturoid_data.invoices)) {
+				// Nová struktura - hledáme v poli
+				existingInvoiceForCurrentAccount = order.fakturoid_data.invoices.find(
+					(inv: any) => inv.account_id === activeAccountId
+				);
+			} else if (order.fakturoid_data?.invoice_id && order.fakturoid_data.account_id === activeAccountId) {
+				// Stará struktura - kompatibilita
+				existingInvoiceForCurrentAccount = order.fakturoid_data;
+			}
 
-				if (isFromCurrentAccount) {
-					return fail(400, {
-						success: false,
-						message: `Pro tuto objednávku již byla faktura vytvořena účtem ${activeAccount.name}`,
-						invoiceId: order.fakturoid_data.invoice_id,
-						invoiceNumber: order.fakturoid_data.invoice_number
-					});
-				}
-				// Pokud je z jiného účtu, můžeme pokračovat a přepsat fakturu
+			if (existingInvoiceForCurrentAccount) {
+				return fail(400, {
+					success: false,
+					message: `Pro tuto objednávku již byla faktura vytvořena účtem ${activeAccount.name}`,
+					invoiceId: existingInvoiceForCurrentAccount.invoice_id,
+					invoiceNumber: existingInvoiceForCurrentAccount.invoice_number
+				});
 			}
 
 			// 4. Načtení profilu zákazníka
@@ -228,17 +228,57 @@ export const actions: Actions = {
 				});
 			}
 
-			// 6. Aktualizace objednávky s ID faktury
+			// 6. Aktualizace objednávky s ID faktury - NOVÁ LOGIKA PRO RETĚZENÍ
+			const newInvoice = {
+				invoice_id: invoice.id,
+				invoice_number: invoice.number,
+				invoice_url: invoice.html_url,
+				account_id: activeAccountId,
+				created_at: new Date().toISOString()
+			};
+
+			// Získáme současné fakturoid_data
+			let updatedFakturoidData;
+			if (order.fakturoid_data?.invoices && Array.isArray(order.fakturoid_data.invoices)) {
+				// Nová struktura - přidáme do pole
+				const existingInvoices = order.fakturoid_data.invoices.filter(
+					(inv: any) => inv.account_id !== activeAccountId
+				);
+				updatedFakturoidData = {
+					invoices: [...existingInvoices, newInvoice]
+				};
+			} else if (order.fakturoid_data?.invoice_id) {
+				// Migrujeme ze staré struktury na novou
+				const oldInvoice = {
+					invoice_id: order.fakturoid_data.invoice_id,
+					invoice_number: order.fakturoid_data.invoice_number,
+					invoice_url: order.fakturoid_data.invoice_url,
+					account_id: order.fakturoid_data.account_id,
+					created_at: order.fakturoid_data.created_at || new Date().toISOString()
+				};
+				
+				if (oldInvoice.account_id === activeAccountId) {
+					// Přepíšeme fakturu pro stejný účet
+					updatedFakturoidData = {
+						invoices: [newInvoice]
+					};
+				} else {
+					// Zachováme starou fakturu a přidáme novou
+					updatedFakturoidData = {
+						invoices: [oldInvoice, newInvoice]
+					};
+				}
+			} else {
+				// První faktura
+				updatedFakturoidData = {
+					invoices: [newInvoice]
+				};
+			}
+
 			const { error: updateError } = await supabase
 				.from("orders")
 				.update({
-					fakturoid_data: {
-						invoice_id: invoice.id,
-						invoice_number: invoice.number,
-						invoice_url: invoice.html_url,
-						account_id: activeAccountId,
-						created_at: new Date().toISOString()
-					}
+					fakturoid_data: updatedFakturoidData
 				})
 				.eq("id", orderId);
 

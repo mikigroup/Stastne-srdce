@@ -2034,14 +2034,7 @@
 										{/if}
 									</div>
 									
-									{#if $editableSettings.integrations.fakturoid.connected}
-										<div class="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
-											<strong>Účet:</strong> {$editableSettings.integrations.fakturoid.accounts.length > 0 ? $editableSettings.integrations.fakturoid.accounts[0].name : 'Připojeno'}
-											{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
-												<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
-											{/if}
-										</div>
-									{/if}
+
 									
 									<!-- Detailní zobrazení všech účtů -->
 									{#if $editableSettings.integrations.fakturoid.connected && $editableSettings.integrations.fakturoid.accounts?.length > 0}
