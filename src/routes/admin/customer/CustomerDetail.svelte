@@ -3,6 +3,8 @@
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
 	import type { Database } from "$lib/types/database.types";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation.js";
+	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 
 	// Definice typů pro data zákazníka
 	type Customer = Database["public"]["Tables"]["profiles"]["Row"];
@@ -57,6 +59,9 @@
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
+
+	// Get all delivery method options for admin (all 5 values)
+	const deliveryMethodOptions = getAllDeliveryMethods();
 
 	// Definice typu pro customerData
 	type CustomerData = {
@@ -161,6 +166,37 @@
 	function back(): void {
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
+
+	// Vylepšená logika pro vyhodnocování statusu registrace
+	// Používá centrální validační funkci pro konzistenci
+	$: validationResult = customer ? validateProfileForInvoicing(customer) : { isComplete: false, missingFields: [] };
+	$: isRegistrationActuallyCompleted = validationResult.isComplete;
+
+	// Určení skutečného statusu registrace
+	$: actualRegistrationStatus = !customer ? null :
+		isRegistrationActuallyCompleted ? 'completed' :
+		customer.registration_status === 'completed' ? 'incomplete_data' :
+		'pending';
+
+	// Zprávy pro různé stavy
+	$: registrationStatusMessage = actualRegistrationStatus ? ({
+		'completed': 'Dokončeno',
+		'incomplete_data': 'Neúplné údaje',
+		'pending': 'Čeká na dokončení'
+	}[actualRegistrationStatus] || actualRegistrationStatus) : '';
+
+	// Barvy pro různé stavy
+	$: statusColor = actualRegistrationStatus ? ({
+		'completed': 'bg-green-100 border-green-200 text-green-800',
+		'incomplete_data': 'bg-yellow-100 border-yellow-200 text-yellow-800',
+		'pending': 'bg-red-100 border-red-200 text-red-800'
+	}[actualRegistrationStatus] || 'bg-gray-100 border-gray-200 text-gray-800') : 'bg-gray-100 border-gray-200 text-gray-800';
+
+	$: statusBadgeColor = actualRegistrationStatus ? ({
+		'completed': 'bg-green-200 text-green-900',
+		'incomplete_data': 'bg-yellow-200 text-yellow-900',
+		'pending': 'bg-red-200 text-red-900'
+	}[actualRegistrationStatus] || 'bg-gray-200 text-gray-900') : 'bg-gray-200 text-gray-900';
 </script>
 
 <!-- Tlačítka jsou nyní v AdminPageLayout headeru -->
@@ -172,16 +208,30 @@
 {/if}
 
 <!-- Status registrace -->
-{#if customer?.registration_status}
-	<div class="mb-4 p-3 rounded-lg border {customer.registration_status === 'pending' ? 'bg-red-100 border-red-200 text-red-800' : customer.registration_status === 'completed' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-gray-100 border-gray-200 text-gray-800'}">
+{#if customer}
+	<div class="mb-4 p-3 rounded-lg border {statusColor}">
 		<div class="flex items-center gap-2">
 			<span class="font-medium">Status registrace:</span>
-			<span class="px-2 py-1 rounded text-sm font-semibold {customer.registration_status === 'pending' ? 'bg-red-200 text-red-900' : customer.registration_status === 'completed' ? 'bg-green-200 text-green-900' : 'bg-gray-200 text-gray-900'}">
-				{customer.registration_status === 'pending' ? 'Čeká na dokončení' : customer.registration_status === 'completed' ? 'Dokončeno' : customer.registration_status}
+			<span class="px-2 py-1 rounded text-sm font-semibold {statusBadgeColor}">
+				{registrationStatusMessage}
 			</span>
+			{#if customer.registration_status !== actualRegistrationStatus}
+				<span class="text-xs opacity-75">
+					(DB: {customer.registration_status || 'null'})
+				</span>
+			{/if}
 		</div>
-		{#if customer.registration_status === 'pending'}
+		{#if actualRegistrationStatus === 'pending'}
 			<p class="text-sm mt-1">Zákazník ještě nedokončil registraci. Může mít omezený přístup k některým funkcím.</p>
+		{:else if actualRegistrationStatus === 'incomplete_data'}
+			<p class="text-sm mt-1">Registrace je označena jako dokončená, ale chybí některé povinné údaje:</p>
+			<ul class="text-sm mt-1 ml-4 list-disc">
+				{#each validationResult.missingFields as field}
+					<li>{field}</li>
+				{/each}
+			</ul>
+		{:else if actualRegistrationStatus === 'completed'}
+			<p class="text-sm mt-1">Všechny povinné údaje jsou vyplněny.</p>
 		{/if}
 	</div>
 {/if}
@@ -317,33 +367,17 @@
 			<div class="space-y-4">
 				<h4 class="font-medium text-gray-900">Způsob dodání</h4>
 				<div class="space-y-2">
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="own"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">Vlastní nosič</span>
-					</label>
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="reBox"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">REkrabička</span>
-					</label>
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="menuBox"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">Menu Box</span>
-					</label>
+					{#each deliveryMethodOptions as option}
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="deliveryMethod"
+								value={option.value}
+								bind:group={delivery_method}
+								class="mr-2" />
+							<span class="text-sm">{option.label}</span>
+						</label>
+					{/each}
 				</div>
 			</div>
 

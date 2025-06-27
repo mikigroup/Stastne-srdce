@@ -51,6 +51,7 @@ interface ProfileData {
 	delivery_method: string;
 	payment_method: string;
 	updated_at: string;
+	registration_status?: string; // Přidáno pro zachování statusu
 }
 
 export const load: PageServerLoad = async ({
@@ -153,6 +154,13 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 
+			// KRITICKÉ: Nejprve načteme stávající registration_status
+			const { data: existingProfile } = await supabase
+				.from("profiles")
+				.select("registration_status")
+				.eq("id", session.user.id)
+				.single();
+
 			// Získání dat z formuláře
 			const profileData: ProfileData = {
 				id: session.user.id,
@@ -193,8 +201,15 @@ export const actions: Actions = {
 				});
 			}
 
+			// OPRAVA: Při uložení zachováme stávající registration_status
+			const dataToSave = {
+				...profileData,
+				// Zachováme stávající registration_status, aby se nepřepsal
+				registration_status: existingProfile?.registration_status || "pending"
+			};
+
 			// Uložení do databáze
-			const { error } = await supabase.from("profiles").upsert(profileData);
+			const { error } = await supabase.from("profiles").upsert(dataToSave);
 
 			if (error) {
 				console.error("Error updating profile:", error);

@@ -3,6 +3,7 @@
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
+	import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 
 	export let data: PageData;
 	export let form: {
@@ -42,6 +43,9 @@
 	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
 	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
 	let profileValidationMessage = '';
+
+	// Get delivery method options with descriptions for registration (only 3 main options)
+	const deliveryMethodOptions = getRegistrationDeliveryMethods(true);
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -193,7 +197,7 @@
 
 				<!-- Alergie -->
 				<div class="space-y-4 py-5">
-					<h3 class="text-lg font-medium">Alergie</h3>
+					<h3 class="text-lg font-medium">Alergie <span class="text-red-500">*</span></h3>
 					<div class="flex gap-4">
 						<label class="flex items-center">
 							<input
@@ -203,6 +207,7 @@
 								checked={allergies === "no"}
 								on:change={() => toggleAllergies("no")}
 								class="mr-2"
+								required
 							/>
 							Ne
 						</label>
@@ -214,6 +219,7 @@
 								checked={allergies === "yes"}
 								on:change={() => toggleAllergies("yes")}
 								class="mr-2"
+								required
 							/>
 							Ano
 						</label>
@@ -240,21 +246,17 @@
 				<div class="space-y-4">
 					<h3 class="text-lg font-medium">Způsob dodání</h3>
 					<div class="flex flex-col gap-2">
-						{#each [
-							['own', 'Vlastní nosič'],
-							['reBox', 'REkrabička (záloha 160 Kč za set/80 Kč za jednu)'],
-							['menuBox', 'Menu Box (12 Kč/kus)']
-						] as [value, label]}
+						{#each deliveryMethodOptions as option}
 							<label class="flex items-center">
 								<input
 									type="radio"
 									name="delivery_method"
-									value={value}
+									value={option.value}
 									bind:group={deliveryMethod}
 									class="mr-2"
 									required
 								/>
-								{label}
+								{option.label}
 							</label>
 						{/each}
 					</div>

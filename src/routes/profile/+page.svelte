@@ -5,6 +5,7 @@
 	import type { Database } from '$lib/types/database.types';
 	import { fly } from "svelte/transition";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	type Order = Database['public']['Tables']['orders']['Row'] & {
@@ -72,6 +73,9 @@
 
 	let profileValidationMessage = '';
 
+	// Get all delivery method options for profile (including empty option)
+	const deliveryMethodOptions = getAllDeliveryMethods(false, true);
+
 	let fieldErrors: { [key: string]: string } = {};
 
 	function validateField(field: string, value: string | undefined): string {
@@ -124,7 +128,9 @@
 			dic,
 			telephone,
 			delivery_method: deliveryMethod,
-			payment_method: paymentMethod
+			payment_method: paymentMethod,
+			allergies: allergies === "yes",
+			allergies_description: allergiesDescription
 		});
 		profileValidationMessage = getProfileValidationMessage(validationResult);
 	}
@@ -266,10 +272,9 @@
                     id="delivery_method"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                   >
-                    <option value="">Vyberte způsob dodání</option>
-                    <option value="reBox">reBox</option>
-                    <option value="personal">Osobní odběr</option>
-                    <option value="delivery">Doručení</option>
+                    {#each deliveryMethodOptions as option}
+                      <option value={option.value}>{option.label}</option>
+                    {/each}
                   </select>
                   {#if fieldErrors.delivery_method}
                     <p class="mt-1 text-sm text-red-600">{fieldErrors.delivery_method}</p>
@@ -305,7 +310,7 @@
             <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
               <div class="flex flex-col items-center md:flex-row gap-4">
                 <div class="flex justify-start basis-1/3">
-                  <label class="text-gray-700 font-medium">Alergie</label>
+                  <label class="text-gray-700 font-medium">Alergie <span class="text-red-500">*</span></label>
                 </div>
                 <div class="w-full basis-2/3 flex gap-4 justify-center">
                   <label class="flex items-center">
@@ -315,6 +320,7 @@
                       value="no"
                       bind:group={allergies}
                       class="mr-2"
+                      required
                     />
                     Ne
                   </label>
@@ -325,6 +331,7 @@
                       value="yes"
                       bind:group={allergies}
                       class="mr-2"
+                      required
                     />
                     Ano
                   </label>

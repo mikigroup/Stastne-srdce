@@ -5,6 +5,7 @@
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
+	import { getAllDeliveryMethods, getDeliveryMethodLabel } from '$lib/constants/deliveryMethods';
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");
@@ -62,7 +63,7 @@
 		// selectedPaymentMethod = order.pay_method ?? "";
 		// selectedOrderState se nastavuje zvlášť v synchronizačním bloku
 		// selectedCurrency = order.currency ?? "";
-		// selectedShippingMethod = order.shipping_method ?? "";
+		// selectedShippingMethod = order.delivery_method ?? "";
 		// isPaid = order.pay_state || false;
 		note = order.note ?? "";
 
@@ -169,7 +170,7 @@
 	// Synchronizace selectedShippingMethod
 	function initializeSelectedShippingMethod() {
 		if (order && shippingMethods.length > 0) {
-			const orderShippingMethod = order.shipping_method;
+			const orderShippingMethod = order.delivery_method;
 			
 			if (orderShippingMethod && shippingMethods.includes(orderShippingMethod)) {
 				selectedShippingMethod = orderShippingMethod;
@@ -222,8 +223,8 @@
 		? orderSettings.currencies 
 		: ['CZK', 'EUR'];
 
-	// Získáme seznam způsobů doručení
-	$: shippingMethods = orderSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+	// Získáme seznam způsobů doručení - používáme všechny centralizované hodnoty
+	$: shippingMethods = getAllDeliveryMethods().map(option => option.value);
 
 	// Získáme seznam platebních metod - pokud jsou to objekty, extrahujeme názvy, jinak použijeme přímo
 	$: paymentMethods = Array.isArray(orderSettings?.paymentMethods) 
@@ -285,7 +286,7 @@
 				state: selectedOrderState,
 				pay_state: isPaid,
 				currency: selectedCurrency,
-				shipping_method: selectedShippingMethod,
+				delivery_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
 				customer_email,
 				customer_first_name,
@@ -751,7 +752,7 @@
 									bind:value={selectedShippingMethod}
 									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
 									{#each shippingMethods as method}
-										<option value={method}>{method}</option>
+										<option value={method}>{getDeliveryMethodLabel(method)}</option>
 									{/each}
 								</select>
 							{:else}

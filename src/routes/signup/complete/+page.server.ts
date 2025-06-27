@@ -74,6 +74,16 @@ export const actions: Actions = {
 
 			const missingFields = requiredFields.filter((f) => !f.field);
 
+			// NOVÉ: Kontrola alergií jako povinného pole
+			if (formData.get("allergies") === null || formData.get("allergies") === undefined || formData.get("allergies") === "") {
+				missingFields.push({ field: "", name: "Alergie (musí být vybrána odpověď ano/ne)" });
+			}
+
+			// Pokud má alergie, musí být vyplněn popis
+			if (profileData.allergies === true && !profileData.allergies_description) {
+				missingFields.push({ field: "", name: "Popis alergií" });
+			}
+
 			if (missingFields.length > 0) {
 				return fail(400, {
 					message: {
