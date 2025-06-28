@@ -199,24 +199,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	// Uložíme token a informace o účtu
 	console.log('Saving token to database...');
 	
-	// ZMĚNA: Nejdřív označíme všechny existující tokeny jako revoked (globální čištění)
-	console.log('🧹 Revoking all existing Fakturoid tokens before saving new one...');
-	const { error: revokeError } = await supabase
-		.from('fakturoid_tokens')
-		.update({
-			status: 'revoked',
-			updated_at: new Date().toISOString()
-		})
-		.neq('status', 'revoked');
-
-	if (revokeError) {
-		console.warn('Warning: Failed to revoke existing tokens:', revokeError);
-		// Pokračujeme i když se nezdaří revoke - není kritické
-	} else {
-		console.log('✅ Existing tokens revoked');
-	}
-
-	// Nyní uložíme nový token - používáme UPSERT místo INSERT pro řešení konfliktů
+	// Nyní uložíme nový token - UPSERT automaticky přepíše existující token pro stejný Fakturoid účet
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
 		.upsert({
@@ -235,7 +218,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			refresh_attempts: 0,
 			last_used_at: new Date().toISOString()
 		}, {
-			onConflict: 'user_id',
+			onConflict: 'account_email',
 			ignoreDuplicates: false
 		});
 
