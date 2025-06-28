@@ -172,7 +172,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		
 		if (userData.accounts && userData.accounts.length > 0) {
 			console.log('=== INDIVIDUAL ACCOUNTS FROM API ===');
-			userData.accounts.forEach((account, index) => {
+			userData.accounts.forEach((account: any, index: number) => {
 				console.log(`API Account ${index}:`, {
 					id: account.id,
 					name: account.name,
@@ -216,10 +216,10 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		console.log('✅ Existing tokens revoked');
 	}
 
-	// Nyní uložíme nový token
+	// Nyní uložíme nový token - používáme UPSERT místo INSERT pro řešení konfliktů
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
-		.insert({
+		.upsert({
 			user_id: session.user.id,
 			access_token: tokenData.access_token,
 			refresh_token: tokenData.refresh_token,
@@ -234,6 +234,9 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			status: 'active',
 			refresh_attempts: 0,
 			last_used_at: new Date().toISOString()
+		}, {
+			onConflict: 'user_id',
+			ignoreDuplicates: false
 		});
 
 	if (tokenSaveError) {
@@ -260,7 +263,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	console.log('Current integrations data before update:', JSON.stringify(integrationsData, null, 2));
 	
 	// Připravíme pole všech účtů
-	const allAccounts = (userData.accounts || []).map((account, index) => ({
+	const allAccounts = (userData.accounts || []).map((account: any, index: number) => ({
 		name: account.name || userData.name || userData.email,
 		email: account.email || userData.email,
 		subdomain: account.slug || account.subdomain || '',

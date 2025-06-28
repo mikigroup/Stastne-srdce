@@ -609,6 +609,9 @@
 		
 		$editableSettings = $editableSettings;
 		
+		// Aktualizujeme také databázovou tabulku fakturoid_tokens
+		await updateTokenDatabase(activeAccount);
+		
 		// Automaticky uložíme změnu
 		const form = document.createElement('form');
 		form.method = 'POST';
@@ -623,6 +626,36 @@
 		
 		document.body.appendChild(form);
 		form.submit();
+	}
+
+	// Nová funkce pro synchronizaci údajů s databázovou tabulkou fakturoid_tokens
+	async function updateTokenDatabase(accountData: any) {
+		try {
+			console.log('🔄 Updating fakturoid_tokens table with new account data:', accountData);
+			
+			const response = await fetch('/api/fakturoid/sync-account', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					account_name: accountData.name,
+					account_email: accountData.email,
+					account_slug: accountData.subdomain,
+					account_subdomain: accountData.subdomain,
+					account_currency: accountData.currency || null,
+					account_plan: accountData.plan || null
+				})
+			});
+
+			if (response.ok) {
+				console.log('✅ fakturoid_tokens table updated successfully');
+			} else {
+				console.warn('⚠️ Failed to update fakturoid_tokens table:', await response.text());
+			}
+		} catch (error) {
+			console.error('❌ Error updating fakturoid_tokens table:', error);
+		}
 	}
 
 	// State pro validaci slugu
@@ -645,37 +678,45 @@
 	// Funkce pro kontrolu stavu tokenu
 	async function checkTokenStatus() {
 		tokenStatusLoading = true;
-		tokenStatus = { message: '', success: false };
+		tokenStatus = { message: 'Kontroluji token...', success: false };
 
 		try {
-			const response = await fetch('/api/fakturoid/token-status', {
-				method: 'GET'
-			});
-
+			const response = await fetch('/api/fakturoid/token-status', { method: 'GET' });
 			const result = await response.json();
 
 			if (response.ok && result.success) {
-				const expiryDate = new Date(result.tokenInfo.expires_at);
-				const now = new Date();
-				const isExpired = now >= expiryDate;
-				
-				tokenStatus = {
-					message: isExpired 
-						? `❌ Token VYPRŠEL ${expiryDate.toLocaleString('cs-CZ')}. Klikněte "Force refresh"!`
-						: `✅ Token je platný. Expirace: ${expiryDate.toLocaleString('cs-CZ')}`,
-					success: !isExpired
-				};
+				const tokenInfo = result.tokenInfo;
+				const isExpired = result.isExpired;
+				const minutesToExpiry = result.minutesToExpiry;
+
+				if (isExpired) {
+					tokenStatus = {
+						message: `❌ Token VYPRŠEL ${new Date(tokenInfo.expires_at).toLocaleString('cs-CZ')}. Klikněte "Force refresh"!`,
+						success: false
+					};
+				} else if (minutesToExpiry < 30) {
+					tokenStatus = {
+						message: `⚠️ Token vyprší za ${minutesToExpiry} minut (${new Date(tokenInfo.expires_at).toLocaleString('cs-CZ')})`,
+						success: true
+					};
+				} else {
+					tokenStatus = {
+						message: `✅ Token je AKTIVNÍ, vyprší ${new Date(tokenInfo.expires_at).toLocaleString('cs-CZ')} (za ${Math.floor(minutesToExpiry / 60)} hodin)`,
+						success: true
+					};
+				}
+
+				console.log('Token status detail:', result);
 			} else {
 				tokenStatus = {
-					message: `❌ ${result.error || 'Token má problém'}`,
+					message: `❌ ${result.error || 'Neznámá chyba při kontrole tokenu'}`,
 					success: false
 				};
 			}
-
 		} catch (error) {
-			console.error('Chyba při kontrole tokenu:', error);
+			console.error('Error checking token status:', error);
 			tokenStatus = {
-				message: `❌ Chyba při kontrole: ${error.message}`,
+				message: `❌ Chyba při kontrole tokenu: ${error instanceof Error ? error.message : 'Network error'}`,
 				success: false
 			};
 		} finally {
@@ -683,47 +724,40 @@
 		}
 	}
 
-	// Funkce pro force refresh tokenu
+	// Funkce pro vynucené obnovení tokenu
 	async function forceRefreshToken() {
 		tokenRefreshLoading = true;
-		tokenStatus = { message: '', success: false };
+		tokenStatus = { message: 'Obnovuji token...', success: false };
 
 		try {
-			// Jednoduchý refresh bez parametrů - automaticky priorita stastnesrdce
-			const response = await fetch('/api/fakturoid/force-refresh', {
+			const response = await fetch('/api/fakturoid/force-refresh', { 
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({})
+				}
 			});
-
 			const result = await response.json();
 
 			if (response.ok && result.success) {
 				tokenStatus = {
-					message: `✅ ${result.message}`,
+					message: `✅ Token byl úspěšně obnoven! Nový token vyprší ${new Date(result.tokenInfo.expires_at).toLocaleString('cs-CZ')}`,
 					success: true
 				};
-
-				// Po úspěšném refresh zkusíme znovu test slugu
+				
+				// Po úspěšném refresh automaticky zkontrolujeme stav
 				setTimeout(() => {
-					if ($editableSettings.integrations.fakturoid.subdomain) {
-						validateFakturoidSlug();
-					}
-				}, 2000);
-
+					checkTokenStatus();
+				}, 1000);
 			} else {
 				tokenStatus = {
-					message: `❌ ${result.error || 'Nepodařilo se obnovit token'}. ${result.requiresReauth ? 'Nutné nové připojení účtu.' : ''}`,
+					message: `❌ ${result.error || 'Nepodařilo se obnovit token'}`,
 					success: false
 				};
 			}
-
 		} catch (error) {
-			console.error('Chyba při refresh tokenu:', error);
+			console.error('Error force refreshing token:', error);
 			tokenStatus = {
-				message: `❌ Chyba při obnově: ${error.message}`,
+				message: `❌ Chyba při obnovování tokenu: ${error instanceof Error ? error.message : 'Network error'}`,
 				success: false
 			};
 		} finally {
@@ -731,40 +765,40 @@
 		}
 	}
 
-	// Funkce pro spuštění údržby všech tokenů
+	// Funkce pro údržbu všech tokenů
 	async function runTokenMaintenance() {
 		maintenanceLoading = true;
-		tokenStatus = { message: '', success: false };
+		tokenStatus = { message: 'Spouštím údržbu tokenů...', success: false };
 
 		try {
-			const response = await fetch('/api/token-maintenance', {
-				method: 'POST'
+			const response = await fetch('/api/token-maintenance', { 
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
 			});
-
 			const result = await response.json();
 
 			if (response.ok && result.success) {
 				tokenStatus = {
-					message: `✅ Údržba dokončena! Obnoveno: ${result.refreshed}, selhalo: ${result.failed}`,
+					message: `✅ Údržba dokončena! ${result.message || 'Všechny tokeny byly zkontrolovány.'}`,
 					success: true
 				};
-
-				// Po údržbě zkontrolujeme náš token
+				
+				// Po údržbě zkontrolujeme stav
 				setTimeout(() => {
 					checkTokenStatus();
-				}, 2000);
-
+				}, 1000);
 			} else {
 				tokenStatus = {
-					message: `❌ ${result.error || 'Nepodařilo se spustit údržbu tokenů'}`,
+					message: `❌ ${result.error || 'Chyba při údržbě tokenů'}`,
 					success: false
 				};
 			}
-
 		} catch (error) {
-			console.error('Chyba při údržbě tokenů:', error);
+			console.error('Error running token maintenance:', error);
 			tokenStatus = {
-				message: `❌ Chyba při údržbě: ${error.message}`,
+				message: `❌ Chyba při údržbě: ${error instanceof Error ? error.message : 'Network error'}`,
 				success: false
 			};
 		} finally {
@@ -779,17 +813,6 @@
 		if (!slug || slug.trim() === '') {
 			slugValidation = {
 				message: 'Zadejte slug pro ověření',
-				success: false,
-				loading: false
-			};
-			return;
-		}
-
-		// Validace formátu slugu
-		const slugPattern = /^[a-z0-9-]+$/;
-		if (!slugPattern.test(slug)) {
-			slugValidation = {
-				message: 'Slug může obsahovat pouze malá písmena, čísla a pomlčky',
 				success: false,
 				loading: false
 			};
@@ -1762,7 +1785,7 @@
 								</div>
 							</div>
 
-							<!-- Custom Scripts sekce -->
+							<!-- Custom Scripts sekce -->orce refresh pravděpodobně běžel pro mikigroup účet (vidím fresh timestamp 2025-06-28 09:51:53), ale stastnesrdce účet neb
 							<div class="divider">VLASTNÍ SCRIPTY</div>
 							
 							<div class="space-y-6">

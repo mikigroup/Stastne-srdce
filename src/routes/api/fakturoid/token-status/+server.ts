@@ -11,28 +11,54 @@ export const GET: RequestHandler = async ({ locals: { supabase, safeGetSession }
 	try {
 		console.log('🌐 Global token status check from admin user:', session.user.id);
 
-		// ZMĚNA: Načteme JAKÝKOLIV Fakturoid token v systému (globální přístup)
-		const { data: tokenData, error: tokenError } = await supabase
+		// ZMĚNA: Hledáme token pro aktuálně přihlášeného uživatele
+		console.log('🔍 TOKEN STATUS: Looking for token of current user:', session.user.id);
+		
+		let { data: tokenData, error: tokenError } = await supabase
 			.from('fakturoid_tokens')
 			.select('*')
+			.eq('user_id', session.user.id)
 			.in('status', ['active', 'expired', 'refreshing'])
-			.order('last_used_at', { ascending: false })
+			.order('updated_at', { ascending: false })
 			.limit(1);
 
-		if (tokenError) {
-			console.error('Database error:', tokenError);
-			return json({ 
-				error: 'Chyba při načítání token informací',
-				success: false 
-			}, { status: 500 });
-		}
+		// Pokud uživatel nemá token, hledáme stastnesrdce jako fallback pro globální správu
+		if (tokenError || !tokenData || tokenData.length === 0) {
+			console.log('⚠️ Current user has no token, trying priority token stastnesrdcekk@seznam.cz...');
+			
+			const { data: priorityData, error: priorityError } = await supabase
+				.from('fakturoid_tokens')
+				.select('*')
+				.eq('account_email', 'stastnesrdcekk@seznam.cz')
+				.in('status', ['active', 'expired', 'refreshing'])
+				.limit(1);
 
-		if (!tokenData || tokenData.length === 0) {
-			return json({ 
-				error: 'Žádný Fakturoid token nebyl nalezen v systému. Připojte účet.',
-				success: false,
-				requiresReauth: true
-			}, { status: 404 });
+			if (priorityError || !priorityData || priorityData.length === 0) {
+				console.log('⚠️ Priority token not found, trying any active token...');
+				
+				const { data: fallbackData, error: fallbackError } = await supabase
+					.from('fakturoid_tokens')
+					.select('*')
+					.in('status', ['active', 'expired', 'refreshing'])
+					.order('last_used_at', { ascending: false })
+					.limit(1);
+
+				if (fallbackError || !fallbackData || fallbackData.length === 0) {
+					return json({ 
+						error: 'Žádný Fakturoid token nebyl nalezen v systému. Připojte účet.',
+						success: false,
+						requiresReauth: true
+					}, { status: 404 });
+				}
+				
+				tokenData = fallbackData;
+				console.log('🔄 Using fallback token for:', fallbackData[0].account_email);
+			} else {
+				tokenData = priorityData;
+				console.log('🏆 Using priority token for:', priorityData[0].account_email);
+			}
+		} else {
+			console.log('✅ Using current user token for:', tokenData[0].account_email);
 		}
 
 		const token = tokenData[0];

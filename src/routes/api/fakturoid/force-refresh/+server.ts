@@ -19,10 +19,18 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 	}
 
 	try {
-		console.log('🌐 Global force refresh token request from admin user:', session.user.id);
+		console.log('🌐 Global force refresh token request');
 		if (targetAccountEmail) {
 			console.log('🎯 Target account specified:', targetAccountEmail);
 		}
+
+		// DEBUGGING: Nejdřív se podívejme na všechny tokeny
+		const { data: allTokens, error: allTokensError } = await supabase
+			.from('fakturoid_tokens')
+			.select('account_email, status, last_used_at, user_id')
+			.in('status', ['active', 'expired']);
+
+		console.log('🔍 All available tokens:', allTokens);
 
 		// ZMĚNA: Najdeme token podle specifikace nebo fallback na globální přístup
 		let tokenQuery = supabase
@@ -32,14 +40,16 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 
 		if (targetAccountEmail) {
 			// Pokud je specifikován email, hledáme konkrétní účet
+			console.log('🎯 Searching for specific account:', targetAccountEmail);
 			tokenQuery = tokenQuery.eq('account_email', targetAccountEmail);
 		} else {
 			// NOVÉ: Priorita pro stastnesrdce účet místo last_used_at
-			console.log('🎯 Looking for priority account: stastnesrdcekk@seznam.cz');
+			console.log('🏆 PRIORITY SEARCH: Looking for stastnesrdcekk@seznam.cz first');
 			tokenQuery = tokenQuery.eq('account_email', 'stastnesrdcekk@seznam.cz');
 		}
 
 		let { data: tokenData, error: tokenError } = await tokenQuery.limit(1);
+		console.log('🔍 Priority query result:', { tokenData, tokenError });
 
 		// Pokud nenajdeme preferovaný účet, zkusíme fallback na jakýkoliv
 		if (tokenError || !tokenData || tokenData.length === 0) {
@@ -51,6 +61,8 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 				.in('status', ['active', 'expired'])
 				.order('last_used_at', { ascending: false })
 				.limit(1);
+
+			console.log('🔄 Fallback query result:', { fallbackData, fallbackError });
 
 			if (fallbackError || !fallbackData || fallbackData.length === 0) {
 				const errorMsg = targetAccountEmail 
@@ -72,7 +84,14 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 		}
 
 		const token = tokenData[0];
-		console.log('🔧 Found token for user:', token.user_id, 'email:', token.account_email);
+		console.log('🔧 FINAL TOKEN SELECTED:', {
+			email: token.account_email,
+			user_id: token.user_id,
+			account_name: token.account_name,
+			account_slug: token.account_slug,
+			status: token.status,
+			expires_at: token.expires_at
+		});
 
 		// Pokusíme se o force refresh s globálním tokenem
 		const refreshSuccess = await refreshUserToken(token.user_id, supabase);
