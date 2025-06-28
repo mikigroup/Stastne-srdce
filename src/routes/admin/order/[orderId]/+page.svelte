@@ -63,7 +63,7 @@
 		// selectedPaymentMethod = order.pay_method ?? "";
 		// selectedOrderState se nastavuje zvlášť v synchronizačním bloku
 		// selectedCurrency = order.currency ?? "";
-		// selectedShippingMethod = order.delivery_method ?? "";
+		// selectedShippingMethod = order.shipping_method ?? "";
 		// isPaid = order.pay_state || false;
 		note = order.note ?? "";
 
@@ -170,7 +170,7 @@
 	// Synchronizace selectedShippingMethod
 	function initializeSelectedShippingMethod() {
 		if (order && shippingMethods.length > 0) {
-			const orderShippingMethod = order.delivery_method;
+			const orderShippingMethod = order.shipping_method;
 			
 			if (orderShippingMethod && shippingMethods.includes(orderShippingMethod)) {
 				selectedShippingMethod = orderShippingMethod;
@@ -286,7 +286,7 @@
 				state: selectedOrderState,
 				pay_state: isPaid,
 				currency: selectedCurrency,
-				delivery_method: selectedShippingMethod,
+				shipping_method: selectedShippingMethod,
 				pay_method: selectedPaymentMethod,
 				customer_email,
 				customer_first_name,

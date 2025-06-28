@@ -2350,14 +2350,22 @@
 				<!-- Delivery Settings -->
 				{#if activeTab === 'delivery'}
 					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Nastavení dopravy</h2>
+						<h2 class="text-xl font-semibold mb-4">Nastavení dopravních služeb</h2>
+						
+						<div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+							<p class="text-blue-800 text-sm">
+								<strong>Poznámka:</strong> Zde nastavujete dopravní služby s cenami pro výpočet poštovného.
+								<br>Preference zákazníků (Vlastní nosič, REkrabička, atd.) se nastavují při registraci.
+							</p>
+						</div>
 						
 						<!-- Způsoby dopravy -->
 						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Způsoby dopravy</h3>
+							<h3 class="text-lg font-medium mb-3">Dopravní služby</h3>
+							<p class="text-sm text-gray-600 mb-3">Nastavte dopravní firmy a jejich ceny pro výpočet poštovného v e-shopu</p>
 							
 							{#if !$editableSettings.delivery?.shippingMethods || $editableSettings.delivery.shippingMethods.length === 0}
-								<p class="text-gray-500 mb-2">Žádné způsoby dopravy nebyly definovány</p>
+								<p class="text-gray-500 mb-2">Žádné dopravní služby nebyly definovány</p>
 							{:else}
 								<div class="space-y-2">
 									{#each $editableSettings.delivery.shippingMethods as method, index}
@@ -2366,13 +2374,13 @@
 												type="text" 
 												bind:value={method.name} 
 												class="input input-bordered flex-grow"
-												placeholder="Název"
+												placeholder="Název (např. Česká pošta)"
 											/>
 											<input 
 												type="number" 
 												bind:value={method.price} 
 												class="input input-bordered w-32"
-												placeholder="Cena"
+												placeholder="Cena v Kč"
 											/>
 											<button 
 												class="btn btn-sm btn-outline btn-error" 
@@ -2387,17 +2395,17 @@
 							<button 
 								class="btn btn-sm btn-outline mt-2" 
 								on:click={addShippingMethod}>
-								Přidat způsob dopravy
+								Přidat dopravní službu
 							</button>
 						</div>
 						
-						<!-- Nastavení dopravy -->
+						<!-- Obecná nastavení e-shopu -->
 						<div class="mb-6">
-							<h3 class="text-lg font-medium mb-3">Obecná nastavení dopravy</h3>
+							<h3 class="text-lg font-medium mb-3">Nastavení e-shopu</h3>
 							
 							<div class="form-control mb-3">
 								<label class="label">
-									<span class="label-text">Minimální hodnota objednávky pro dopravu</span>
+									<span class="label-text">Minimální hodnota objednávky</span>
 								</label>
 								<div class="flex items-center gap-3">
 									<input
@@ -2409,14 +2417,14 @@
 										placeholder="0"
 									/>
 									<p class="text-sm text-gray-500">
-										Minimální částka pro objednání
+										Minimální částka pro vytvoření objednávky
 									</p>
 								</div>
 							</div>
 							
 							<div class="form-control mb-3">
 								<label class="label">
-									<span class="label-text">Hranice pro dopravu zdarma</span>
+									<span class="label-text">Doprava zdarma od</span>
 								</label>
 								<div class="flex items-center gap-3">
 									<input
