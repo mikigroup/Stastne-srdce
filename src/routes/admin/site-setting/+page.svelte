@@ -639,6 +639,8 @@
 	};
 	let tokenStatusLoading = false;
 	let tokenRefreshLoading = false;
+	let maintenanceLoading = false;
+	let selectedAccountForRefresh = ''; // NOVÉ: vybraný účet pro refresh
 
 	// Funkce pro kontrolu stavu tokenu
 	async function checkTokenStatus() {
@@ -687,15 +689,20 @@
 		tokenStatus = { message: '', success: false };
 
 		try {
+			// Jednoduchý refresh bez parametrů - automaticky priorita stastnesrdce
 			const response = await fetch('/api/fakturoid/force-refresh', {
-				method: 'POST'
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({})
 			});
 
 			const result = await response.json();
 
 			if (response.ok && result.success) {
 				tokenStatus = {
-					message: `✅ Token úspěšně obnoven! Nová expirace: ${new Date(result.newExpiry).toLocaleString('cs-CZ')}`,
+					message: `✅ ${result.message}`,
 					success: true
 				};
 
@@ -721,6 +728,47 @@
 			};
 		} finally {
 			tokenRefreshLoading = false;
+		}
+	}
+
+	// Funkce pro spuštění údržby všech tokenů
+	async function runTokenMaintenance() {
+		maintenanceLoading = true;
+		tokenStatus = { message: '', success: false };
+
+		try {
+			const response = await fetch('/api/token-maintenance', {
+				method: 'POST'
+			});
+
+			const result = await response.json();
+
+			if (response.ok && result.success) {
+				tokenStatus = {
+					message: `✅ Údržba dokončena! Obnoveno: ${result.refreshed}, selhalo: ${result.failed}`,
+					success: true
+				};
+
+				// Po údržbě zkontrolujeme náš token
+				setTimeout(() => {
+					checkTokenStatus();
+				}, 2000);
+
+			} else {
+				tokenStatus = {
+					message: `❌ ${result.error || 'Nepodařilo se spustit údržbu tokenů'}`,
+					success: false
+				};
+			}
+
+		} catch (error) {
+			console.error('Chyba při údržbě tokenů:', error);
+			tokenStatus = {
+				message: `❌ Chyba při údržbě: ${error.message}`,
+				success: false
+			};
+		} finally {
+			maintenanceLoading = false;
 		}
 	}
 
@@ -2045,38 +2093,52 @@
 											<div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
 												<div class="flex items-center justify-between">
 													<div>
-														<h5 class="text-sm font-medium text-yellow-800">🔐 Stav OAuth tokenu</h5>
+														<h5 class="text-sm font-medium text-yellow-800">Stav OAuth tokenu 🔐</h5>
 														<p class="text-xs text-yellow-700 mt-1">
 															Pokud máte problémy s přístupem, token možná vypršel
 														</p>
 													</div>
-													<div class="flex gap-2">
-														<button
-															class="btn btn-xs btn-outline btn-warning"
-															on:click={checkTokenStatus}
-															disabled={tokenStatusLoading}
-														>
-															{#if tokenStatusLoading}
-																<span class="loading loading-spinner loading-xs"></span>
-																Kontroluji...
-															{:else}
-																Zkontrolovat token
-															{/if}
-														</button>
-														
-														<button
-															class="btn btn-xs btn-outline btn-error"
-															on:click={forceRefreshToken}
-															disabled={tokenRefreshLoading}
-														>
-															{#if tokenRefreshLoading}
-																<span class="loading loading-spinner loading-xs"></span>
-																Obnovuji...
-															{:else}
-																Force refresh
-															{/if}
-														</button>
-													</div>
+												</div>
+												
+												<div class="flex gap-2 mt-3">
+													<button
+														class="btn btn-xs btn-outline btn-warning"
+														on:click={checkTokenStatus}
+														disabled={tokenStatusLoading}
+													>
+														{#if tokenStatusLoading}
+															<span class="loading loading-spinner loading-xs"></span>
+															Kontroluji...
+														{:else}
+															Zkontrolovat token <i class="fa-solid fa-magnifying-glass"></i>
+														{/if}
+													</button>
+													
+													<button
+														class="btn btn-xs btn-outline btn-error"
+														on:click={forceRefreshToken}
+														disabled={tokenRefreshLoading}
+													>
+														{#if tokenRefreshLoading}
+															<span class="loading loading-spinner loading-xs"></span>
+															Obnovuji...
+														{:else}
+															Force refresh <i class="fa-solid fa-rotate-right"></i>
+														{/if}
+													</button>
+													
+													<button
+														class="btn btn-xs btn-outline btn-info"
+														on:click={runTokenMaintenance}
+														disabled={maintenanceLoading}
+													>
+														{#if maintenanceLoading}
+															<span class="loading loading-spinner loading-xs"></span>
+															Údržba...
+														{:else}
+															Údržba všech tokenů <i class="fa-solid fa-wrench"></i>
+														{/if}
+													</button>
 												</div>
 												
 												{#if tokenStatus.message}

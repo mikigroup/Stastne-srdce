@@ -198,20 +198,42 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 	// Uložíme token a informace o účtu
 	console.log('Saving token to database...');
+	
+	// ZMĚNA: Nejdřív označíme všechny existující tokeny jako revoked (globální čištění)
+	console.log('🧹 Revoking all existing Fakturoid tokens before saving new one...');
+	const { error: revokeError } = await supabase
+		.from('fakturoid_tokens')
+		.update({
+			status: 'revoked',
+			updated_at: new Date().toISOString()
+		})
+		.neq('status', 'revoked');
+
+	if (revokeError) {
+		console.warn('Warning: Failed to revoke existing tokens:', revokeError);
+		// Pokračujeme i když se nezdaří revoke - není kritické
+	} else {
+		console.log('✅ Existing tokens revoked');
+	}
+
+	// Nyní uložíme nový token
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
-		.upsert({
+		.insert({
 			user_id: session.user.id,
 			access_token: tokenData.access_token,
 			refresh_token: tokenData.refresh_token,
 			expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
 			account_email: userData.email,
-			account_name: userData.name,
+			account_name: userData.accounts?.[0]?.name || userData.name || userData.email,
+			account_id: userData.accounts?.[0]?.id?.toString() || null,
+			account_slug: userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain || null,
+			account_subdomain: userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain || null,
+			account_currency: userData.accounts?.[0]?.currency || null,
+			account_plan: userData.accounts?.[0]?.plan || null,
 			status: 'active',
 			refresh_attempts: 0,
 			last_used_at: new Date().toISOString()
-		}, {
-			onConflict: 'user_id'
 		});
 
 	if (tokenSaveError) {
@@ -220,6 +242,18 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		return redirect(303, "/admin/site-setting?error=token_save_failed");
 	}
 	console.log('Token saved successfully');
+
+	// DODATEČNÝ LOG pro kontrolu uložených dat
+	console.log('=== SAVED TOKEN INFO ===');
+	console.log('Token owner email:', userData.email);
+	console.log('Token owner name:', userData.name);
+	console.log('Active account name:', userData.accounts?.[0]?.name);
+	console.log('Active account ID:', userData.accounts?.[0]?.id);
+	console.log('Active account slug:', userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain);
+	console.log('Active account currency:', userData.accounts?.[0]?.currency);
+	console.log('Active account plan:', userData.accounts?.[0]?.plan);
+	console.log('Final account_name value:', userData.accounts?.[0]?.name || userData.name || userData.email);
+	console.log('=== END SAVED TOKEN INFO ===');
 
 	// Aktualizujeme nastavení integrace
 	const integrationsData = await getSetting(supabase, 'integrations') || {};

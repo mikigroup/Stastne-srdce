@@ -101,6 +101,11 @@ export type Database = {
           access_token: string
           account_email: string | null
           account_name: string | null
+          account_id: string | null
+          account_slug: string | null
+          account_subdomain: string | null
+          account_currency: string | null
+          account_plan: string | null
           created_at: string | null
           expires_at: string
           id: string
@@ -115,6 +120,11 @@ export type Database = {
           access_token: string
           account_email?: string | null
           account_name?: string | null
+          account_id?: string | null
+          account_slug?: string | null
+          account_subdomain?: string | null
+          account_currency?: string | null
+          account_plan?: string | null
           created_at?: string | null
           expires_at: string
           id?: string
@@ -129,6 +139,11 @@ export type Database = {
           access_token?: string
           account_email?: string | null
           account_name?: string | null
+          account_id?: string | null
+          account_slug?: string | null
+          account_subdomain?: string | null
+          account_currency?: string | null
+          account_plan?: string | null
           created_at?: string | null
           expires_at?: string
           id?: string
