@@ -11,6 +11,7 @@ interface SettingRecord {
 	user_id?: string;
 }
 
+
 // Cache pro sdílení dat mezi requesty
 const settingsCache = new Map<string, { data: any, timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
