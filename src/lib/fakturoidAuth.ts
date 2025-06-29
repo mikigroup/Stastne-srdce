@@ -1,9 +1,95 @@
 import { supabase } from "./supabase";
 import type { FakturoidToken } from "./types/fakturoid";
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { fakturoidCircuitBreaker } from './fakturoidCircuitBreaker';
 
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
+
+/**
+ * Exponential backoff konfigurace
+ */
+interface RetryConfig {
+	maxAttempts: number;
+	baseDelayMs: number;
+	maxDelayMs: number;
+	backoffMultiplier: number;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+	maxAttempts: 3,
+	baseDelayMs: 1000, // 1 sekunda
+	maxDelayMs: 30000, // 30 sekund
+	backoffMultiplier: 2
+};
+
+/**
+ * Implementuje exponential backoff delay
+ */
+async function delay(ms: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Vypočítá delay pro exponential backoff
+ */
+function calculateBackoffDelay(attempt: number, config: RetryConfig): number {
+	const exponentialDelay = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt - 1);
+	const jitteredDelay = exponentialDelay * (0.5 + Math.random() * 0.5); // Přidá jitter
+	return Math.min(jitteredDelay, config.maxDelayMs);
+}
+
+/**
+ * Generická retry funkce s exponential backoff
+ */
+async function retryWithBackoff<T>(
+	operation: () => Promise<T>,
+	config: RetryConfig = DEFAULT_RETRY_CONFIG,
+	operationName = 'unknown'
+): Promise<T> {
+	let lastError: any;
+
+	for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
+		try {
+			console.log(`🔄 Attempt ${attempt}/${config.maxAttempts}: ${operationName}`);
+			return await operation();
+		} catch (error: any) {
+			lastError = error;
+			console.error(`❌ Attempt ${attempt} failed for ${operationName}:`, error?.message || error);
+
+			// Pokud je to poslední pokus, nebo se jedná o non-retryable error, nevyčkáváme
+			if (attempt === config.maxAttempts || isNonRetryableError(error)) {
+				break;
+			}
+
+			const delayMs = calculateBackoffDelay(attempt, config);
+			console.log(`⏳ Waiting ${delayMs}ms before next attempt...`);
+			await delay(delayMs);
+		}
+	}
+
+	console.error(`🚫 All attempts failed for ${operationName}`);
+	throw lastError;
+}
+
+/**
+ * Určuje, zda je chyba non-retryable (např. 401, 403)
+ */
+function isNonRetryableError(error: any): boolean {
+	// HTTP status codes které neměníme opakováním
+	const nonRetryableStatuses = [400, 401, 403, 404, 422];
+	
+	if (error?.status && nonRetryableStatuses.includes(error.status)) {
+		return true;
+	}
+	
+	// Response objekt s non-retryable statusem
+	if (error?.response?.status && nonRetryableStatuses.includes(error.response.status)) {
+		return true;
+	}
+	
+	return false;
+}
 
 /**
  * Získá platný access token pro aktuálního uživatele z databáze
@@ -158,57 +244,65 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 				updated_at: new Date().toISOString()
 			})
 			.eq('user_id', userId);
-		
-		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
-			method: 'POST',
-			headers: {
-				'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Accept': 'application/json',
-				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
-			},
-			body: new URLSearchParams({
-				grant_type: 'refresh_token',
-				refresh_token: refreshToken
-			}).toString()
-		});
 
-		console.log('=== FAKTUROID REFRESH DEBUG ===');
-		console.log('Token refresh response status:', response.status);
-		console.log('Token refresh response headers:', Object.fromEntries(response.headers.entries()));
+		// **NOVÉ: Definujeme Fakturoid API operaci s circuit breaker a retry**
+		const fakturoidOperation = async () => {
+			const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Accept': 'application/json',
+					'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
+				},
+				body: new URLSearchParams({
+					grant_type: 'refresh_token',
+					refresh_token: refreshToken
+				}).toString()
+			});
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error('=== FAKTUROID REFRESH ERROR ===');
-			console.error('Status:', response.status);
-			console.error('Status text:', response.statusText);
-			console.error('Error response body:', errorText);
-			console.error('Refresh token length:', refreshToken?.length || 0);
-			console.error('Client ID present:', !!PRIVATE_FAKTUROID_CLIENT_ID);
-			console.error('Client secret present:', !!PRIVATE_FAKTUROID_CLIENT_SECRET);
-			console.error('=== END ERROR DEBUG ===');
-			
-			// Pokud je refresh token neplatný (400, 401), smažeme ho z databáze
-			if (response.status === 400 || response.status === 401) {
-				console.log('Invalid refresh token, removing from database');
-				await supabaseClient
-					.from('fakturoid_tokens')
-					.delete()
-					.eq('user_id', userId);
-			} else {
-				// Jiné chyby - označíme jako expired
-				await supabaseClient
-					.from('fakturoid_tokens')
-					.update({
-						status: 'expired'
-					})
-					.eq('user_id', userId);
+			console.log('=== FAKTUROID REFRESH DEBUG ===');
+			console.log('Token refresh response status:', response.status);
+			console.log('Token refresh response headers:', Object.fromEntries(response.headers.entries()));
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('=== FAKTUROID REFRESH ERROR ===');
+				console.error('Status:', response.status);
+				console.error('Status text:', response.statusText);
+				console.error('Error response body:', errorText);
+				console.error('Refresh token length:', refreshToken?.length || 0);
+				console.error('Client ID present:', !!PRIVATE_FAKTUROID_CLIENT_ID);
+				console.error('Client secret present:', !!PRIVATE_FAKTUROID_CLIENT_SECRET);
+				console.error('=== END ERROR DEBUG ===');
+				
+				// Vytvoří chybu s status kódem pro non-retryable logic
+				const error = new Error(`Fakturoid API returned ${response.status}: ${response.statusText}`);
+				(error as any).status = response.status;
+				(error as any).response = { status: response.status };
+				throw error;
 			}
-			
-			return null;
-		}
 
-		const tokenData = await response.json();
+			return response.json();
+		};
+
+		// **NOVÉ: Volání s circuit breaker a exponential backoff**
+		const tokenData = await fakturoidCircuitBreaker.execute(
+			async () => {
+				return await retryWithBackoff(
+					fakturoidOperation,
+					{
+						maxAttempts: 3,
+						baseDelayMs: 2000, // 2 sekundy pro token refresh
+						maxDelayMs: 20000, // Maximum 20 sekund
+						backoffMultiplier: 2
+					},
+					`refresh-token-user-${userId}`
+				);
+			},
+			`refresh-token-circuit-breaker-user-${userId}`
+		);
+		
 		console.log('=== FAKTUROID REFRESH SUCCESS ===');
 		console.log('New token received, expires in:', tokenData.expires_in, 'seconds');
 		console.log('New access token length:', tokenData.access_token?.length || 0);
@@ -236,16 +330,34 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 		console.log('Token successfully refreshed and saved');
 		return tokenData.access_token;
 
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Error refreshing token:', error);
 		
-		// V případě chyby označíme jako expired
-		await supabaseClient
-			.from('fakturoid_tokens')
-			.update({
-				status: 'expired'
-			})
-			.eq('user_id', userId);
+		// Rozhodujeme o akci na základě typu chyby
+		if (error?.status === 400 || error?.status === 401 || error?.response?.status === 400 || error?.response?.status === 401) {
+			console.log('Invalid refresh token, removing from database');
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.delete()
+				.eq('user_id', userId);
+		} else if (error?.message?.includes('Circuit breaker is open')) {
+			console.log('Circuit breaker is open, marking token for later retry');
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: 'expired', // Označíme jako expired pro pozdější retry
+					updated_at: new Date().toISOString()
+				})
+				.eq('user_id', userId);
+		} else {
+			// Jiné chyby - označíme jako expired
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: 'expired'
+				})
+				.eq('user_id', userId);
+		}
 		
 		return null;
 	}

@@ -5,6 +5,71 @@ import {
 } from "$env/static/private";
 import { getAccessToken } from "$lib/fakturoidAuth";
 import { formatOrderItemName } from "$lib/utils/formatting";
+import { fakturoidCircuitBreaker } from "$lib/fakturoidCircuitBreaker";
+
+/**
+ * Resilientní wrapper pro Fakturoid API volání
+ */
+async function callFakturoidAPI(
+	url: string, 
+	options: RequestInit, 
+	operationName: string,
+	retryConfig = { maxAttempts: 3, baseDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 }
+) {
+	const operation = async () => {
+		const response = await fetch(url, {
+			...options,
+			headers: {
+				...options.headers,
+				'User-Agent': 'StastneSrdce-API (support@stastne-srdce.cz)'
+			}
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+			const error = new Error(`Fakturoid API ${operationName} failed: ${response.status} ${response.statusText}`);
+			(error as any).status = response.status;
+			(error as any).response = { status: response.status };
+			(error as any).data = errorData;
+			throw error;
+		}
+
+		return response.json();
+	};
+
+	// Retry logika s exponential backoff
+	const retryOperation = async () => {
+		let lastError: any;
+		for (let attempt = 1; attempt <= retryConfig.maxAttempts; attempt++) {
+			try {
+				console.log(`🔄 Attempt ${attempt}/${retryConfig.maxAttempts}: ${operationName}`);
+				return await operation();
+			} catch (error: any) {
+				lastError = error;
+				console.error(`❌ Attempt ${attempt} failed for ${operationName}:`, error?.message || error);
+
+				// Non-retryable errors (auth issues, client errors)
+				if (error?.status && [400, 401, 403, 404, 422].includes(error.status)) {
+					console.log(`🚫 Non-retryable error ${error.status}, not retrying`);
+					break;
+				}
+
+				if (attempt === retryConfig.maxAttempts) break;
+
+				const delay = Math.min(
+					retryConfig.baseDelayMs * Math.pow(retryConfig.backoffMultiplier, attempt - 1) * (0.5 + Math.random() * 0.5),
+					retryConfig.maxDelayMs
+				);
+				console.log(`⏳ Waiting ${delay}ms before next attempt...`);
+				await new Promise(resolve => setTimeout(resolve, delay));
+			}
+		}
+		throw lastError;
+	};
+
+	// Obalení circuit breaker
+	return await fakturoidCircuitBreaker.execute(retryOperation, operationName);
+}
 
 export const POST: RequestHandler = async ({
 	request,
@@ -71,14 +136,14 @@ export const POST: RequestHandler = async ({
 		};
 
 		// 3. Nejprve zkontrolovat/založit kontakt ve Fakturoidu
-		const contactResponse = await fetch(
+		console.log('Creating/finding contact in Fakturoid...');
+		const contactData = await callFakturoidAPI(
 			"https://app.fakturoid.cz/api/v3/subjects.json",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${accessToken}`,
-					"User-Agent": "YourApp (your@email.com)"
+					Authorization: `Bearer ${accessToken}`
 				},
 				body: JSON.stringify({
 					name: `${order.customer_first_name} ${order.customer_last_name}`,
@@ -89,31 +154,27 @@ export const POST: RequestHandler = async ({
 					phone: order.customer_telephone,
 					custom_id: order.customer_email
 				})
-			}
+			},
+			`create-contact-order-${orderId}`
 		);
-
-		const contactData = await contactResponse.json();
-		if (!contactResponse.ok) throw contactData;
 
 		// 4. Nastavit ID kontaktu do faktury
 		invoiceData.subject_id = contactData.id;
 
 		// 5. Vytvořit fakturu
-		const invoiceResponse = await fetch(
+		console.log('Creating invoice in Fakturoid...');
+		const invoiceResult = await callFakturoidAPI(
 			"https://app.fakturoid.cz/api/v3/invoices.json",
 			{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${accessToken}`,
-					"User-Agent": "YourApp (your@email.com)"
+					Authorization: `Bearer ${accessToken}`
 				},
 				body: JSON.stringify(invoiceData)
-			}
+			},
+			`create-invoice-order-${orderId}`
 		);
-
-		const invoiceResult = await invoiceResponse.json();
-		if (!invoiceResponse.ok) throw invoiceResult;
 
 		// 6. Aktualizovat objednávku s informacemi o faktuře
 		console.log('Updating order with invoice information...');
@@ -148,7 +209,21 @@ export const POST: RequestHandler = async ({
 		
 		// Rozlišíme různé typy chyb
 		const errorMessage = error instanceof Error ? error.message : String(error);
-		if (errorMessage?.includes('token') || errorMessage?.includes('unauthorized')) {
+		const errorData = (error as any)?.data;
+		
+		// Circuit breaker je otevřený
+		if (errorMessage?.includes('Circuit breaker is open')) {
+			return json({
+				success: false,
+				error: "Fakturoid je momentálně nedostupný. Zkuste to prosím za chvíli.",
+				action: "retry_later",
+				details: "Systém dočasně omezil volání kvůli problémům s Fakturoid API"
+			}, { status: 503 });
+		}
+		
+		// Autentizační problémy
+		if (errorMessage?.includes('token') || errorMessage?.includes('unauthorized') || 
+		    errorMessage?.includes('401') || (error as any)?.status === 401) {
 			return json({
 				success: false,
 				error: "Problém s Fakturoid autentizací. Zkuste se znovu připojit.",
@@ -156,10 +231,40 @@ export const POST: RequestHandler = async ({
 			}, { status: 401 });
 		}
 		
+		// Fakturoid API specific errors
+		if (errorData && typeof errorData === 'object') {
+			let specificError = "Chyba při komunikaci s Fakturoiem";
+			if (errorData.errors) {
+				// Fakturoid vrací chyby v errors objektu
+				const errors = Array.isArray(errorData.errors) ? errorData.errors : [errorData.errors];
+				specificError = `Fakturoid: ${errors.join(', ')}`;
+			} else if (errorData.message) {
+				specificError = `Fakturoid: ${errorData.message}`;
+			}
+			
+			return json({
+				success: false,
+				error: specificError,
+				action: "check_data",
+				details: errorData
+			}, { status: 400 });
+		}
+		
+		// Rate limiting (429)
+		if ((error as any)?.status === 429) {
+			return json({
+				success: false,
+				error: "Příliš mnoho požadavků na Fakturoid. Zkuste to za chvíli.",
+				action: "retry_later"
+			}, { status: 429 });
+		}
+		
+		// Obecná chyba
 		return json(
 			{
 				success: false,
-				error: error instanceof Error ? error.message : "Neznámá chyba při vytváření faktury"
+				error: error instanceof Error ? error.message : "Neznámá chyba při vytváření faktury",
+				action: "contact_support"
 			},
 			{ status: 500 }
 		);
