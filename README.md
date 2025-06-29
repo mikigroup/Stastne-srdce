@@ -1341,6 +1341,300 @@ Web application for food management and ordering.
   - Separate handler for email confirmation and OTP verification
   - Possibility of easy integration into larger authentication structure
 
+## 🔧 Fakturoid API Integration - Resilientní architektura
+
+### Circuit Breaker Pattern (`/src/lib/fakturoidCircuitBreaker.ts`)
+
+- **Automatická ochrana před kaskádovými selháními**:
+  - Implementace stavů: CLOSED → OPEN → HALF_OPEN
+  - Automatické blokování volání při problémech s externí službou
+  - Self-healing mechanismus s automatickým obnovením
+
+- **Konfigurace a metriky**:
+  - Nastavitelný počet selhání před otevřením circuit (failureThreshold: 5)
+  - Recovery timeout pro testování obnovy (60 sekund)
+  - Monitoring perioda pro sledování chyb (5 minut)
+  - Maximální počet volání v half-open stavu (3)
+
+- **Typy a rozhraní**:
+  ```typescript
+  interface CircuitBreakerConfig {
+    failureThreshold: number;
+    recoveryTimeout: number;
+    monitoringPeriod: number;
+    halfOpenMaxCalls: number;
+  }
+
+  interface CircuitBreakerMetrics {
+    state: CircuitState;
+    failures: number;
+    successes: number;
+    lastFailureTime: number;
+    lastSuccessTime: number;
+    totalCalls: number;
+    rejectedCalls: number;
+  }
+  ```
+
+- **Singleton instance**:
+  - Globální instance `fakturoidCircuitBreaker` pro konzistentní chování
+  - Centralizované logování stavu a metrik
+
+### Exponential Backoff s Retry Logikou (`/src/lib/fakturoidAuth.ts`)
+
+- **Inteligentní retry mechanismus**:
+  - Exponenciální zvyšování delay mezi pokusy
+  - Jitter pro prevenci "thundering herd" problému
+  - Konfigurovatelné parametry (max pokusy, base delay, max delay)
+
+- **Non-retryable error detection**:
+  - Automatické rozpoznání chyb, které není vhodné opakovat (401, 403, 404, 422)
+  - Okamžité ukončení retry cyklu při client chybách
+
+- **Konfigurace**:
+  ```typescript
+  interface RetryConfig {
+    maxAttempts: number;        // Maximální počet pokusů (3)
+    baseDelayMs: number;        // Základní delay (1000ms)
+    maxDelayMs: number;         // Maximální delay (30000ms)
+    backoffMultiplier: number;  // Násobitel pro exponenciální růst (2)
+  }
+  ```
+
+### Health Check Endpoint (`/api/fakturoid/health`)
+
+- **Monitoring stavu systému**:
+  - Základní endpoint: `/api/fakturoid/health`
+  - Detailní diagnostika: `/api/fakturoid/health?detailed=true`
+  - HTTP status kódy dle stavu (200 healthy, 503 unhealthy)
+
+- **Metriky a statistiky**:
+  - Circuit breaker stav a metriky
+  - Databázové statistiky tokenů (aktivní, expirované, problémové)
+  - Fakturoid API dostupnost test
+  - Response time měření
+
+- **Automatická doporučení**:
+  - Generování doporučení na základě health metrik
+  - Identifikace problémů s tokeny
+  - Doporučení pro údržbu a optimalizaci
+
+### Resilientní API Wrapper (`/src/routes/api/fakturoid/create-invoice/+server.ts`)
+
+- **Obalení všech Fakturoid API volání**:
+  - Kombinace Circuit Breaker + Exponential Backoff
+  - Konzistentní error handling napříč endpointy
+  - Automatické retry s inteligentním delay
+
+- **Funkce `callFakturoidAPI`**:
+  ```typescript
+  async function callFakturoidAPI(
+    url: string, 
+    options: RequestInit, 
+    operationName: string,
+    retryConfig?: RetryConfig
+  ): Promise<any>
+  ```
+
+- **Pokročilé error handling**:
+  - Rozpoznání circuit breaker chyb
+  - Specifické zpracování autentizačních problémů
+  - Rate limiting detection (429)
+  - Konkrétní akce pro uživatele dle typu chyby
+
+### Token Management - Globální funkce
+
+- **Globální přístup k tokenům**:
+  - `getAccessToken()` - získání platného tokenu z celého systému
+  - `getAccessTokenWithSupabase()` - s konkrétní Supabase instancí
+  - `maintainAllTokens()` - proaktivní údržba všech tokenů
+
+- **Proaktivní refresh mechanismus**:
+  - `refreshUserToken()` - refresh konkrétního tokenu
+  - `getTokensExpiringSoon()` - najde tokeny expirující brzy
+  - Automatický background refresh 60 minut před expirací
+
+- **Resilientní refresh proces**:
+  - Integrovaný Circuit Breaker + Exponential Backoff
+  - Intelligent error handling dle typu chyby
+  - Automatic token cleanup při neplatných refresh tokenech
+
+### Typizace objektů
+
+- **Circuit Breaker typy**:
+  ```typescript
+  enum CircuitState {
+    CLOSED = 'closed',
+    OPEN = 'open', 
+    HALF_OPEN = 'half_open'
+  }
+  ```
+
+- **Error handling typy**:
+  - Status kódy pro non-retryable chyby
+  - Strukturované error objekty s additional data
+  - Akce pro uživatele (retry_later, reconnect_fakturoid, contact_support)
+
+- **Health check response typy**:
+  - Status: 'healthy' | 'degraded' | 'unhealthy'
+  - Strukturované metriky s timestamps
+  - Doporučení jako string array
+
+### Implementační výhody
+
+- **🛡️ Vysoká dostupnost**: Ochrana před výpadky externí služby
+- **🔄 Self-healing**: Automatické obnovení po problémech
+- **📊 Monitorovatelnost**: Detailní metriky a health checks
+- **⚡ Výkon**: Exponential backoff minimalizuje zatížení
+- **🎯 UX**: Konkrétní akce pro uživatele při problémech
+- **🔒 Bezpečnost**: Intelligent token management a refresh
+
+### Circuit Breaker Pattern - Resilient Architecture
+
+- **Automatic Protection Against Cascading Failures**:
+  - Implementation of states: CLOSED → OPEN → HALF_OPEN
+  - Automatic blocking of calls when external service has problems
+  - Self-healing mechanism with automatic recovery
+
+- **Configuration and Metrics**:
+  - Configurable failure count before opening circuit (failureThreshold: 5)
+  - Recovery timeout for testing recovery (60 seconds)
+  - Monitoring period for error tracking (5 minutes)
+  - Maximum number of calls in half-open state (3)
+
+- **Types and Interfaces**:
+  ```typescript
+  interface CircuitBreakerConfig {
+    failureThreshold: number;
+    recoveryTimeout: number;
+    monitoringPeriod: number;
+    halfOpenMaxCalls: number;
+  }
+
+  interface CircuitBreakerMetrics {
+    state: CircuitState;
+    failures: number;
+    successes: number;
+    lastFailureTime: number;
+    lastSuccessTime: number;
+    totalCalls: number;
+    rejectedCalls: number;
+  }
+  ```
+
+- **Singleton Instance**:
+  - Global `fakturoidCircuitBreaker` instance for consistent behavior
+  - Centralized state and metrics logging
+
+### Exponential Backoff with Retry Logic
+
+- **Intelligent Retry Mechanism**:
+  - Exponential increase of delay between attempts
+  - Jitter to prevent "thundering herd" problem
+  - Configurable parameters (max attempts, base delay, max delay)
+
+- **Non-retryable Error Detection**:
+  - Automatic recognition of errors that shouldn't be retried (401, 403, 404, 422)
+  - Immediate termination of retry cycle for client errors
+
+- **Configuration**:
+  ```typescript
+  interface RetryConfig {
+    maxAttempts: number;        // Maximum attempts (3)
+    baseDelayMs: number;        // Base delay (1000ms)
+    maxDelayMs: number;         // Maximum delay (30000ms)
+    backoffMultiplier: number;  // Multiplier for exponential growth (2)
+  }
+  ```
+
+### Health Check Endpoint
+
+- **System Status Monitoring**:
+  - Basic endpoint: `/api/fakturoid/health`
+  - Detailed diagnostics: `/api/fakturoid/health?detailed=true`
+  - HTTP status codes by state (200 healthy, 503 unhealthy)
+
+- **Metrics and Statistics**:
+  - Circuit breaker state and metrics
+  - Database token statistics (active, expired, problematic)
+  - Fakturoid API availability test
+  - Response time measurement
+
+- **Automatic Recommendations**:
+  - Generation of recommendations based on health metrics
+  - Identification of token problems
+  - Maintenance and optimization suggestions
+
+### Resilient API Wrapper
+
+- **Wrapping All Fakturoid API Calls**:
+  - Combination of Circuit Breaker + Exponential Backoff
+  - Consistent error handling across endpoints
+  - Automatic retry with intelligent delay
+
+- **`callFakturoidAPI` Function**:
+  ```typescript
+  async function callFakturoidAPI(
+    url: string, 
+    options: RequestInit, 
+    operationName: string,
+    retryConfig?: RetryConfig
+  ): Promise<any>
+  ```
+
+- **Advanced Error Handling**:
+  - Recognition of circuit breaker errors
+  - Specific handling of authentication problems
+  - Rate limiting detection (429)
+  - Specific user actions based on error type
+
+### Token Management - Global Functions
+
+- **Global Token Access**:
+  - `getAccessToken()` - getting valid token from entire system
+  - `getAccessTokenWithSupabase()` - with specific Supabase instance
+  - `maintainAllTokens()` - proactive maintenance of all tokens
+
+- **Proactive Refresh Mechanism**:
+  - `refreshUserToken()` - refresh specific token
+  - `getTokensExpiringSoon()` - find tokens expiring soon
+  - Automatic background refresh 60 minutes before expiration
+
+- **Resilient Refresh Process**:
+  - Integrated Circuit Breaker + Exponential Backoff
+  - Intelligent error handling by error type
+  - Automatic token cleanup for invalid refresh tokens
+
+### Object Typing
+
+- **Circuit Breaker Types**:
+  ```typescript
+  enum CircuitState {
+    CLOSED = 'closed',
+    OPEN = 'open', 
+    HALF_OPEN = 'half_open'
+  }
+  ```
+
+- **Error Handling Types**:
+  - Status codes for non-retryable errors
+  - Structured error objects with additional data
+  - User actions (retry_later, reconnect_fakturoid, contact_support)
+
+- **Health Check Response Types**:
+  - Status: 'healthy' | 'degraded' | 'unhealthy'
+  - Structured metrics with timestamps
+  - Recommendations as string array
+
+### Implementation Benefits
+
+- **🛡️ High Availability**: Protection against external service outages
+- **🔄 Self-healing**: Automatic recovery after problems
+- **📊 Monitorability**: Detailed metrics and health checks
+- **⚡ Performance**: Exponential backoff minimizes load
+- **🎯 UX**: Specific user actions when problems occur
+- **🔒 Security**: Intelligent token management and refresh
+
 ## 🔧 Společné prvky
 
 - Konzistentní navigace s responzivním menu
@@ -1441,4 +1735,4 @@ Nahrávaný soubor:
 - Automaticky se uloží do Supabase Storage
 - URL se automaticky vloží do příslušného nastavení
 
-ver1_17102024
+ver2_20250119_fakturoid_resilience
