@@ -56,7 +56,7 @@
 			disabled: loading
 		},
 		{
-			label: 'Aktualizovat status registrace',
+			label: 'Zkontrolovat a aktualizovat status',
 			onClick: () => customerDetailComponent?.updateRegistrationStatus(),
 			variant: 'secondary' as const,
 			loading,

@@ -130,10 +130,14 @@
 					email || undefined
 				);
 
-				if (registrationCheck.wasUpdated) {
-					updateMessage = "Zákazník úspěšně uložen a status registrace aktualizován!";
+				// Vylepšené zprávy podle stavu registrace
+				if (registrationCheck.actualStatus === 'completed') {
+					updateMessage = registrationCheck.wasUpdated 
+						? "✅ Zákazník úspěšně uložen a registrace dokončena!"
+						: "✅ Zákazník úspěšně uložen (registrace dokončena)!";
 				} else {
-					updateMessage = "Zákazník úspěšně uložen!";
+					const missingFields = registrationCheck.validationResult.missingFields;
+					updateMessage = `⚠️ Zákazník uložen, ale chybí: ${missingFields.join(', ')}`;
 				}
 
 				// Aktualizovat lokální customer objekt s novými daty pro reactive update UI
@@ -201,12 +205,17 @@
 				email || customer.email || undefined
 			);
 
-			if (registrationCheck.wasUpdated) {
-				updateMessage = "Status registrace byl aktualizován!";
-				// Aktualizovat customer objekt s novým statusem
-				customer = { ...customer, registration_status: "completed" };
+			if (registrationCheck.actualStatus === 'completed') {
+				if (registrationCheck.wasUpdated) {
+					updateMessage = "✅ Status registrace byl aktualizován na dokončeno!";
+					// Aktualizovat customer objekt s novým statusem
+					customer = { ...customer, registration_status: "completed" };
+				} else {
+					updateMessage = "✅ Status registrace je již správně nastaven na dokončeno.";
+				}
 			} else {
-				updateMessage = "Status registrace je již aktuální.";
+				const missingFields = registrationCheck.validationResult.missingFields;
+				updateMessage = `⚠️ Status zůstává pending - chybí: ${missingFields.join(', ')}`;
 			}
 		} catch (error) {
 			console.error("Chyba při aktualizaci statusu:", error);
