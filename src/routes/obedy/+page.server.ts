@@ -69,7 +69,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			menus: loadedMenus,
 			visibleDays,
 			texts: textsResult.data?.[0] || null,
-			allergens: allergensResult.data || []
+			allergens: allergensResult.data || [],
+			productsSettings: productsSettings || {}
 		};
 	} catch (err) {
 		console.error("Chyba při načítání jídelníčku:", err);

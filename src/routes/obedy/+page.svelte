@@ -9,6 +9,7 @@
 		texts: any;
 		visibleDays: number;
 		generalSettings: any;
+		productsSettings: any;
 	};
 
 	function scrollToTop(event: Event) {
@@ -36,7 +37,7 @@
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#if data.menus?.length > 0}
 						{#each data.menus as menu (menu.id)}
-							<MenuItem {menu} />
+							<MenuItem {menu} productsSettings={data.productsSettings} />
 						{/each}
 					{:else}
 						<p class="p-4 text-center text-gray-600">

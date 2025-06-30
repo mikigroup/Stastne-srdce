@@ -176,16 +176,11 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   products: {
-    enabled: false,
     perPage: 10,
-    menuIntroText: 'Vyberte si z naší nabídky chutných a zdravých obědů.',
     visibleDays: 7,
-    features: [
-      { title: 'Lokální suroviny', description: 'Používáme lokální a čerstvé suroviny' },
-      { title: 'Zdravé porce', description: 'Připravujeme vyváženě velkosti porcí' }
-    ],
     showAllergens: true,
-    showAllergensTooltip: true
+    showAllergensTooltip: true,
+    showPrices: true
   },
 
   customer: {

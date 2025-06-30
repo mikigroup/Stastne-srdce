@@ -2449,12 +2449,10 @@
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Nastavení produktů</h2>
 						
-						<!-- Jídelníček -->
+						<!-- Zobrazení jídelníčku -->
 						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Nastavení jídelníčku</h3>
-												
+							<h3 class="text-lg font-medium mb-3">Zobrazení jídelníčku</h3>
 							
-						
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">Počet viditelných dnů</span>
@@ -2469,14 +2467,14 @@
 										placeholder="7"
 									/>
 									<p class="text-sm text-gray-500">
-										Počet dnů, které se zobrazí na stránce jídelníčku
+										Počet dnů dopředu v jídelníčku
 									</p>
 								</div>
 							</div>
 						</div>
 						
 						<!-- Zobrazení alergenů -->
-						<div class="mb-6">
+						<div class="mb-6 border-b pb-4">
 							<h3 class="text-lg font-medium mb-3">Zobrazení alergenů</h3>
 							
 							<div class="form-control">
@@ -2488,6 +2486,9 @@
 									/>
 									<span class="label-text">Zobrazit alergeny u produktů</span>
 								</label>
+								<span class="text-xs text-gray-500 mt-1">
+									Základní zapnutí/vypnutí zobrazování alergenů
+								</span>
 							</div>
 							
 							<div class="form-control mt-3">
@@ -2499,6 +2500,25 @@
 									/>
 									<span class="label-text">Zobrazit popis alergenů v nápovědě</span>
 								</label>
+							</div>
+						</div>
+						
+						<!-- Zobrazení cen -->
+						<div class="mb-6">
+							<h3 class="text-lg font-medium mb-3">Zobrazení cen</h3>
+							
+							<div class="form-control">
+								<label class="label cursor-pointer justify-start gap-2">
+									<input 
+										type="checkbox" 
+										class="checkbox checkbox-primary" 
+										bind:checked={$editableSettings.products.showPrices} 
+									/>
+									<span class="label-text">Zobrazit ceny produktů</span>
+								</label>
+								<span class="text-xs text-gray-500 mt-1">
+									Možnost skrýt ceny pro neregistrované uživatele
+								</span>
 							</div>
 						</div>
 					</div>
