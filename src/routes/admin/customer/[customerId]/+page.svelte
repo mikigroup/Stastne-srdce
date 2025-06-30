@@ -56,6 +56,13 @@
 			disabled: loading
 		},
 		{
+			label: 'Aktualizovat status registrace',
+			onClick: () => customerDetailComponent?.updateRegistrationStatus(),
+			variant: 'secondary' as const,
+			loading,
+			disabled: loading
+		},
+		{
 			label: loading ? 'Maže se...' : 'Smazat',
 			onClick: () => customerDetailComponent?.deleteCustomer(),
 			variant: 'danger' as const,

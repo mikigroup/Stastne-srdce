@@ -2,6 +2,8 @@
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech, formatDateTimeToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+	import { getRegistrationStatusMessage, getRegistrationStatusStyles } from "$lib/services/registrationStatusService";
 	import AdminTable from "$lib/component/AdminTable.svelte";
 	import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/svelte-table";
 
@@ -47,6 +49,7 @@
 		last_name: "Příjmení",
 		email: "E-mail",
 		telephone: "Telefon",
+		registration_status: "Status",
 		street: "Ulice",
 		city: "Město",
 		street_number: "Číslo popisné",
@@ -79,6 +82,7 @@
 		// Nastavení velikostí sloupců
 		size: key === 'email' ? 200 :
 			key === 'created_at' ? 150 :
+				key === 'registration_status' ? 130 :
 				key === 'telephone' ? 120 : 100,
 		// Nastavení řazení
 		enableSorting: true,
@@ -209,6 +213,15 @@
 		{#if cell.column.id === "created_at"}
 			{@const value = cell.getValue()}
 			{formatDateTimeToCzechShort(String(value ?? ''))}
+		{:else if cell.column.id === "registration_status"}
+			{@const customer = row.original}
+			{@const validationResult = validateProfileForInvoicing(customer)}
+			{@const actualStatus = validationResult.isComplete ? 'completed' : 
+				customer.registration_status === 'completed' ? 'incomplete_data' : 'pending'}
+			{@const statusStyles = getRegistrationStatusStyles(actualStatus)}
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {statusStyles.badge}">
+				{getRegistrationStatusMessage(actualStatus)}
+			</span>
 		{:else if cell.column.id === "actions"}
 			<div class="flex justify-end">
 				<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">

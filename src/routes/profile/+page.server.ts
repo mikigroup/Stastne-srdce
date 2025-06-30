@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
+import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
@@ -154,13 +155,6 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 
-			// KRITICKÉ: Nejprve načteme stávající registration_status
-			const { data: existingProfile } = await supabase
-				.from("profiles")
-				.select("registration_status")
-				.eq("id", session.user.id)
-				.single();
-
 			// Získání dat z formuláře
 			const profileData: ProfileData = {
 				id: session.user.id,
@@ -201,15 +195,8 @@ export const actions: Actions = {
 				});
 			}
 
-			// OPRAVA: Při uložení zachováme stávající registration_status
-			const dataToSave = {
-				...profileData,
-				// Zachováme stávající registration_status, aby se nepřepsal
-				registration_status: existingProfile?.registration_status || "pending"
-			};
-
-			// Uložení do databáze
-			const { error } = await supabase.from("profiles").upsert(dataToSave);
+			// Uložení do databáze (bez registration_status - nechme ho na globální službě)
+			const { error } = await supabase.from("profiles").upsert(profileData);
 
 			if (error) {
 				console.error("Error updating profile:", error);
@@ -222,11 +209,20 @@ export const actions: Actions = {
 				});
 			}
 
+			// Po úspěšném uložení použijeme globální službu pro kontrolu a aktualizaci statusu
+			const registrationCheck = await checkAndUpdateRegistrationStatus(
+				supabase, 
+				session.user.id, 
+				session.user.email
+			);
+
 			// Úspěšná aktualizace
 			return {
 				message: {
 					success: true,
-					display: "Profil byl úspěšně aktualizován"
+					display: registrationCheck.wasUpdated 
+						? "Profil byl úspěšně aktualizován a registrace dokončena"
+						: "Profil byl úspěšně aktualizován"
 				},
 				...profileData
 			};
