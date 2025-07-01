@@ -99,13 +99,13 @@ export type Database = {
       fakturoid_tokens: {
         Row: {
           access_token: string
+          account_currency: string | null
           account_email: string | null
-          account_name: string | null
           account_id: string | null
+          account_name: string | null
+          account_plan: string | null
           account_slug: string | null
           account_subdomain: string | null
-          account_currency: string | null
-          account_plan: string | null
           created_at: string | null
           expires_at: string
           id: string
@@ -118,13 +118,13 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          account_currency?: string | null
           account_email?: string | null
-          account_name?: string | null
           account_id?: string | null
+          account_name?: string | null
+          account_plan?: string | null
           account_slug?: string | null
           account_subdomain?: string | null
-          account_currency?: string | null
-          account_plan?: string | null
           created_at?: string | null
           expires_at: string
           id?: string
@@ -137,13 +137,13 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          account_currency?: string | null
           account_email?: string | null
-          account_name?: string | null
           account_id?: string | null
+          account_name?: string | null
+          account_plan?: string | null
           account_slug?: string | null
           account_subdomain?: string | null
-          account_currency?: string | null
-          account_plan?: string | null
           created_at?: string | null
           expires_at?: string
           id?: string
