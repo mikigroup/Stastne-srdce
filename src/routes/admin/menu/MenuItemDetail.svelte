@@ -100,10 +100,10 @@
 							<label class="label cursor-pointer justify-start gap-2">
 								<input 
 									type="checkbox" 
-									class="checkbox checkbox-success" 
+									class="checkbox checkbox-primary" 
 									bind:checked={variant.vegetarian}
 								/>
-								<span class="label-text">🌱 Veg</span>
+								<span class="label-text">🌱 Vege</span>
 							</label>
 						</div>
 						<div class="flex-row flex">

@@ -71,8 +71,8 @@
 		return variants
 			.sort((a, b) => parseInt(a.variant_number) - parseInt(b.variant_number))
 			.map(v => {
-				const vegIcon = v.vegetarian ? '🌱 ' : '';
-				return `${v.variant_number}. ${vegIcon}${v.description}`;
+				const vegeIcon = v.vegetarian ? '🌱 ' : '';
+				return `${v.variant_number}. ${vegeIcon}${v.description}`;
 			});
 	}
 
