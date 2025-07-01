@@ -3,7 +3,7 @@
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
 	import { page } from "$app/stores";
-	import type { Menu, MenuAllergen, MenuIngredient } from "$lib/services/menuService";
+	import type { MenuAllergen, MenuIngredient } from "$lib/services/menuService";
 
 	export let menu: Menu;
 	export let allAllergens: MenuAllergen[];
@@ -45,14 +45,13 @@
 
 	<div class="max-w-2xl mx-auto mt-5">
 		<label class="label">
-			<span class="label-text">Polévka</span>
+			<span class="label-text text-lg">Polévka</span>
 		</label>
 		<div class="border rounded-xl p-5 border-gray-400 bg-neutral-100">
 			<div class="form-control w-full mb-2">
-				<input
-					type="text"
-					class="input input-bordered w-full"
-					bind:value={menu.soup} />
+				<textarea					
+					class="textarea textarea-bordered w-full"				
+					bind:value={menu.soup}></textarea>
 			</div>
 			<div class="form-control w-full mb-2">
 				<label class="label">
@@ -73,14 +72,14 @@
 
 		<div class="form-control w-full mb-2 rounded-xl mt-5">
 			<label class="label">
-				<span class="label-text">Hlavní chod</span>
+				<span class="label-text text-lg">Hlavní chod</span>
 			</label>
 			<div class="grid grid-rows-3 gap-2">
 				{#each menu.variants as variant, index}
 					<div
 						class="variant-container mb-10 border rounded-xl p-5 border-gray-400 bg-neutral-100">
 						<div
-							class="rounded-2xl border w-3 px-4 py-1 flex justify-center bg-white mb-2">
+							class="rounded-full border w-3 px-5 py-1 flex justify-center bg-slate-200 mb-2 text-lg">
 							{variant.variant_number}
 						</div>
 						<textarea
@@ -88,14 +87,24 @@
 							placeholder={`Menu ${index + 1}`}
 							rows="4"
 							bind:value={variant.description}></textarea>
-						<div class="mt-2">
+						<div class="mt-2 max-w-32">
 							<label class="label">
-								<span class="label-text">Cena varianty</span>
+								<span class="label-text">Cena</span>
 							</label>
 							<input
 								type="number"
 								class="input input-bordered w-full"
 								bind:value={variant.price} />
+						</div>
+						<div class="mt-2">
+							<label class="label cursor-pointer justify-start gap-2">
+								<input 
+									type="checkbox" 
+									class="checkbox checkbox-success" 
+									bind:checked={variant.vegetarian}
+								/>
+								<span class="label-text">🌱 Veg</span>
+							</label>
 						</div>
 						<div class="flex-row flex">
 							<div class="mt-2 w-full">

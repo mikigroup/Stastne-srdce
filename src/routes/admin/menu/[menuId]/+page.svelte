@@ -68,7 +68,8 @@
 					menu_version_id: menuVersionId,
 					variant_number: variant.variant_number,
 					description: variant.description,
-					price: variant.price
+					price: variant.price,
+					vegetarian: variant.vegetarian || false
 				});
 
 				// Přidání alergenů k nové variantě

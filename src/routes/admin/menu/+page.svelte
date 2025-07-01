@@ -70,7 +70,10 @@
 
 		return variants
 			.sort((a, b) => parseInt(a.variant_number) - parseInt(b.variant_number))
-			.map(v => `${v.variant_number}. ${v.description}`);
+			.map(v => {
+				const vegIcon = v.vegetarian ? '🌱 ' : '';
+				return `${v.variant_number}. ${vegIcon}${v.description}`;
+			});
 	}
 
 	// Define column names and order

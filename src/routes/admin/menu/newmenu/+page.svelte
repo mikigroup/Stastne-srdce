@@ -23,6 +23,9 @@
 	// Inicializace nového menu
 	let newMenu: Menu = {
 		id: "",
+		created_at: null,
+		updated_at: null,
+		deleted: false,
 		date: "",
 		soup: "",
 		active: true,
@@ -33,25 +36,40 @@
 		variants: [
 			{
 				id: "",
+				created_at: null,
+				menu_id: "",
+				menu_version_id: null,
+				updated_at: null,
 				variant_number: "1",
 				description: "",
 				price: 0,
+				vegetarian: false,
 				allergens: [],
 				ingredients: []
 			},
 			{
 				id: "",
+				created_at: null,
+				menu_id: "",
+				menu_version_id: null,
+				updated_at: null,
 				variant_number: "2",
 				description: "",
 				price: 0,
+				vegetarian: false,
 				allergens: [],
 				ingredients: []
 			},
 			{
 				id: "",
+				created_at: null,
+				menu_id: "",
+				menu_version_id: null,
+				updated_at: null,
 				variant_number: "3",
 				description: "",
 				price: 0,
+				vegetarian: false,
 				allergens: [],
 				ingredients: []
 			}
@@ -107,14 +125,15 @@
 
 			// 3. Vytvoření variant pro novou verzi menu
 			for (const variant of newMenu.variants) {
-				if (variant.description && variant.price > 0) {
+				if (variant.description && variant.price !== null && variant.price > 0) {
 					// Vytvoříme novou variantu pro novou verzi
 					const insertedVariant = await createMenuVariant(supabase, {
 						menu_id: menuId,
 						menu_version_id: menuVersionId,
 						variant_number: variant.variant_number,
 						description: variant.description,
-						price: variant.price
+						price: variant.price,
+						vegetarian: variant.vegetarian || false
 					});
 
 					// Přidání alergenů k nové variantě

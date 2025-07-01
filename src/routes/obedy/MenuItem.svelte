@@ -103,7 +103,15 @@
 						</div>-->
 					<div class="p-2 text-lg">
 						<div class="flex col-2 items-start">
-							<div class="border rounded-3xl py-1 px-3 bg-slate-200">{variant.variant_number}</div><div class="ml-4"> {variant.description}</div>
+							<div class="border rounded-3xl py-1 px-3 bg-slate-200">{variant.variant_number}</div>
+							<div class="ml-4 flex items-center gap-2">
+								{variant.description}
+								{#if variant.vegetarian}
+									<span class="inline-flex items-center px-2 py-2 rounded-full text-xs font-medium bg-green-100 text-green-800">
+										🌱
+									</span>
+								{/if}
+							</div>
 						</div>
 						{#if productsSettings?.showAllergens && variant.allergens && variant.allergens.length > 0}
 							<div class="mt-3">

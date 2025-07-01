@@ -12,6 +12,18 @@
 		productsSettings: any;
 	};
 
+	let filterVegetarian = false;
+
+	// Filtrování menu podle vegetariánských jídel
+	$: filteredMenus = filterVegetarian 
+		? data.menus
+			.map(menu => ({
+				...menu,
+				variants: menu.variants ? menu.variants.filter(variant => variant.vegetarian) : []
+			}))
+			.filter(menu => menu.variants.length > 0)
+		: data.menus;
+
 	function scrollToTop(event: Event) {
 		event.preventDefault();
 		document.getElementById("menu-content")?.scrollIntoView({ behavior: "smooth" });
@@ -33,12 +45,35 @@
 		</div>
 
 		<div class="max-w-4xl mx-auto mt-5 bg-white border rounded-lg border-gray-400">
+			<!-- Filtr pro vegetariánská jídla -->
+			<div class="p-4 border-b border-gray-200 bg-gray-50 m-2">
+				<div class="flex items-center justify-between">
+					<label class="flex items-center gap-3 cursor-pointer">						
+						<input 
+							type="checkbox"							
+							class="checkbox" 
+							bind:checked={filterVegetarian}
+						/>
+						<span class="text-lg font-medium">🌱 Pouze vegetariánská menu</span>
+					</label>
+					
+						<span class="text-sm text-gray-600">
+							{filteredMenus.length} z {data.menus.length}
+						</span>
+					
+				</div>
+			</div>
+
 			<div class="pb-10" id="menu-content">
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
-					{#if data.menus?.length > 0}
-						{#each data.menus as menu (menu.id)}
+					{#if filteredMenus?.length > 0}
+						{#each filteredMenus as menu (menu.id)}
 							<MenuItem {menu} productsSettings={data.productsSettings} />
 						{/each}
+					{:else if filterVegetarian}
+						<p class="p-4 text-center text-gray-600">
+							Žádná vegetariánská menu nenalezena.
+						</p>
 					{:else}
 						<p class="p-4 text-center text-gray-600">
 							Žádný jídelníček nenalezen pro následujících {data.visibleDays} menu.

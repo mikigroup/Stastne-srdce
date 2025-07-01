@@ -259,6 +259,7 @@ export type Database = {
           price: number | null
           updated_at: string | null
           variant_number: string
+          vegetarian: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -269,6 +270,7 @@ export type Database = {
           price?: number | null
           updated_at?: string | null
           variant_number: string
+          vegetarian?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -279,6 +281,7 @@ export type Database = {
           price?: number | null
           updated_at?: string | null
           variant_number?: string
+          vegetarian?: boolean | null
         }
         Relationships: [
           {
