@@ -141,6 +141,11 @@
 			loading = false;
 		};
 	};
+
+	// Data deletion request variables
+	let deletionConfirmed = false;
+	let legalUnderstanding = false;
+	let isDataManagementExpanded = false;
 </script>
 
 <svelte:head>
@@ -654,9 +659,160 @@
 				</div>
 			{/if}
 		</div>
-	</div>
+
+      <!-- Data deletion section for GDPR compliance -->   
+    <section>
+      <div class="mt-8 border border-gray-200 rounded-lg bg-gray-50">
+        <!-- Collapsible header -->
+        <button 
+          type="button"
+          class="w-full p-6 flex items-center justify-between text-left hover:bg-gray-100 transition-colors rounded-lg focus:outline-none"
+          on:click={() => isDataManagementExpanded = !isDataManagementExpanded}
+        >
+          <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.968-2.383a9.954 9.954 0 01-5.968 2.383m0 0a9.954 9.954 0 01-5.968-2.383m0 0a9.954 9.954 0 005.968-2.383" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">
+                Správa osobních údajů
+              </h3>
+              {#if data.profile?.data_deletion_requested}
+                <p class="text-sm text-blue-600 mt-1">
+                  Žádost o smazání je aktivní
+                </p>
+              {:else}
+                <p class="text-sm text-gray-500 mt-1">
+                  GDPR práva a smazání dat
+                </p>
+              {/if}
+            </div>
+          </div>
+          
+          <div class="flex-shrink-0">
+            <svg 
+              class="h-5 w-5 text-gray-400 transform transition-transform duration-200 {isDataManagementExpanded ? 'rotate-180' : ''}" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </button>
+
+        <!-- Collapsible content -->
+        {#if isDataManagementExpanded}
+          <div transition:slide="{{ duration: 300 }}" class="px-6 pb-6">
+        
+        <div class="space-y-4">
+          <div class="text-sm text-gray-600">
+            <p class="mb-2">V souladu s <strong>GDPR (EU 2016/679)</strong> můžete požádat o úplné smazání vašich osobních údajů.</p>
+          </div>
+    
+          {#if data.profile?.data_deletion_requested}
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-blue-900 mb-1">
+                    Žádost o smazání dat je aktivní
+                  </h4>
+                  <p class="text-sm text-blue-800 mb-2">
+                    <strong>Podáno:</strong> {new Date(data.profile.data_deletion_date).toLocaleDateString('cs-CZ')}<br>
+                    <strong>Smazání:</strong> {new Date(data.profile.data_deletion_scheduled).toLocaleDateString('cs-CZ')}
+                  </p>
+                  <div class="bg-blue-100 rounded p-3 text-xs text-blue-700">
+                    <p class="font-medium mb-1">💡 Možnost návratu:</p>
+                    <p>Máte <strong>30 dní na rozmyšlenou</strong>. Pokud si to rozmyslíte, můžete účet kdykoliv obnovit pomocí odkazu zaslaného na váš email.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {:else}
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">
+                  Co se stane při smazání dat:
+                </h4>
+                <ul class="text-xs text-gray-600 space-y-1 ml-4">
+                  <li class="flex items-start">
+                    <span class="text-green-500 mr-2 mt-0.5">•</span>
+                    <span><strong>30 dní na rozmyšlenou</strong> - možnost zrušení žádosti</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-green-500 mr-2 mt-0.5">•</span>
+                    <span>Smazání všech osobních údajů po uplynutí lhůty</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-blue-500 mr-2 mt-0.5">•</span>
+                    <span>Faktury zůstanou uloženy 10 let (zákonná povinnost)</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-gray-400 mr-2 mt-0.5">•</span>
+                    <span>Anonymizované statistiky mohou zůstat zachovány</span>
+                  </li>
+                </ul>
+              </div>
+    
+              <form method="POST" action="?/requestDataDeletion" class="space-y-3">
+                <div class="space-y-2">
+                  <label class="flex items-start space-x-2 text-sm">
+                    <input type="checkbox" required class="mt-1 h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500" bind:checked={deletionConfirmed}>
+                    <span class="text-gray-700">
+                      Žádám o smazání všech mých osobních údajů a rozumím, že mám <strong>30 dní na zrušení</strong> této žádosti
+                    </span>
+                  </label>
+                  
+                  <label class="flex items-start space-x-2 text-sm">
+                    <input type="checkbox" required class="mt-1 h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500" bind:checked={legalUnderstanding}>
+                    <span class="text-gray-700">
+                      Souhlasím s uchováním fakturačních údajů po zákonnou dobu 
+                      (zákon č. 563/1991 Sb., o účetnictví)
+                    </span>
+                  </label>
+                </div>
+    
+                <div class="flex items-center space-x-3 pt-2">
+                  <button 
+                    type="submit" 
+                    disabled={!deletionConfirmed || !legalUnderstanding}
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-transparent rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Požádat o smazání dat
+                  </button>
+                  
+                  <p class="text-xs text-gray-500">
+                    Po odeslání dostanete email
+                  </p>
+                </div>
+              </form>
+            </div>
+          {/if}
+        </div>
+        
+                     <div class="mt-4 pt-4 border-t border-gray-200">
+               <p class="text-xs text-gray-500 text-center">
+                 Zpracování v souladu s GDPR (EU 2016/679) a českým zákonem č. 110/2019 Sb. o zpracování osobních údajů
+               </p>
+             </div>
+           </div>
+         {/if}
+       </div>
+     </section>
+   </div>
 </section>
 
 <style>
 
 </style>
+

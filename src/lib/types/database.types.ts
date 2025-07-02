@@ -565,6 +565,18 @@ export type Database = {
           username: string | null
           website: string | null
           zip_code: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent: boolean | null
+          newsletter_consent_date: string | null
+          gdpr_consent: boolean | null
+          gdpr_consent_date: string | null
+          data_deletion_requested: boolean | null
+          data_deletion_date: string | null
+          data_deletion_scheduled: string | null
+          data_deletion_token: string | null
+          account_suspended: boolean | null
+          marketing_consent: boolean | null
+          marketing_consent_date: string | null
         }
         Insert: {
           allergies?: boolean | null
@@ -594,6 +606,18 @@ export type Database = {
           username?: string | null
           website?: string | null
           zip_code?: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent?: boolean | null
+          newsletter_consent_date?: string | null
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_date?: string | null
+          data_deletion_scheduled?: string | null
+          data_deletion_token?: string | null
+          account_suspended?: boolean | null
+          marketing_consent?: boolean | null
+          marketing_consent_date?: string | null
         }
         Update: {
           allergies?: boolean | null
@@ -623,6 +647,18 @@ export type Database = {
           username?: string | null
           website?: string | null
           zip_code?: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent?: boolean | null
+          newsletter_consent_date?: string | null
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_date?: string | null
+          data_deletion_scheduled?: string | null
+          data_deletion_token?: string | null
+          account_suspended?: boolean | null
+          marketing_consent?: boolean | null
+          marketing_consent_date?: string | null
         }
         Relationships: []
       }
