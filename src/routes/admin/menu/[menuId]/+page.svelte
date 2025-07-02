@@ -17,8 +17,17 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, menu, allAllergens, allIngredients } = data;
-	$: ({ session, supabase, menu, allAllergens, allIngredients } = data);
+	let { session, supabase, menu, allAllergens, allIngredients, productsSettings } = data;
+	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings } = data);
+	
+	// Zajistíme, že máme všechna potřebná pole pro varianty
+	$: enhancedProductsSettings = {
+		...productsSettings,
+		menuVariantsCount: productsSettings?.menuVariantsCount ?? 3,
+		allowVariableVariants: productsSettings?.allowVariableVariants ?? true,
+		minVariants: productsSettings?.minVariants ?? 1,
+		maxVariants: productsSettings?.maxVariants ?? 10
+	};
 
 	let loading = false;
 	let updateMessage = "";
@@ -51,7 +60,7 @@
 				nutri: menuToSave.nutri
 			});
 
-			console.log("Vytvořena nová verze menu s ID:", menuVersionId);
+
 
 			// 2. Aktualizace alergenů polévky
 			await updateMenuAllergens(
@@ -94,7 +103,6 @@
 			menu = refreshedMenu;
 
 		} catch (error) {
-			console.error("Chyba při aktualizaci menu:", error);
 			errorMessage = "Chyba při úpravě menu: " + (error instanceof Error ? error.message : "Neznámá chyba");
 		} finally {
 			loading = false;
@@ -164,5 +172,8 @@
 	<MenuItemDetail
 		bind:menu
 		{allAllergens}
-		{allIngredients} />
+		{allIngredients}
+		productsSettings={enhancedProductsSettings}
+		{supabase}
+		isNewMenu={false} />
 </AdminPageLayout>

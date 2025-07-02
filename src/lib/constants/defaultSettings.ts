@@ -180,7 +180,11 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     visibleDays: 7,
     showAllergens: true,
     showAllergensTooltip: true,
-    showPrices: true
+    showPrices: true,
+    menuVariantsCount: 3,
+    allowVariableVariants: true,
+    minVariants: 1,
+    maxVariants: 10
   },
 
   customer: {

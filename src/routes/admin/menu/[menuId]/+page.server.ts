@@ -1,6 +1,8 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { loadMenu, type Menu } from "$lib/services/menuService";
+import { getSetting } from "$lib/services/siteSettingsService";
+import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 export const load: PageServerLoad = async ({
 	params,
@@ -34,10 +36,14 @@ export const load: PageServerLoad = async ({
 			throw error(500, "Failed to load ingredients");
 		}
 
+		// Načtení products settings s fallback na výchozí hodnoty
+		const productsSettings = await getSetting(supabase, 'products') || getDefaultSettings('products');
+
 		return {
 			menu,
 			allAllergens,
-			allIngredients
+			allIngredients,
+			productsSettings
 		};
 	} catch (err) {
 		console.error("Unexpected error:", err);
