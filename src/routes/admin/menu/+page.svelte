@@ -63,7 +63,7 @@
 	}
 
 	// Převede pole variant na jednoduchý textový řetězec
-	function formatVariantsText(variants) {
+	function formatVariantsText(variants: any) {
 		if (!Array.isArray(variants) || variants.length === 0) {
 			return ["Žádné varianty"];
 		}

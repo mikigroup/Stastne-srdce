@@ -14,8 +14,8 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, allAllergens, allIngredients, productsSettings } = data;
-	$: ({ session, supabase, allAllergens, allIngredients, productsSettings } = data);
+	let { session, supabase, allAllergens, allIngredients, productsSettings, generalSettings } = data;
+	$: ({ session, supabase, allAllergens, allIngredients, productsSettings, generalSettings } = data);
 	
 	// Zajistíme, že máme všechna potřebná pole pro varianty
 	$: enhancedProductsSettings = {
@@ -59,6 +59,7 @@
 			variant_number: (i + 1).toString(),
 			description: "",
 			price: 0,
+			currency: generalSettings?.currencies?.[0] || 'CZK',
 			vegetarian: false,
 			allergens: [],
 			ingredients: []
@@ -190,6 +191,7 @@
 		{allAllergens}
 		{allIngredients}
 		productsSettings={enhancedProductsSettings}
+		{generalSettings}
 		{supabase}
 		isNewMenu={true}
 		on:update={handleUpdate} />

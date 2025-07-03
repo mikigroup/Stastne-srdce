@@ -11,6 +11,7 @@
 	export let allAllergens: MenuAllergen[];
 	export let allIngredients: MenuIngredient[];
 	export let productsSettings: ProductsSettings;
+	export let generalSettings: any;
 	export let supabase: SupabaseClient;
 	export let isNewMenu: boolean = false;
 
@@ -23,6 +24,7 @@
 			variant_number: (menu.variants.length + 1).toString(),
 			description: '',
 			price: null,
+			currency: generalSettings?.currencies?.[0] || 'CZK',
 			vegetarian: false,
 			allergens: [],
 			ingredients: [],
@@ -192,14 +194,29 @@
 							placeholder={`Menu ${index + 1}`}
 							rows="4"
 							bind:value={variant.description}></textarea>
-						<div class="mt-2 max-w-32">
-							<label class="label">
-								<span class="label-text">Cena</span>
-							</label>
-							<input
-								type="number"
-								class="input input-bordered w-full"
-								bind:value={variant.price} />
+						<div class="grid grid-cols-2 gap-2 mt-2">
+							<div>
+								<label class="label">
+									<span class="label-text">Cena</span>
+								</label>
+								<input
+									type="number"
+									class="input input-bordered w-full"
+									bind:value={variant.price} />
+							</div>
+							<div>
+								<label class="label">
+									<span class="label-text">Měna</span>
+								</label>
+								<select 
+									class="select select-bordered w-full"
+									bind:value={variant.currency}
+								>
+									{#each generalSettings?.currencies || ['CZK'] as currency}
+										<option value={currency}>{currency}</option>
+									{/each}
+								</select>
+							</div>
 						</div>
 						<div class="mt-2">
 							<label class="label cursor-pointer justify-start gap-2">

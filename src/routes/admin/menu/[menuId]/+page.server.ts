@@ -39,11 +39,15 @@ export const load: PageServerLoad = async ({
 		// Načtení products settings s fallback na výchozí hodnoty
 		const productsSettings = await getSetting(supabase, 'products') || getDefaultSettings('products');
 
+		// Načtení general settings pro měny
+		const generalSettings = await getSetting(supabase, 'general') || getDefaultSettings('general');
+
 		return {
 			menu,
 			allAllergens,
 			allIngredients,
-			productsSettings
+			productsSettings,
+			generalSettings
 		};
 	} catch (err) {
 		console.error("Unexpected error:", err);

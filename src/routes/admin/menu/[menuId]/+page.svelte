@@ -17,8 +17,8 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, menu, allAllergens, allIngredients, productsSettings } = data;
-	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings } = data);
+	let { session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings } = data;
+	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings } = data);
 	
 	// Zajistíme, že máme všechna potřebná pole pro varianty
 	$: enhancedProductsSettings = {
@@ -174,6 +174,7 @@
 		{allAllergens}
 		{allIngredients}
 		productsSettings={enhancedProductsSettings}
+		{generalSettings}
 		{supabase}
 		isNewMenu={false} />
 </AdminPageLayout>

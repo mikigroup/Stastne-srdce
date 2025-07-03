@@ -28,10 +28,14 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Načtení products settings s fallback na výchozí hodnoty
 		const productsSettings = await getSetting(supabase, 'products') || getDefaultSettings('products');
 
+		// Načtení general settings pro měny
+		const generalSettings = await getSetting(supabase, 'general') || getDefaultSettings('general');
+
 		return {
 			allAllergens: allergens,
 			allIngredients: ingredients,
-			productsSettings
+			productsSettings,
+			generalSettings
 		};
 	} catch (err) {
 		throw error(500, "An unexpected error occurred");
