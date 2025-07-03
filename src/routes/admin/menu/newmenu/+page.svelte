@@ -59,7 +59,7 @@
 			variant_number: (i + 1).toString(),
 			description: "",
 			price: 0,
-			currency: generalSettings?.currencies?.[0] || 'CZK',
+			currency: generalSettings?.currencies?.[0] || 'N/A',
 			vegetarian: false,
 			allergens: [],
 			ingredients: []

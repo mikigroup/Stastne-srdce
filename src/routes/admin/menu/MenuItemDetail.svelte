@@ -24,7 +24,7 @@
 			variant_number: (menu.variants.length + 1).toString(),
 			description: '',
 			price: null,
-			currency: generalSettings?.currencies?.[0] || 'CZK',
+			currency: generalSettings?.currencies?.[0] || 'N/A',
 			vegetarian: false,
 			allergens: [],
 			ingredients: [],
@@ -208,14 +208,12 @@
 								<label class="label">
 									<span class="label-text">Měna</span>
 								</label>
-								<select 
-									class="select select-bordered w-full"
-									bind:value={variant.currency}
-								>
-									{#each generalSettings?.currencies || ['CZK'] as currency}
-										<option value={currency}>{currency}</option>
-									{/each}
-								</select>
+								<input
+									type="text"
+									class="input input-bordered w-full text-black"
+									value={generalSettings?.currencies?.[0] || 'N/A'}
+									disabled
+								/>
 							</div>
 						</div>
 						<div class="mt-2">

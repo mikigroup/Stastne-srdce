@@ -447,7 +447,7 @@
 		return currency ? currency.name : code;
 	}
 
-	// Handle přidání měny z selectu
+	// Handle přidání měny z selectu - pouze jedna měna
 	function handleCurrencyAdd(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		const currencyCode = target.value;
@@ -456,25 +456,20 @@
 			if (!$editableSettings.general) {
 				$editableSettings.general = {};
 			}
-			if (!$editableSettings.general.currencies) {
-				$editableSettings.general.currencies = [];
-			}
 			
-			// Přidáme pouze pokud už tam není
-			if (!$editableSettings.general.currencies.includes(currencyCode)) {
-				$editableSettings.general.currencies.push(currencyCode);
-				$editableSettings = $editableSettings;
-			}
+			// Nastavíme pouze jednu měnu (přepíše původní)
+			$editableSettings.general.currencies = [currencyCode];
+			$editableSettings = $editableSettings;
 			
 			// Reset selectu
 			target.value = '';
 		}
 	}
 
-	// Remove currency
+	// Remove currency - smaže všechny měny
 	function removeCurrency(index: number) {
-		if ($editableSettings.general?.currencies && $editableSettings.general.currencies.length > index) {
-			$editableSettings.general.currencies.splice(index, 1);
+		if ($editableSettings.general?.currencies) {
+			$editableSettings.general.currencies = [];
 			$editableSettings = $editableSettings;
 		}
 	}
@@ -1271,29 +1266,27 @@
 									</select>
 								</div>
 								
-								<!-- Vybrané měny -->
+								<!-- Vybraná měna -->
 								{#if $editableSettings.general?.currencies && $editableSettings.general.currencies.length > 0}
 									<div class="space-y-2 max-w-xs">
 										<label class="label">
-											<span class="label-text text-sm sm:text-base">Vybrané měny</span>
+											<span class="label-text text-sm sm:text-base">Vybraná měna</span>
 										</label>
-										{#each $editableSettings.general.currencies as currency, index}
-											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
-												<div class="flex gap-2 flex-1 items-center">
-													<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
-														{currency}
-													</span>
-												</div>
-												<button 
-													class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
-													on:click={() => removeCurrency(index)}>
-													×
-												</button>
+										<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
+											<div class="flex gap-2 flex-1 items-center">
+												<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
+													{$editableSettings.general.currencies[0]}
+												</span>
 											</div>
-										{/each}
+											<button 
+												class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
+												on:click={() => removeCurrency(0)}>
+												×
+											</button>
+										</div>
 									</div>
 								{:else}
-									<p class="text-gray-500 text-sm">Žádné měny nebyly vybrány</p>
+									<p class="text-gray-500 text-sm">Žádná měna nebyla vybrána</p>
 								{/if}
 							</div>
 						</div>
