@@ -26,6 +26,7 @@ export const load: PageServerLoad = async ({
       website,
       username,
       id,
+      created_at,
       allergies,
       allergies_description,
       delivery_method,

@@ -18,7 +18,8 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		searchQuery
+		searchQuery,
+		itemsPerPage
 	} = data;
 	$: ({
 		supabase,
@@ -29,13 +30,18 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		searchQuery
+		searchQuery,
+		itemsPerPage
 	} = data);
 
 	// State variables
 	let loading = false;
 	let searchInput = searchQuery;
 	let transitionKey: number = 0;
+
+	// Možnosti pro počet položek na stránce
+	const itemsPerPageOptions = [10, 25, 50, 100];
+	let selectedItemsPerPage = itemsPerPage;
 
 	// Výchozí stav řazení
 	let sorting: SortingState = [
@@ -103,7 +109,7 @@
 			loading = true;
 			if (currentPage > 1) {
 				transitionKey++;
-				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání předchozí stránky:", error);
@@ -117,7 +123,7 @@
 			loading = true;
 			if (currentPage < totalPages) {
 				transitionKey++;
-				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání další stránky:", error);
@@ -130,9 +136,22 @@
 	async function handleSearch() {
 		loading = true;
 		try {
-			await goto(`?search=${searchInput}&page=1`);
+			await goto(`?search=${searchInput}&page=1&itemsPerPage=${selectedItemsPerPage}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Handle change of items per page
+	async function handleItemsPerPageChange() {
+		loading = true;
+		try {
+			// Reset to first page when changing items per page
+			await goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}`);
+		} catch (error) {
+			console.error("Chyba při změně počtu položek na stránce:", error);
 		} finally {
 			loading = false;
 		}
@@ -188,11 +207,32 @@
 		</button>
 	</div>
 
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet zákazníků: {totalItems}</p>
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+	<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full my-4">
+		<div class="text-center md:text-left">
+			<p>Celkový počet zákazníků: {totalItems}</p>
+		</div>
+
+		<div class="flex items-center justify-center gap-2 text-nowrap">
+			<span>Položek na stránce:</span>
+			<select
+				class="select select-bordered select-sm"
+				style="line-height: 2; padding-top: 0; padding-bottom: 0;"
+				bind:value={selectedItemsPerPage}
+				on:change={handleItemsPerPageChange}
+			>
+				{#each itemsPerPageOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div class="text-center">
+			<p>Stránka {currentPage} z {totalPages}</p>
+		</div>
+		
+		<div class="text-center md:text-right">
+			<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+		</div>
 	</div>
 </section>
 

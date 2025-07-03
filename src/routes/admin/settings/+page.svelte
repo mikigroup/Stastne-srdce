@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance, type SubmitFunction } from "$app/forms";
+	import { enhance } from "$app/forms";
 	import type { ActionData, PageData } from "./$types";
 	import Rezervace from "./Rezervace.svelte";
 
@@ -17,7 +17,7 @@
 		last_name: form?.formData?.last_name ?? profiles?.last_name ?? "",		
 	};
 
-	const handleSubmit: SubmitFunction = () => {
+	const handleSubmit = () => {
 		loading = true;
 		return async () => {
 			loading = false;
@@ -59,12 +59,12 @@
 				<input
 					type="text"
 					id="first_name"
-					class="input input-bordered w-full max-w-xs {form?.errors?.first_name ? 'input-error' : ''}"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.first_name ? 'input-warning' : ''}"
 					placeholder="Franta"
 					value={formData.first_name}
 					name="first_name" />
-				{#if form?.errors?.first_name}
-					<p class="text-error text-sm mt-1">{form.errors.first_name}</p>
+				{#if form?.warnings?.first_name}
+					<p class="text-warning text-sm mt-1">{form.warnings.first_name}</p>
 				{/if}
 			</div>
 			<div>
@@ -75,12 +75,12 @@
 				<input
 					type="text"
 					id="last_name"
-					class="input input-bordered w-full max-w-xs {form?.errors?.last_name ? 'input-error' : ''}"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.last_name ? 'input-warning' : ''}"
 					placeholder="Omáčka"
 					value={formData.last_name}
 					name="last_name" />
-				{#if form?.errors?.last_name}
-					<p class="text-error text-sm mt-1">{form.errors.last_name}</p>
+				{#if form?.warnings?.last_name}
+					<p class="text-warning text-sm mt-1">{form.warnings.last_name}</p>
 				{/if}
 			</div>			
 		</div>
@@ -93,6 +93,34 @@
 			class="w-full btn btn-outline btn-success">
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>
+
+		<!-- Další nastavení -->
+		<hr class="my-10" />
+		<div class="space-y-4">
+			<h2 class="text-2xl font-bold text-gray-900">Další nastavení</h2>
+			
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<a 
+					href="/admin/settings/loyalty"
+					class="flex items-center p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+				>
+					<div class="flex-shrink-0">
+						<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+							<span class="text-xl">💎</span>
+						</div>
+					</div>
+					<div class="ml-4">
+						<h3 class="text-lg font-medium text-gray-900">Věrnostní systém</h3>
+						<p class="text-sm text-gray-600">Nastavení bodů, úrovní a výhod pro zákazníky</p>
+					</div>
+					<div class="ml-auto">
+						<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+						</svg>
+					</div>
+				</a>
+			</div>
+		</div>
 		{#if form?.message}
 			<div class="flex w-full p-2 my-4 border rounded-lg">
 				<p

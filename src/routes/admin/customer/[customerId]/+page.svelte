@@ -14,6 +14,8 @@
 	$: supabase = data.supabase;
 	$: session = data.session;
 
+
+
 	// Importujeme centrální formatPrice funkci
 
 	// Helper funkce pro formátování data
@@ -85,7 +87,7 @@
 	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
 
 	<!-- Věrnostní systém zákazníka -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
 		<h2 class="text-xl font-semibold mb-6">Věrnostní profil zákazníka</h2>
 		
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -151,7 +153,7 @@
 						{#if loyaltyInfo.customerSince > 0}
 							<div class="flex justify-between">
 								<span class="text-gray-600">Zákazník od:</span>
-								<span class="font-medium">{formatDays(loyaltyInfo.customerSince)}</span>
+								<span class="font-medium">{formatDateToCzechShort(customer.created_at)}</span>
 							</div>
 						{/if}
 						{#if loyaltyInfo.daysSinceLastOrder !== null}
@@ -195,7 +197,7 @@
 	</div>
 
 	<!-- Statistiky zákazníka -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
 		<h2 class="text-xl font-semibold mb-6">Statistiky zákazníka</h2>
 		
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -290,7 +292,7 @@
 	</div>
 
 	<!-- Historie objednávek -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg border border-gray-200 p-6">
 		<h2 class="text-xl font-semibold mb-4">Objednávky</h2>
 		{#if orders && orders.length > 0}
 			<div class="overflow-x-auto">

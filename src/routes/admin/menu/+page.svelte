@@ -305,13 +305,16 @@
 			Další stránka
 		</button>
 	</div>
-	<div class="flex flex-col md:flex-row justify-between items-center w-full my-4 gap-4">
-		<p>Celkový počet menu: {totalItems}</p>
+	<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full my-4">
+		<div class="text-center md:text-left">
+			<p>Celkový počet menu: {totalItems}</p>
+		</div>
 
-		<div class="flex items-center gap-2 text-nowrap">
+		<div class="flex items-center justify-center gap-2 text-nowrap">
 			<span>Položek na stránce:</span>
 			<select
 				class="select select-bordered select-sm"
+				style="line-height: 2; padding-top: 0; padding-bottom: 0;"
 				bind:value={selectedItemsPerPage}
 				on:change={handleItemsPerPageChange}
 			>
@@ -321,8 +324,13 @@
 			</select>
 		</div>
 
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} menu</p>
+		<div class="text-center">
+			<p>Stránka {currentPage} z {totalPages}</p>
+		</div>
+		
+		<div class="text-center md:text-right">
+			<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} menu</p>
+		</div>
 	</div>
 </section>
 
