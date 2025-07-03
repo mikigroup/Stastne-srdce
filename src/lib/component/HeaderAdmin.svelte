@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
+	import { goto } from "$app/navigation";
 	import { readable } from "svelte/store";
 	import { Icon, FaceSmile } from "svelte-hero-icons";
 	import { ROUTES } from "$lib/stores/store";
@@ -80,7 +81,7 @@
 			loading = true;
 			const { error } = await supabase.auth.signOut();
 			if (error) throw error;
-			window.location.href = "/";
+			await goto("/");
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -177,8 +178,8 @@
 							</li>
 							<hr>
 							<li>
-								<a class="text-sm py-2" on:click={signOut} disabled={loading}
-									>Odhlásit se</a>
+								<button class="text-sm py-2 w-full text-left" on:click={signOut} disabled={loading}
+									>Odhlásit se</button>
 							</li>
 						</ul>
 					</div>
