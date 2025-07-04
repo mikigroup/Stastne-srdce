@@ -35,6 +35,8 @@
 </svelte:head>
 
 
+
+	<section class="page-container">
 		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 			Obědy
 		</h1>
@@ -98,3 +100,4 @@
 				</a>
 			{/if}
 		</div>
+	</section>

@@ -60,11 +60,11 @@ h2{
 
 /* Globální layout třídy */
 .page-container {
-	@apply max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100;
+	@apply max-w-screen-lg py-16 mx-auto mb-10 rounded-lg md:px-4 bg-stone-100;
 }
 
 .page-content {
-	@apply max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg;
+	@apply max-w-4xl md:p-10 mx-auto bg-white border border-gray-400 rounded-lg;
 }
 
 .page-title {
