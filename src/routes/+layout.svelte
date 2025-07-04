@@ -201,9 +201,25 @@
 	<div class="" />
 {/if}
 
-<main class="">
-	<slot class="mt-10 container mx-auto " />
+<main>
+	<slot />
 </main>
+
+<!-- Globální layout komponenta -->
+<script context="module">
+	// Komponenta pro standardní layout stránky
+	export function PageLayout(props) {
+		return `
+			<section class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
+				${props.title ? `<h1 class="mb-10 text-4xl md:text-5xl font-extrabold tracking-tight text-center text-gray-900">${props.title}</h1>` : ''}
+				${props.subtitle ? `<p class="mt-4 text-xl text-center text-gray-600">${props.subtitle}</p>` : ''}
+				<div class="max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg">
+					${props.content || ''}
+				</div>
+			</section>
+		`;
+	}
+</script>
 
 {#if showRegistrationBanner}
 	<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed top-0 left-0 right-0 z-50">

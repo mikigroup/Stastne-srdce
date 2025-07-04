@@ -128,12 +128,12 @@
 </svelte:head>
 
 <main>
-	<section class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg md:px-4 bg-stone-100">
-		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
+	<section class="page-container">
+		<h1 class="page-title">
 			Alergeny
 		</h1>
 
-		<div class="max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg">
+		<div class="page-content">
 			<p class="mb-6 text-gray-700">
 				V našich jídlech mohou být obsaženy následující alergeny. Podle evropské legislativy jsme povinni označit přítomnost těchto alergenů v našich pokrmech.
 				Pokud máte jakékoliv dotazy ohledně alergenů v našich jídlech, neváhejte nás kontaktovat.
@@ -187,7 +187,7 @@
 			</div>
 		</div>
 
-		<div class="flex justify-end gap-4 pt-10 pr-5">
+		<div class="page-footer">
 			<a
 				href="/obedy"
 				class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
