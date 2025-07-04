@@ -116,8 +116,7 @@ export const load: PageServerLoad = async ({
 	const loyaltyInfo = {
 		...getLoyaltyLevel(stats.totalOrders),
 		isActive: isActiveCustomer(stats.lastOrderDate),
-		customerSince: stats.firstOrderDate ? 
-			Math.floor((new Date().getTime() - new Date(stats.firstOrderDate).getTime()) / (1000 * 60 * 60 * 24)) : 0,
+		customerSince: Math.floor((new Date().getTime() - new Date(customer.created_at).getTime()) / (1000 * 60 * 60 * 24)),
 		daysSinceLastOrder: stats.lastOrderDate ? 
 			Math.floor((new Date().getTime() - new Date(stats.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24)) : null
 	};

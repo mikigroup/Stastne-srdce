@@ -150,12 +150,10 @@
 				<div class="bg-gray-50 rounded-lg p-4">
 					<h4 class="font-semibold text-gray-900 mb-3">Časové údaje</h4>
 					<div class="space-y-3 text-sm">
-						{#if loyaltyInfo.customerSince > 0}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Zákazník od:</span>
-								<span class="font-medium">{formatDateToCzechShort(customer.created_at)}</span>
-							</div>
-						{/if}
+						<div class="flex justify-between">
+							<span class="text-gray-600">Zákazník od:</span>
+							<span class="font-medium">{formatDateToCzechShort(customer.created_at)}</span>
+						</div>
 						{#if loyaltyInfo.daysSinceLastOrder !== null}
 							<div class="flex justify-between">
 								<span class="text-gray-600">Poslední objednávka:</span>
