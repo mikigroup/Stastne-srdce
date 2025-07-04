@@ -278,16 +278,18 @@ export const actions: Actions = {
 			const scheduledDate = new Date(deletionDate.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
 
 			// Mark user's request for data deletion with 30-day grace period
+			const updateData = {
+				data_deletion_requested: true, // Boolean value
+				data_deletion_date: deletionDate.toISOString(),
+				data_deletion_scheduled: scheduledDate.toISOString(),
+				data_deletion_token: reactivationToken,
+				account_suspended: true, // Boolean value - Suspend account during grace period
+				updated_at: new Date().toISOString()
+			};
+
 			const { error } = await supabase
 				.from("profiles")
-				.update({
-					data_deletion_requested: true,
-					data_deletion_date: deletionDate.toISOString(),
-					data_deletion_scheduled: scheduledDate.toISOString(),
-					data_deletion_token: reactivationToken,
-					account_suspended: true, // Suspend account during grace period
-					updated_at: new Date().toISOString()
-				})
+				.update(updateData)
 				.eq("id", session.user.id);
 
 			if (error) {

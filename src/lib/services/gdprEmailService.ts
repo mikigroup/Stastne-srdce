@@ -29,6 +29,7 @@ export async function sendDataDeletionRequestEmail(params: DataDeletionEmailPara
 	const { email, firstName, lastName, deletionDate, scheduledDate, reactivationToken, baseUrl } = params;
 	
 	const reactivationUrl = `${baseUrl}/auth/reactivate?token=${reactivationToken}`;
+	console.log('📧 Generated reactivation URL:', reactivationUrl);
 	const deletionDateFormatted = new Date(deletionDate).toLocaleDateString('cs-CZ', {
 		weekday: 'long',
 		year: 'numeric',
