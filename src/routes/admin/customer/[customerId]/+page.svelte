@@ -152,22 +152,19 @@
 					<div class="space-y-3 text-sm">
 						<div class="flex justify-between">
 							<span class="text-gray-600">Zákazník od:</span>
-							<span class="font-medium">{formatDateToCzechShort(customer.created_at)}</span>
+							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : 'N/A'}</span>
 						</div>
-						{#if loyaltyInfo.daysSinceLastOrder !== null}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Poslední objednávka:</span>
-								<span class="font-medium">
-									{loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
-								</span>
-							</div>
-						{/if}
-						{#if stats.averageOrderValue > 0}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Průměr/objednávka:</span>
-								<span class="font-medium">{formatPrice(stats.averageOrderValue, true)}</span>
-							</div>
-						{/if}
+						<div class="flex justify-between">
+							<span class="text-gray-600">Poslední objednávka:</span>
+							<span class="font-medium">
+								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? '0' : 
+								 loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
+							</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">Průměr/objednávka:</span>
+							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : '0 Kč'}</span>
+						</div>
 					</div>
 				</div>
 
