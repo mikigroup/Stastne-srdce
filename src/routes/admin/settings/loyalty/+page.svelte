@@ -43,9 +43,9 @@
       error = null;
       success = false;
 
-      const success = await saveLoyaltySettings(supabase, settings, session.user.id);
+      const saveResult = await saveLoyaltySettings(supabase, settings, session.user.id);
       
-      if (success) {
+      if (saveResult) {
         originalSettings = JSON.parse(JSON.stringify(settings));
         success = true;
         setTimeout(() => success = false, 3000);
