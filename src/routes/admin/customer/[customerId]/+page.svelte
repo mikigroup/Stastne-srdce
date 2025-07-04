@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CustomerDetail from "../CustomerDetail.svelte";
-	import { goto } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import { formatPrice, formatDateToCzechShort, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	
@@ -13,6 +13,8 @@
 	$: loyaltyInfo = data.loyaltyInfo;
 	$: supabase = data.supabase;
 	$: session = data.session;
+	$: previousCustomer = data.previousCustomer;
+	$: nextCustomer = data.nextCustomer;
 
 
 
@@ -47,6 +49,19 @@
 	// Reference na CustomerDetail komponentu pro volání funkcí
 	let customerDetailComponent: any;
 	let loading = false;
+
+	// Navigační funkce
+	async function goToPreviousCustomer() {
+		if (previousCustomer?.id) {
+			await goto(`/admin/customer/${previousCustomer.id}`);
+		}
+	}
+
+	async function goToNextCustomer() {
+		if (nextCustomer?.id) {
+			await goto(`/admin/customer/${nextCustomer.id}`);
+		}
+	}
 
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
@@ -83,6 +98,34 @@
 	subtitle="{customer?.first_name ?? ''} {customer?.last_name ?? ''}"
 	backUrl="/admin/customer"
 	{actions}>
+
+	<!-- Navigační šipky -->
+	{#if previousCustomer || nextCustomer}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousCustomer}
+				disabled={!previousCustomer}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí zákazník (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+			
+
+			<button
+				on:click={goToNextCustomer}
+				disabled={!nextCustomer}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující zákazník (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
 
 	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
 

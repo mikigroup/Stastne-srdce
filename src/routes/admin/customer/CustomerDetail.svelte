@@ -66,6 +66,27 @@
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
 
+	// Reaktivní aktualizace lokálních proměnných při změně customer prop
+	$: if (customer) {
+		first_name = customer.first_name ?? "";
+		last_name = customer.last_name ?? "";
+		telephone = customer.telephone ?? "";
+		street = customer.street ?? "";
+		city = customer.city ?? "";
+		street_number = customer.street_number ?? "";
+		zip_code = customer.zip_code ?? "";
+		ico = customer.ico ?? "";
+		dic = customer.dic ?? "";
+		company = customer.company ?? "";
+		website = customer.website ?? "";
+		username = customer.username ?? "";
+		email = customer.email ?? "";
+		allergies = customer.allergies === true ? "yes" : "no";
+		allergies_description = customer.allergies_description || "";
+		delivery_method = customer.delivery_method || "";
+		payment_method = customer.payment_method || "";
+	}
+
 	// Get all delivery method options for admin (all 5 values)
 	const deliveryMethodOptions = getAllDeliveryMethods();
 

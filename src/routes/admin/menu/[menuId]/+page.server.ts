@@ -14,6 +14,38 @@ export const load: PageServerLoad = async ({
 		// Načtení menu pomocí naší služby
 		const menu = await loadMenu(supabase, menuId);
 
+		// Načtení předchozí a následující menu pro navigaci
+		let prevMenuId = null;
+		let nextMenuId = null;
+
+		if (menu) {
+			// Najít předchozí menu (starší podle data)
+			const { data: prevMenu } = await supabase
+				.from("menus")
+				.select("id")
+				.lt("date", menu.date)
+				.order("date", { ascending: false })
+				.limit(1)
+				.single();
+
+			if (prevMenu) {
+				prevMenuId = prevMenu.id;
+			}
+
+			// Najít následující menu (novější podle data)
+			const { data: nextMenu } = await supabase
+				.from("menus")
+				.select("id")
+				.gt("date", menu.date)
+				.order("date", { ascending: true })
+				.limit(1)
+				.single();
+
+			if (nextMenu) {
+				nextMenuId = nextMenu.id;
+			}
+		}
+
 		// Načtení všech alergenů pro výběr
 		const { data: allAllergens, error: allergensError } = await supabase
 			.from("allergens")
@@ -47,7 +79,11 @@ export const load: PageServerLoad = async ({
 			allAllergens,
 			allIngredients,
 			productsSettings,
-			generalSettings
+			generalSettings,
+			navigation: {
+				prevMenuId,
+				nextMenuId
+			}
 		};
 	} catch (err) {
 		console.error("Unexpected error:", err);

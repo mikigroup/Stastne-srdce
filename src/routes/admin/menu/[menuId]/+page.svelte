@@ -17,8 +17,8 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings } = data;
-	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings } = data);
+	let { session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings, navigation } = data;
+	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings, navigation } = data);
 	
 	// Zajistíme, že máme všechna potřebná pole pro varianty
 	$: enhancedProductsSettings = {
@@ -32,6 +32,19 @@
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";
+
+	// Navigační funkce
+	async function goToPreviousMenu() {
+		if (navigation?.prevMenuId) {
+			await goto(`/admin/menu/${navigation.prevMenuId}`);
+		}
+	}
+
+	async function goToNextMenu() {
+		if (navigation?.nextMenuId) {
+			await goto(`/admin/menu/${navigation.nextMenuId}`);
+		}
+	}
 
 	async function updateMenu() {
 		try {
@@ -167,6 +180,34 @@
 	successMessage={updateMessage}
 	errorMessage={errorMessage}
 	{loading}>
+
+	<!-- Navigační šipky -->
+	{#if navigation?.prevMenuId || navigation?.nextMenuId}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousMenu}
+				disabled={!navigation?.prevMenuId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí menu (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+			
+
+			<button
+				on:click={goToNextMenu}
+				disabled={!navigation?.nextMenuId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující menu (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
 
 	<!-- Menu content -->
 	<MenuItemDetail

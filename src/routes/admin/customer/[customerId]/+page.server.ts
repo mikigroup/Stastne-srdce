@@ -46,6 +46,44 @@ export const load: PageServerLoad = async ({
 		throw customerError;
 	}
 
+	// Načteme předchozí a následující zákazníka podle data vytvoření
+	let previousCustomer = null;
+	let nextCustomer = null;
+
+	// Načteme předchozího zákazníka (starší datum vytvoření)
+	const { data: prevCustomerData } = await supabase
+		.from("profiles")
+		.select("id, first_name, last_name, created_at")
+		.lt("created_at", customer.created_at)
+		.order("created_at", { ascending: false })
+		.limit(1)
+		.single();
+
+	if (prevCustomerData) {
+		previousCustomer = {
+			id: prevCustomerData.id,
+			name: `${prevCustomerData.first_name || ''} ${prevCustomerData.last_name || ''}`.trim(),
+			created_at: prevCustomerData.created_at
+		};
+	}
+
+	// Načteme následujícího zákazníka (mladší datum vytvoření)
+	const { data: nextCustomerData } = await supabase
+		.from("profiles")
+		.select("id, first_name, last_name, created_at")
+		.gt("created_at", customer.created_at)
+		.order("created_at", { ascending: true })
+		.limit(1)
+		.single();
+
+	if (nextCustomerData) {
+		nextCustomer = {
+			id: nextCustomerData.id,
+			name: `${nextCustomerData.first_name || ''} ${nextCustomerData.last_name || ''}`.trim(),
+			created_at: nextCustomerData.created_at
+		};
+	}
+
 	// Načtení objednávek zákazníka s položkami
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
@@ -125,6 +163,8 @@ export const load: PageServerLoad = async ({
 		customer,
 		orders: orders || [],
 		stats,
-		loyaltyInfo
+		loyaltyInfo,
+		previousCustomer,
+		nextCustomer
 	};
 };
