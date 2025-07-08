@@ -67,12 +67,12 @@
 							<img
 								class="w-32 rounded-lg shadow-lg md:w-56 floating-img"
 								width="200"
-								src="meal_01.jpg"
+								src="meal_01.webp"
 								alt="1" />
 							<img
 								class="w-40 rounded-lg shadow-lg md:w-64 floating-img2"
 								width="260"
-								src="meal_02.jpg"
+								src="meal_02.webp"
 								alt="2" />
 						</div>
 						<div
@@ -80,12 +80,12 @@
 							<img
 								class="w-24 rounded-lg shadow-lg md:w-40 floating-img2"
 								width="170"
-								src="meal_03.jpg"
+								src="meal_03.webp"
 								alt="3" />
 							<img
 								class="w-32 rounded-lg shadow-lg md:w-56 floating-img"
 								width="200"
-								src="meal_04.jpg"
+								src="meal_04.webp"
 								alt="4" />
 						</div>
 					</div>
