@@ -2,6 +2,9 @@ import path from "path";
 
 export async function GET() {
 	const filePaths = Object.keys(await import.meta.glob("../**/*.{svelte,md}"));
+	
+	// Základní doména pro sitemap
+	const baseUrl = "https://stastne-srdce.cz";
 
 	const urls = filePaths
 		.map((filePath) => {
@@ -45,14 +48,14 @@ export async function GET() {
 
 			return `
 			<url>
-				<loc>/${url}</loc>
+				<loc>${baseUrl}/${url}</loc>
 				<lastmod>${lastmod}</lastmod>
 				<changefreq>${changefreq}</changefreq>
 				<priority>${priority}</priority>
 			</url>
 		`;
 		})
-		.filter((url) => !url.includes("+layout") && !url.startsWith("admin"))
+		.filter((url) => !url.includes("+layout") && !url.startsWith("admin") && !url.includes("+error"))
 		.join("\n");
 
 	return new Response(
