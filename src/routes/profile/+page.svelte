@@ -145,7 +145,7 @@
 </script>
 
 <svelte:head>
-  <title>{generalSettings?.shopName ?? 'Účet'} - Účet</title>
+  <title>Účet - {generalSettings?.shopName ?? 'Účet'}</title>
   <meta name="description" content="Účet" />
 </svelte:head>
 

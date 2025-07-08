@@ -11,6 +11,7 @@ Disallow: /login/
 Disallow: /signup/
 Disallow: /forgot/
 Disallow: /reset/
+Disallow: /thankyou/
 
 # Blokovat API endpointy
 Disallow: /api/

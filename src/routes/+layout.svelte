@@ -73,9 +73,9 @@
 
 	<!-- SEO meta tagy -->
 	{#if seoSettings?.metaTitle}
-		<title>{seoSettings.metaTitle}</title>
+		<title>{seoSettings.metaTitle} - {generalSettings?.shopName}</title>
 	{:else if generalSettings?.shopName}
-		<title>{generalSettings.shopName} - Zdravé stravování a rozvoz jídla</title>
+		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
@@ -100,9 +100,9 @@
 	{/if}
 	
 	{#if seoSettings?.metaTitle}
-		<meta property="og:title" content={seoSettings.metaTitle} />
+		<meta property="og:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
-		<meta property="og:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+		<meta property="og:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
@@ -119,9 +119,9 @@
 	{/if}
 	
 	{#if seoSettings?.metaTitle}
-		<meta name="twitter:title" content={seoSettings.metaTitle} />
+		<meta name="twitter:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
-		<meta name="twitter:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+		<meta name="twitter:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
 	
 	{#if seoSettings?.metaDescription}

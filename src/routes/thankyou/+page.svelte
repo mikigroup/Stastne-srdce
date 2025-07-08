@@ -30,7 +30,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Děkujeme za objednávku</title>
+	<title>Děkujeme za objednávku - {generalSettings.shopName}</title>
 	<meta name="description" content="Děkujeme za objednávku" />
 </svelte:head>
 

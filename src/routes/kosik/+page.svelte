@@ -130,7 +130,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings?.shopName ?? 'Obchod'} - Košík</title>
+	<title>Košík - {generalSettings?.shopName ?? 'Obchod'}</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
 

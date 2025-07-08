@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Přednášky a kurzy</title>
+	<title>Přednášky a kurzy - {generalSettings.shopName}</title>
 	<meta name="description" content="Nabízíme odborné přednášky o výživě a zdravém životním stylu pro školy, zájmové skupiny a firmy, a také workshopy pro školní kuchyně." />
 </svelte:head>
 

@@ -35,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Login</title>
+	<title>Login - {generalSettings.shopName}</title>
 	<meta name="description" content="Login" />
 </svelte:head>
 

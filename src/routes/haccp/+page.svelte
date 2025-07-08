@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{generalSettings.shopName} - HACCP</title>
+  <title>HACCP - {generalSettings.shopName}</title>
   <meta name="description" content="Služby v oblasti HACCP - vytvoření systému kontroly kritických bodů pro restaurace, vyvařovny, obchody a další gastronomické provozy." />
 </svelte:head>
 

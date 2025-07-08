@@ -72,7 +72,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Vytvoření nového účtu</title>
+	<title>Vytvoření nového účtu - {generalSettings.shopName}</title>
 	<meta name="description" content="Registrace nového účtu" />
 </svelte:head>
 

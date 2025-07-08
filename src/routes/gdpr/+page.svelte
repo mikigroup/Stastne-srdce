@@ -6,7 +6,7 @@
 	const { generalSettings } = data;
 </script>
 <svelte:head>
-	<title>{generalSettings.shopName} - GDPR</title>
+	<title>GDPR - {generalSettings.shopName}</title>
 </svelte:head>
 
 <section class="">

@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Mgr. Bc. Kamila Kučerová</title>
+	<title>Mgr. Bc. Kamila Kučerová - {generalSettings.shopName}</title>
 	<meta name="description" content="Mgr. Bc. Kamila Kučerová - dietoložka, zakladatelka Šťastného srdce a specialistka na zdravou výživu s 15 letou praxí." />
 </svelte:head>
 

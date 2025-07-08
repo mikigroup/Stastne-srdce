@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Dietologická poradna</title>
+	<title>Dietologická poradna - {generalSettings.shopName}</title>
 	<meta name="description" content="Dietologická poradna vedená odborníky s dlouholetou praxí, zaměřená na změnu stravovacích návyků a řešení zdravotních problémů souvisejících s výživou." />
 </svelte:head>
 
