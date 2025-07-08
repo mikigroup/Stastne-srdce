@@ -135,7 +135,7 @@
 				{/if}
 			{/if}
 		</form>
-		<button
+<!-- 		<button
 			on:click={signInWithGoogle}
 			class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2"
 			disabled={loading}>
@@ -151,7 +151,7 @@
 					clip-rule="evenodd" />
 			</svg>
 			{loading ? "Přihlašování..." : "Registrace přes Google"}
-		</button>
+		</button> -->
 	</div>
 </section>
 

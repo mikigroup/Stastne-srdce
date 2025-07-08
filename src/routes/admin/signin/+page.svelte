@@ -107,7 +107,7 @@
 				<hr class="mb-10" />
 			{/if}
 		</form>
-		{#if !$page.data.session}
+<!-- 		{#if !$page.data.session}
 			<button
 				on:click={() => {
 					signInWithGoogle();
@@ -128,6 +128,6 @@
 				</svg>
 				Přihlásit se přes Google
 			</button>
-		{/if}
+		{/if} -->
 	</div>
 </section>
