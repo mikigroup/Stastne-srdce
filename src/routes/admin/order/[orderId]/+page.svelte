@@ -647,7 +647,18 @@
 
 			<!-- Osobní údaje zákazníka -->
 			<div class="space-y-4">
-				<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Kontaktní údaje</h3>
+				<div class="flex items-center justify-between border-b border-gray-200 pb-2">
+					<h3 class="text-lg font-medium text-gray-900">Kontaktní údaje</h3>
+					{#if order?.user_id}
+						<a 
+							href="/admin/customer/{order.user_id}" 
+							class="text-sm text-blue-600 hover:text-blue-800 underline"
+							data-sveltekit-preload-data
+						>
+							Upravit globálně
+						</a>
+					{/if}
+				</div>
 				
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>

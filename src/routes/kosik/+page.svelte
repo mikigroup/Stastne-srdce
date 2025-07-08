@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
-	import { CartItemsStore, totalPiecesStore } from "$lib/stores/store";
+	import { CartItemsStore, totalPiecesStore, type CartItem } from "$lib/stores/store";
 	import { page } from "$app/stores";
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
-	import { formatDateToCzech } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
 
 	export let data;
 	export let form: Actions;
@@ -130,7 +130,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings?.shopName ?? 'Obchod'} - Košík</title>
+	<title>Košík - {generalSettings?.shopName ?? 'Obchod'}</title>
 	<meta name="description" content="Košík" />
 </svelte:head>
 
@@ -193,7 +193,7 @@
 									</div>
 									<div class="m-2 text-center">
 										<p>
-											{formatDateToCzech(cartItem.date)}
+											{formatDateDayMonth(cartItem.date)}
 										</p>
 									</div>
 									<hr />
@@ -295,10 +295,7 @@
 									class="items-center hidden pl-5 text-lg border border-gray-400 rounded-lg md:grid-cols-12 bg-stone-100 md:grid py-7 my-1">
 									<div class="col-span-1 text-center border-r">
 										<p class="">
-											{new Date(cartItem.date).toLocaleDateString("cs-CZ", {
-												month: "long",
-												day: "numeric"
-											})}
+											{formatDateDayMonth(cartItem.date)}
 										</p>
 									</div>
 									<div class="col-span-2 pl-5 border-r">

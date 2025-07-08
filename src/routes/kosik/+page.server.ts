@@ -3,6 +3,7 @@ import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import type { Profile } from "$lib/types/profile";
 
 const transporter = nodemailer.createTransport({
@@ -25,22 +26,6 @@ export const actions: Actions = {
 				type: 'failure',
 				message: "Pro vytvoření objednávky se musíte přihlásit.",
 				redirectUrl: "/prihlaseni?redirect=/kosik"
-			};
-		}
-
-		// Kontrola dokončené registrace
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("registration_status")
-			.eq("id", user.id)
-			.single();
-
-		if (profile?.registration_status !== "completed") {
-			return {
-				success: false,
-				type: 'failure',
-				message: "Pro vytvoření objednávky je potřeba dokončit registraci.",
-				redirectUrl: "/signup/complete"
 			};
 		}
 
@@ -89,7 +74,18 @@ export const actions: Actions = {
 				0
 			);
 
-			// Get customer data
+			// Kontrola a automatická aktualizace statusu registrace pomocí globální služby
+			const registrationCheck = await checkAndUpdateRegistrationStatus(supabase, user.id, email);
+			
+			if (!registrationCheck.isComplete) {
+				return {
+					success: false,
+					type: 'failure',
+					message: `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${registrationCheck.validationResult.missingFields.join(', ')}.`
+				};
+			}
+
+			// Get customer data for order creation
 			const { data: customer, error: customerError } = await supabase
 				.from("profiles")
 				.select(`
@@ -106,20 +102,6 @@ export const actions: Actions = {
 					success: false,
 					type: 'failure',
 					message: "Nepodařilo se načíst data zákazníka."
-				};
-			}
-
-			// Validate customer data - add email to validation
-			const validationResult = validateProfileForInvoicing({
-				...customer,
-				email: email
-			});
-			
-			if (!validationResult.isComplete) {
-				return {
-					success: false,
-					type: 'failure',
-					message: `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`
 				};
 			}
 

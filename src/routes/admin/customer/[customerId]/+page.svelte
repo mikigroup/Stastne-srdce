@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CustomerDetail from "../CustomerDetail.svelte";
-	import { goto } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import { formatPrice, formatDateToCzechShort, formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	
@@ -13,6 +13,10 @@
 	$: loyaltyInfo = data.loyaltyInfo;
 	$: supabase = data.supabase;
 	$: session = data.session;
+	$: previousCustomer = data.previousCustomer;
+	$: nextCustomer = data.nextCustomer;
+
+
 
 	// Importujeme centrální formatPrice funkci
 
@@ -46,12 +50,32 @@
 	let customerDetailComponent: any;
 	let loading = false;
 
+	// Navigační funkce
+	async function goToPreviousCustomer() {
+		if (previousCustomer?.id) {
+			await goto(`/admin/customer/${previousCustomer.id}`);
+		}
+	}
+
+	async function goToNextCustomer() {
+		if (nextCustomer?.id) {
+			await goto(`/admin/customer/${nextCustomer.id}`);
+		}
+	}
+
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
 		{
 			label: loading ? 'Ukládá se...' : 'Uložit změny',
 			onClick: () => customerDetailComponent?.saveCustomer(),
 			variant: 'primary' as const,
+			loading,
+			disabled: loading
+		},
+		{
+			label: 'Zkontrolovat a aktualizovat status',
+			onClick: () => customerDetailComponent?.updateRegistrationStatus(),
+			variant: 'secondary' as const,
 			loading,
 			disabled: loading
 		},
@@ -75,10 +99,38 @@
 	backUrl="/admin/customer"
 	{actions}>
 
+	<!-- Navigační šipky -->
+	{#if previousCustomer || nextCustomer}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousCustomer}
+				disabled={!previousCustomer}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí zákazník (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+			
+
+			<button
+				on:click={goToNextCustomer}
+				disabled={!nextCustomer}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující zákazník (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
+
 	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
 
 	<!-- Věrnostní systém zákazníka -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
 		<h2 class="text-xl font-semibold mb-6">Věrnostní profil zákazníka</h2>
 		
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -141,26 +193,21 @@
 				<div class="bg-gray-50 rounded-lg p-4">
 					<h4 class="font-semibold text-gray-900 mb-3">Časové údaje</h4>
 					<div class="space-y-3 text-sm">
-						{#if loyaltyInfo.customerSince > 0}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Zákazník od:</span>
-								<span class="font-medium">{formatDays(loyaltyInfo.customerSince)}</span>
-							</div>
-						{/if}
-						{#if loyaltyInfo.daysSinceLastOrder !== null}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Poslední objednávka:</span>
-								<span class="font-medium">
-									{loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
-								</span>
-							</div>
-						{/if}
-						{#if stats.averageOrderValue > 0}
-							<div class="flex justify-between">
-								<span class="text-gray-600">Průměr/objednávka:</span>
-								<span class="font-medium">{formatPrice(stats.averageOrderValue, true)}</span>
-							</div>
-						{/if}
+						<div class="flex justify-between">
+							<span class="text-gray-600">Zákazník od:</span>
+							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : 'N/A'}</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">Poslední objednávka:</span>
+							<span class="font-medium">
+								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? '0' : 
+								 loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
+							</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">Průměr/objednávka:</span>
+							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : '0 Kč'}</span>
+						</div>
 					</div>
 				</div>
 
@@ -188,7 +235,7 @@
 	</div>
 
 	<!-- Statistiky zákazníka -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
 		<h2 class="text-xl font-semibold mb-6">Statistiky zákazníka</h2>
 		
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -283,7 +330,7 @@
 	</div>
 
 	<!-- Historie objednávek -->
-	<div class="mt-8 bg-white rounded-lg shadow-md p-6">
+	<div class="mt-8 bg-white rounded-lg border border-gray-200 p-6">
 		<h2 class="text-xl font-semibold mb-4">Objednávky</h2>
 		{#if orders && orders.length > 0}
 			<div class="overflow-x-auto">

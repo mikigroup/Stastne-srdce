@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Zapomenuté heslo</title>
+	<title>Zapomenuté heslo - {generalSettings.shopName}</title>
 	<meta name="description" content="Zapomenuté heslo" />
 </svelte:head>
 

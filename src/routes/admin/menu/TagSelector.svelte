@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Database } from "$lib/types/database.types";
 
 	// Přímé bindování místo event dispatcheru
 	export let selectedTags:
@@ -22,7 +23,7 @@
 	}
 
 	// Přímá manipulace s bindovaným polem
-	function toggleTag(tag) {
+	function toggleTag(tag: (typeof availableTags)[number]) {
 		const newTags = selectedTags.some(t => t.id === tag.id)
 			? selectedTags.filter(t => t.id !== tag.id)
 			: [...selectedTags, tag];
@@ -30,7 +31,7 @@
 		// Aktualizujte lokální proměnnou
 		selectedTags = newTags;
 
-		console.log("Aktualizované selectedTags:", selectedTags);
+		
 	}
 
 	// Funkce pro přidání tagu z textového vstupu
@@ -66,7 +67,7 @@
 				class:text-gray-700={!selectedTags.some(t => t.id === tag.id)}
 				class:border-gray-300={!selectedTags.some(t => t.id === tag.id)}
 				on:click={() => toggleTag(tag)}>
-				{tag.number ? `${tag.number}. ` : ""}{tag.name}
+				{'number' in tag && tag.number ? `${tag.number}. ` : ""}{tag.name}
 			</button>
 		{/each}
 	</div>

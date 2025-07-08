@@ -99,13 +99,13 @@ export type Database = {
       fakturoid_tokens: {
         Row: {
           access_token: string
+          account_currency: string | null
           account_email: string | null
-          account_name: string | null
           account_id: string | null
+          account_name: string | null
+          account_plan: string | null
           account_slug: string | null
           account_subdomain: string | null
-          account_currency: string | null
-          account_plan: string | null
           created_at: string | null
           expires_at: string
           id: string
@@ -118,13 +118,13 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          account_currency?: string | null
           account_email?: string | null
-          account_name?: string | null
           account_id?: string | null
+          account_name?: string | null
+          account_plan?: string | null
           account_slug?: string | null
           account_subdomain?: string | null
-          account_currency?: string | null
-          account_plan?: string | null
           created_at?: string | null
           expires_at: string
           id?: string
@@ -137,13 +137,13 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          account_currency?: string | null
           account_email?: string | null
-          account_name?: string | null
           account_id?: string | null
+          account_name?: string | null
+          account_plan?: string | null
           account_slug?: string | null
           account_subdomain?: string | null
-          account_currency?: string | null
-          account_plan?: string | null
           created_at?: string | null
           expires_at?: string
           id?: string
@@ -259,6 +259,7 @@ export type Database = {
           price: number | null
           updated_at: string | null
           variant_number: string
+          vegetarian: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -269,6 +270,7 @@ export type Database = {
           price?: number | null
           updated_at?: string | null
           variant_number: string
+          vegetarian?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -279,6 +281,7 @@ export type Database = {
           price?: number | null
           updated_at?: string | null
           variant_number?: string
+          vegetarian?: boolean | null
         }
         Relationships: [
           {
@@ -562,6 +565,18 @@ export type Database = {
           username: string | null
           website: string | null
           zip_code: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent: boolean | null
+          newsletter_consent_date: string | null
+          gdpr_consent: boolean | null
+          gdpr_consent_date: string | null
+          data_deletion_requested: boolean | null
+          data_deletion_date: string | null
+          data_deletion_scheduled: string | null
+          data_deletion_token: string | null
+          account_suspended: boolean | null
+          marketing_consent: boolean | null
+          marketing_consent_date: string | null
         }
         Insert: {
           allergies?: boolean | null
@@ -591,6 +606,18 @@ export type Database = {
           username?: string | null
           website?: string | null
           zip_code?: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent?: boolean | null
+          newsletter_consent_date?: string | null
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_date?: string | null
+          data_deletion_scheduled?: string | null
+          data_deletion_token?: string | null
+          account_suspended?: boolean | null
+          marketing_consent?: boolean | null
+          marketing_consent_date?: string | null
         }
         Update: {
           allergies?: boolean | null
@@ -620,6 +647,18 @@ export type Database = {
           username?: string | null
           website?: string | null
           zip_code?: string | null
+          // Customer privacy & GDPR settings
+          newsletter_consent?: boolean | null
+          newsletter_consent_date?: string | null
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_date?: string | null
+          data_deletion_scheduled?: string | null
+          data_deletion_token?: string | null
+          account_suspended?: boolean | null
+          marketing_consent?: boolean | null
+          marketing_consent_date?: string | null
         }
         Relationships: []
       }

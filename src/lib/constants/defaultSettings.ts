@@ -176,16 +176,15 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   products: {
-    enabled: false,
     perPage: 10,
-    menuIntroText: 'Vyberte si z naší nabídky chutných a zdravých obědů.',
     visibleDays: 7,
-    features: [
-      { title: 'Lokální suroviny', description: 'Používáme lokální a čerstvé suroviny' },
-      { title: 'Zdravé porce', description: 'Připravujeme vyváženě velkosti porcí' }
-    ],
     showAllergens: true,
-    showAllergensTooltip: true
+    showAllergensTooltip: true,
+    showPrices: true,
+    menuVariantsCount: 3,
+    allowVariableVariants: true,
+    minVariants: 1,
+    maxVariants: 10
   },
 
   customer: {
@@ -198,16 +197,70 @@ export const UNIFIED_DEFAULT_SETTINGS = {
       autoCreateAccount: true
     },
     loyalty: {
-      enabled: false,
-      pointsPerCzk: 1,
-      pointsValue: 0.1,
-      welcomeBonus: 100,
-      birthdayBonus: 200,
-      enableTiers: false,
+      enabled: true,
+      pointsPerCzk: 1, // 1 Kč = 1 bod
+      pointsValue: 0.01, // 1 bod = 1 haléř (0.01 Kč)
+      welcomeBonus: 100, // Uvítací bonus pro nové zákazníky
+      birthdayBonus: 200, // Bonus k narozeninám
+      enableTiers: true,
       tiers: [
-        { name: 'Bronzový', minOrders: 0, discount: 0 },
-        { name: 'Stříbrný', minOrders: 10, discount: 5 },
-        { name: 'Zlatý', minOrders: 25, discount: 10 }
+        { 
+          name: 'NEW', 
+          label: 'Nový zákazník',
+          minOrders: 0, 
+          discount: 5,
+          bonus: 0,
+          color: '#6B7280',
+          icon: '🆕',
+          description: 'Nový zákazník - základní sleva 5%'
+        },
+        { 
+          name: 'REGULAR', 
+          label: 'Pravidelný zákazník',
+          minOrders: 3, 
+          discount: 10,
+          bonus: 10,
+          color: '#3B82F6',
+          icon: '👤',
+          description: 'Pravidelný zákazník - sleva 10%, bonus 10%'
+        },
+        { 
+          name: 'LOYAL', 
+          label: 'Věrný zákazník',
+          minOrders: 10, 
+          discount: 15,
+          bonus: 20,
+          color: '#EAB308',
+          icon: '⭐',
+          description: 'Věrný zákazník - sleva 15%, bonus 20%'
+        },
+        { 
+          name: 'VIP', 
+          label: 'VIP zákazník',
+          minOrders: 20, 
+          discount: 20,
+          bonus: 30,
+          color: '#8B5CF6',
+          icon: '💎',
+          description: 'VIP zákazník - sleva 20%, bonus 30%'
+        }
+      ],
+      // Dodatečná nastavení
+      inactivityThreshold: 90, // Dny pro označení jako neaktivní
+      pointsExpiryMonths: 12, // Měsíce do expirace bodů
+      maxPointsPerOrder: 10000, // Maximální body za jednu objednávku
+      enableAutoTierUpgrade: true, // Automatické povýšení úrovně
+      enableTierDowngrade: false, // Automatické snížení úrovně
+      // Kampaně a akce
+      campaigns: [
+        {
+          name: 'Jarní restart',
+          description: '2x body za zdravé jídlo',
+          multiplier: 2.0,
+          startDate: '2024-03-01',
+          endDate: '2024-05-31',
+          applicableTiers: ['NEW', 'REGULAR', 'LOYAL', 'VIP']
+        }
       ]
     },
     communication: {

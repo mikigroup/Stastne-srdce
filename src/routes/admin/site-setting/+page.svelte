@@ -447,7 +447,7 @@
 		return currency ? currency.name : code;
 	}
 
-	// Handle přidání měny z selectu
+	// Handle přidání měny z selectu - pouze jedna měna
 	function handleCurrencyAdd(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		const currencyCode = target.value;
@@ -456,25 +456,20 @@
 			if (!$editableSettings.general) {
 				$editableSettings.general = {};
 			}
-			if (!$editableSettings.general.currencies) {
-				$editableSettings.general.currencies = [];
-			}
 			
-			// Přidáme pouze pokud už tam není
-			if (!$editableSettings.general.currencies.includes(currencyCode)) {
-				$editableSettings.general.currencies.push(currencyCode);
-				$editableSettings = $editableSettings;
-			}
+			// Nastavíme pouze jednu měnu (přepíše původní)
+			$editableSettings.general.currencies = [currencyCode];
+			$editableSettings = $editableSettings;
 			
 			// Reset selectu
 			target.value = '';
 		}
 	}
 
-	// Remove currency
+	// Remove currency - smaže všechny měny
 	function removeCurrency(index: number) {
-		if ($editableSettings.general?.currencies && $editableSettings.general.currencies.length > index) {
-			$editableSettings.general.currencies.splice(index, 1);
+		if ($editableSettings.general?.currencies) {
+			$editableSettings.general.currencies = [];
 			$editableSettings = $editableSettings;
 		}
 	}
@@ -1095,6 +1090,32 @@
 			tokenVerificationComplete = true;
 		}
 	}
+
+	// Validace a automatické opravy nastavení variant
+	$: if ($editableSettings.products) {
+		// Ujistíme se, že minVariants není větší než maxVariants
+		if ($editableSettings.products.minVariants > $editableSettings.products.maxVariants) {
+			$editableSettings.products.minVariants = $editableSettings.products.maxVariants;
+		}
+		
+		// Ujistíme se, že menuVariantsCount je v rozmezí min-max
+		if ($editableSettings.products.menuVariantsCount < $editableSettings.products.minVariants) {
+			$editableSettings.products.menuVariantsCount = $editableSettings.products.minVariants;
+		}
+		if ($editableSettings.products.menuVariantsCount > $editableSettings.products.maxVariants) {
+			$editableSettings.products.menuVariantsCount = $editableSettings.products.maxVariants;
+		}
+		
+		// Ujistíme se, že hodnoty jsou rozumné
+		if ($editableSettings.products.minVariants < 1) {
+			$editableSettings.products.minVariants = 1;
+		}
+		if ($editableSettings.products.maxVariants > 20) {
+			$editableSettings.products.maxVariants = 20;
+		}
+	}
+
+
 </script>
 
 <svelte:head>
@@ -1245,29 +1266,27 @@
 									</select>
 								</div>
 								
-								<!-- Vybrané měny -->
+								<!-- Vybraná měna -->
 								{#if $editableSettings.general?.currencies && $editableSettings.general.currencies.length > 0}
 									<div class="space-y-2 max-w-xs">
 										<label class="label">
-											<span class="label-text text-sm sm:text-base">Vybrané měny</span>
+											<span class="label-text text-sm sm:text-base">Vybraná měna</span>
 										</label>
-										{#each $editableSettings.general.currencies as currency, index}
-											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
-												<div class="flex gap-2 flex-1 items-center">
-													<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
-														{currency}
-													</span>
-												</div>
-												<button 
-													class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
-													on:click={() => removeCurrency(index)}>
-													×
-												</button>
+										<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
+											<div class="flex gap-2 flex-1 items-center">
+												<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
+													{$editableSettings.general.currencies[0]}
+												</span>
 											</div>
-										{/each}
+											<button 
+												class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
+												on:click={() => removeCurrency(0)}>
+												×
+											</button>
+										</div>
 									</div>
 								{:else}
-									<p class="text-gray-500 text-sm">Žádné měny nebyly vybrány</p>
+									<p class="text-gray-500 text-sm">Žádná měna nebyla vybrána</p>
 								{/if}
 							</div>
 						</div>
@@ -2449,12 +2468,10 @@
 					<div in:fade={{ duration: 300 }}>
 						<h2 class="text-xl font-semibold mb-4">Nastavení produktů</h2>
 						
-						<!-- Jídelníček -->
+						<!-- Zobrazení jídelníčku -->
 						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Nastavení jídelníčku</h3>
-												
+							<h3 class="text-lg font-medium mb-3">Zobrazení jídelníčku</h3>
 							
-						
 							<div class="form-control">
 								<label class="label">
 									<span class="label-text">Počet viditelných dnů</span>
@@ -2469,14 +2486,14 @@
 										placeholder="7"
 									/>
 									<p class="text-sm text-gray-500">
-										Počet dnů, které se zobrazí na stránce jídelníčku
+										Počet dnů dopředu v jídelníčku
 									</p>
 								</div>
 							</div>
 						</div>
 						
 						<!-- Zobrazení alergenů -->
-						<div class="mb-6">
+						<div class="mb-6 border-b pb-4">
 							<h3 class="text-lg font-medium mb-3">Zobrazení alergenů</h3>
 							
 							<div class="form-control">
@@ -2488,6 +2505,9 @@
 									/>
 									<span class="label-text">Zobrazit alergeny u produktů</span>
 								</label>
+								<span class="text-xs text-gray-500 mt-1">
+									Základní zapnutí/vypnutí zobrazování alergenů
+								</span>
 							</div>
 							
 							<div class="form-control mt-3">
@@ -2499,6 +2519,234 @@
 									/>
 									<span class="label-text">Zobrazit popis alergenů v nápovědě</span>
 								</label>
+							</div>
+						</div>
+						
+						<!-- Zobrazení cen -->
+						<div class="mb-6 border-b pb-4">
+							<h3 class="text-lg font-medium mb-3">Zobrazení cen</h3>
+							
+							<div class="form-control">
+								<label class="label cursor-pointer justify-start gap-2">
+									<input 
+										type="checkbox" 
+										class="checkbox checkbox-primary" 
+										bind:checked={$editableSettings.products.showPrices} 
+									/>
+									<span class="label-text">Zobrazit ceny produktů</span>
+								</label>
+								<span class="text-xs text-gray-500 mt-1">
+									Možnost skrýt ceny pro neregistrované uživatele
+								</span>
+							</div>
+						</div>
+						
+						<!-- Nastavení variant menu -->
+						<div class="mb-6">
+							<h3 class="text-lg font-medium mb-3">Nastavení variant menu</h3>
+							
+							<!-- Varování při změnách nastavení -->
+							{#if $editableSettings.products.menuVariantsCount !== 3 || $editableSettings.products.minVariants !== 1 || $editableSettings.products.maxVariants !== 10}
+								<div class="alert alert-warning mb-4">
+									<div class="flex">
+										<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.186-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+										</svg>
+										<div class="ml-2">
+											<h3 class="font-bold">Upozornění na změny variant</h3>
+											<div class="text-sm mt-1">
+												<ul class="list-disc list-inside space-y-1">
+													{#if $editableSettings.products.menuVariantsCount !== 3}
+														<li>Změna výchozího počtu variant ovlivní pouze <strong>nová menu</strong></li>
+													{/if}
+													{#if $editableSettings.products.minVariants !== 1}
+														<li>Existující menu s méně variantami zůstanou funkční</li>
+													{/if}
+													{#if $editableSettings.products.maxVariants !== 10}
+														<li>Menu s více variantami než nový limit nebudou editovatelná</li>
+													{/if}
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
+							{/if}
+							
+							<div class="form-control mb-3">
+								<label class="label">
+									<span class="label-text">Výchozí počet variant hlavního chodu</span>
+								</label>
+								<div class="flex items-center gap-3">
+									<input
+										type="number"
+										bind:value={$editableSettings.products.menuVariantsCount}
+										class="input input-bordered w-24"
+										min={$editableSettings.products.minVariants}
+										max={$editableSettings.products.maxVariants}
+										placeholder="3"
+									/>
+									<p class="text-sm text-gray-500">
+										Počet variant, které se automaticky vytvoří pro nové menu
+									</p>
+								</div>
+							</div>
+							
+							<div class="form-control mb-3">
+								<label class="label cursor-pointer justify-start gap-2">
+									<input 
+										type="checkbox" 
+										class="checkbox checkbox-primary" 
+										bind:checked={$editableSettings.products.allowVariableVariants} 
+									/>
+									<span class="label-text">Povolit dynamické přidávání/ubírání variant</span>
+								</label>
+								<span class="text-xs text-gray-500 mt-1">
+									Umožní administrátorům přidávat či odebírat varianty při vytváření menu
+								</span>
+							</div>
+							
+							<div class="grid grid-cols-2 gap-4">
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Minimální počet variant</span>
+									</label>
+									<div class="flex items-center gap-3">
+										<input
+											type="number"
+											bind:value={$editableSettings.products.minVariants}
+											class="input input-bordered w-20"
+											min="1"
+											max={$editableSettings.products.maxVariants}
+											placeholder="1"
+										/>
+									</div>
+								</div>
+								
+								<div class="form-control">
+									<label class="label">
+										<span class="label-text">Maximální počet variant</span>
+									</label>
+									<div class="flex items-center gap-3">
+										<input
+											type="number"
+											bind:value={$editableSettings.products.maxVariants}
+											class="input input-bordered w-20"
+											min={$editableSettings.products.minVariants}
+											max="20"
+											placeholder="10"
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Customer Settings -->
+				{#if activeTab === 'customer' && $editableSettings.customer}
+					<div in:fade={{ duration: 300 }}>
+						<h2 class="text-xl font-semibold mb-4">Nastavení zákazníků</h2>
+
+						<!-- Privacy Settings -->
+						<div class="mb-6 border-b pb-4">
+							<div class="flex items-center gap-2 mb-3">
+								<h3 class="text-lg font-medium">Nastavení soukromí a GDPR</h3>
+								<div class="tooltip" data-tip="Nastavení v souladu s českým zákonem č. 110/2019 Sb. o zpracování osobních údajů a nařízením GDPR (EU) 2016/679">
+									<svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+									</svg>
+								</div>
+							</div>
+							
+							<div class="form-control mb-3">
+								<div class="flex items-start gap-2">
+									<div class="flex-1">
+										<label class="label">
+											<span class="label-text">Doba uchovávání dat</span>
+										</label>
+										<div class="flex flex-col gap-3">
+											<!-- Přednastavené zákonné termíny -->
+											<select 
+												bind:value={$editableSettings.customer.privacy.dataRetentionMonths}
+												class="select select-bordered w-full max-w-md"
+											>
+												<option value={12}>12 měsíců - Minimální zákonná lhůta</option>
+												<option value={24}>24 měsíců - Záruční reklamace</option>
+												<option value={36}>36 měsíců - Doporučeno pro e-shop (default)</option>
+												<option value={60}>60 měsíců - Archivace dle zákona č. 563/1991 Sb.</option>
+												<option value={72}>72 měsíců - Rozšířená archivace</option>
+												<option value={120}>120 měsíců - Maximální doba</option>
+											</select>
+											
+											<p class="text-sm text-gray-500">
+												Jak dlouho uchovávat zákaznická data po posledním nákupu
+											</p>
+										</div>
+									</div>
+									<div class="tooltip" data-tip="Čl. 5 odst. 1 písm. e) GDPR - zásada omezení uložení. Doporučujeme 36 měsíců pro zachování obchodních záznamů dle zákona č. 563/1991 Sb. (§ 31)">
+										<svg class="w-4 h-4 text-blue-500 mt-8" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+										</svg>
+									</div>
+								</div>								
+							</div>
+							
+							<div class="form-control">
+								<div class="flex items-start gap-2">
+									<div class="flex-1">
+										<label class="label cursor-pointer justify-start gap-2">
+											<input 
+												type="checkbox" 
+												class="checkbox checkbox-primary" 
+												bind:checked={$editableSettings.customer.privacy.enableAccountDeletion} 
+											/>
+											<span class="label-text">Povolit smazání účtu</span>
+										</label>
+										<span class="text-xs text-gray-500 mt-1">
+											Zákazníci si mohou smazat svůj účet a data
+										</span>
+									</div>
+									<div class="tooltip" data-tip="Čl. 17 GDPR - právo na výmaz ('právo být zapomenut'). Povinné pro e-shopy v EU">
+										<svg class="w-4 h-4 text-blue-500 mt-2" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+										</svg>
+									</div>
+								</div>								
+							</div>
+						</div>
+
+						<!-- Communication Settings -->
+						<div class="mb-6">
+							<div class="flex items-center gap-2 mb-3">
+								<h3 class="text-lg font-medium">Nastavení komunikace</h3>
+								<div class="tooltip" data-tip="Marketing v souladu se zákonem č. 480/2004 Sb. o některých službách informační společnosti">
+									<svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+									</svg>
+								</div>
+							</div>
+							
+							<div class="form-control">
+								<div class="flex items-start gap-2">
+									<div class="flex-1">
+										<label class="label cursor-pointer justify-start gap-2">
+											<input 
+												type="checkbox" 
+												class="checkbox checkbox-primary" 
+												bind:checked={$editableSettings.customer.communication.enableNewsletters} 
+											/>
+											<span class="label-text">Povolit newslettery</span>
+										</label>
+										<span class="text-xs text-gray-500 mt-1">
+											Možnost posílání marketingových emailů
+										</span>
+									</div>
+									<div class="tooltip" data-tip="Zákon č. 480/2004 Sb. § 7 - nevyžádaná obchodní sdělení. Nutný opt-in souhlas">
+										<svg class="w-4 h-4 text-blue-500 mt-2" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+										</svg>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>

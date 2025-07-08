@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{generalSettings.shopName} - Olga Bednářová</title>
+  <title>Olga Bednářová - {generalSettings.shopName}</title>
   <meta name="description" content="Olga Bednářová - kuchařka Šťastného srdce, která od roku 2010 připravuje výživná a chutná jídla." />
 </svelte:head>
 

@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{generalSettings.shopName} - Ceník</title>
+  <title>Ceník - {generalSettings.shopName}</title>
   <meta name="description" content="Ceník nabízených služeb" />
 </svelte:head>
 

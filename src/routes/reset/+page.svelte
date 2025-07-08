@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Reset hesla</title>
+	<title>Reset hesla - {generalSettings.shopName}</title>
 	<meta name="description" content="Reset" />
 </svelte:head>
 

@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Obchodní podmínky</title>
+	<title>Obchodní podmínky - {generalSettings.shopName}</title>
 	<meta name="description" content="Obchodní podmínky Šťastné srdce s.r.o. upravující vztahy mezi prodávajícím a kupujícím při prodeji a dovozu obědů." />
 </svelte:head>
 

@@ -4,6 +4,12 @@
 	import { ROUTES } from "$lib/stores/store";
 	import type { Database } from "$lib/types/database.types";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation.js";
+	import { 
+		getRegistrationStatus, 
+		getRegistrationStatusMessage, 
+		getRegistrationStatusStyles,
+		checkAndUpdateRegistrationStatus 
+	} from "$lib/services/registrationStatusService";
 	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 
 	// Definice typů pro data zákazníka
@@ -59,6 +65,27 @@
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
+
+	// Reaktivní aktualizace lokálních proměnných při změně customer prop
+	$: if (customer) {
+		first_name = customer.first_name ?? "";
+		last_name = customer.last_name ?? "";
+		telephone = customer.telephone ?? "";
+		street = customer.street ?? "";
+		city = customer.city ?? "";
+		street_number = customer.street_number ?? "";
+		zip_code = customer.zip_code ?? "";
+		ico = customer.ico ?? "";
+		dic = customer.dic ?? "";
+		company = customer.company ?? "";
+		website = customer.website ?? "";
+		username = customer.username ?? "";
+		email = customer.email ?? "";
+		allergies = customer.allergies === true ? "yes" : "no";
+		allergies_description = customer.allergies_description || "";
+		delivery_method = customer.delivery_method || "";
+		payment_method = customer.payment_method || "";
+	}
 
 	// Get all delivery method options for admin (all 5 values)
 	const deliveryMethodOptions = getAllDeliveryMethods();
@@ -116,7 +143,27 @@
 					.select();
 
 				if (error) throw error;
-				updateMessage = "Zákazník úspěšně uložen!";
+
+				// Po úspěšném uložení použít globální službu pro kontrolu a aktualizaci statusu registrace
+				const registrationCheck = await checkAndUpdateRegistrationStatus(
+					supabase, 
+					customer.id, 
+					email || undefined
+				);
+
+				// Vylepšené zprávy podle stavu registrace
+				if (registrationCheck.actualStatus === 'completed') {
+					updateMessage = registrationCheck.wasUpdated 
+						? "✅ Zákazník úspěšně uložen a registrace dokončena!"
+						: "✅ Zákazník úspěšně uložen (registrace dokončena)!";
+				} else {
+					const missingFields = registrationCheck.validationResult.missingFields;
+					updateMessage = `⚠️ Zákazník uložen, ale chybí: ${missingFields.join(', ')}`;
+				}
+
+				// Aktualizovat lokální customer objekt s novými daty pro reactive update UI
+				customer = { ...customer, ...customerData };
+				
 			} else {
 				// Create new customer
 				if (!session?.user?.id) {
@@ -124,7 +171,7 @@
 				}
 
 				const { error } = await supabase
-					.from("customers")
+					.from("profiles")
 					.insert({
 						...customerData,
 						id: session.user.id
@@ -167,36 +214,53 @@
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
 
-	// Vylepšená logika pro vyhodnocování statusu registrace
-	// Používá centrální validační funkci pro konzistenci
+	// Funkce pro ruční aktualizaci statusu registrace
+	export async function updateRegistrationStatus(): Promise<void> {
+		if (!customer?.id) return;
+		
+		try {
+			loading = true;
+			const registrationCheck = await checkAndUpdateRegistrationStatus(
+				supabase, 
+				customer.id, 
+				email || customer.email || undefined
+			);
+
+			if (registrationCheck.actualStatus === 'completed') {
+				if (registrationCheck.wasUpdated) {
+					updateMessage = "✅ Status registrace byl aktualizován na dokončeno!";
+					// Aktualizovat customer objekt s novým statusem
+					customer = { ...customer, registration_status: "completed" };
+				} else {
+					updateMessage = "✅ Status registrace je již správně nastaven na dokončeno.";
+				}
+			} else {
+				const missingFields = registrationCheck.validationResult.missingFields;
+				updateMessage = `⚠️ Status zůstává pending - chybí: ${missingFields.join(', ')}`;
+			}
+		} catch (error) {
+			console.error("Chyba při aktualizaci statusu:", error);
+			alert("Došlo k chybě při aktualizaci statusu registrace");
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Používáme zjednodušenou validaci pro zobrazení v admin rozhraní (bez automatické aktualizace)
 	$: validationResult = customer ? validateProfileForInvoicing(customer) : { isComplete: false, missingFields: [] };
 	$: isRegistrationActuallyCompleted = validationResult.isComplete;
 
-	// Určení skutečného statusu registrace
+	// Určení skutečného statusu registrace pomocí globální služby
 	$: actualRegistrationStatus = !customer ? null :
-		isRegistrationActuallyCompleted ? 'completed' :
+		(isRegistrationActuallyCompleted ? 'completed' :
 		customer.registration_status === 'completed' ? 'incomplete_data' :
-		'pending';
+		'pending') as 'completed' | 'incomplete_data' | 'pending';
 
-	// Zprávy pro různé stavy
-	$: registrationStatusMessage = actualRegistrationStatus ? ({
-		'completed': 'Dokončeno',
-		'incomplete_data': 'Neúplné údaje',
-		'pending': 'Čeká na dokončení'
-	}[actualRegistrationStatus] || actualRegistrationStatus) : '';
-
-	// Barvy pro různé stavy
-	$: statusColor = actualRegistrationStatus ? ({
-		'completed': 'bg-green-100 border-green-200 text-green-800',
-		'incomplete_data': 'bg-yellow-100 border-yellow-200 text-yellow-800',
-		'pending': 'bg-red-100 border-red-200 text-red-800'
-	}[actualRegistrationStatus] || 'bg-gray-100 border-gray-200 text-gray-800') : 'bg-gray-100 border-gray-200 text-gray-800';
-
-	$: statusBadgeColor = actualRegistrationStatus ? ({
-		'completed': 'bg-green-200 text-green-900',
-		'incomplete_data': 'bg-yellow-200 text-yellow-900',
-		'pending': 'bg-red-200 text-red-900'
-	}[actualRegistrationStatus] || 'bg-gray-200 text-gray-900') : 'bg-gray-200 text-gray-900';
+	// Použití globálních utility funkcí
+	$: registrationStatusMessage = actualRegistrationStatus ? getRegistrationStatusMessage(actualRegistrationStatus) : '';
+	$: statusStyles = actualRegistrationStatus ? getRegistrationStatusStyles(actualRegistrationStatus) : getRegistrationStatusStyles('pending');
+	$: statusColor = statusStyles.container;
+	$: statusBadgeColor = statusStyles.badge;
 </script>
 
 <!-- Tlačítka jsou nyní v AdminPageLayout headeru -->
@@ -232,6 +296,30 @@
 			</ul>
 		{:else if actualRegistrationStatus === 'completed'}
 			<p class="text-sm mt-1">Všechny povinné údaje jsou vyplněny.</p>
+		{/if}
+		
+		<!-- Tlačítko pro ruční aktualizaci statusu pouze pokud se skutečný status liší od DB statusu -->
+		{#if customer && customer.registration_status !== actualRegistrationStatus && validationResult.isComplete}
+			<div class="mt-3">
+				<button
+					on:click={updateRegistrationStatus}
+					disabled={loading}
+					class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{#if loading}
+						<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						Aktualizuje se...
+					{:else}
+						Opravit status registrace
+					{/if}
+				</button>
+				<p class="text-xs text-gray-500 mt-1">
+					Data jsou kompletní, ale status v databázi není aktuální.
+				</p>
+			</div>
 		{/if}
 	</div>
 {/if}

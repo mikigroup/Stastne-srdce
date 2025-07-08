@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance, type SubmitFunction } from "$app/forms";
+	import { enhance } from "$app/forms";
 	import type { ActionData, PageData } from "./$types";
 	import Rezervace from "./Rezervace.svelte";
 
@@ -14,19 +14,10 @@
 	// Inicializace formuláře z dat nebo z předchozího odeslání
 	$: formData = {
 		first_name: form?.formData?.first_name ?? profiles?.first_name ?? "",
-		last_name: form?.formData?.last_name ?? profiles?.last_name ?? "",
-		username: form?.formData?.username ?? profiles?.username ?? "",
-		telephone: form?.formData?.telephone ?? profiles?.telephone ?? "",
-		company: form?.formData?.company ?? profiles?.company ?? "",
-		ico: form?.formData?.ico ?? profiles?.ico ?? "",
-		dic: form?.formData?.dic ?? profiles?.dic ?? "",
-		street: form?.formData?.street ?? profiles?.street ?? "",
-		street_number: form?.formData?.street_number ?? profiles?.street_number ?? "",
-		city: form?.formData?.city ?? profiles?.city ?? "",
-		zip_code: form?.formData?.zip_code ?? profiles?.zip_code ?? ""
+		last_name: form?.formData?.last_name ?? profiles?.last_name ?? "",		
 	};
 
-	const handleSubmit: SubmitFunction = () => {
+	const handleSubmit = () => {
 		loading = true;
 		return async () => {
 			loading = false;
@@ -35,13 +26,13 @@
 </script>
 
 <div
-	class="form-widget xl:w-1/2 mx-auto border-gray-400 border p-5 rounded-lg bg-zinc-100">
+	class="mx-auto border-gray-400 border p-5 rounded-lg bg-zinc-100 px-10 max-w-screen-md mx-auto">
 	<h1
 		class="mt-10 mb-10 text-4xl font-extrabold leading-none text-center md:text-5xl lg:text-6xl">
 		Nastavení
 	</h1>
 	<form
-		class="form-widget"
+		class=""
 		method="POST"
 		action="?/update"
 		use:enhance={handleSubmit}>
@@ -68,12 +59,12 @@
 				<input
 					type="text"
 					id="first_name"
-					class="input input-bordered w-full max-w-xs {form?.errors?.first_name ? 'input-error' : ''}"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.first_name ? 'input-warning' : ''}"
 					placeholder="Franta"
 					value={formData.first_name}
 					name="first_name" />
-				{#if form?.errors?.first_name}
-					<p class="text-error text-sm mt-1">{form.errors.first_name}</p>
+				{#if form?.warnings?.first_name}
+					<p class="text-warning text-sm mt-1">{form.warnings.first_name}</p>
 				{/if}
 			</div>
 			<div>
@@ -84,167 +75,16 @@
 				<input
 					type="text"
 					id="last_name"
-					class="input input-bordered w-full max-w-xs {form?.errors?.last_name ? 'input-error' : ''}"
+					class="input input-bordered w-full max-w-xs {form?.warnings?.last_name ? 'input-warning' : ''}"
 					placeholder="Omáčka"
 					value={formData.last_name}
 					name="last_name" />
-				{#if form?.errors?.last_name}
-					<p class="text-error text-sm mt-1">{form.errors.last_name}</p>
+				{#if form?.warnings?.last_name}
+					<p class="text-warning text-sm mt-1">{form.warnings.last_name}</p>
 				{/if}
-			</div>
-			<div>
-				<label
-					for="telephone"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Telefon</label>
-				<input
-					type="text"
-					id="telephone"
-					class="input input-bordered w-full max-w-xs {form?.warnings?.telephone ? 'input-warning' : ''}"
-					placeholder="+420 123 456 789"
-					value={formData.telephone}
-					name="telephone" />
-				{#if form?.warnings?.telephone}
-					<p class="text-warning text-sm mt-1">{form.warnings.telephone}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="username"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Přezdívka</label>
-				<input
-					type="text"
-					id="username"
-					class="input input-bordered w-full max-w-xs {form?.errors?.username ? 'input-error' : ''}"
-					value={formData.username}
-					name="username"
-					placeholder="z mládí?" />
-				{#if form?.errors?.username}
-					<p class="text-error text-sm mt-1">{form.errors.username}</p>
-				{/if}
-			</div>
+			</div>			
 		</div>
 
-		<h2 class="mt-8 mb-4">Fakturační údaje</h2>
-		<div class="grid gap-6 mb-6 md:grid-cols-2">
-			<div>
-				<label
-					for="company"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Společnost</label>
-				<input
-					type="text"
-					id="company"
-					class="input input-bordered w-full max-w-xs {form?.errors?.company ? 'input-error' : ''}"
-					value={formData.company}
-					name="company"
-					placeholder="Název společnosti" />
-				{#if form?.errors?.company}
-					<p class="text-error text-sm mt-1">{form.errors.company}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="ico"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>IČO</label>
-				<input
-					type="text"
-					id="ico"
-					class="input input-bordered w-full max-w-xs {form?.warnings?.ico ? 'input-warning' : ''}"
-					value={formData.ico}
-					name="ico"
-					placeholder="12345678" />
-				{#if form?.warnings?.ico}
-					<p class="text-warning text-sm mt-1">{form.warnings.ico}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="dic"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>DIČ</label>
-				<input
-					type="text"
-					id="dic"
-					class="input input-bordered w-full max-w-xs {form?.warnings?.dic ? 'input-warning' : ''}"
-					value={formData.dic}
-					name="dic"
-					placeholder="CZ12345678" />
-				{#if form?.warnings?.dic}
-					<p class="text-warning text-sm mt-1">{form.warnings.dic}</p>
-				{/if}
-			</div>
-		</div>
-
-		<h2 class="mt-8 mb-4">Adresa</h2>
-		<div class="grid gap-6 mb-6 md:grid-cols-2">
-			<div>
-				<label
-					for="street"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Ulice</label>
-				<input
-					type="text"
-					id="street"
-					class="input input-bordered w-full max-w-xs {form?.errors?.street ? 'input-error' : ''}"
-					value={formData.street}
-					name="street"
-					placeholder="Název ulice" />
-				{#if form?.errors?.street}
-					<p class="text-error text-sm mt-1">{form.errors.street}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="street_number"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Číslo popisné</label>
-				<input
-					type="text"
-					id="street_number"
-					class="input input-bordered w-full max-w-xs {form?.errors?.street_number ? 'input-error' : ''}"
-					value={formData.street_number}
-					name="street_number"
-					placeholder="123" />
-				{#if form?.errors?.street_number}
-					<p class="text-error text-sm mt-1">{form.errors.street_number}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="city"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>Město</label>
-				<input
-					type="text"
-					id="city"
-					class="input input-bordered w-full max-w-xs {form?.errors?.city ? 'input-error' : ''}"
-					value={formData.city}
-					name="city"
-					placeholder="Název města" />
-				{#if form?.errors?.city}
-					<p class="text-error text-sm mt-1">{form.errors.city}</p>
-				{/if}
-			</div>
-			<div>
-				<label
-					for="zip_code"
-					class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-					>PSČ</label>
-				<input
-					type="text"
-					id="zip_code"
-					class="input input-bordered w-full max-w-xs {form?.warnings?.zip_code ? 'input-warning' : ''}"
-					value={formData.zip_code}
-					name="zip_code"
-					placeholder="123 45" />
-				{#if form?.warnings?.zip_code}
-					<p class="text-warning text-sm mt-1">{form.warnings.zip_code}</p>
-				{/if}
-			</div>
-		</div>
 
 		<hr class="my-10" />
 		<button
@@ -253,6 +93,34 @@
 			class="w-full btn btn-outline btn-success">
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>
+
+		<!-- Další nastavení -->
+		<hr class="my-10" />
+		<div class="space-y-4">
+			<h2 class="text-2xl font-bold text-gray-900">Další nastavení</h2>
+			
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<a 
+					href="/admin/settings/loyalty"
+					class="flex items-center p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+				>
+					<div class="flex-shrink-0">
+						<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+							<span class="text-xl">💎</span>
+						</div>
+					</div>
+					<div class="ml-4">
+						<h3 class="text-lg font-medium text-gray-900">Věrnostní systém</h3>
+						<p class="text-sm text-gray-600">Nastavení bodů, úrovní a výhod pro zákazníky</p>
+					</div>
+					<div class="ml-auto">
+						<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+						</svg>
+					</div>
+				</a>
+			</div>
+		</div>
 		{#if form?.message}
 			<div class="flex w-full p-2 my-4 border rounded-lg">
 				<p

@@ -29,6 +29,8 @@ export const load: PageServerLoad = async ({
 			itemsPerPage
 		});
 
+
+
 		// 6. Získáme nastavení tabulky z profilu
 		const { data: profileTableSettings, error: profileError } = await supabase
 			.from("profiles")

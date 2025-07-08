@@ -3,6 +3,7 @@ import type { LayoutServerLoad } from "./$types";
 import type { Profile } from "$lib/types/profile";
 import { getSetting } from "$lib/services/siteSettingsService";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
+import { getRegistrationStatus } from "$lib/services/registrationStatusService";
 
 export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, supabase } }) => {
 	const { session, user } = await safeGetSession();
@@ -14,17 +15,20 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 	]);
 
 	if (session && user) {
-		// Kontrola dokončené registrace
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("registration_status")
-			.eq("id", user.id)
-			.single();
-
+		// Kontrola dokončené registrace pomocí globální služby (bez auto-update pro performance)
+		const registrationStatus = await getRegistrationStatus(supabase, user.id, user.email);
+		
 		// Pokud registrace není dokončena a uživatel není na stránce dokončení registrace
-		if (profile?.registration_status !== "completed" && url.pathname !== '/signup/complete' && !url.pathname.startsWith('/signup/complete/')) {
+		if (!registrationStatus.isComplete && url.pathname !== '/signup/complete' && !url.pathname.startsWith('/signup/complete/')) {
 			throw redirect(303, '/signup/complete');
 		}
+
+		// Načteme celý profil pro return
+		const { data: profile } = await supabase
+			.from("profiles")
+			.select("*")
+			.eq("id", user.id)
+			.single();
 
 		return {
 			session,

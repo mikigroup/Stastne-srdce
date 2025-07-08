@@ -132,7 +132,7 @@
 						<thead>
 						<tr>
 							<th>Číslo</th>
-							<th>Čas</th>
+							<th>Datum a čas</th>
 							<th>Zákazník</th>
 							<th>Celkem</th>
 							<th>Stav</th>

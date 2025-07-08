@@ -40,13 +40,6 @@ declare global {
 				product_id: string;
 				quantity: number;
 			}>;
-			// Multi-tenant support
-			tenant: {
-				name: string;
-				clientId: string;
-				domain: string;
-				active: boolean;
-			} | null;
 		}
 
 		interface Window {

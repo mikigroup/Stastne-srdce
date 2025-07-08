@@ -26,6 +26,7 @@ export const load: PageServerLoad = async ({
       website,
       username,
       id,
+      created_at,
       allergies,
       allergies_description,
       delivery_method,
@@ -43,6 +44,44 @@ export const load: PageServerLoad = async ({
 			throw new Error("Zákazník nebyl nalezen");
 		}
 		throw customerError;
+	}
+
+	// Načteme předchozí a následující zákazníka podle data vytvoření
+	let previousCustomer = null;
+	let nextCustomer = null;
+
+	// Načteme předchozího zákazníka (starší datum vytvoření)
+	const { data: prevCustomerData } = await supabase
+		.from("profiles")
+		.select("id, first_name, last_name, created_at")
+		.lt("created_at", customer.created_at)
+		.order("created_at", { ascending: false })
+		.limit(1)
+		.single();
+
+	if (prevCustomerData) {
+		previousCustomer = {
+			id: prevCustomerData.id,
+			name: `${prevCustomerData.first_name || ''} ${prevCustomerData.last_name || ''}`.trim(),
+			created_at: prevCustomerData.created_at
+		};
+	}
+
+	// Načteme následujícího zákazníka (mladší datum vytvoření)
+	const { data: nextCustomerData } = await supabase
+		.from("profiles")
+		.select("id, first_name, last_name, created_at")
+		.gt("created_at", customer.created_at)
+		.order("created_at", { ascending: true })
+		.limit(1)
+		.single();
+
+	if (nextCustomerData) {
+		nextCustomer = {
+			id: nextCustomerData.id,
+			name: `${nextCustomerData.first_name || ''} ${nextCustomerData.last_name || ''}`.trim(),
+			created_at: nextCustomerData.created_at
+		};
 	}
 
 	// Načtení objednávek zákazníka s položkami
@@ -115,8 +154,7 @@ export const load: PageServerLoad = async ({
 	const loyaltyInfo = {
 		...getLoyaltyLevel(stats.totalOrders),
 		isActive: isActiveCustomer(stats.lastOrderDate),
-		customerSince: stats.firstOrderDate ? 
-			Math.floor((new Date().getTime() - new Date(stats.firstOrderDate).getTime()) / (1000 * 60 * 60 * 24)) : 0,
+		customerSince: Math.floor((new Date().getTime() - new Date(customer.created_at).getTime()) / (1000 * 60 * 60 * 24)),
 		daysSinceLastOrder: stats.lastOrderDate ? 
 			Math.floor((new Date().getTime() - new Date(stats.lastOrderDate).getTime()) / (1000 * 60 * 60 * 24)) : null
 	};
@@ -125,6 +163,8 @@ export const load: PageServerLoad = async ({
 		customer,
 		orders: orders || [],
 		stats,
-		loyaltyInfo
+		loyaltyInfo,
+		previousCustomer,
+		nextCustomer
 	};
 };

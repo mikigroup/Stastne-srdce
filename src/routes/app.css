@@ -57,5 +57,26 @@ h2{
 	font-size: 1.5rem;
 	line-height: 2rem;
 }
+
+/* Globální layout třídy */
+.page-container {
+	@apply max-w-screen-lg py-16 mx-auto mb-10 rounded-lg md:px-4 bg-stone-100;
+}
+
+.page-content {
+	@apply max-w-4xl md:p-10 mx-auto bg-white border border-gray-400 rounded-lg;
+}
+
+.page-title {
+	@apply mb-10 text-4xl md:text-5xl font-extrabold tracking-tight text-center text-gray-900;
+}
+
+.page-subtitle {
+	@apply mt-4 text-xl text-center text-gray-600;
+}
+
+.page-footer {
+	@apply flex justify-end gap-4 pt-10 pr-5;
+}
 /*
 #c7c7c7 #c6a28d #7ba197 #474554 #88b3ba #baa997 #75998d #aacfc2 #8685ef #2c8385 #afb1b6 #929da5 #748a90 #587877 #43655a*/

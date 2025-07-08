@@ -111,6 +111,7 @@ export async function createMenuVariant(
 		variant_number: string;
 		description: string;
 		price: number | null;
+		vegetarian: boolean | null;
 	}
 ) {
 	try {

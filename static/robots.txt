@@ -1,3 +1,20 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Blokovat admin sekci
+Disallow: /admin/
+
+# Blokovat autentizační stránky
+Disallow: /auth/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /forgot/
+Disallow: /reset/
+Disallow: /thankyou/
+
+# Blokovat API endpointy
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://stastne-srdce.cz/sitemap.xml

@@ -81,7 +81,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings?.shopName ?? 'Dokončení registrace'}</title>
+	<title>Dokončení registrace - {generalSettings?.shopName ?? 'Šťastné srdce'}</title>
 	<meta name="description" content="Dokončení registrace" />
 </svelte:head>
 

@@ -35,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Login</title>
+	<title>Login - {generalSettings.shopName}</title>
 	<meta name="description" content="Login" />
 </svelte:head>
 
@@ -146,7 +146,7 @@
 						</div>
 					{/if}
 				</div>
-				{#if !$page.data.session}
+			<!-- 	{#if !$page.data.session}
 					<div class="form-widget">
 						<div
 							class="flex max-w-md gap-2 px-4 py-8 mx-auto bg-white rounded-lg shadow flex-col-2 sm:px-6 md:px-8 lg:px-10 border border-gray-300">
@@ -163,7 +163,7 @@
 							</div>
 						</div>
 					</div>
-				{/if}
+				{/if} -->
 			</div>
 		</form>
 	</div>

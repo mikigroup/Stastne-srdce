@@ -7,6 +7,7 @@ export type MenuVariant =
 	Database["public"]["Tables"]["menu_variants"]["Row"] & {
 		allergens: (MenuAllergen | null)[];
 		ingredients: (MenuIngredient | null)[];
+		currency?: string;
 	};
 
 export type Menu = Database["public"]["Tables"]["menus"]["Row"] & {
