@@ -2,43 +2,133 @@ import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
-import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
+
+// Admin client pro obejití RLS politik
+const adminSupabase = createServerClient(
+	PRIVATE_SBUrl,
+	PRIVATE_SBKey,
+	{
+		cookies: {
+			get: () => '',
+			set: () => {},
+			remove: () => {}
+		}
+	}
+)
 
 const supabase: Handle = async ({ event, resolve }) => {
-	event.locals.supabase = createServerClient(PRIVATE_SBUrl, PRIVATE_SBKey, {
+	/**
+	 * Creates a Supabase client specific to this request.
+	 *
+	 * Unlike `supabase` from `$lib/supabase.ts`, this client is
+	 * safe to use throughout the request since it reads fresh
+	 * cookies for each request and its configuration is not shared
+	 * between requests.
+	 */
+	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
 		cookies: {
 			get: (key) => event.cookies.get(key),
+			/**
+			 * SvelteKit's cookies.set defaults to `httpOnly: true`, `secure: true`, and `sameSite: 'lax'`.
+			 * This is good for security, but we need to set `httpOnly: false` for the Supabase client to be able to read the cookies.
+			 * Safe to set `httpOnly: false` since we're only using cookies to store the session.
+			 */
 			set: (key, value, options) => {
-				event.cookies.set(key, value, { ...options, path: "/" });
+				event.cookies.set(key, value, { ...options, httpOnly: false });
 			},
 			remove: (key, options) => {
-				event.cookies.delete(key, { ...options, path: "/" });
-			}
-		},
-		global: {
-			headers: {
-				apikey: PRIVATE_SBKey
+				event.cookies.delete(key, { ...options, httpOnly: false });
 			}
 		}
 	});
 
+	/**
+	 * Unlike `supabase.auth.getSession()`, which returns the session _without_
+	 * validating the JWT, this function also calls `getUser()` to validate the JWT.
+	 */
 	event.locals.safeGetSession = async () => {
-		// Poznámka: getSession() zde je bezpečné, protože následně ověřujeme
-		// autenticitu uživatele kontaktováním Auth serveru přes getUser()
 		const {
-			data: { session }
+			data: { session },
+			error
 		} = await event.locals.supabase.auth.getSession();
 		if (!session) {
 			return { session: null, user: null };
 		}
 
-		// Bezpečné ověření uživatele - kontaktuje Auth server
 		const {
 			data: { user },
-			error
+			error: userError
 		} = await event.locals.supabase.auth.getUser();
-		if (error) {
+		if (userError) {
+			// JWT validation has failed
 			return { session: null, user: null };
+		}
+
+		// 🔧 NOVÁ LOGIKA: Auto-reaktivace suspended uživatelů s deletion request
+		if (user && session) {
+			try {
+				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
+				const { data: profile, error: profileError } = await adminSupabase
+					.from('profiles')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled')
+					.eq('id', user.id)
+					.single();
+
+				if (!profileError && profile) {
+					const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';
+					const isDeletionRequested = profile.data_deletion_requested === true || String(profile.data_deletion_requested) === 'true';
+
+					// Pokud je účet suspended kvůli deletion request, automaticky reaktivovat
+					if (isAccountSuspended && isDeletionRequested) {
+						console.log('🔄 [AUTH] Auto-reactivating suspended account with deletion request:', user.id);
+
+						// Zkontrolovat, jestli je stále v grace period (30 dní)
+						const deletionScheduled = profile.data_deletion_scheduled ? new Date(profile.data_deletion_scheduled) : null;
+						const now = new Date();
+
+						if (deletionScheduled && now < deletionScheduled) {
+							// Stále v grace period - reaktivovat účet
+							const { error: updateError } = await adminSupabase
+								.from('profiles')
+								.update({
+									account_suspended: false,
+									data_deletion_requested: false,
+									data_deletion_date: null,
+									data_deletion_scheduled: null,
+									data_deletion_token: null,
+									updated_at: new Date().toISOString()
+								})
+								.eq('id', user.id);
+
+							if (!updateError) {
+								console.log('✅ [AUTH] Account successfully reactivated via login:', user.id);
+
+								// Poslat potvrzovací email o reaktivaci
+								try {
+									const { sendAccountReactivationEmail } = await import('$lib/services/gdprEmailService');
+									await sendAccountReactivationEmail({
+										email: user.email!,
+										firstName: profile.first_name || 'Vážený zákazníku',
+										lastName: profile.last_name || ''
+									});
+								} catch (emailError) {
+									console.error('⚠️ [AUTH] Failed to send reactivation email:', emailError);
+									// Pokračovat i když email selže
+								}
+							} else {
+								console.error('❌ [AUTH] Failed to reactivate account:', updateError);
+							}
+						} else {
+							console.log('⏰ [AUTH] Grace period expired, cannot auto-reactivate:', user.id);
+						}
+					}
+				}
+			} catch (autoReactivationError) {
+				console.error('❌ [AUTH] Error in auto-reactivation process:', autoReactivationError);
+				// Pokračovat v normálním flow i když auto-reaktivace selže
+			}
 		}
 
 		return { session, user };
@@ -46,7 +136,11 @@ const supabase: Handle = async ({ event, resolve }) => {
 
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {
-			return name === "content-range" || name === "x-supabase-api-version";
+			/**
+			 * Supabase libraries use the `content-range` and `x-supabase-api-version`
+			 * headers, so we need to tell SvelteKit to pass it through.
+			 */
+			return name === 'content-range' || name === 'x-supabase-api-version';
 		}
 	});
 };

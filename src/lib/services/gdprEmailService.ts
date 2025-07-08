@@ -134,12 +134,24 @@ export async function sendDataDeletionRequestEmail(params: DataDeletionEmailPara
 
         <div class="info-box">
             <h3>💡 Možnost zrušení žádosti</h3>
-            <p>Pokud si to rozmyslíte, můžete žádost o smazání <strong>zrušit kdykoliv do ${scheduledDateFormatted}</strong> kliknutím na tlačítko níže:</p>
+            <p>Pokud si to rozmyslíte, můžete žádost o smazání <strong>zrušit kdykoliv do ${scheduledDateFormatted}</strong>:</p>
             
+            <h4>🔗 Možnost 1: Reaktivační odkaz (doporučeno)</h4>
             <p style="text-align: center;">
                 <a href="${reactivationUrl}" class="reactivation-button">
                     🔓 Zrušit žádost a obnovit účet
                 </a>
+            </p>
+            
+            <h4>🔑 Možnost 2: Běžné přihlášení</h4>
+            <p>Můžete se také jednoduše <strong>přihlásit na váš účet</strong> na:</p>
+            <p style="text-align: center;">
+                <a href="${baseUrl}/login" style="color: #3B82F6; text-decoration: underline;">
+                    ${baseUrl}/login
+                </a>
+            </p>
+            <p style="font-size: 0.9em; color: #666;">
+                ⚠️ <strong>Pozor:</strong> Pokud máte problém s přihlášením kvůli pozastavení účtu, použijte reaktivační odkaz výše.
             </p>
             
             <p><strong>Upozornění:</strong> Tento odkaz je platný pouze do ${scheduledDateFormatted}.</p>
