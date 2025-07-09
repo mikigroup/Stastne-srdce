@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import type { Actions, PageServerLoad } from "./$types";
+import type { Actions, PageServerLoad, SiteSettingsRow } from "./$types";
 import { getSetting, saveSetting, serializeSettingValue } from "$lib/services/siteSettingsService";
 
 interface SettingRecord {
@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({
 	const cached = settingsCache.get(cacheKey);
 	const now = Date.now();
 	
-	let settings;
+	let settings: SiteSettingsRow[];
 	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
 		// Použijeme cache
 		settings = cached.data;
@@ -64,7 +64,7 @@ export const load: PageServerLoad = async ({
 	}
 	
 	// Logujeme specificky integrations nastavení
-	const integrationsItem = settings.find(item => item.key === 'integrations');
+	const integrationsItem = settings.find((item: SiteSettingsRow) => item.key === 'integrations');
 	if (integrationsItem) {
 		console.log('Integrations setting found:', JSON.stringify(integrationsItem.value, null, 2));
 	} else {
