@@ -516,15 +516,7 @@
 								Uložit změny
 							{/if}
 						</button>
-					</form>
-
-					<button
-						on:click={resetSettings}
-						class="btn btn-outline"
-					>
-						<i class="fa-solid fa-undo"></i>
-						Obnovit výchozí
-					</button>
+					</form>					
 				</div>
 			</div>
 		</div>
@@ -650,7 +642,7 @@
 						{/if}
 
 						<!-- Loyalty Settings -->
-						{#if activeTab === 'loyalty' && $editableSettings.loyalty}
+						{#if activeTab === 'loyalty' && $editableSettings.customer?.loyalty}
 							<LoyaltySettings {editableSettings} />
 						{/if}						
 					{/if}
