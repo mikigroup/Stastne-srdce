@@ -33,6 +33,8 @@
 
 	export let form: FormData | null = null;
 
+	// Supabase bude dostupné přes locals v komponentě
+
 	// State management
 	let loading = false;
 	let saved = false;
@@ -524,12 +526,10 @@
 
 	<!-- Main Content -->
 	<div class="max-w-7xl mx-auto py-6">
-		<div class="flex flex-col lg:flex-row gap-6">
+		<div class="flex flex-col lg:flex-row gap-6">			
 			<!-- Sidebar -->
 			<div class="lg:w-1/4">
-				<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-					<h2 class="text-lg font-semibold mb-4">Sekce</h2>
-					
+				<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">										
 					<!-- Desktop Tabs -->
 					<div class="hidden lg:block">
 						<div class="space-y-2">

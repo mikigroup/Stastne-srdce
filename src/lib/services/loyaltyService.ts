@@ -3,8 +3,9 @@ import { getSetting, saveSetting } from "./siteSettingsService";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 export interface LoyaltyTier {
+  id?: number;
   name: string;
-  label: string;
+  label?: string;
   minOrders: number;
   discount: number;
   bonus: number;
@@ -47,13 +48,120 @@ export interface CustomerLoyaltyData {
 export async function getLoyaltySettings(supabase: TypedSupabaseClient): Promise<LoyaltySettings> {
   try {
     const settings = await getSetting(supabase, 'customer');
+    const tiers = await getLoyaltyTiers(supabase);
+    
     if (settings?.loyalty) {
-      return settings.loyalty as LoyaltySettings;
+      return {
+        ...settings.loyalty,
+        tiers: tiers
+      } as LoyaltySettings;
     }
-    return getDefaultSettings('customer').loyalty as unknown as LoyaltySettings;
+    
+    const defaultSettings = getDefaultSettings('customer').loyalty as unknown as LoyaltySettings;
+    return {
+      ...defaultSettings,
+      tiers: tiers
+    };
   } catch (error) {
     console.error('Error loading loyalty settings:', error);
-    return getDefaultSettings('customer').loyalty as unknown as LoyaltySettings;
+    const defaultSettings = getDefaultSettings('customer').loyalty as unknown as LoyaltySettings;
+    return {
+      ...defaultSettings,
+      tiers: []
+    };
+  }
+}
+
+/**
+ * Načte úrovně věrnosti z tabulky loyalty_tiers
+ */
+export async function getLoyaltyTiers(supabase: TypedSupabaseClient): Promise<LoyaltyTier[]> {
+  try {
+    const { data, error } = await supabase
+      .from('loyalty_tiers')
+      .select('*')
+      .order('min_orders', { ascending: true });
+
+    if (error) {
+      console.error('Error loading loyalty tiers:', error);
+      return [];
+    }
+
+    return data?.map(tier => ({
+      id: tier.id,
+      name: tier.name,
+      label: tier.name, // Použijeme name jako label
+      minOrders: tier.min_orders,
+      discount: tier.discount_percent,
+      bonus: tier.bonus_percent,
+      color: tier.color,
+      icon: tier.icon,
+      description: tier.description || ''
+    })) || [];
+  } catch (error) {
+    console.error('Error loading loyalty tiers:', error);
+    return [];
+  }
+}
+
+/**
+ * Uloží úroveň věrnosti do tabulky loyalty_tiers
+ */
+export async function saveLoyaltyTier(supabase: TypedSupabaseClient, tier: LoyaltyTier): Promise<void> {
+  try {
+    if (tier.id) {
+      // Update existing tier
+      const { error } = await supabase
+        .from('loyalty_tiers')
+        .update({
+          name: tier.name,
+          min_orders: tier.minOrders,
+          discount_percent: tier.discount,
+          bonus_percent: tier.bonus,
+          color: tier.color,
+          icon: tier.icon,
+          description: tier.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tier.id);
+
+      if (error) throw error;
+    } else {
+      // Insert new tier
+      const { error } = await supabase
+        .from('loyalty_tiers')
+        .insert({
+          name: tier.name,
+          min_orders: tier.minOrders,
+          discount_percent: tier.discount,
+          bonus_percent: tier.bonus,
+          color: tier.color,
+          icon: tier.icon,
+          description: tier.description
+        });
+
+      if (error) throw error;
+    }
+  } catch (error) {
+    console.error('Error saving loyalty tier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Smaže úroveň věrnosti z tabulky loyalty_tiers
+ */
+export async function deleteLoyaltyTier(supabase: TypedSupabaseClient, tierId: number): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('loyalty_tiers')
+      .delete()
+      .eq('id', tierId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting loyalty tier:', error);
+    throw error;
   }
 }
 
@@ -121,16 +229,16 @@ export async function calculateCustomerLoyalty(
 
     // Výpočet aktivity
     const isActive = lastOrderDate ? 
-      (new Date().getTime() - new Date(lastOrderDate!).getTime()) / (1000 * 60 * 60 * 24) < loyaltySettings.inactivityThreshold : 
+      (new Date().getTime() - new Date(lastOrderDate as string).getTime()) / (1000 * 60 * 60 * 24) < loyaltySettings.inactivityThreshold : 
       false;
 
     // Výpočet časových údajů
     const customerSince = firstOrderDate ? 
-      Math.floor((new Date().getTime() - new Date(firstOrderDate!).getTime()) / (1000 * 60 * 60 * 24)) : 
+      Math.floor((new Date().getTime() - new Date(firstOrderDate as string).getTime()) / (1000 * 60 * 60 * 24)) : 
       0;
     
     const daysSinceLastOrder = lastOrderDate ? 
-      Math.floor((new Date().getTime() - new Date(lastOrderDate!).getTime()) / (1000 * 60 * 60 * 24)) : 
+      Math.floor((new Date().getTime() - new Date(lastOrderDate as string).getTime()) / (1000 * 60 * 60 * 24)) : 
       null;
 
     return {
