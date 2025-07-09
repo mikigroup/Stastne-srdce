@@ -199,10 +199,22 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	// Uložíme token a informace o účtu
 	console.log('Saving token to database...');
 	
-	// Nyní uložíme nový token - UPSERT automaticky přepíše existující token pro stejný Fakturoid účet
+	// Nyní uložíme nový token - nejdříve smažeme existující tokeny pro stejný email
+	console.log('Deleting existing tokens for email:', userData.email);
+	const { error: deleteError } = await supabase
+		.from('fakturoid_tokens')
+		.delete()
+		.eq('account_email', userData.email);
+
+	if (deleteError) {
+		console.error('Error deleting existing tokens:', deleteError);
+		// Pokračujeme i při chybě mazání
+	}
+
+	// Nyní vložíme nový token
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
-		.upsert({
+		.insert({
 			user_id: session.user.id,
 			access_token: tokenData.access_token,
 			refresh_token: tokenData.refresh_token,
@@ -217,9 +229,6 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			status: 'active',
 			refresh_attempts: 0,
 			last_used_at: new Date().toISOString()
-		}, {
-			onConflict: 'account_email',
-			ignoreDuplicates: false
 		});
 
 	if (tokenSaveError) {
