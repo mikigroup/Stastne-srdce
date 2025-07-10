@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
+	import { writable } from "svelte/store";
 	import { fade, fly } from "svelte/transition";
-	import type { PageData } from '$lib/types';
+	import type { PageData } from "./$types";
 	import { enhance } from "$app/forms";
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
+	import { page } from "$app/stores";
+	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
+	import { browser } from "$app/environment";
 
-	import GeneralSettings from './components/GeneralSettings.svelte';
-	import SeoSettings from './components/SeoSettings.svelte';
-	import ContactSettings from './components/ContactSettings.svelte';
-	import SocialSettings from './components/SocialSettings.svelte';
-	import AppearanceSettings from './components/AppearanceSettings.svelte';
-	import BusinessSettings from './components/BusinessSettings.svelte';
-	import EmailSettings from './components/EmailSettings.svelte';
-	import IntegrationsSettings from './components/IntegrationsSettings.svelte';
-	import OrdersSettings from './components/OrdersSettings.svelte';
-	import DeliverySettings from './components/DeliverySettings.svelte';
-	import ProductsSettings from './components/ProductsSettings.svelte';
-	import CustomerSettings from './components/CustomerSettings.svelte';
-	import LoyaltySettings from './components/LoyaltySettings.svelte';
+	import GeneralSettings from "./GeneralSettings.svelte";
+	import SeoSettings from "./SeoSettings.svelte";
+	import ContactSettings from "./ContactSettings.svelte";
+	import SocialSettings from "./SocialSettings.svelte";
+	import AppearanceSettings from "./AppearanceSettings.svelte";
+	import BusinessSettings from "./BusinessSettings.svelte";
+	import EmailSettings from "./EmailSettings.svelte";
+	import IntegrationsSettings from "./IntegrationsSettings.svelte";
+	import OrdersSettings from "./OrdersSettings.svelte";
+	import DeliverySettings from "./DeliverySettings.svelte";
+	import ProductsSettings from "./ProductsSettings.svelte";
+	import CustomerSettings from "./CustomerSettings.svelte";
+	import LoyaltySettings from "./LoyaltySettings.svelte";
 
 	export let data: PageData;
 
@@ -51,7 +51,7 @@
 	let faviconFileInput: HTMLInputElement;
 
 	// Cache management
-	const CACHE_KEY = 'site_settings_cache';
+	const CACHE_KEY = "site_settings_cache";
 	const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
 
 	// Funkce pro práci s cache
@@ -72,7 +72,7 @@
 			
 			return data;
 		} catch (e) {
-			console.error('Chyba při čtení cache:', e);
+			console.error("Chyba při čtení cache:", e);
 			return null;
 		}
 	}
@@ -86,7 +86,7 @@
 				timestamp: Date.now()
 			}));
 		} catch (e) {
-			console.error('Chyba při ukládání do cache:', e);
+			console.error("Chyba při ukládání do cache:", e);
 		}
 	}
 
@@ -97,56 +97,56 @@
 
 	// Zpracování OAuth úspěchu a chyb
 	onMount(() => {
-		const success = $page.url.searchParams.get('success');
-		const error = $page.url.searchParams.get('error');
-		const message = $page.url.searchParams.get('message');
-		const tab = $page.url.searchParams.get('tab');
+		const success = $page.url.searchParams.get("success");
+		const error = $page.url.searchParams.get("error");
+		const message = $page.url.searchParams.get("message");
+		const tab = $page.url.searchParams.get("tab");
 		
 		// Automatické přepnutí na zadanou záložku
-		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'orders', 'delivery', 'products', 'customer', 'inventory'].includes(tab)) {
+		if (tab && ["general", "seo", "contact", "social", "appearance", "business", "email", "integrations", "orders", "delivery", "products", "customer", "inventory"].includes(tab)) {
 			activeTab = tab;
 		}
 		
-		if (success === 'fakturoid_connected') {
-			activeTab = 'integrations';
-			saveMessage = 'Fakturoid byl úspěšně připojen přes OAuth!';
-			saveMessageType = 'success';
+		if (success === "fakturoid_connected") {
+			activeTab = "integrations";
+			saveMessage = "Fakturoid byl úspěšně připojen přes OAuth!";
+			saveMessageType = "success";
 			showMessage = true;
 			
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
-		} else if (success === 'fakturoid_disconnected') {
-			activeTab = 'integrations';
+		} else if (success === "fakturoid_disconnected") {
+			activeTab = "integrations";
 			// Vyčistíme local cache
 			clearCache();
 			// Vynucíme refresh dat
-			window.location.hash = '#refresh';
+			window.location.hash = "#refresh";
 			
-			saveMessage = 'Fakturoid byl úspěšně odpojeno!';
-			saveMessageType = 'success';
+			saveMessage = "Fakturoid byl úspěšně odpojeno!";
+			saveMessageType = "success";
 			showMessage = true;
 			
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
 		} else if (error) {
-			activeTab = 'integrations';
+			activeTab = "integrations";
 			
 			// Mapování chybových kódů na uživatelsky přívětivé zprávy
 			const errorMessages: Record<string, string> = {
-				'oauth_state_mismatch': 'Chyba ověření OAuth stavu. Zkuste to prosím znovu.',
-				'missing_oauth_params': 'Chybí OAuth parametry. Zkuste připojení znovu.',
-				'invalid_state_format': 'Neplatný formát OAuth stavu.',
-				'token_request_failed': 'Nepodařilo se získat přístupový token od Fakturoid.',
-				'user_info_failed': 'Nepodařilo se načíst informace o uživateli z Fakturoid.',
-				'token_save_failed': 'Nepodařilo se uložit přístupový token do databáze.',
-				'settings_update_failed': 'Nepodařilo se aktualizovat nastavení integrace.',
-				'callback_failed': 'Obecná chyba při OAuth callback.'
+				"oauth_state_mismatch": "Chyba ověření OAuth stavu. Zkuste to prosím znovu.",
+				"missing_oauth_params": "Chybí OAuth parametry. Zkuste připojení znovu.",
+				"invalid_state_format": "Neplatný formát OAuth stavu.",
+				"token_request_failed": "Nepodařilo se získat přístupový token od Fakturoid.",
+				"user_info_failed": "Nepodařilo se načíst informace o uživateli z Fakturoid.",
+				"token_save_failed": "Nepodařilo se uložit přístupový token do databáze.",
+				"settings_update_failed": "Nepodařilo se aktualizovat nastavení integrace.",
+				"callback_failed": "Obecná chyba při OAuth callback."
 			};
 			
-			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : 'Neznámá chyba při připojování Fakturoid účtu.');
-			saveMessageType = 'error';
+			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : "Neznámá chyba při připojování Fakturoid účtu.");
+			saveMessageType = "error";
 			showMessage = true;
 			
 			setTimeout(() => {
@@ -178,7 +178,7 @@
 	}
 	
 	// Reactive refresh dat při změně URL parametrů
-	$: if ($page.url.searchParams.get('success') === 'fakturoid_disconnected') {
+	$: if ($page.url.searchParams.get("success") === "fakturoid_disconnected") {
 		// Force refresh dat po odpojení
 		setTimeout(() => {
 			editableSettings.set(structureSettings(settings));
@@ -186,7 +186,7 @@
 	}
 
 	// Import unified default values
-	import { UNIFIED_DEFAULT_SETTINGS } from '$lib/constants/defaultSettings';
+	import { UNIFIED_DEFAULT_SETTINGS } from "$lib/constants/defaultSettings";
 
 	// Use unified defaults as the single source of truth
 	const DEFAULT_VALUES = UNIFIED_DEFAULT_SETTINGS;
@@ -202,7 +202,7 @@
 
 		// Pokud nemáme žádná data, vrátíme výchozí hodnoty
 		if (!settingsData || !Array.isArray(settingsData)) {
-			console.warn('Žádná data pro strukturování nastavení');
+			console.warn("Žádná data pro strukturování nastavení");
 			return structured;
 		}
 
@@ -212,10 +212,10 @@
 				return;
 			}
 
-			// Ignorujeme neplatné klíče
-			if (item.key === 'action' || item.key === 'settings') {
-				return;
-			}
+					// Ignorujeme neplatné klíče
+		if (item.key === "action" || item.key === "settings") {
+			return;
+		}
 
 			try {
 				let value = item.value;
@@ -291,18 +291,18 @@
 		loadingTab = true;
 		
 		try {
-			const response = await fetch('?/loadSetting', {
-				method: 'POST',
+			const response = await fetch("?/loadSetting", {
+				method: "POST",
 				body: (() => {
 					const formData = new FormData();
-					formData.append('key', tabId);
+					formData.append("key", tabId);
 					return formData;
 				})()
 			});
 
 			if (response.ok) {
 				const result = await response.json();
-				if (result.type === 'success' && result.data?.setting) {
+				if (result.type === "success" && result.data?.setting) {
 					// Aktualizujeme pouze toto konkrétní nastavení
 					editableSettings.update(s => ({
 						...s,
@@ -311,7 +311,7 @@
 				}
 			}
 		} catch (e) {
-			console.error('Chyba při načítání nastavení:', e);
+			console.error("Chyba při načítání nastavení:", e);
 		} finally {
 			loadingTab = false;
 		}
@@ -319,19 +319,19 @@
 
 	// Tabs configuration
 	const tabs = [
-		{ id: 'general', label: 'Obecné', icon: 'fa-solid fa-gear' },
-		{ id: 'seo', label: 'SEO', icon: 'fa-solid fa-magnifying-glass' },
-		{ id: 'contact', label: 'Kontakt', icon: 'fa-solid fa-address-book' },
-		{ id: 'social', label: 'Sociální sítě', icon: 'fa-solid fa-share-nodes' },
-		{ id: 'appearance', label: 'Vzhled', icon: 'fa-solid fa-palette' },
-		{ id: 'business', label: 'Firemní údaje', icon: 'fa-solid fa-building' },
-		{ id: 'email', label: 'Šablony e-mailů', icon: 'fa-solid fa-envelope' },
-		{ id: 'integrations', label: 'Integrace', icon: 'fa-solid fa-plug' },
-		{ id: 'orders', label: 'Objednávky', icon: 'fa-solid fa-clipboard-list' },
-		{ id: 'delivery', label: 'Doprava', icon: 'fa-solid fa-truck' },
-		{ id: 'products', label: 'Produkty', icon: 'fa-solid fa-utensils' },
-		{ id: 'customer', label: 'Zákazníci', icon: 'fa-solid fa-users' },
-		{ id: 'loyalty', label: 'Věrnostní systém', icon: 'fa-solid fa-gem' }
+		{ id: "general", label: "Obecné", icon: "fa-solid fa-gear" },
+		{ id: "seo", label: "SEO", icon: "fa-solid fa-magnifying-glass" },
+		{ id: "contact", label: "Kontakt", icon: "fa-solid fa-address-book" },
+		{ id: "social", label: "Sociální sítě", icon: "fa-solid fa-share-nodes" },
+		{ id: "appearance", label: "Vzhled", icon: "fa-solid fa-palette" },
+		{ id: "business", label: "Firemní údaje", icon: "fa-solid fa-building" },
+		{ id: "email", label: "Šablony e-mailů", icon: "fa-solid fa-envelope" },
+		{ id: "integrations", label: "Integrace", icon: "fa-solid fa-plug" },
+		{ id: "orders", label: "Objednávky", icon: "fa-solid fa-clipboard-list" },
+		{ id: "delivery", label: "Doprava", icon: "fa-solid fa-truck" },
+		{ id: "products", label: "Produkty", icon: "fa-solid fa-utensils" },
+		{ id: "customer", label: "Zákazníci", icon: "fa-solid fa-users" },
+		{ id: "loyalty", label: "Věrnostní systém", icon: "fa-solid fa-gem" }
 	];
 
 	// Set active tab with lazy loading
@@ -343,10 +343,10 @@
 
 	// Reset settings to defaults
 	function resetSettings() {
-		if (confirm('Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.')) {
+		if (confirm("Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.")) {
 			editableSettings.set(structureSettings(settings));
-			saveMessage = 'Nastavení byla obnovena na původní hodnoty';
-			saveMessageType = 'info';
+			saveMessage = "Nastavení byla obnovena na původní hodnoty";
+			saveMessageType = "info";
 			showMessage = true;
 
 			setTimeout(() => {
@@ -378,11 +378,11 @@
 
 	// Handler pro enhance na upload formulářích
 	function handleUploadEnhance({ formData }: any) {
-		const fileType = formData.get('fileType') as string;
+		const fileType = formData.get("fileType") as string;
 		
-		if (fileType === 'logo') {
+		if (fileType === "logo") {
 			uploadingLogo = true;
-		} else if (fileType === 'favicon') {
+		} else if (fileType === "favicon") {
 			uploadingFavicon = true;
 		}
 
@@ -393,30 +393,30 @@
 			uploadingLogo = false;
 			uploadingFavicon = false;
 
-			if (result.type === 'success' && result.data?.success) {
+			if (result.type === "success" && result.data?.success) {
 				// Zobrazíme success zprávu
-				saveMessage = result.data.message || 'Soubor byl úspěšně nahrán';
-				saveMessageType = 'success';
+				saveMessage = result.data.message || "Soubor byl úspěšně nahrán";
+				saveMessageType = "success";
 				showMessage = true;
 
 				// Aktualizujeme nastavení s novou URL
 				if (result.data.fileUrl) {
-					if (fileType === 'logo') {
+					if (fileType === "logo") {
 						$editableSettings.appearance.logo = result.data.fileUrl;
-						if (logoFileInput) logoFileInput.value = '';
-					} else if (fileType === 'favicon') {
+						if (logoFileInput) logoFileInput.value = "";
+					} else if (fileType === "favicon") {
 						$editableSettings.appearance.favicon = result.data.fileUrl;
-						if (faviconFileInput) faviconFileInput.value = '';
+						if (faviconFileInput) faviconFileInput.value = "";
 					}
 				}
 
 				setTimeout(() => {
 					showMessage = false;
 				}, 5000);
-			} else if (result.type === 'failure') {
+			} else if (result.type === "failure") {
 				// Zobrazíme error zprávu
-				saveMessage = result.data?.error || 'Chyba při nahrávání souboru';
-				saveMessageType = 'error';
+				saveMessage = result.data?.error || "Chyba při nahrávání souboru";
+				saveMessageType = "error";
 				showMessage = true;
 
 				setTimeout(() => {
@@ -428,13 +428,13 @@
 
 	// Available currencies
 	const availableCurrencies = [
-		{ code: 'CZK', name: 'Česká koruna' },
-		{ code: 'EUR', name: 'Euro' },
-		{ code: 'USD', name: 'Americký dolar' },
-		{ code: 'GBP', name: 'Britská libra' },
-		{ code: 'PLN', name: 'Polský zlotý' },
-		{ code: 'HUF', name: 'Maďarský forint' },
-		{ code: 'SKK', name: 'Slovenská koruna' }
+		{ code: "CZK", name: "Česká koruna" },
+		{ code: "EUR", name: "Euro" },
+		{ code: "USD", name: "Americký dolar" },
+		{ code: "GBP", name: "Britská libra" },
+		{ code: "PLN", name: "Polský zlotý" },
+		{ code: "HUF", name: "Maďarský forint" },
+		{ code: "SKK", name: "Slovenská koruna" }
 	];
 
 	// Handle přidání měny z selectu - pouze jedna měna
@@ -442,7 +442,7 @@
 		const target = event.target as HTMLSelectElement;
 		const currencyCode = target.value;
 		
-		if (currencyCode && currencyCode.trim() !== '') {
+		if (currencyCode && currencyCode.trim() !== "") {
 			if (!$editableSettings.general) {
 				$editableSettings.general = {};
 			}
@@ -452,7 +452,7 @@
 			$editableSettings = $editableSettings;
 			
 			// Reset selectu
-			target.value = '';
+			target.value = "";
 		}
 	}
 

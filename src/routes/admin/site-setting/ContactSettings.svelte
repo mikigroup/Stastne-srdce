@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 </script>
@@ -99,16 +99,16 @@
 			</label>
 
 			<div class="space-y-2">
-				{#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as day}
+				{#each ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as day}
 					<div class="flex gap-2 items-center">
 						<label class="w-32 text-sm font-medium">
-							{#if day === 'monday'}Pondělí
-							{:else if day === 'tuesday'}Úterý
-							{:else if day === 'wednesday'}Středa
-							{:else if day === 'thursday'}Čtvrtek
-							{:else if day === 'friday'}Pátek
-							{:else if day === 'saturday'}Sobota
-							{:else if day === 'sunday'}Neděle{/if}
+							{#if day === "monday"}Pondělí
+							{:else if day === "tuesday"}Úterý
+							{:else if day === "wednesday"}Středa
+							{:else if day === "thursday"}Čtvrtek
+							{:else if day === "friday"}Pátek
+							{:else if day === "saturday"}Sobota
+							{:else if day === "sunday"}Neděle{/if}
 						</label>
 						<input
 							type="text"

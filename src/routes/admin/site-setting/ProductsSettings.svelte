@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 
@@ -12,7 +12,7 @@
 		if (!$editableSettings.products.features) {
 			$editableSettings.products.features = [];
 		}
-		$editableSettings.products.features.push({ title: '', description: '' });
+		$editableSettings.products.features.push({ title: "", description: "" });
 		$editableSettings = $editableSettings;
 	}
 

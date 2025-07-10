@@ -62,7 +62,7 @@ export const load: PageServerLoad = async ({
 	if (prevCustomerData) {
 		previousCustomer = {
 			id: prevCustomerData.id,
-			name: `${prevCustomerData.first_name || ''} ${prevCustomerData.last_name || ''}`.trim(),
+			name: `${prevCustomerData.first_name || ""} ${prevCustomerData.last_name || ""}`.trim(),
 			created_at: prevCustomerData.created_at
 		};
 	}
@@ -79,7 +79,7 @@ export const load: PageServerLoad = async ({
 	if (nextCustomerData) {
 		nextCustomer = {
 			id: nextCustomerData.id,
-			name: `${nextCustomerData.first_name || ''} ${nextCustomerData.last_name || ''}`.trim(),
+			name: `${nextCustomerData.first_name || ""} ${nextCustomerData.last_name || ""}`.trim(),
 			created_at: nextCustomerData.created_at
 		};
 	}
@@ -114,7 +114,7 @@ export const load: PageServerLoad = async ({
 			)
 		`)
 		.eq("user_id", id)
-		.order('created_at', { ascending: false });
+		.order("created_at", { ascending: false });
 
 	if (ordersError) {
 		console.error("Error fetching orders:", ordersError);
@@ -138,10 +138,10 @@ export const load: PageServerLoad = async ({
 
 	// Systém věrnosti zákazníků
 	const getLoyaltyLevel = (orderCount: number) => {
-		if (orderCount >= 20) return { level: 'VIP', label: 'VIP zákazník', icon: '💎', color: 'purple' };
-		if (orderCount >= 10) return { level: 'LOYAL', label: 'Stálý zákazník', icon: '⭐', color: 'yellow' };
-		if (orderCount >= 3) return { level: 'REGULAR', label: 'Pravidelný zákazník', icon: '👤', color: 'blue' };
-		return { level: 'NEW', label: 'Nový zákazník', icon: '🆕', color: 'gray' };
+		if (orderCount >= 20) return { level: "VIP", label: "VIP zákazník", icon: "💎", color: "purple" };
+		if (orderCount >= 10) return { level: "LOYAL", label: "Stálý zákazník", icon: "⭐", color: "yellow" };
+		if (orderCount >= 3) return { level: "REGULAR", label: "Pravidelný zákazník", icon: "👤", color: "blue" };
+		return { level: "NEW", label: "Nový zákazník", icon: "🆕", color: "gray" };
 	};
 
 	const isActiveCustomer = (lastOrderDate: string | null) => {

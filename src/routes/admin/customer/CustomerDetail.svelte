@@ -152,14 +152,14 @@
 				);
 
 				// Vylepšené zprávy podle stavu registrace
-				if (registrationCheck.actualStatus === 'completed') {
-					updateMessage = registrationCheck.wasUpdated 
-						? "✅ Zákazník úspěšně uložen a registrace dokončena!"
-						: "✅ Zákazník úspěšně uložen (registrace dokončena)!";
-				} else {
-					const missingFields = registrationCheck.validationResult.missingFields;
-					updateMessage = `⚠️ Zákazník uložen, ale chybí: ${missingFields.join(', ')}`;
-				}
+							if (registrationCheck.actualStatus === "completed") {
+				updateMessage = registrationCheck.wasUpdated 
+					? "✅ Zákazník úspěšně uložen a registrace dokončena!"
+					: "✅ Zákazník úspěšně uložen (registrace dokončena)!";
+			} else {
+				const missingFields = registrationCheck.validationResult.missingFields;
+				updateMessage = `⚠️ Zákazník uložen, ale chybí: ${missingFields.join(", ")}`;
+			}
 
 				// Aktualizovat lokální customer objekt s novými daty pro reactive update UI
 				customer = { ...customer, ...customerData };
@@ -226,7 +226,7 @@
 				email || customer.email || undefined
 			);
 
-			if (registrationCheck.actualStatus === 'completed') {
+			if (registrationCheck.actualStatus === "completed") {
 				if (registrationCheck.wasUpdated) {
 					updateMessage = "✅ Status registrace byl aktualizován na dokončeno!";
 					// Aktualizovat customer objekt s novým statusem
@@ -236,7 +236,7 @@
 				}
 			} else {
 				const missingFields = registrationCheck.validationResult.missingFields;
-				updateMessage = `⚠️ Status zůstává pending - chybí: ${missingFields.join(', ')}`;
+				updateMessage = `⚠️ Status zůstává pending - chybí: ${missingFields.join(", ")}`;
 			}
 		} catch (error) {
 			console.error("Chyba při aktualizaci statusu:", error);
@@ -252,13 +252,13 @@
 
 	// Určení skutečného statusu registrace pomocí globální služby
 	$: actualRegistrationStatus = !customer ? null :
-		(isRegistrationActuallyCompleted ? 'completed' :
-		customer.registration_status === 'completed' ? 'incomplete_data' :
-		'pending') as 'completed' | 'incomplete_data' | 'pending';
+		(isRegistrationActuallyCompleted ? "completed" :
+		customer.registration_status === "completed" ? "incomplete_data" :
+		"pending") as "completed" | "incomplete_data" | "pending";
 
 	// Použití globálních utility funkcí
-	$: registrationStatusMessage = actualRegistrationStatus ? getRegistrationStatusMessage(actualRegistrationStatus) : '';
-	$: statusStyles = actualRegistrationStatus ? getRegistrationStatusStyles(actualRegistrationStatus) : getRegistrationStatusStyles('pending');
+	$: registrationStatusMessage = actualRegistrationStatus ? getRegistrationStatusMessage(actualRegistrationStatus) : "";
+	$: statusStyles = actualRegistrationStatus ? getRegistrationStatusStyles(actualRegistrationStatus) : getRegistrationStatusStyles("pending");
 	$: statusColor = statusStyles.container;
 	$: statusBadgeColor = statusStyles.badge;
 </script>
@@ -281,20 +281,20 @@
 			</span>
 			{#if customer.registration_status !== actualRegistrationStatus}
 				<span class="text-xs opacity-75">
-					(DB: {customer.registration_status || 'null'})
+					(DB: {customer.registration_status || "null"})
 				</span>
 			{/if}
 		</div>
-		{#if actualRegistrationStatus === 'pending'}
+		{#if actualRegistrationStatus === "pending"}
 			<p class="text-sm mt-1">Zákazník ještě nedokončil registraci. Může mít omezený přístup k některým funkcím.</p>
-		{:else if actualRegistrationStatus === 'incomplete_data'}
+		{:else if actualRegistrationStatus === "incomplete_data"}
 			<p class="text-sm mt-1">Registrace je označena jako dokončená, ale chybí některé povinné údaje:</p>
 			<ul class="text-sm mt-1 ml-4 list-disc">
 				{#each validationResult.missingFields as field}
 					<li>{field}</li>
 				{/each}
 			</ul>
-		{:else if actualRegistrationStatus === 'completed'}
+		{:else if actualRegistrationStatus === "completed"}
 			<p class="text-sm mt-1">Všechny povinné údaje jsou vyplněny.</p>
 		{/if}
 		

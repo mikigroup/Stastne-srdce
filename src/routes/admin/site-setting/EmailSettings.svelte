@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 </script>

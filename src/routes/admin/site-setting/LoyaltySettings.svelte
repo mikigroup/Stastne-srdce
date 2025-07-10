@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { getLoyaltyTiers, saveLoyaltyTier, deleteLoyaltyTier } from '$lib/services/loyaltyService';
-	import type { LoyaltyTier } from '$lib/services/loyaltyService';
-	import { getContext } from 'svelte';
+	import { getLoyaltyTiers, saveLoyaltyTier, deleteLoyaltyTier } from "$lib/services/loyaltyService";
+	import type { LoyaltyTier } from "$lib/services/loyaltyService";
+	import { getContext } from "svelte";
 
 	export let editableSettings: any;
 	
 	// Získáme supabase z kontextu
-	const supabase = getContext('supabase') as any;
+	const supabase = getContext("supabase") as any;
 
 	let tiers: LoyaltyTier[] = [];
 	let loading = false;
@@ -23,7 +23,7 @@
 			// Aktualizace tiers v editableSettings
 			$editableSettings.customer.loyalty.tiers = tiers;
 		} catch (error) {
-			console.error('Error loading loyalty tiers:', error);
+			console.error("Error loading loyalty tiers:", error);
 		} finally {
 			loading = false;
 		}
@@ -34,7 +34,7 @@
 			await saveLoyaltyTier(supabase, tier);
 			await loadTiers(); // Znovu načíst tiers
 		} catch (error) {
-			console.error('Error saving tier:', error);
+			console.error("Error saving tier:", error);
 		}
 	}
 
@@ -43,26 +43,26 @@
 			await deleteLoyaltyTier(supabase, tierId);
 			await loadTiers(); // Znovu načíst tiers
 		} catch (error) {
-			console.error('Error deleting tier:', error);
+			console.error("Error deleting tier:", error);
 		}
 	}
 
 	async function addNewTier() {
 		const newTier: LoyaltyTier = {
-			name: 'NEW',
+			name: "NEW",
 			minOrders: 0,
 			discount: 0,
 			bonus: 0,
-			color: '#6B7280',
-			icon: '🆕',
-			description: ''
+			color: "#6B7280",
+			icon: "🆕",
+			description: ""
 		};
 		
 		try {
 			await saveLoyaltyTier(supabase, newTier);
 			await loadTiers(); // Znovu načíst tiers
 		} catch (error) {
-			console.error('Error adding tier:', error);
+			console.error("Error adding tier:", error);
 		}
 	}
 </script>

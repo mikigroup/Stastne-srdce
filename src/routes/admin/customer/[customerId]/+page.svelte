@@ -33,10 +33,10 @@
 	// Helper funkce pro získání CSS tříd podle úrovně věrnosti
 	function getLoyaltyClasses(color: string): string {
 		const colorMap: Record<string, string> = {
-			purple: 'bg-purple-50 border-purple-200 text-purple-700',
-			yellow: 'bg-yellow-50 border-yellow-200 text-yellow-700',
-			blue: 'bg-blue-50 border-blue-200 text-blue-700',
-			gray: 'bg-gray-50 border-gray-200 text-gray-700'
+			purple: "bg-purple-50 border-purple-200 text-purple-700",
+			yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
+			blue: "bg-blue-50 border-blue-200 text-blue-700",
+			gray: "bg-gray-50 border-gray-200 text-gray-700"
 		};
 		return colorMap[color] || colorMap.gray;
 	}
@@ -66,23 +66,23 @@
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
 		{
-			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			label: loading ? "Ukládá se..." : "Uložit změny",
 			onClick: () => customerDetailComponent?.saveCustomer(),
-			variant: 'primary' as const,
+			variant: "primary" as const,
 			loading,
 			disabled: loading
 		},
 		{
-			label: 'Zkontrolovat a aktualizovat status',
+			label: "Zkontrolovat a aktualizovat status",
 			onClick: () => customerDetailComponent?.updateRegistrationStatus(),
-			variant: 'secondary' as const,
+			variant: "secondary" as const,
 			loading,
 			disabled: loading
 		},
 		{
-			label: loading ? 'Maže se...' : 'Smazat',
+			label: loading ? "Maže se..." : "Smazat",
 			onClick: () => customerDetailComponent?.deleteCustomer(),
-			variant: 'danger' as const,
+			variant: "danger" as const,
 			loading,
 			disabled: loading
 		}
@@ -95,7 +95,7 @@
 
 <AdminPageLayout
 	title="Detail zákazníka"
-	subtitle="{customer?.first_name ?? ''} {customer?.last_name ?? ''}"
+			subtitle="{customer?.first_name ?? ""} {customer?.last_name ?? ""}"
 	backUrl="/admin/customer"
 	{actions}>
 
@@ -163,9 +163,9 @@
 					</div>
 
 					<!-- Progress bar pro další úroveň -->
-					{#if loyaltyInfo.level !== 'VIP'}
+					{#if loyaltyInfo.level !== "VIP"}
 						{@const nextLevelThresholds = { NEW: 3, REGULAR: 10, LOYAL: 20 }}
-						{@const nextThreshold = loyaltyInfo.level === 'NEW' ? 3 : loyaltyInfo.level === 'REGULAR' ? 10 : 20}
+						{@const nextThreshold = loyaltyInfo.level === "NEW" ? 3 : loyaltyInfo.level === "REGULAR" ? 10 : 20}
 						{@const progress = Math.min((stats.totalOrders / nextThreshold) * 100, 100)}
 						{@const remaining = Math.max(nextThreshold - stats.totalOrders, 0)}
 						
@@ -195,18 +195,18 @@
 					<div class="space-y-3 text-sm">
 						<div class="flex justify-between">
 							<span class="text-gray-600">Zákazník od:</span>
-							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : 'N/A'}</span>
+							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : "N/A"}</span>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-gray-600">Poslední objednávka:</span>
 							<span class="font-medium">
-								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? '0' : 
-								 loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
+								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? "0" : 
+								 loyaltyInfo.daysSinceLastOrder === 0 ? "Dnes" : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
 							</span>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-gray-600">Průměr/objednávka:</span>
-							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : '0 Kč'}</span>
+							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : "0 Kč"}</span>
 						</div>
 					</div>
 				</div>
@@ -220,7 +220,7 @@
 								📧 Poslat nabídku pro návrat
 							</button>
 						{/if}
-						{#if loyaltyInfo.level === 'VIP' || loyaltyInfo.level === 'LOYAL'}
+						{#if loyaltyInfo.level === "VIP" || loyaltyInfo.level === "LOYAL"}
 							<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
 								🎁 Poslat speciální slevu
 							</button>

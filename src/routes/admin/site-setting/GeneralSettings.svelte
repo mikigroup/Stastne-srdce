@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 	export let availableCurrencies: Array<{code: string, name: string}>;
@@ -10,7 +10,7 @@
 		const target = event.target as HTMLSelectElement;
 		const currencyCode = target.value;
 		
-		if (currencyCode && currencyCode.trim() !== '') {
+		if (currencyCode && currencyCode.trim() !== "") {
 			if (!$editableSettings.general) {
 				$editableSettings.general = {};
 			}
@@ -20,7 +20,7 @@
 			$editableSettings = $editableSettings;
 			
 			// Reset selectu
-			target.value = '';
+			target.value = "";
 		}
 	}
 

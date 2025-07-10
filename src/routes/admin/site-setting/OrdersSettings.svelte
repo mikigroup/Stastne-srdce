@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 
@@ -12,7 +12,7 @@
 		if (!$editableSettings.orders.orderStates) {
 			$editableSettings.orders.orderStates = [];
 		}
-		$editableSettings.orders.orderStates.push({ name: '', color: '#3b82f6' });
+		$editableSettings.orders.orderStates.push({ name: "", color: "#3b82f6" });
 		$editableSettings = $editableSettings;
 	}
 

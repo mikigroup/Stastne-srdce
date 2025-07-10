@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 
@@ -12,7 +12,7 @@
 		if (!$editableSettings.delivery.shippingMethods) {
 			$editableSettings.delivery.shippingMethods = [];
 		}
-		$editableSettings.delivery.shippingMethods.push({ name: '', price: 0 });
+		$editableSettings.delivery.shippingMethods.push({ name: "", price: 0 });
 		$editableSettings = $editableSettings;
 	}
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
-	import type { Writable } from 'svelte/store';
+	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
 
@@ -10,20 +10,20 @@
 			// Přesměrujeme na správný OAuth endpoint pro Fakturoid
 			window.location.href = '/auth/fakturoid/connect';
 		} catch (error) {
-			console.error('Chyba při připojování Fakturoid:', error);
+			console.error("Chyba při připojování Fakturoid:", error);
 		}
 	}
 
 	async function disconnectFakturoid() {
-		if (!confirm('Opravdu chcete odpojit Fakturoid účet?')) {
+		if (!confirm("Opravdu chcete odpojit Fakturoid účet?")) {
 			return;
 		}
 
 		// Použijeme klasický form submit místo fetch API pro správný redirect
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '?/disconnectFakturoid';
-		form.style.display = 'none';
+		const form = document.createElement("form");
+		form.method = "POST";
+		form.action = "?/disconnectFakturoid";
+		form.style.display = "none";
 		
 		document.body.appendChild(form);
 		form.submit();
@@ -31,7 +31,7 @@
 
 	// Funkce pro přepnutí aktivního Fakturoid účtu
 	async function switchFakturoidAccount(accountIndex: number) {
-		console.log('Switching to account index:', accountIndex);
+		console.log("Switching to account index:", accountIndex);
 		
 		// Přepneme aktivní účet
 		$editableSettings.integrations.fakturoid.accounts.forEach((acc: any, i: number) => {
@@ -42,7 +42,7 @@
 		const activeAccount = $editableSettings.integrations.fakturoid.accounts[accountIndex];
 		$editableSettings.integrations.fakturoid.subdomain = activeAccount.subdomain;
 		
-		console.log('🔄 Account switched:', {
+		console.log("🔄 Account switched:", {
 			newActiveIndex: accountIndex,
 			newActiveAccount: activeAccount.name,
 			newSubdomain: activeAccount.subdomain
@@ -51,14 +51,14 @@
 		$editableSettings = $editableSettings;
 		
 		// Automaticky uložíme změnu
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '?/update';
-		form.style.display = 'none';
+		const form = document.createElement("form");
+		form.method = "POST";
+		form.action = "?/update";
+		form.style.display = "none";
 		
-		const input = document.createElement('input');
-		input.type = 'hidden';
-		input.name = 'settings';
+		const input = document.createElement("input");
+		input.type = "hidden";
+		input.name = "settings";
 		input.value = JSON.stringify($editableSettings);
 		form.appendChild(input);
 		
@@ -137,13 +137,13 @@
 							<!-- Emergency reset tlačítko -->
 							{#if $editableSettings.integrations?.fakturoid?.connected}
 								<button
-									on:click={() => {
-										console.log('🧹 Manual reset of Fakturoid connection state');
-										$editableSettings.integrations.fakturoid.connected = false;
-										$editableSettings.integrations.fakturoid.subdomain = '';
-										$editableSettings.integrations.fakturoid.accounts = [];
-										$editableSettings = $editableSettings;
-									}}
+																	on:click={() => {
+									console.log("🧹 Manual reset of Fakturoid connection state");
+									$editableSettings.integrations.fakturoid.connected = false;
+									$editableSettings.integrations.fakturoid.subdomain = "";
+									$editableSettings.integrations.fakturoid.accounts = [];
+									$editableSettings = $editableSettings;
+								}}
 									class="inline-flex items-center px-3 py-2 border border-yellow-500 text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
 									title="Reset nekonzistentního stavu"
 								>
