@@ -70,7 +70,7 @@
 	let payment_method: string = customer?.payment_method || "";
 
 	// Sledujeme změnu zákazníka a aktualizujeme inputy pouze při změně ID
-	let previousCustomerId = customer?.id;
+	let previousCustomerId: string | undefined = customer?.id;
 	$: if (customer && customer.id !== previousCustomerId) {
 		previousCustomerId = customer.id;
 		first_name = customer.first_name ?? "";
