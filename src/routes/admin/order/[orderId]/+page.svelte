@@ -53,9 +53,11 @@
 	let updateMessage = "";
 	let orderStates: string[] = [];
 	let isInitialLoad = true;
+	let previousOrderId: string | null = null;
 
 	// Reaktivní aktualizace všech polí při změně order dat (kromě dropdown hodnot které se synchronizují zvlášť)
-	$: if (order) {
+	$: if (order && order.id !== previousOrderId) {
+		previousOrderId = order.id;
 		date = order.date ?? "";
 		orderId = order.id ?? "";
 		formattedDate = date ? formatSupabaseDate(date) : "";
