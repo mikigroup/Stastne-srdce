@@ -9,6 +9,42 @@
 	let loading = false;
 	let agreedToTerms = false;
 
+	// Real-time validace
+	let emailError = "";
+	let passwordError = "";
+	let repasswordError = "";
+
+	// Funkce pro validaci emailu
+	function validateEmail(email: string): string {
+		if (!email) return "";
+		if (!email.includes("@")) return "Zadejte platný email";
+		if (email.length < 5) return "Email je příliš krátký";
+		return "";
+	}
+
+	// Funkce pro validaci hesla
+	function validatePassword(password: string): string {
+		if (!password) return "";
+		if (password.length < 8) return "Heslo musí mít alespoň 8 znaků";
+		if (!/[A-Z]/.test(password)) return "Heslo musí obsahovat alespoň jedno velké písmeno";
+		if (!/[0-9]/.test(password)) return "Heslo musí obsahovat alespoň jedno číslo";
+		return "";
+	}
+
+	// Funkce pro validaci potvrzení hesla
+	function validateRepassword(password: string, repassword: string): string {
+		if (!repassword) return "";
+		if (password !== repassword) return "Hesla se neshodují";
+		return "";
+	}
+
+	// Reaktivní validace
+	$: if (form?.errors) {
+		emailError = form.errors.email || "";
+		passwordError = form.errors.password || "";
+		repasswordError = form.errors.repassword || "";
+	}
+
 	function handleSubmit() {
 		if (!agreedToTerms) return; // zabrání odeslání, pokud není souhlas
 
@@ -110,10 +146,14 @@
 								id="email"
 								name="email"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+								class:border-red-500={emailError}
 								placeholder="Email"
 								required
 							/>
 						</div>
+						{#if emailError}
+							<p class="mt-1 text-xs text-red-600">{emailError}</p>
+						{/if}
 					</div>
 
 					<!-- Password input -->
@@ -130,11 +170,15 @@
 								id="password"
 								name="password"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
-								placeholder="Heslo (min 8 znaků)"
+								class:border-red-500={passwordError}
+								placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
 								minlength="8"
 								required
 							/>
 						</div>
+						{#if passwordError}
+							<p class="mt-1 text-xs text-red-600">{passwordError}</p>
+						{/if}
 					</div>
 
 					<!-- Password confirmation -->
@@ -151,11 +195,15 @@
 								id="repassword"
 								name="repassword"
 								class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+								class:border-red-500={repasswordError}
 								placeholder="Potvrzení hesla"
 								minlength="8"
 								required
 							/>
 						</div>
+						{#if repasswordError}
+							<p class="mt-1 text-xs text-red-600">{repasswordError}</p>
+						{/if}
 					</div>
 					<div class="my-8 py-4 h-24">
 						<label class="flex items-center">
