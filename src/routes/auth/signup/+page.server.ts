@@ -44,13 +44,13 @@ export const actions = {
 						return acc;
 					}, {} as Record<string, string>);
 
-					return fail(400, {
-						error: true,
+				return fail(400, {
+					error: true,
 						message: "Opravte prosím chyby ve formuláři",
 						errors,
-						email
-					});
-				}
+					email
+				});
+			}
 			}
 
 			// Supabase registrace s očištěnými daty

@@ -135,8 +135,8 @@
 				{:else}
 					<!-- Desktop nav for guests -->
 					<div class="hidden xl:flex items-center gap-2">
-						<a href="/login" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-						<a href="/signup" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
+						<a href="/auth/login" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
+						<a href="/auth/signup" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
 					</div>
 				{/if}
 
@@ -188,8 +188,8 @@
 							<a href="/profile" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
 							<button on:click={signOut} disabled={loading} class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
 						{:else}
-							<a href="/login" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-							<a href="/signup" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
+							<a href="/auth/login" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
+							<a href="/auth/signup" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
 						{/if}
 					</div>
 				</div>

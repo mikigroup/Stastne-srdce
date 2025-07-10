@@ -212,10 +212,10 @@
 				return;
 			}
 
-					// Ignorujeme neplatné klíče
+			// Ignorujeme neplatné klíče
 		if (item.key === "action" || item.key === "settings") {
-			return;
-		}
+				return;
+			}
 
 			try {
 				let value = item.value;

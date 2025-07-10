@@ -127,7 +127,7 @@
 						{/if}
 					</div>
 					{#if !$page.data.session}
-						<a href="/login" class="flex justify-end pt-2">
+						<a href="/auth/login" class="flex justify-end pt-2">
 							<div
 								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
 								<div class="text-base">Přihlaš se</div>

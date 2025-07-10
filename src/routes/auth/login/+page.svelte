@@ -36,17 +36,17 @@
 </script>
 
 <svelte:head>
-	<title>Admin přihlášení - {generalSettings?.shopName}</title>
-	<meta name="description" content="Admin přihlášení" />
+	<title>Login - {generalSettings?.shopName}</title>
+	<meta name="description" content="Login" />
 </svelte:head>
 
 <AuthCard 
-	title="Admin přihlášení"
-	subtitle="Přihlášení do administrace"
+	title="Přihlášení do účtu"
+	subtitle="Ještě nemáte účet? <a href='/auth/signup' class='underline hover:underline hover:text-black'>Přidej se</a>"
 >
 	{#if $page.data.session}
 		<div class="flex w-full text-xl">
-			<p>Jste přihlášeni jako admin.</p>
+			<p>Jste přihlášeni.</p>
 		</div>
 	{:else}
 		<form method="POST" action="?/handleLogin" class="space-y-6">
@@ -90,7 +90,7 @@
 
 			<!-- Forgot password link -->
 			<div class="flex justify-end">
-				<a href="/admin/forgot" class="text-sm text-gray-500 hover:text-gray-700 underline">
+				<a href="/auth/forgot" class="text-sm text-gray-500 underline hover:underline hover:text-black">
 					Zapomněli jste heslo?
 				</a>
 			</div>

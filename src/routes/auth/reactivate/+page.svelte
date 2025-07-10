@@ -38,7 +38,7 @@
 						Kontaktovat podporu
 					</a>
 					<br>
-					<a href="/login" class="text-blue-600 hover:text-blue-800 underline">
+					<a href="/auth/login" class="text-blue-600 hover:text-blue-800 underline">
 						Zpět na přihlášení
 					</a>
 				</div>
@@ -68,7 +68,7 @@
 					<p class="text-sm text-gray-500 mb-4">
 						🔄 Budete automaticky přesměrováni na přihlašovací stránku za 3 sekundy...
 					</p>
-					<a href="/login" class="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
+					<a href="/auth/login" class="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
 						Přihlásit se nyní
 					</a>
 				</div>
@@ -87,7 +87,7 @@
 				</p>
 				
 				<div class="space-y-4">
-					<a href="/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
+					<a href="/auth/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
 						Přihlásit se
 					</a>
 					<br>

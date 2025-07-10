@@ -421,7 +421,7 @@
 			</h1>
 			<div class="text-center">
 				<p class="text-xl mb-4">Pro přístup ke košíku se musíte přihlásit.</p>
-				<a href="/login" class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
+									<a href="/auth/login" class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
 					Přihlásit se
 				</a>
 			</div>
