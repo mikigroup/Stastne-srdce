@@ -1,14 +1,15 @@
 <script lang="ts">
+	import { writable } from "svelte/store";
 	import { goto } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
+	import { enhance } from "$app/forms";
 	import type { Database } from "$lib/types/database.types";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation.js";
 	import { 
 		getRegistrationStatus, 
 		getRegistrationStatusMessage, 
-		getRegistrationStatusStyles,
-		checkAndUpdateRegistrationStatus 
+		getRegistrationStatusStyles
 	} from "$lib/services/registrationStatusService";
 	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 
@@ -40,14 +41,16 @@
 	export let data: ComponentProps["data"];
 	export let customer: ComponentProps["customer"] = null; // If null, we're creating a new customer
 
-	let { supabase, session } = data;
-	$: ({ supabase, session } = data);
+	let { session } = data;
+	$: ({ session } = data);
+	
+
 
 	// State variables s typizací
 	export let loading = false;
 	let updateMessage = "";
 
-	// Customer data fields - initialize with existing customer data or empty strings
+	// Customer data fields - inicializace s customer data (jako v profile komponentě)
 	let first_name: string = customer?.first_name ?? "";
 	let last_name: string = customer?.last_name ?? "";
 	let telephone: string = customer?.telephone ?? "";
@@ -65,27 +68,6 @@
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
-
-	// Reaktivní aktualizace lokálních proměnných při změně customer prop
-	$: if (customer) {
-		first_name = customer.first_name ?? "";
-		last_name = customer.last_name ?? "";
-		telephone = customer.telephone ?? "";
-		street = customer.street ?? "";
-		city = customer.city ?? "";
-		street_number = customer.street_number ?? "";
-		zip_code = customer.zip_code ?? "";
-		ico = customer.ico ?? "";
-		dic = customer.dic ?? "";
-		company = customer.company ?? "";
-		website = customer.website ?? "";
-		username = customer.username ?? "";
-		email = customer.email ?? "";
-		allergies = customer.allergies === true ? "yes" : "no";
-		allergies_description = customer.allergies_description || "";
-		delivery_method = customer.delivery_method || "";
-		payment_method = customer.payment_method || "";
-	}
 
 	// Get all delivery method options for admin (all 5 values)
 	const deliveryMethodOptions = getAllDeliveryMethods();
@@ -135,50 +117,40 @@
 			};
 
 			if (customer) {
-				// Update existing customer
-				const { error } = await supabase
-					.from("profiles")
-					.update(customerData)
-					.eq("id", customer.id)
-					.select();
+				// Update existing customer using server action
+				const formData = new FormData();
+				formData.append("customerId", customer.id);
+				formData.append("customerData", JSON.stringify(customerData));
 
-				if (error) throw error;
+				const response = await fetch("?/updateCustomer", {
+					method: "POST",
+					body: formData
+				});
 
-				// Po úspěšném uložení použít globální službu pro kontrolu a aktualizaci statusu registrace
-				const registrationCheck = await checkAndUpdateRegistrationStatus(
-					supabase, 
-					customer.id, 
-					email || undefined
-				);
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
 
-				// Vylepšené zprávy podle stavu registrace
-							if (registrationCheck.actualStatus === "completed") {
-				updateMessage = registrationCheck.wasUpdated 
-					? "✅ Zákazník úspěšně uložen a registrace dokončena!"
-					: "✅ Zákazník úspěšně uložen (registrace dokončena)!";
-			} else {
-				const missingFields = registrationCheck.validationResult.missingFields;
-				updateMessage = `⚠️ Zákazník uložen, ale chybí: ${missingFields.join(", ")}`;
-			}
+				const result = await response.json();
+				console.log("Výsledek server action:", result, "result.data:", result.data);
 
-				// Aktualizovat lokální customer objekt s novými daty pro reactive update UI
-				customer = { ...customer, ...customerData };
+				// Server action vrací { type: 'success', status: 200, data: '...' }
+				if (result.type === 'success' && result.status === 200) {
+					updateMessage = "✅ Zákazník úspěšně uložen!";
+					// Aktualizovat lokální customer objekt s novými daty
+					customer = { ...customer, ...customerData };
+				} else {
+					throw new Error("Chyba při ukládání");
+				}
 				
 			} else {
-				// Create new customer
+				// Create new customer - zatím ponecháme původní logiku
 				if (!session?.user?.id) {
 					throw new Error("Uživatel není přihlášen");
 				}
 
-				const { error } = await supabase
-					.from("profiles")
-					.insert({
-						...customerData,
-						id: session.user.id
-					});
-
-				if (error) throw error;
-				goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
+				// TODO: Implementovat server action pro vytvoření nového zákazníka
+				throw new Error("Vytvoření nového zákazníka zatím není implementováno");
 			}
 		} catch (error) {
 			const apiError = error as ApiError;
@@ -194,13 +166,8 @@
 
 		try {
 			loading = true;
-			const { error } = await supabase
-				.from("customers")
-				.delete()
-				.eq("id", customer.id);
-
-			if (error) throw error;
-			await goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
+			// TODO: Implementovat server action pro mazání zákazníka
+			alert("Mazání zákazníka zatím není implementováno");
 		} catch (error) {
 			const apiError = error as ApiError;
 			console.error("Error deleting customer:", apiError);
@@ -220,24 +187,8 @@
 		
 		try {
 			loading = true;
-			const registrationCheck = await checkAndUpdateRegistrationStatus(
-				supabase, 
-				customer.id, 
-				email || customer.email || undefined
-			);
-
-			if (registrationCheck.actualStatus === "completed") {
-				if (registrationCheck.wasUpdated) {
-					updateMessage = "✅ Status registrace byl aktualizován na dokončeno!";
-					// Aktualizovat customer objekt s novým statusem
-					customer = { ...customer, registration_status: "completed" };
-				} else {
-					updateMessage = "✅ Status registrace je již správně nastaven na dokončeno.";
-				}
-			} else {
-				const missingFields = registrationCheck.validationResult.missingFields;
-				updateMessage = `⚠️ Status zůstává pending - chybí: ${missingFields.join(", ")}`;
-			}
+			// TODO: Implementovat server action pro aktualizaci statusu registrace
+			alert("Aktualizace statusu registrace zatím není implementována");
 		} catch (error) {
 			console.error("Chyba při aktualizaci statusu:", error);
 			alert("Došlo k chybě při aktualizaci statusu registrace");
