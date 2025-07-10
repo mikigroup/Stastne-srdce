@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { writable } from "svelte/store";
-	import { goto } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
 	import { enhance } from "$app/forms";
@@ -69,6 +69,29 @@
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
 
+	// Sledujeme změnu zákazníka a aktualizujeme inputy pouze při změně ID
+	let previousCustomerId = customer?.id;
+	$: if (customer && customer.id !== previousCustomerId) {
+		previousCustomerId = customer.id;
+		first_name = customer.first_name ?? "";
+		last_name = customer.last_name ?? "";
+		telephone = customer.telephone ?? "";
+		street = customer.street ?? "";
+		city = customer.city ?? "";
+		street_number = customer.street_number ?? "";
+		zip_code = customer.zip_code ?? "";
+		ico = customer.ico ?? "";
+		dic = customer.dic ?? "";
+		company = customer.company ?? "";
+		website = customer.website ?? "";
+		username = customer.username ?? "";
+		email = customer.email ?? "";
+		allergies = customer.allergies === true ? "yes" : "no";
+		allergies_description = customer.allergies_description || "";
+		delivery_method = customer.delivery_method || "";
+		payment_method = customer.payment_method || "";
+	}
+
 	// Get all delivery method options for admin (all 5 values)
 	const deliveryMethodOptions = getAllDeliveryMethods();
 
@@ -122,6 +145,7 @@
 				formData.append("customerId", customer.id);
 				formData.append("customerData", JSON.stringify(customerData));
 
+				// Použijeme SvelteKit form handling
 				const response = await fetch("?/updateCustomer", {
 					method: "POST",
 					body: formData
@@ -132,15 +156,20 @@
 				}
 
 				const result = await response.json();
-				console.log("Výsledek server action:", result, "result.data:", result.data);
+				console.log("Výsledek server action:", result);
 
-				// Server action vrací { type: 'success', status: 200, data: '...' }
-				if (result.type === 'success' && result.status === 200) {
+				// Zkusíme různé formáty odpovědi
+				if (result.success === true || (result.type === 'success' && result.status === 200)) {
 					updateMessage = "✅ Zákazník úspěšně uložen!";
 					// Aktualizovat lokální customer objekt s novými daty
 					customer = { ...customer, ...customerData };
+					
+					// Vyčistit zprávu po 3 sekundách
+					setTimeout(() => {
+						updateMessage = "";
+					}, 3000);
 				} else {
-					throw new Error("Chyba při ukládání");
+					throw new Error(result.error || "Chyba při ukládání");
 				}
 				
 			} else {
@@ -155,7 +184,12 @@
 		} catch (error) {
 			const apiError = error as ApiError;
 			console.error("Chyba při ukládání:", apiError);
-			alert(apiError.message || "Došlo k chybě při ukládání zákazníka");
+			updateMessage = `❌ ${apiError.message || "Došlo k chybě při ukládání zákazníka"}`;
+			
+			// Vyčistit chybovou zprávu po 5 sekundách
+			setTimeout(() => {
+				updateMessage = "";
+			}, 5000);
 		} finally {
 			loading = false;
 		}

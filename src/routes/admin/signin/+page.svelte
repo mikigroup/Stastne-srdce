@@ -90,7 +90,7 @@
 
 			<!-- Forgot password link -->
 			<div class="flex justify-end">
-				<a href="/admin/forgot" class="text-sm text-gray-500 hover:text-gray-700 underline">
+				<a href="/auth/forgot" class="text-sm text-gray-500 hover:text-gray-700 underline">
 					Zapomněli jste heslo?
 				</a>
 			</div>
