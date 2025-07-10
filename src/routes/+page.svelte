@@ -11,18 +11,17 @@
 </script>
 
 <svelte:head>
-	<title>Úvod - {generalSettings.shopName}</title>
+	<title>Úvod - {generalSettings?.shopName}</title>
 	<meta
 		name="description"
 		content="Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost." />
 </svelte:head>
 
 
-<section>
-	<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26">
-		<div class="">
-			<div
-				class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10">
+	<div class="">
+		<div
+			class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 				<div
 					class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl border border-gray-300">
 					<!-- <div class="grid justify-center pb-5">
@@ -92,8 +91,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
-</section>
+	</section>
 
 <div class="pt-10 mx-10 mt-10">
 	<hr />

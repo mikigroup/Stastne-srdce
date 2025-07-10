@@ -34,18 +34,17 @@
 	<title>Obědy - {data.generalSettings?.shopName || 'Šťastné srdce'}</title>
 </svelte:head>
 
-
-
-	<section class="page-container">
-		<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
-			Obědy
-		</h1>
-		
-		<div class="max-w-4xl p-5 md:p-10 mx-auto bg-white border border-gray-400 rounded-lg">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
+		Obědy
+	</h1>
+	
+	<div class="max-w-4xl mx-auto">
+		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
 			{@html data.texts?.text || "Žádný text pro jídelníček není k dispozici."}
 		</div>
 
-		<div class="max-w-4xl mx-auto mt-5 bg-white border rounded-lg border-gray-400">
+		<div class="mt-5 bg-white border rounded-lg border-gray-400">
 			<!-- Filtr pro vegetariánská jídla -->
 			<div class="p-4 border-b border-gray-200 bg-gray-50 m-2">
 				<div class="flex items-center justify-between">

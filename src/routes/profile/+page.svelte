@@ -149,20 +149,22 @@
   <meta name="description" content="Účet" />
 </svelte:head>
 
-<section class="page-container">
-  <h1 class="page-title">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+  <h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
     Profil účtu
   </h1>
 
   {#if profileValidationMessage}
-    <div class="page-content mb-6">
-      <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p class="text-yellow-800">
-          <span class="font-medium">Upozornění:</span> 
-          {#each profileValidationMessage.split('\n') as line}
-            <span>{line}</span><br>
-          {/each}
-        </p>
+    <div class="max-w-4xl mx-auto mb-6">
+      <div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
+        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p class="text-yellow-800">
+            <span class="font-medium">Upozornění:</span> 
+            {#each profileValidationMessage.split('\n') as line}
+              <span>{line}</span><br>
+            {/each}
+          </p>
+        </div>
       </div>
     </div>
   {/if}
@@ -174,352 +176,354 @@
     use:enhance={handleSubmit}
     bind:this={profileForm}
   >
-    <div class="page-content">
-      <div class="space-y-6 text-gray-600">
-        <!-- Email section -->
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <div class="flex flex-col items-center md:flex-row gap-4">
-            <div class="flex justify-start basis-1/3">
-                              <label for="email">Email / uživatel</label>
-            </div>
-            <div class="w-full basis-2/3">
-              <input
-                value={session.user.email}
-                disabled
-                type="email"
-                id="email"
-                class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                placeholder="Email"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Personal info section -->
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <h2>Osobní údaje</h2>
-          <div class="space-y-4">
-            <div class="flex flex-col items-center md:flex-row gap-4">
-              <div class="flex justify-start basis-1/3">
-                <label for="first_name">Jméno</label>
-              </div>
-              <div class="w-full basis-2/3">
-                <input
-                  bind:value={first_name}
-                  type="text"
-                  name="first_name"
-                  id="first_name"
-                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  placeholder="Jméno"
-                />
-                {#if fieldErrors.first_name}
-                  <p class="mt-1 text-sm text-red-600">{fieldErrors.first_name}</p>
-                {/if}
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center md:flex-row gap-4">
-              <div class="flex justify-start basis-1/3">
-                <label for="last_name">Příjmení</label>
-              </div>
-              <div class="w-full basis-2/3">
-                <input
-                  bind:value={last_name}
-                  type="text"
-                  name="last_name"
-                  id="last_name"
-                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  placeholder="Příjmení"
-                />
-                {#if fieldErrors.last_name}
-                  <p class="mt-1 text-sm text-red-600">{fieldErrors.last_name}</p>
-                {/if}
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center md:flex-row gap-4">
-              <div class="flex justify-start basis-1/3">
-                <label for="telephone">Telefon</label>
-              </div>
-              <div class="w-full basis-2/3">
-                <input
-                  bind:value={telephone}
-                  type="text"
-                  name="telephone"
-                  id="telephone"
-                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  placeholder="Telefon"
-                />
-                {#if fieldErrors.telephone}
-                  <p class="mt-1 text-sm text-red-600">{fieldErrors.telephone}</p>
-                {/if}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delivery and Payment section -->
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <h2>Způsob dodání a platby</h2>
-          <div class="space-y-4">
-            <div class="flex flex-col items-center md:flex-row gap-4">
-              <div class="flex justify-start basis-1/3">
-                <label for="delivery_method">Dodání</label>
-              </div>
-              <div class="w-full basis-2/3">
-                <select
-                  bind:value={deliveryMethod}
-                  name="delivery_method"
-                  id="delivery_method"
-                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                >
-                  {#each deliveryMethodOptions as option}
-                    <option value={option.value}>{option.label}</option>
-                  {/each}
-                </select>
-                {#if fieldErrors.delivery_method}
-                  <p class="mt-1 text-sm text-red-600">{fieldErrors.delivery_method}</p>
-                {/if}
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center md:flex-row gap-4">
-              <div class="flex justify-start basis-1/3">
-                <label for="payment_method">Platba</label>
-              </div>
-              <div class="w-full basis-2/3">
-                <select
-                  bind:value={paymentMethod}
-                  name="payment_method"
-                  id="payment_method"
-                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                >
-                  <option value="">Vyberte způsob platby</option>
-                  <option value="bankNoInvoice">Bankovní převod bez faktury</option>
-                  <option value="bankWithInvoice">Bankovní převod s fakturou</option>
-                  <option value="cash">Hotově</option>
-                </select>
-                {#if fieldErrors.payment_method}
-                  <p class="mt-1 text-sm text-red-600">{fieldErrors.payment_method}</p>
-                {/if}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Alergie -->
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <div class="flex flex-col items-center md:flex-row gap-4">
-            <div class="flex justify-start basis-1/3">
-                              <label>Alergie <span class="text-red-500">*</span></label>
-            </div>
-            <div class="w-full basis-2/3 flex gap-4 justify-center">
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  name="allergies"
-                  value="no"
-                  bind:group={allergies}
-                  class="mr-2"
-                  required
-                />
-                Ne
-              </label>
-              <label class="flex items-center">
-                <input
-                  type="radio"
-                  name="allergies"
-                  value="yes"
-                  bind:group={allergies}
-                  class="mr-2"
-                  required
-                />
-                Ano
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {#if allergies === "yes"}
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <div class="flex flex-col items-center md:flex-row gap-4">
-            <div class="flex justify-start basis-1/3">
-              <label for="allergiesDescription">Popis alergií</label>
-            </div>
-            <div class="w-full basis-2/3">
-              <textarea
-                id="allergiesDescription"
-                name="allergies_description"
-                bind:value={allergiesDescription}
-                maxlength="300"
-                class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                placeholder="Popište vaše alergie (max 300 znaků)"
-                rows="3"
-              ></textarea>
-              <span class="text-sm text-gray-500 text-center block">
-                Zbývá {300 - (allergiesDescription?.length || 0)} znaků
-              </span>
-            </div>
-          </div>
-        </div>
-      {/if}
-
-        {#if visible}
-          <!-- Address section -->
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
+        <div class="space-y-6 text-gray-600">
+          <!-- Email section -->
           <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <h2>Adresa</h2>
+            <div class="flex flex-col items-center md:flex-row gap-4">
+              <div class="flex justify-start basis-1/3">
+                <label for="email">Email / uživatel</label>
+              </div>
+              <div class="w-full basis-2/3">
+                <input
+                  value={session.user.email}
+                  disabled
+                  type="email"
+                  id="email"
+                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 border border-gray-300 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  placeholder="Email"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal info section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h2>Osobní údaje</h2>
             <div class="space-y-4">
               <div class="flex flex-col items-center md:flex-row gap-4">
                 <div class="flex justify-start basis-1/3">
-                  <label for="street">Ulice</label>
+                  <label for="first_name">Jméno</label>
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    bind:value={street}
-                    name="street"
+                    bind:value={first_name}
                     type="text"
-                    id="street"
+                    name="first_name"
+                    id="first_name"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="Ulice"
+                    required
+                    placeholder="Jméno"
                   />
-                  {#if fieldErrors.street}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.street}</p>
+                  {#if fieldErrors.first_name}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.first_name}</p>
                   {/if}
                 </div>
               </div>
+
               <div class="flex flex-col items-center md:flex-row gap-4">
                 <div class="flex justify-start basis-1/3">
-                  <label for="street_number">Číslo popisné</label>
+                  <label for="last_name">Příjmení</label>
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    bind:value={street_number}
+                    bind:value={last_name}
                     type="text"
-                    name="street_number"
-                    id="street_number"
+                    name="last_name"
+                    id="last_name"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="Číslo popisné"
+                    placeholder="Příjmení"
                   />
-                  {#if fieldErrors.street_number}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.street_number}</p>
+                  {#if fieldErrors.last_name}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.last_name}</p>
                   {/if}
                 </div>
               </div>
+
               <div class="flex flex-col items-center md:flex-row gap-4">
                 <div class="flex justify-start basis-1/3">
-                  <label for="city">Město</label>
+                  <label for="telephone">Telefon</label>
                 </div>
                 <div class="w-full basis-2/3">
                   <input
-                    bind:value={city}
+                    bind:value={telephone}
                     type="text"
-                    name="city"
-                    id="city"
+                    name="telephone"
+                    id="telephone"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="Město"
+                    placeholder="Telefon"
                   />
-                  {#if fieldErrors.city}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.city}</p>
-                  {/if}
-                </div>
-              </div>
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label for="zip_code">PSČ</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <input
-                    bind:value={zip_code}
-                    type="text"
-                    name="zip_code"
-                    id="zip_code"
-                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="PSČ"
-                  />
-                  {#if fieldErrors.zip_code}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.zip_code}</p>
-                  {/if}
-                </div>
-              </div>
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label for="company">Firma</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <input
-                    bind:value={company}
-                    type="text"
-                    name="company"
-                    id="company"
-                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="Firma"
-                  />
-                  {#if fieldErrors.company}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.company}</p>
-                  {/if}
-                </div>
-              </div>
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label for="ico">IČO</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <input
-                    bind:value={ico}
-                    type="text"
-                    name="ico"
-                    id="ico"
-                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="IČO"
-                  />
-                  {#if fieldErrors.ico}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.ico}</p>
-                  {/if}
-                </div>
-              </div>
-              <div class="flex flex-col items-center md:flex-row gap-4">
-                <div class="flex justify-start basis-1/3">
-                  <label for="dic">DIČ</label>
-                </div>
-                <div class="w-full basis-2/3">
-                  <input
-                    bind:value={dic}
-                    type="text"
-                    name="dic"
-                    id="dic"
-                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    placeholder="DIČ"
-                  />
-                  {#if fieldErrors.dic}
-                    <p class="mt-1 text-sm text-red-600">{fieldErrors.dic}</p>
+                  {#if fieldErrors.telephone}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.telephone}</p>
                   {/if}
                 </div>
               </div>
             </div>
-          </div>          
+          </div>
 
-      
-        {/if}
+          <!-- Delivery and Payment section -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h2>Způsob dodání a platby</h2>
+            <div class="space-y-4">
+              <div class="flex flex-col items-center md:flex-row gap-4">
+                <div class="flex justify-start basis-1/3">
+                  <label for="delivery_method">Dodání</label>
+                </div>
+                <div class="w-full basis-2/3">
+                  <select
+                    bind:value={deliveryMethod}
+                    name="delivery_method"
+                    id="delivery_method"
+                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  >
+                    {#each deliveryMethodOptions as option}
+                      <option value={option.value}>{option.label}</option>
+                    {/each}
+                  </select>
+                  {#if fieldErrors.delivery_method}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.delivery_method}</p>
+                  {/if}
+                </div>
+              </div>
 
-        <!-- Submit button -->
-        <div class="mt-8">
-          <button
-            type="submit"
-            class="w-full px-6 py-3 text-base font-semibold text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
-          >
-            {loading ? "Ukládá se..." : "Uložit změny"}
-          </button>
-        </div>
+              <div class="flex flex-col items-center md:flex-row gap-4">
+                <div class="flex justify-start basis-1/3">
+                  <label for="payment_method">Platba</label>
+                </div>
+                <div class="w-full basis-2/3">
+                  <select
+                    bind:value={paymentMethod}
+                    name="payment_method"
+                    id="payment_method"
+                    class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  >
+                    <option value="">Vyberte způsob platby</option>
+                    <option value="bankNoInvoice">Bankovní převod bez faktury</option>
+                    <option value="bankWithInvoice">Bankovní převod s fakturou</option>
+                    <option value="cash">Hotově</option>
+                  </select>
+                  {#if fieldErrors.payment_method}
+                    <p class="mt-1 text-sm text-red-600">{fieldErrors.payment_method}</p>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {#if form?.message}
-          <div class="mt-6 p-4 rounded-lg" class:bg-red-50={!form.message.success} class:bg-green-50={form.message.success}>
-            <p class="text-center font-medium" class:text-red-700={!form.message.success} class:text-green-700={form.message.success}>
-              {form.message.display}
-            </p>
+          <!-- Alergie -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div class="flex flex-col items-center md:flex-row gap-4">
+              <div class="flex justify-start basis-1/3">
+                <label>Alergie <span class="text-red-500">*</span></label>
+              </div>
+              <div class="w-full basis-2/3 flex gap-4 justify-center">
+                <label class="flex items-center">
+                  <input
+                    type="radio"
+                    name="allergies"
+                    value="no"
+                    bind:group={allergies}
+                    class="mr-2"
+                    required
+                  />
+                  Ne
+                </label>
+                <label class="flex items-center">
+                  <input
+                    type="radio"
+                    name="allergies"
+                    value="yes"
+                    bind:group={allergies}
+                    class="mr-2"
+                    required
+                  />
+                  Ano
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {#if allergies === "yes"}
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div class="flex flex-col items-center md:flex-row gap-4">
+              <div class="flex justify-start basis-1/3">
+                <label for="allergiesDescription">Popis alergií</label>
+              </div>
+              <div class="w-full basis-2/3">
+                <textarea
+                  id="allergiesDescription"
+                  name="allergies_description"
+                  bind:value={allergiesDescription}
+                  maxlength="300"
+                  class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  placeholder="Popište vaše alergie (max 300 znaků)"
+                  rows="3"
+                ></textarea>
+                <span class="text-sm text-gray-500 text-center block">
+                  Zbývá {300 - (allergiesDescription?.length || 0)} znaků
+                </span>
+              </div>
+            </div>
           </div>
         {/if}
+
+          {#if visible}
+            <!-- Address section -->
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+              <h2>Adresa</h2>
+              <div class="space-y-4">
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="street">Ulice</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={street}
+                      name="street"
+                      type="text"
+                      id="street"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="Ulice"
+                    />
+                    {#if fieldErrors.street}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.street}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="street_number">Číslo popisné</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={street_number}
+                      type="text"
+                      name="street_number"
+                      id="street_number"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="Číslo popisné"
+                    />
+                    {#if fieldErrors.street_number}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.street_number}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="city">Město</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={city}
+                      type="text"
+                      name="city"
+                      id="city"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="Město"
+                    />
+                    {#if fieldErrors.city}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.city}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="zip_code">PSČ</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={zip_code}
+                      type="text"
+                      name="zip_code"
+                      id="zip_code"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="PSČ"
+                    />
+                    {#if fieldErrors.zip_code}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.zip_code}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="company">Firma</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={company}
+                      type="text"
+                      name="company"
+                      id="company"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="Firma"
+                    />
+                    {#if fieldErrors.company}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.company}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="ico">IČO</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={ico}
+                      type="text"
+                      name="ico"
+                      id="ico"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="IČO"
+                    />
+                    {#if fieldErrors.ico}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.ico}</p>
+                    {/if}
+                  </div>
+                </div>
+                <div class="flex flex-col items-center md:flex-row gap-4">
+                  <div class="flex justify-start basis-1/3">
+                    <label for="dic">DIČ</label>
+                  </div>
+                  <div class="w-full basis-2/3">
+                    <input
+                      bind:value={dic}
+                      type="text"
+                      name="dic"
+                      id="dic"
+                      class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      placeholder="DIČ"
+                    />
+                    {#if fieldErrors.dic}
+                      <p class="mt-1 text-sm text-red-600">{fieldErrors.dic}</p>
+                    {/if}
+                  </div>
+                </div>
+              </div>
+            </div>          
+
+          
+          {/if}
+
+          <!-- Submit button -->
+          <div class="mt-8">
+            <button
+              type="submit"
+              class="w-full px-6 py-3 text-base font-semibold text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? "Ukládá se..." : "Uložit změny"}
+            </button>
+          </div>
+
+          {#if form?.message}
+            <div class="mt-6 p-4 rounded-lg" class:bg-red-50={!form.message.success} class:bg-green-50={form.message.success}>
+              <p class="text-center font-medium" class:text-red-700={!form.message.success} class:text-green-700={form.message.success}>
+                {form.message.display}
+              </p>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
   </form>

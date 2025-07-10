@@ -127,13 +127,13 @@
 	<meta name="description" content="Přehled všech alergenů" />
 </svelte:head>
 
-<main>
-	<section class="page-container">
-		<h1 class="page-title">
-			Alergeny
-		</h1>
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
+		Alergeny
+	</h1>
 
-		<div class="page-content">
+	<div class="max-w-4xl mx-auto">
+		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
 			<p class="mb-6 text-gray-700">
 				V našich jídlech mohou být obsaženy následující alergeny. Podle evropské legislativy jsme povinni označit přítomnost těchto alergenů v našich pokrmech.
 				Pokud máte jakékoliv dotazy ohledně alergenů v našich jídlech, neváhejte nás kontaktovat.
@@ -186,13 +186,13 @@
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<div class="page-footer">
-			<a
-				href="/obedy"
-				class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
-				Zpět na jídelníček
-			</a>
-		</div>
-	</section>
-</main>
+	<div class="page-footer">
+		<a
+			href="/obedy"
+			class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
+			Zpět na jídelníček
+		</a>
+	</div>
+</section>
