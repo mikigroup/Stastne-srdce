@@ -1,12 +1,12 @@
-<script lang="ts">
-	import { Heading2 } from "lucide-svelte";
-
+<script lang="ts">	
 	export let data;
 
 	const { generalSettings } = data;
 </script>
+
 <svelte:head>
 	<title>GDPR - {generalSettings?.shopName}</title>
+	<meta name="description" content="GDPR - Zásady ochrany osobních údajů" />
 </svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
@@ -217,5 +217,4 @@
 				</div>
 			</div>
 		</div>
-	</div>
 </section>
