@@ -448,7 +448,7 @@
 					: !orderSettings?.fakturoid?.connected
 						? 'Fakturoid není připojen'
 						: !orderSettings?.fakturoid?.tokenValid
-							? 'Fakturoid token vypršel'
+							? 'Token vypršel - obnovte'
 							: !orderSettings?.fakturoid?.subdomain
 								? 'Není vybrán slug/účet'
 								: 'Vytvořit fakturu',
@@ -458,7 +458,7 @@
 				}
 			} : createInvoice,
 			variant: 'secondary' as const,
-			disabled: loading || invoiceExistsForCurrentSlug || (!fakturoidReady && !invoiceExistsForCurrentSlug)
+			disabled: loading || invoiceExistsForCurrentSlug || (!fakturoidReady && !invoiceExistsForCurrentSlug) || (!orderSettings?.fakturoid?.tokenValid && !invoiceExistsForCurrentSlug)
 		},
 		{
 			label: loading ? 'Maže se...' : 'Smazat',

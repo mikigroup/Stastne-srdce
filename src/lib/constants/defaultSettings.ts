@@ -104,7 +104,18 @@ export const UNIFIED_DEFAULT_SETTINGS = {
 
   email: {
     orderConfirmationTemplate: 'Děkujeme za Vaši objednávku č. {{orderNumber}}.',
-    contactFormTemplate: 'Děkujeme za Váš dotaz, budeme Vás kontaktovat co nejdříve.'
+    contactFormTemplate: 'Děkujeme za Váš dotaz, budeme Vás kontaktovat co nejdříve.',
+    // Nové šablony pro lepší komunikaci
+    welcomeEmailTemplate: 'Vítejte v Šťastném srdci! Děkujeme za registraci.',
+    birthdayEmailTemplate: 'Všechno nejlepší k narozeninám! Máte slevu {{discount}}%.',
+    loyaltyUpgradeTemplate: 'Gratulujeme! Byli jste povýšeni na {{tierName}}.',
+    orderReminderTemplate: 'Nezapomeňte si objednat oběd na zítra!',
+    deliveryNotificationTemplate: 'Vaše objednávka byla odeslána k doručení.',
+    paymentReminderTemplate: 'Připomínáme platbu za objednávku č. {{orderNumber}}.',
+    menuUpdateTemplate: 'Nové menu je k dispozici! Podívejte se na naše nabídky.',
+    specialOfferTemplate: 'Speciální nabídka jen pro vás: {{offer}}',
+    feedbackRequestTemplate: 'Jak se vám líbilo vaše jídlo? Dejte nám vědět!',
+    reactivationTemplate: 'Váš účet byl úspěšně obnoven. Vítejte zpět!'
   },
 
   integrations: {

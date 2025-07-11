@@ -21,6 +21,7 @@
 	import ProductsSettings from "./ProductsSettings.svelte";
 	import CustomerSettings from "./CustomerSettings.svelte";
 	import LoyaltySettings from "./LoyaltySettings.svelte";
+	import NotificationSettings from "./NotificationSettings.svelte";
 
 	export let data: PageData;
 
@@ -326,6 +327,7 @@
 		{ id: "appearance", label: "Vzhled", icon: "fa-solid fa-palette" },
 		{ id: "business", label: "Firemní údaje", icon: "fa-solid fa-building" },
 		{ id: "email", label: "Šablony e-mailů", icon: "fa-solid fa-envelope" },
+		{ id: "notifications", label: "Automatické notifikace", icon: "fa-solid fa-bell" },
 		{ id: "integrations", label: "Integrace", icon: "fa-solid fa-plug" },
 		{ id: "orders", label: "Objednávky", icon: "fa-solid fa-clipboard-list" },
 		{ id: "delivery", label: "Doprava", icon: "fa-solid fa-truck" },
@@ -644,6 +646,11 @@
 						<!-- Loyalty Settings -->
 						{#if activeTab === 'loyalty' && $editableSettings.customer?.loyalty}
 							<LoyaltySettings {editableSettings} />
+						{/if}
+
+						<!-- Notification Settings -->
+						{#if activeTab === 'notifications'}
+							<NotificationSettings {editableSettings} />
 						{/if}						
 					{/if}
 				</div>

@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 
 		console.log('🔍 All available tokens:', allTokens);
 
-		// ZMĚNA: Najdeme token podle specifikace nebo fallback na globální přístup
+		// ZMĚNA: Najdeme token podle specifikace nebo globální přístup
 		let tokenQuery = supabase
 			.from('fakturoid_tokens')
 			.select('*')
@@ -43,45 +43,27 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, safeGe
 			console.log('🎯 Searching for specific account:', targetAccountEmail);
 			tokenQuery = tokenQuery.eq('account_email', targetAccountEmail);
 		} else {
-			// NOVÉ: Priorita pro stastnesrdce účet místo last_used_at
-			console.log('🏆 PRIORITY SEARCH: Looking for stastnesrdcekk@seznam.cz first');
-			tokenQuery = tokenQuery.eq('account_email', 'stastnesrdcekk@seznam.cz');
+			// GLOBÁLNÍ PŘÍSTUP: Hledáme jakýkoliv aktivní token
+			console.log('🌐 GLOBAL SEARCH: Looking for any active token');
+			tokenQuery = tokenQuery.order('last_used_at', { ascending: false });
 		}
 
 		let { data: tokenData, error: tokenError } = await tokenQuery.limit(1);
-		console.log('🔍 Priority query result:', { tokenData, tokenError });
+		console.log('🔍 Query result:', { tokenData, tokenError });
 
-		// Pokud nenajdeme preferovaný účet, zkusíme fallback na jakýkoliv
 		if (tokenError || !tokenData || tokenData.length === 0) {
-			console.log('⚠️ Priority account not found, trying fallback to any active token...');
+			const errorMsg = targetAccountEmail 
+				? `Token pro účet ${targetAccountEmail} nebyl nalezen`
+				: 'Žádný Fakturoid token nebyl nalezen v systému';
 			
-			const { data: fallbackData, error: fallbackError } = await supabase
-				.from('fakturoid_tokens')
-				.select('*')
-				.in('status', ['active', 'expired'])
-				.order('last_used_at', { ascending: false })
-				.limit(1);
-
-			console.log('🔄 Fallback query result:', { fallbackData, fallbackError });
-
-			if (fallbackError || !fallbackData || fallbackData.length === 0) {
-				const errorMsg = targetAccountEmail 
-					? `Token pro účet ${targetAccountEmail} nebyl nalezen`
-					: 'Žádný Fakturoid token nebyl nalezen v systému';
-				
-				return json({ 
-					error: `${errorMsg}. Připojte účet znovu.`,
-					success: false,
-					requiresReauth: true
-				}, { status: 404 });
-			}
-
-			// Použijeme fallback token
-			tokenData = fallbackData;
-			console.log('🔄 Using fallback token for:', fallbackData[0].account_email);
-		} else {
-			console.log('✅ Using priority token for:', tokenData[0].account_email);
+			return json({ 
+				error: `${errorMsg}. Připojte účet znovu.`,
+				success: false,
+				requiresReauth: true
+			}, { status: 404 });
 		}
+
+		console.log('✅ Using token for:', tokenData[0].account_email);
 
 		const token = tokenData[0];
 		console.log('🔧 FINAL TOKEN SELECTED:', {

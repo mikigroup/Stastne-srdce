@@ -181,14 +181,22 @@ export const load: PageServerLoad = async ({
 			
 			console.log('Current subdomain for order:', currentSubdomain);
 
+			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV aktivní token v systému
 			const { data: tokenData, error: tokenError } = await supabase
 				.from('fakturoid_tokens')
-				.select('access_token, expires_at, status')
-				.eq('user_id', session.user.id)
+				.select('access_token, expires_at, status, account_email')
 				.eq('status', 'active')
+				.order('last_used_at', { ascending: false })
+				.limit(1)
 				.single();
 
-			if (!tokenError && tokenData && currentSubdomain) {
+			if (tokenError || !tokenData) {
+				console.log('No active tokens found in system');
+			} else {
+				console.log('Using token for:', tokenData.account_email);
+			}
+
+			if (tokenData && currentSubdomain) {
 				// Kontrola zda token nevypršel
 				const now = new Date();
 				const expiresAt = new Date(tokenData.expires_at);
@@ -204,7 +212,8 @@ export const load: PageServerLoad = async ({
 					tokenNotExpired: tokenNotExpired,
 					currentSubdomain: currentSubdomain,
 					isValid: fakturoidTokenValid,
-					now: now.toISOString()
+					now: now.toISOString(),
+					tokenOwner: tokenData.account_email
 				});
 			} else {
 				console.log('Fakturoid token issues:', {
