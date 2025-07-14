@@ -82,6 +82,7 @@
 
 <div class="p-4">
 	<h2 class="text-2xl font-bold mb-4">Dashboard</h2>
+	<p class="text-sm text-gray-500">Posledních 24 hodin</p>
 
 	<!-- Statistiky -->
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -101,7 +102,7 @@
 
 		<div class="card bg-base-100 shadow-xl">
 			<div class="card-body">
-				<h2 class="card-title">Noví zákazníci</h2>
+				<h2 class="card-title">Zákazníci</h2>
 				<p class="text-4xl font-bold">{allCustomers.length}</p>
 			</div>
 		</div>
