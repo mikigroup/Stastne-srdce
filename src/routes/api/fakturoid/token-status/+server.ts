@@ -18,6 +18,7 @@ export const GET: RequestHandler = async ({ locals: { supabase, safeGetSession }
 			.from('fakturoid_tokens')
 			.select('*')
 			.in('status', ['active', 'expired', 'refreshing'])
+			.neq('status', 'revoked') // Nezabýváme se revoked tokeny
 			.order('last_used_at', { ascending: false })
 			.limit(1);
 

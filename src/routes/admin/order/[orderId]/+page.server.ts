@@ -181,11 +181,12 @@ export const load: PageServerLoad = async ({
 			
 			console.log('Current subdomain for order:', currentSubdomain);
 
-			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV aktivní token v systému
+			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV token v systému (active i expired pro refresh)
 			const { data: tokenData, error: tokenError } = await supabase
 				.from('fakturoid_tokens')
 				.select('access_token, expires_at, status, account_email')
-				.eq('status', 'active')
+				.in('status', ['active', 'expired'])  // ← Opraveno: hledá i expired tokeny
+				.neq('status', 'revoked') // Nezabýváme se revoked tokeny
 				.order('last_used_at', { ascending: false })
 				.limit(1)
 				.single();
@@ -202,9 +203,21 @@ export const load: PageServerLoad = async ({
 				const expiresAt = new Date(tokenData.expires_at);
 				const tokenNotExpired = expiresAt > now;
 				
-				// Pro jeden OAuth token funguje na všechny slugy pod jedním účtem
-				// Takže pokud máme platný token a subdomain, mělo by to fungovat
-				fakturoidTokenValid = tokenNotExpired;
+				// Pokud je token expired, pokusíme se o automatický refresh
+				if (tokenData.status === 'expired' || !tokenNotExpired) {
+					console.log('Token expired, attempting automatic refresh...');
+					try {
+						const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+						const refreshedToken = await getAccessTokenWithSupabase(supabase);
+						fakturoidTokenValid = !!refreshedToken;
+					} catch (refreshError) {
+						console.error('Automatic token refresh failed:', refreshError);
+						fakturoidTokenValid = false;
+					}
+				} else {
+					// Token je platný
+					fakturoidTokenValid = tokenNotExpired;
+				}
 				
 				console.log('Fakturoid token check:', {
 					hasToken: !!tokenData.access_token,

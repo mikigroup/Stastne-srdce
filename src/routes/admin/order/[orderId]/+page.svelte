@@ -367,6 +367,222 @@
 	}
 
 	async function createInvoice() {
+		// Nejdříve zkusíme refresh tokenu pokud není platný
+		if (!orderSettings?.fakturoid?.tokenValid) {
+			try {
+				console.log('Token není platný, zkouším automatický refresh...');
+				const response = await fetch('/api/fakturoid/force-refresh', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+				const result = await response.json();
+				
+				if (response.ok && result.success) {
+					console.log('Token úspěšně refreshnut:', result);
+					// Aktualizujeme lokální stav
+					orderSettings.fakturoid.tokenValid = true;
+				} else {
+					console.error('Nepodařilo se refreshovat token:', result);
+					
+					// Zobrazíme specifickou chybovou zprávu podle typu chyby
+					if (result.requiresReauth) {
+						// Nejdříve zkusíme obnovit revoked token
+						try {
+							console.log('🔄 Attempting to restore revoked token...');
+							const restoreResponse = await fetch('/api/fakturoid/test-refresh', {
+								method: 'GET',
+								headers: {
+									'Content-Type': 'application/json'
+								}
+							});
+							
+							const restoreResult = await restoreResponse.json();
+							
+							if (restoreResponse.ok && restoreResult.success) {
+								console.log('✅ Revoked token successfully restored:', restoreResult);
+								// Aktualizujeme lokální stav
+								orderSettings.fakturoid.tokenValid = true;
+								// Pokračujeme v původní operaci
+								await goto(`/admin/order/${orderId}/create-invoice`);
+								return;
+							} else {
+								console.log('❌ Failed to restore revoked token:', restoreResult);
+							}
+						} catch (restoreError) {
+							console.error('Error restoring revoked token:', restoreError);
+						}
+						
+						const reconnect = confirm('Fakturoid token vypršel a nelze ho obnovit. Chcete se znovu připojit k Fakturoidu?');
+						if (reconnect) {
+							// Nejdříve smažeme revoked tokeny
+							try {
+								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json'
+									}
+								});
+								
+								if (clearResponse.ok) {
+									console.log('Revoked tokeny smazány');
+								}
+							} catch (clearError) {
+								console.error('Chyba při mazání revoked tokenů:', clearError);
+							}
+							
+							window.location.href = '/admin/site-setting?tab=integrations';
+						}
+						return;
+					} else if (result.error && (result.error.includes('invalid_grant') || result.error.includes('400'))) {
+						// Neplatný refresh token - zkusíme obnovit revoked token
+						try {
+							console.log('🔄 Attempting to restore revoked token for invalid_grant...');
+							const restoreResponse = await fetch('/api/fakturoid/test-refresh', {
+								method: 'GET',
+								headers: {
+									'Content-Type': 'application/json'
+								}
+							});
+							
+							const restoreResult = await restoreResponse.json();
+							
+							if (restoreResponse.ok && restoreResult.success) {
+								console.log('✅ Revoked token successfully restored:', restoreResult);
+								// Aktualizujeme lokální stav
+								orderSettings.fakturoid.tokenValid = true;
+								// Pokračujeme v původní operaci
+								await goto(`/admin/order/${orderId}/create-invoice`);
+								return;
+							} else {
+								console.log('❌ Failed to restore revoked token:', restoreResult);
+							}
+						} catch (restoreError) {
+							console.error('Error restoring revoked token:', restoreError);
+						}
+						
+						const reconnect = confirm('Fakturoid token je neplatný a nelze ho obnovit. Chcete se znovu připojit k Fakturoidu?');
+						if (reconnect) {
+							// Nejdříve smažeme revoked tokeny
+							try {
+								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json'
+									}
+								});
+								
+								if (clearResponse.ok) {
+									console.log('Revoked tokeny smazány');
+								}
+							} catch (clearError) {
+								console.error('Chyba při mazání revoked tokenů:', clearError);
+							}
+							
+							window.location.href = '/admin/site-setting?tab=integrations';
+						}
+						return;
+					} else if (result.error) {
+						const reconnect = confirm(`Chyba při obnově tokenu: ${result.error}\n\nChcete se znovu připojit k Fakturoidu?`);
+						if (reconnect) {
+							// Nejdříve smažeme revoked tokeny
+							try {
+								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json'
+									}
+								});
+								
+								if (clearResponse.ok) {
+									console.log('Revoked tokeny smazány');
+								}
+							} catch (clearError) {
+								console.error('Chyba při mazání revoked tokenů:', clearError);
+							}
+							
+							window.location.href = '/admin/site-setting?tab=integrations';
+						}
+						return;
+					} else {
+						const reconnect = confirm('Nepodařilo se obnovit Fakturoid token. Chcete se znovu připojit k Fakturoidu?');
+						if (reconnect) {
+							// Nejdříve smažeme revoked tokeny
+							try {
+								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json'
+									}
+								});
+								
+								if (clearResponse.ok) {
+									console.log('Revoked tokeny smazány');
+								}
+							} catch (clearError) {
+								console.error('Chyba při mazání revoked tokenů:', clearError);
+							}
+							
+							window.location.href = '/admin/site-setting?tab=integrations';
+						}
+						return;
+					}
+				}
+			} catch (error) {
+				console.error('Chyba při refreshu tokenu:', error);
+				
+				// Zkusíme obnovit revoked token
+				try {
+					console.log('🔄 Attempting to restore revoked token in catch block...');
+					const restoreResponse = await fetch('/api/fakturoid/test-refresh', {
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+					
+					const restoreResult = await restoreResponse.json();
+					
+					if (restoreResponse.ok && restoreResult.success) {
+						console.log('✅ Revoked token successfully restored:', restoreResult);
+						// Aktualizujeme lokální stav
+						orderSettings.fakturoid.tokenValid = true;
+						// Pokračujeme v původní operaci
+						await goto(`/admin/order/${orderId}/create-invoice`);
+						return;
+					} else {
+						console.log('❌ Failed to restore revoked token:', restoreResult);
+					}
+				} catch (restoreError) {
+					console.error('Error restoring revoked token:', restoreError);
+				}
+				
+				const reconnect = confirm('Chyba při obnově Fakturoid tokenu. Chcete se znovu připojit k Fakturoidu?');
+				if (reconnect) {
+					// Nejdříve smažeme revoked tokeny
+					try {
+						const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						});
+						
+						if (clearResponse.ok) {
+							console.log('Revoked tokeny smazány');
+						}
+					} catch (clearError) {
+						console.error('Chyba při mazání revoked tokenů:', clearError);
+					}
+					
+					window.location.href = '/admin/site-setting?tab=integrations';
+				}
+				return;
+			}
+		}
+
 		await goto(`/admin/order/${orderId}/create-invoice`);
 	}
 
@@ -447,18 +663,16 @@
 					? 'Fakturoid není povolen'
 					: !orderSettings?.fakturoid?.connected
 						? 'Fakturoid není připojen'
-						: !orderSettings?.fakturoid?.tokenValid
-							? 'Token vypršel - obnovte'
-							: !orderSettings?.fakturoid?.subdomain
-								? 'Není vybrán slug/účet'
-								: 'Vytvořit fakturu',
+						: !orderSettings?.fakturoid?.subdomain
+							? 'Není vybrán slug/účet'
+							: 'Vytvořit fakturu',
 			onClick: invoiceExistsForCurrentSlug ? () => {
 				if (currentSlugInvoice?.invoice_url) {
 					window.open(currentSlugInvoice.invoice_url, '_blank');
 				}
 			} : createInvoice,
 			variant: 'secondary' as const,
-			disabled: loading || invoiceExistsForCurrentSlug || (!fakturoidReady && !invoiceExistsForCurrentSlug) || (!orderSettings?.fakturoid?.tokenValid && !invoiceExistsForCurrentSlug)
+			disabled: loading || invoiceExistsForCurrentSlug || (!orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected || !orderSettings?.fakturoid?.subdomain)
 		},
 		{
 			label: loading ? 'Maže se...' : 'Smazat',
