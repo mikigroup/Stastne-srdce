@@ -7,7 +7,6 @@
 	const { generalSettings } = data;
 
 	let src = "/srdce.png";
-	// console.log(data);
 </script>
 
 <svelte:head>
@@ -15,6 +14,7 @@
 	<meta
 		name="description"
 		content="Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost." />
+		<link rel="canonical" href="https://www.malyleo.cz/" />
 </svelte:head>
 
 
