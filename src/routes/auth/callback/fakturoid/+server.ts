@@ -1,10 +1,25 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { 
-	PRIVATE_FAKTUROID_CLIENT_ID,
-	PRIVATE_FAKTUROID_CLIENT_SECRET
-} from "$env/static/private";
 import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
+import { env } from '$env/dynamic/private';
+
+// Helper funkce pro získání správných Fakturoid credentials podle prostředí
+// Standardní SvelteKit přístup s $env/dynamic/private
+function getFakturoidCredentials() {
+	// Pro lokální vývoj použijeme dev credentials
+	if (env.NODE_ENV === 'development' || env.DEV === 'true') {
+		return {
+			clientId: env.PRIVATE_FAKTUROID_DEV_CLIENT_ID || '',
+			clientSecret: env.PRIVATE_FAKTUROID_DEV_CLIENT_SECRET || ''
+		};
+	}
+	
+	// Pro produkci použijeme produkční credentials
+	return {
+		clientId: env.PRIVATE_FAKTUROID_CLIENT_ID || '',
+		clientSecret: env.PRIVATE_FAKTUROID_CLIENT_SECRET || ''
+	};
+}
 
 export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSession }, cookies }) => {
 	console.log('=== FAKTUROID CALLBACK START ===');
@@ -103,10 +118,11 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	console.log('Requesting access token from Fakturoid...');
 	let tokenResponse;
 	try {
+		const credentials = getFakturoidCredentials();
 		tokenResponse = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 			method: 'POST',
 			headers: {
-				'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+				'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Accept': 'application/json',
 				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'

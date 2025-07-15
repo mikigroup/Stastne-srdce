@@ -417,7 +417,7 @@
 						
 						const reconnect = confirm('Fakturoid token vypršel a nelze ho obnovit. Chcete se znovu připojit k Fakturoidu?');
 						if (reconnect) {
-							// Nejdříve smažeme revoked tokeny
+							// Nejdříve se pokusíme obnovit revoked tokeny před jejich označením jako cleared
 							try {
 								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
 									method: 'POST',
@@ -427,10 +427,19 @@
 								});
 								
 								if (clearResponse.ok) {
-									console.log('Revoked tokeny smazány');
+									const result = await clearResponse.json();
+									console.log('Revoked tokeny zpracovány:', result);
+									
+									// Pokud se podařilo obnovit nějaké tokeny, aktualizujeme stav
+									if (result.restoredCount > 0) {
+										orderSettings.fakturoid.tokenValid = true;
+										// Pokračujeme v původní operaci
+										await goto(`/admin/order/${orderId}/create-invoice`);
+										return;
+									}
 								}
 							} catch (clearError) {
-								console.error('Chyba při mazání revoked tokenů:', clearError);
+								console.error('Chyba při zpracování revoked tokenů:', clearError);
 							}
 							
 							window.location.href = '/admin/site-setting?tab=integrations';
@@ -465,7 +474,7 @@
 						
 						const reconnect = confirm('Fakturoid token je neplatný a nelze ho obnovit. Chcete se znovu připojit k Fakturoidu?');
 						if (reconnect) {
-							// Nejdříve smažeme revoked tokeny
+							// Nejdříve se pokusíme obnovit revoked tokeny před jejich označením jako cleared
 							try {
 								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
 									method: 'POST',
@@ -475,10 +484,19 @@
 								});
 								
 								if (clearResponse.ok) {
-									console.log('Revoked tokeny smazány');
+									const result = await clearResponse.json();
+									console.log('Revoked tokeny zpracovány:', result);
+									
+									// Pokud se podařilo obnovit nějaké tokeny, aktualizujeme stav
+									if (result.restoredCount > 0) {
+										orderSettings.fakturoid.tokenValid = true;
+										// Pokračujeme v původní operaci
+										await goto(`/admin/order/${orderId}/create-invoice`);
+										return;
+									}
 								}
 							} catch (clearError) {
-								console.error('Chyba při mazání revoked tokenů:', clearError);
+								console.error('Chyba při zpracování revoked tokenů:', clearError);
 							}
 							
 							window.location.href = '/admin/site-setting?tab=integrations';
@@ -487,7 +505,7 @@
 					} else if (result.error) {
 						const reconnect = confirm(`Chyba při obnově tokenu: ${result.error}\n\nChcete se znovu připojit k Fakturoidu?`);
 						if (reconnect) {
-							// Nejdříve smažeme revoked tokeny
+							// Nejdříve označíme revoked tokeny jako cleared (zachováme refresh tokeny)
 							try {
 								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
 									method: 'POST',
@@ -497,10 +515,10 @@
 								});
 								
 								if (clearResponse.ok) {
-									console.log('Revoked tokeny smazány');
+									console.log('Revoked tokeny označeny jako cleared');
 								}
 							} catch (clearError) {
-								console.error('Chyba při mazání revoked tokenů:', clearError);
+								console.error('Chyba při označování revoked tokenů:', clearError);
 							}
 							
 							window.location.href = '/admin/site-setting?tab=integrations';
@@ -509,7 +527,7 @@
 					} else {
 						const reconnect = confirm('Nepodařilo se obnovit Fakturoid token. Chcete se znovu připojit k Fakturoidu?');
 						if (reconnect) {
-							// Nejdříve smažeme revoked tokeny
+							// Nejdříve se pokusíme obnovit revoked tokeny před jejich označením jako cleared
 							try {
 								const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
 									method: 'POST',
@@ -519,10 +537,19 @@
 								});
 								
 								if (clearResponse.ok) {
-									console.log('Revoked tokeny smazány');
+									const result = await clearResponse.json();
+									console.log('Revoked tokeny zpracovány:', result);
+									
+									// Pokud se podařilo obnovit nějaké tokeny, aktualizujeme stav
+									if (result.restoredCount > 0) {
+										orderSettings.fakturoid.tokenValid = true;
+										// Pokračujeme v původní operaci
+										await goto(`/admin/order/${orderId}/create-invoice`);
+										return;
+									}
 								}
 							} catch (clearError) {
-								console.error('Chyba při mazání revoked tokenů:', clearError);
+								console.error('Chyba při zpracování revoked tokenů:', clearError);
 							}
 							
 							window.location.href = '/admin/site-setting?tab=integrations';
@@ -561,7 +588,7 @@
 				
 				const reconnect = confirm('Chyba při obnově Fakturoid tokenu. Chcete se znovu připojit k Fakturoidu?');
 				if (reconnect) {
-					// Nejdříve smažeme revoked tokeny
+					// Nejdříve se pokusíme obnovit revoked tokeny před jejich označením jako cleared
 					try {
 						const clearResponse = await fetch('/api/fakturoid/clear-revoked-tokens', {
 							method: 'POST',
@@ -571,10 +598,19 @@
 						});
 						
 						if (clearResponse.ok) {
-							console.log('Revoked tokeny smazány');
+							const result = await clearResponse.json();
+							console.log('Revoked tokeny zpracovány:', result);
+							
+							// Pokud se podařilo obnovit nějaké tokeny, aktualizujeme stav
+							if (result.restoredCount > 0) {
+								orderSettings.fakturoid.tokenValid = true;
+								// Pokračujeme v původní operaci
+								await goto(`/admin/order/${orderId}/create-invoice`);
+								return;
+							}
 						}
 					} catch (clearError) {
-						console.error('Chyba při mazání revoked tokenů:', clearError);
+						console.error('Chyba při zpracování revoked tokenů:', clearError);
 					}
 					
 					window.location.href = '/admin/site-setting?tab=integrations';

@@ -182,14 +182,15 @@ export const load: PageServerLoad = async ({
 			console.log('Current subdomain for order:', currentSubdomain);
 
 			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV token v systému (active i expired pro refresh)
-			const { data: tokenData, error: tokenError } = await supabase
+			const { data: tokens, error: tokenError } = await supabase
 				.from('fakturoid_tokens')
 				.select('access_token, expires_at, status, account_email')
 				.in('status', ['active', 'expired'])  // ← Opraveno: hledá i expired tokeny
 				.neq('status', 'revoked') // Nezabýváme se revoked tokeny
 				.order('last_used_at', { ascending: false })
-				.limit(1)
-				.single();
+				.limit(1);
+
+			const tokenData = tokens && tokens.length > 0 ? tokens[0] : null;
 
 			if (tokenError || !tokenData) {
 				console.log('No active tokens found in system');

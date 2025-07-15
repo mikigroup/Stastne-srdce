@@ -1,6 +1,18 @@
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { PRIVATE_FAKTUROID_CLIENT_ID } from "$env/static/private";
+import { env } from '$env/dynamic/private';
+
+// Helper funkce pro získání správných Fakturoid credentials podle prostředí
+// Standardní SvelteKit přístup s $env/dynamic/private
+function getFakturoidClientId() {
+	// Pro lokální vývoj použijeme dev credentials
+	if (env.NODE_ENV === 'development' || env.DEV === 'true') {
+		return env.PRIVATE_FAKTUROID_DEV_CLIENT_ID || '';
+	}
+	
+	// Pro produkci použijeme produkční credentials
+	return env.PRIVATE_FAKTUROID_CLIENT_ID || '';
+}
 
 export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }, url, cookies }) => {
 	console.log('=== FAKTUROID OAUTH CONNECT START ===');
@@ -34,8 +46,9 @@ export const GET: RequestHandler = async ({ locals: { safeGetSession, supabase }
 	console.log('State cookie set:', { state, hostname: url.hostname });
 
 	// Sestavíme URL pro OAuth autorizaci
+	const clientId = getFakturoidClientId();
 	const authUrl = new URL('https://app.fakturoid.cz/api/v3/oauth');
-	authUrl.searchParams.set('client_id', PRIVATE_FAKTUROID_CLIENT_ID);
+	authUrl.searchParams.set('client_id', clientId);
 	authUrl.searchParams.set('redirect_uri', `${url.origin}/auth/callback/fakturoid`);
 	authUrl.searchParams.set('response_type', 'code');
 	authUrl.searchParams.set('state', state);

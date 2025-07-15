@@ -1,10 +1,34 @@
-import { supabase } from "./supabase";
-import type { FakturoidToken } from "./types/fakturoid";
+import { supabase } from './supabase';
+import type { FakturoidToken } from './types/fakturoid';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { fakturoidCircuitBreaker } from './fakturoidCircuitBreaker';
+import { env } from '$env/dynamic/private';
 
+// Cache pro token
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
+
+/**
+ * Helper funkce pro získání správných Fakturoid credentials podle prostředí
+ * Standardní SvelteKit přístup s $env/dynamic/private
+ */
+function getFakturoidCredentials(): { clientId: string; clientSecret: string } {
+	// Pro lokální vývoj použijeme dev credentials
+	if (env.NODE_ENV === 'development' || env.DEV === 'true') {
+		console.log('🔧 Using development Fakturoid credentials');
+		return {
+			clientId: env.PRIVATE_FAKTUROID_DEV_CLIENT_ID || '',
+			clientSecret: env.PRIVATE_FAKTUROID_DEV_CLIENT_SECRET || ''
+		};
+	}
+	
+	// Pro produkci použijeme produkční credentials
+	console.log('🚀 Using production Fakturoid credentials');
+	return {
+		clientId: env.PRIVATE_FAKTUROID_CLIENT_ID || '',
+		clientSecret: env.PRIVATE_FAKTUROID_CLIENT_SECRET || ''
+	};
+}
 
 /**
  * Exponential backoff konfigurace
@@ -135,11 +159,11 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 		if (!tokens || tokens.length === 0) {
 			console.log('No active/expired Fakturoid token found in the system');
 			
-			// Zkusíme najít revoked token a obnovit ho
+			// Zkusíme najít revoked nebo cleared token a obnovit ho
 			const { data: revokedTokens, error: revokedError } = await supabaseClient
 				.from('fakturoid_tokens')
 				.select('*')
-				.eq('status', 'revoked')
+				.in('status', ['revoked', 'cleared'])
 				.order('updated_at', { ascending: false })
 				.limit(1);
 			
@@ -199,7 +223,7 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, tokenData.user_id, supabaseClient);
 			if (refreshedToken) {
 				cachedToken = refreshedToken;
-				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny
+				tokenExpiry = expiresAt.getTime();
 				
 				// Označíme token jako používaný
 				await markTokenAsUsed(tokenData.user_id, supabaseClient);
@@ -255,9 +279,9 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 	try {
 		console.log('Starting token refresh for user:', userId);
 		
-		const { PRIVATE_FAKTUROID_CLIENT_ID, PRIVATE_FAKTUROID_CLIENT_SECRET } = await import('$env/static/private');
+		const credentials = getFakturoidCredentials();
 		
-		if (!PRIVATE_FAKTUROID_CLIENT_ID || !PRIVATE_FAKTUROID_CLIENT_SECRET) {
+		if (!credentials.clientId || !credentials.clientSecret) {
 			console.error('Missing Fakturoid client credentials');
 			return null;
 		}
@@ -296,7 +320,7 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 			const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 				method: 'POST',
 				headers: {
-					'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+					'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
 					'Content-Type': 'application/x-www-form-urlencoded',
 					'Accept': 'application/json',
 					'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
@@ -318,8 +342,8 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 				console.error('Status text:', response.statusText);
 				console.error('Error response body:', errorText);
 				console.error('Refresh token length:', refreshToken?.length || 0);
-				console.error('Client ID present:', !!PRIVATE_FAKTUROID_CLIENT_ID);
-				console.error('Client secret present:', !!PRIVATE_FAKTUROID_CLIENT_SECRET);
+				console.error('Client ID present:', !!credentials.clientId);
+				console.error('Client secret present:', !!credentials.clientSecret);
 				console.error('=== END ERROR DEBUG ===');
 				
 				// Vytvoří chybu s status kódem pro non-retryable logic
@@ -438,9 +462,9 @@ export async function refreshTokenDirect(refreshToken: string, supabaseClient: S
 	try {
 		console.log('Starting direct token refresh...');
 		
-		const { PRIVATE_FAKTUROID_CLIENT_ID, PRIVATE_FAKTUROID_CLIENT_SECRET } = await import('$env/static/private');
+		const credentials = getFakturoidCredentials();
 		
-		if (!PRIVATE_FAKTUROID_CLIENT_ID || !PRIVATE_FAKTUROID_CLIENT_SECRET) {
+		if (!credentials.clientId || !credentials.clientSecret) {
 			console.error('Missing Fakturoid client credentials');
 			return null;
 		}
@@ -479,7 +503,7 @@ export async function refreshTokenDirect(refreshToken: string, supabaseClient: S
 			const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 				method: 'POST',
 				headers: {
-					'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+					'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
 					'Content-Type': 'application/x-www-form-urlencoded',
 					'Accept': 'application/json',
 					'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
