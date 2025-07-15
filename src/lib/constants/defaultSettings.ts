@@ -122,8 +122,8 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     fakturoid: {
       enabled: false,
       connected: false,
+      subdomain: '', // Ruční zadání subdomény
       accounts: [],
-      subdomain: '',
       defaultLanguage: 'cz',
       autoCreateInvoices: false,
       invoiceDueDays: 14,
@@ -195,7 +195,10 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     menuVariantsCount: 3,
     allowVariableVariants: true,
     minVariants: 1,
-    maxVariants: 10
+    maxVariants: 10,
+    // Nastavení pro zobrazení menu pro další den
+    nextDayMenuTime: '17:00', // Čas, kdy se začne zobrazovat menu pro další den
+    nextDayMenuEnabled: true // Zapnout/vypnout funkci zobrazení menu pro další den
   },
 
   customer: {

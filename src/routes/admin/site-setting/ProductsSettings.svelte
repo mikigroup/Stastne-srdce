@@ -32,7 +32,7 @@
 	<div class="mb-6 border-b pb-4">
 		<h3 class="text-lg font-medium mb-3">Zobrazení jídelníčku</h3>
 		
-		<div class="form-control">
+		<div class="form-control mb-4">
 			<label class="label">
 				<span class="label-text">Počet viditelných dnů</span>
 			</label>
@@ -50,6 +50,43 @@
 				</p>
 			</div>
 		</div>
+
+		<!-- Nastavení zobrazení menu pro další den -->
+		<div class="form-control mb-4">
+			<label class="label cursor-pointer justify-start gap-2">
+				<input 
+					type="checkbox" 
+					class="checkbox checkbox-primary" 
+					bind:checked={$editableSettings.products.nextDayMenuEnabled} 
+				/>
+				<span class="label-text">Zobrazovat menu pro další den po určeném čase</span>
+			</label>
+			<span class="text-xs text-gray-500 mt-1">
+				Po zapnutí se menu pro další den zobrazí až po nastaveném čase
+			</span>
+		</div>
+
+		{#if $editableSettings.products.nextDayMenuEnabled}
+			<div class="form-control">
+				<label class="label">
+					<span class="label-text">Čas zobrazení menu pro další den</span>
+				</label>
+				<div class="flex items-center gap-3">
+					<input
+						type="time"
+						bind:value={$editableSettings.products.nextDayMenuTime}
+						class="input input-bordered w-32"
+						step="900"
+					/>
+					<p class="text-sm text-gray-500">
+						Po tomto čase se začne zobrazovat menu pro další den
+					</p>
+				</div>
+				<span class="text-xs text-gray-500 mt-1">
+					Například: 17:00 = menu pro zítřek se zobrazí až po 17:00 dnešního dne
+				</span>
+			</div>
+		{/if}
 	</div>
 	
 	<!-- Zobrazení alergenů -->
