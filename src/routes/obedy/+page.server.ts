@@ -40,16 +40,20 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			
 			console.log('🍽️ Obědy - Porovnání časů:', {
 				currentTime: now.toLocaleTimeString('cs-CZ'),
+				currentTimeISO: now.toISOString(),
 				thresholdTime: nextDayThreshold.toLocaleTimeString('cs-CZ'),
-				shouldShowNextDay: now >= nextDayThreshold
+				thresholdTimeISO: nextDayThreshold.toISOString(),
+				shouldShowNextDay: now >= nextDayThreshold,
+				timeDifference: now.getTime() - nextDayThreshold.getTime()
 			});
 			
-			// Pokud je aktuální čas po nastaveném čase, zobrazíme menu pro další den
-			if (now >= nextDayThreshold) {
+			// Pokud je aktuální čas před nastaveným časem, zobrazíme menu pro další den (lze objednat)
+			// Po nastaveném čase už se menu pro další den nezobrazuje (nelze objednat)
+			if (now < nextDayThreshold) {
 				currentDate.setDate(currentDate.getDate() + 1);
-				console.log('🍽️ Obědy - Zobrazuji menu pro další den:', currentDate.toLocaleDateString('cs-CZ'));
+				console.log('🍽️ Obědy - Zobrazuji menu pro další den (lze objednat):', currentDate.toLocaleDateString('cs-CZ'));
 			} else {
-				console.log('🍽️ Obědy - Zobrazuji menu pro dnešní den:', currentDate.toLocaleDateString('cs-CZ'));
+				console.log('🍽️ Obědy - Zobrazuji menu pro dnešní den (objednávky na zítřek uzavřeny):', currentDate.toLocaleDateString('cs-CZ'));
 			}
 		} else {
 			console.log('🍽️ Obědy - Funkce zobrazení menu pro další den je vypnuta');

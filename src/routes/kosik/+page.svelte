@@ -8,6 +8,7 @@
 	import { enhance } from "$app/forms";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
 	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
+	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 
 	export let data;
 	export let form: Actions;
@@ -22,6 +23,9 @@
 		totalPrice: 0
 	};
 	let profileData: any = null;
+	let selectedTimeSlot: string = '';
+	let availableTimeSlots: TimeSlotAvailability[] = [];
+	let timeSlotSettings: any = null;
 
 	$: ({ session, supabase, user } = data);
 
@@ -68,6 +72,39 @@
 			console.error("Error fetching profile:", error);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadTimeSlots() {
+		if (!cartItems.length) return;
+
+		try {
+			// Načtení nastavení časových slotů
+			const { data: productsSettings } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'products')
+				.single();
+
+			if (productsSettings?.value) {
+				timeSlotSettings = productsSettings.value;
+				
+				// Získání dostupných časových slotů pro první den v košíku
+				const firstDate = cartItems[0]?.date;
+				if (firstDate && timeSlotSettings.timeSlotsEnabled) {
+					availableTimeSlots = await getAvailableTimeSlots(supabase, firstDate, timeSlotSettings);
+					
+					// Nastavení výchozího slotu
+					if (availableTimeSlots.length > 0) {
+						const defaultSlot = availableTimeSlots.find(slot => slot.isAvailable);
+						if (defaultSlot) {
+							selectedTimeSlot = `${defaultSlot.slot.startTime}-${defaultSlot.slot.endTime}`;
+						}
+					}
+				}
+			}
+		} catch (error) {
+			console.error("Error loading time slots:", error);
 		}
 	}
 
@@ -123,6 +160,11 @@
 	onMount(() => {
 		getProfile();
 	});
+
+	// Reakce na změnu košíku - načtení časových slotů
+	$: if (cartItems.length > 0) {
+		loadTimeSlots();
+	}
 
 	const { generalSettings } = data;
 
@@ -356,6 +398,43 @@
 				<!-- Total and checkout -->
 				{#if cartItems.length}
 					<div class="mt-5 border rounded-lg border-gray-300">
+						<!-- Časové sloty -->
+						{#if timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0}
+							<div class="grid p-5 border-b">
+								<label class="block mb-2 text-sm font-medium text-gray-700">
+									Čas vyzvednutí objednávky
+								</label>
+								<div class="space-y-2">
+									{#each availableTimeSlots as slot}
+										<label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {!slot.isAvailable ? 'opacity-50 cursor-not-allowed' : ''}">
+											<input
+												type="radio"
+												name="timeSlot"
+												value="{slot.slot.startTime}-{slot.slot.endTime}"
+												bind:group={selectedTimeSlot}
+												disabled={!slot.isAvailable}
+												class="mr-3"
+											/>
+											<div class="flex-1">
+												<div class="font-medium">
+													{formatTimeSlot(slot.slot)}
+												</div>
+												{#if timeSlotSettings.showTimeSlotAvailability}
+													<div class="text-sm text-gray-500">
+														Dostupnost: {slot.availableOrders} z {slot.slot.maxOrders} míst
+													</div>
+												{/if}
+											</div>
+											{#if !slot.isAvailable}
+												<span class="text-sm text-red-500">Plné</span>
+											{/if}
+										</label>
+									{/each}
+								</div>
+								<input type="hidden" name="timeSlot" value={selectedTimeSlot} />
+							</div>
+						{/if}
+
 						<div class="grid p-5 border-b">
 							<label for="note">Poznámka</label>
 							<textarea

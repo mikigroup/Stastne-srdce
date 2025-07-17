@@ -198,7 +198,17 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     maxVariants: 10,
     // Nastavení pro zobrazení menu pro další den
     nextDayMenuTime: '17:00', // Čas, kdy se začne zobrazovat menu pro další den
-    nextDayMenuEnabled: true // Zapnout/vypnout funkci zobrazení menu pro další den
+    nextDayMenuEnabled: true, // Zda zobrazovat menu pro další den
+    // Časové sloty pro objednávky
+    timeSlotsEnabled: false, // Zda povolit časové sloty
+    advanceOrderDays: 1, // Počet dnů dopředu pro objednávky
+    orderDeadlineTime: '10:00', // Uzavírací čas objednávek
+    timeSlots: [
+      { startTime: '11:00', endTime: '12:00', maxOrders: 10 },
+      { startTime: '12:00', endTime: '13:00', maxOrders: 15 },
+      { startTime: '13:00', endTime: '14:00', maxOrders: 10 }
+    ],
+    showTimeSlotAvailability: true // Zobrazovat dostupnost slotů
   },
 
   customer: {

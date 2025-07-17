@@ -50,8 +50,8 @@
 				<div class="p-3 border-b border-gray-200 bg-blue-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-blue-700">
 						<i class="fa-solid fa-clock"></i>
-						<span>
-							Menu pro další den se zobrazuje po <strong>{data.productsSettings.nextDayMenuTime}</strong>
+						<span class="text-sm">
+							Objednávky na další den jsou možné do <strong>{data.productsSettings.nextDayMenuTime}</strong>
 						</span>
 					</div>
 				</div>
@@ -66,7 +66,7 @@
 							class="checkbox" 
 							bind:checked={filterVegetarian}
 						/>
-						<span class="text-lg font-medium">🌱 Pouze vegetariánská menu</span>
+						<span class="text-sm md:text-lg font-medium">🌱 Pouze vegetariánská menu</span>
 					</label>
 					
 						<span class="text-sm text-gray-600">

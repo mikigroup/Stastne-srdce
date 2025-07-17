@@ -23,6 +23,30 @@
 			$editableSettings = $editableSettings;
 		}
 	}
+
+	// Add time slot
+	function addTimeSlot() {
+		if (!$editableSettings.products) {
+			$editableSettings.products = {};
+		}
+		if (!$editableSettings.products.timeSlots) {
+			$editableSettings.products.timeSlots = [];
+		}
+		$editableSettings.products.timeSlots.push({ 
+			startTime: "11:00", 
+			endTime: "12:00", 
+			maxOrders: 10 
+		});
+		$editableSettings = $editableSettings;
+	}
+
+	// Remove time slot
+	function removeTimeSlot(index: number) {
+		if ($editableSettings.products?.timeSlots && $editableSettings.products.timeSlots.length > index) {
+			$editableSettings.products.timeSlots.splice(index, 1);
+			$editableSettings = $editableSettings;
+		}
+	}
 </script>
 
 <div in:fade={{ duration: 300 }}>
@@ -59,31 +83,160 @@
 					class="checkbox checkbox-primary" 
 					bind:checked={$editableSettings.products.nextDayMenuEnabled} 
 				/>
-				<span class="label-text">Zobrazovat menu pro další den po určeném čase</span>
+				<span class="label-text">Umožnit objednávky na další den do určeného času</span>
 			</label>
 			<span class="text-xs text-gray-500 mt-1">
-				Po zapnutí se menu pro další den zobrazí až po nastaveném čase
+				Po zapnutí se menu pro další den zobrazuje do nastaveného času, pak se uzavře
 			</span>
 		</div>
 
 		{#if $editableSettings.products.nextDayMenuEnabled}
 			<div class="form-control">
 				<label class="label">
-					<span class="label-text">Čas zobrazení menu pro další den</span>
+									<span class="label-text">Uzavírací čas pro objednávky na další den</span>
+			</label>
+			<div class="flex items-center gap-3">
+				<input
+					type="time"
+					bind:value={$editableSettings.products.nextDayMenuTime}
+					class="input input-bordered w-32"
+					step="900"
+				/>
+				<p class="text-sm text-gray-500">
+					Do tohoto času lze objednat jídlo na další den
+				</p>
+			</div>
+			<span class="text-xs text-gray-500 mt-1">
+				Například: 17:00 = objednávky na zítřek se uzavřou v 17:00 dnešního dne
+			</span>
+			</div>
+		{/if}
+	</div>
+
+	<!-- Časové sloty pro objednávky -->
+	<div class="mb-6 border-b pb-4">
+		<h3 class="text-lg font-medium mb-3">Časové sloty pro objednávky</h3>
+		
+		<div class="form-control mb-4">
+			<label class="label cursor-pointer justify-start gap-2">
+				<input 
+					type="checkbox" 
+					class="checkbox checkbox-primary" 
+					bind:checked={$editableSettings.products.timeSlotsEnabled} 
+				/>
+				<span class="label-text">Povolit časové sloty pro objednávky</span>
+			</label>
+			<span class="text-xs text-gray-500 mt-1">
+				Zákazníci si budou moci vybrat čas vyzvednutí objednávky
+			</span>
+		</div>
+
+		{#if $editableSettings.products.timeSlotsEnabled}
+			<div class="form-control mb-4">
+				<label class="label">
+					<span class="label-text">Předobjednávky</span>
+				</label>
+				<div class="flex items-center gap-3">
+					<input
+						type="number"
+						bind:value={$editableSettings.products.advanceOrderDays}
+						class="input input-bordered w-24"
+						min="0"
+						max="30"
+						placeholder="1"
+					/>
+					<p class="text-sm text-gray-500">
+						Počet dnů dopředu, na které lze objednat (0 = pouze dnešní den)
+					</p>
+				</div>
+			</div>
+
+			<div class="form-control mb-4">
+				<label class="label">
+					<span class="label-text">Uzavírací čas objednávek</span>
 				</label>
 				<div class="flex items-center gap-3">
 					<input
 						type="time"
-						bind:value={$editableSettings.products.nextDayMenuTime}
+						bind:value={$editableSettings.products.orderDeadlineTime}
 						class="input input-bordered w-32"
 						step="900"
 					/>
 					<p class="text-sm text-gray-500">
-						Po tomto čase se začne zobrazovat menu pro další den
+						Do kdy lze objednat jídlo na daný den
 					</p>
 				</div>
 				<span class="text-xs text-gray-500 mt-1">
-					Například: 17:00 = menu pro zítřek se zobrazí až po 17:00 dnešního dne
+					Například: 10:00 = objednávky na dnešní den se uzavřou v 10:00
+				</span>
+			</div>
+
+			<div class="form-control mb-4">
+				<label class="label">
+					<span class="label-text">Časové sloty</span>
+				</label>
+				<div class="space-y-2">
+					{#if !$editableSettings.products.timeSlots}
+						$editableSettings.products.timeSlots = [];
+					{/if}
+					
+					{#each $editableSettings.products.timeSlots as slot, index}
+						<div class="flex items-center gap-2">
+							<input
+								type="time"
+								bind:value={slot.startTime}
+								class="input input-bordered w-32"
+								step="900"
+							/>
+							<span class="text-gray-500">-</span>
+							<input
+								type="time"
+								bind:value={slot.endTime}
+								class="input input-bordered w-32"
+								step="900"
+							/>
+							<input
+								type="number"
+								bind:value={slot.maxOrders}
+								class="input input-bordered w-20"
+								min="1"
+								placeholder="10"
+							/>
+							<span class="text-sm text-gray-500">max objednávek</span>
+							<button
+								type="button"
+								class="btn btn-sm btn-error"
+								on:click={() => removeTimeSlot(index)}
+							>
+								❌
+							</button>
+						</div>
+					{/each}
+					
+					<button
+						type="button"
+						class="btn btn-sm btn-primary"
+						on:click={addTimeSlot}
+					>
+						➕ Přidat časový slot
+					</button>
+				</div>
+				<span class="text-xs text-gray-500 mt-1">
+					Definujte časové okna pro vyzvednutí objednávek a maximální počet objednávek na slot
+				</span>
+			</div>
+
+			<div class="form-control mb-4">
+				<label class="label cursor-pointer justify-start gap-2">
+					<input 
+						type="checkbox" 
+						class="checkbox checkbox-primary" 
+						bind:checked={$editableSettings.products.showTimeSlotAvailability} 
+					/>
+					<span class="label-text">Zobrazovat dostupnost časových slotů</span>
+				</label>
+				<span class="text-xs text-gray-500 mt-1">
+					Zákazníci uvidí, kolik objednávek je ještě možné v každém slotu
 				</span>
 			</div>
 		{/if}

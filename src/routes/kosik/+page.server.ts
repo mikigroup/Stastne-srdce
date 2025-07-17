@@ -41,6 +41,7 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const note = formData.get("note") as string;
+			const timeSlot = formData.get("timeSlot") as string;
 			const cartItemsStr = formData.get("cartItems");
 
 			if (!cartItemsStr) {
@@ -118,7 +119,7 @@ export const actions: Actions = {
 				p_customer_zip_code: customer.zip_code || '',
 				p_customer_telephone: customer.telephone || '',
 				p_customer_email: email,
-				p_note: note,
+				p_note: timeSlot ? JSON.stringify({ timeSlot, originalNote: note }) : note,
 				p_total_pieces: totalPieces,
 				p_total_price: totalPrice,
 				p_currency: "CZK",
