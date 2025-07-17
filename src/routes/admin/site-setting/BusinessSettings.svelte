@@ -10,10 +10,11 @@
 
 	<div class="gap-8 grid">
 		<div class="form-control w-3/4">
-			<label class="label">
+			<label class="label" for="businessCompanyName">
 				<span class="label-text">Název firmy</span>
 			</label>
 			<input
+				id="businessCompanyName"
 				type="text"
 				bind:value={$editableSettings.business.companyName}
 				class="input input-bordered w-full"
@@ -22,20 +23,22 @@
 		<div class="grid grid-cols-4 gap-8">
 			
 			<div class="form-control">
-				<label class="label">
+				<label class="label" for="businessStreet">
 					<span class="label-text">Ulice</span>
 				</label>
 				<input
+					id="businessStreet"
 					type="text"
 					bind:value={$editableSettings.business.street}
 					class="input input-bordered w-full"
 				/>
 			</div>
 			<div class="form-control">
-				<label class="label">
+				<label class="label" for="businessStreetNumber">
 					<span class="label-text">Číslo</span>
 				</label>
 				<input
+					id="businessStreetNumber"
 					type="text"
 					bind:value={$editableSettings.business.streetNumber}
 					class="input input-bordered w-full"

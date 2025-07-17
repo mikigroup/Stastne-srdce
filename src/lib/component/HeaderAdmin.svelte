@@ -109,9 +109,7 @@
 							stroke-width="2"
 							d="M4 6h16M4 12h16M4 18h7" /></svg>
 				</div>
-				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<ul
-					tabindex="0"
 					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
 					<li><a class="text-sm" href="/"><i class="fas fa-home mr-2"></i>Klientská část</a></li>
 					<hr class="border-gray-300 px-2 mt-2 mb-4" />

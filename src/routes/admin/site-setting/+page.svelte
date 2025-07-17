@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { writable } from "svelte/store";
+	import { writable, type Writable } from "svelte/store";
 	import { fade, fly } from "svelte/transition";
 	import type { PageData } from "./$types";
 	import { enhance } from "$app/forms";
@@ -23,7 +23,7 @@
 	import LoyaltySettings from "./LoyaltySettings.svelte";
 	import NotificationSettings from "./NotificationSettings.svelte";
 
-	export let data: PageData;
+		export let data: PageData;
 
 	type FormData = {
 		message?: {
@@ -32,7 +32,7 @@
 		};
 	};
 
-	export let form: FormData | null = null;
+	export const form: FormData | null = null;
 
 	// Supabase bude dostupné přes locals v komponentě
 
@@ -46,10 +46,10 @@
 	let loadingTab = false;
 
 	// File upload state
-	let uploadingLogo = false;
-	let uploadingFavicon = false;
-	let logoFileInput: HTMLInputElement;
-	let faviconFileInput: HTMLInputElement;
+	let uploadingLogo: boolean = false;
+	let uploadingFavicon: boolean = false;
+	let logoFileInput!: HTMLInputElement;
+	let faviconFileInput!: HTMLInputElement;
 
 	// Cache management
 	const CACHE_KEY = "site_settings_cache";
@@ -155,6 +155,8 @@
 			}, 8000);
 		}
 	});
+
+
 
 	// Get settings from data or cache
 	let settings = data.settings;
@@ -275,7 +277,7 @@
 	}
 
 	// Initialize editable settings
-	let editableSettings = writable(structureSettings(settings));
+	let editableSettings: Writable<Record<string, any>> = writable<Record<string, any>>(structureSettings(data.settings));
 
 	// Watch for changes in data
 	$: if (settings) {

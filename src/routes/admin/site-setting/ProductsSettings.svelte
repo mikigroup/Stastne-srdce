@@ -57,11 +57,12 @@
 		<h3 class="text-lg font-medium mb-3">Zobrazení jídelníčku</h3>
 		
 		<div class="form-control mb-4">
-			<label class="label">
+			<label class="label" for="visibleDays">
 				<span class="label-text">Počet viditelných dnů</span>
 			</label>
 			<div class="flex items-center gap-3">
 				<input
+					id="visibleDays"
 					type="number"
 					bind:value={$editableSettings.products.visibleDays}
 					class="input input-bordered w-24"
@@ -92,16 +93,17 @@
 
 		{#if $editableSettings.products.nextDayMenuEnabled}
 			<div class="form-control">
-				<label class="label">
-									<span class="label-text">Uzavírací čas pro objednávky na další den</span>
-			</label>
-			<div class="flex items-center gap-3">
-				<input
-					type="time"
-					bind:value={$editableSettings.products.nextDayMenuTime}
-					class="input input-bordered w-32"
-					step="900"
-				/>
+				<label class="label" for="nextDayMenuTime">
+					<span class="label-text">Uzavírací čas pro objednávky na další den</span>
+				</label>
+				<div class="flex items-center gap-3">
+					<input
+						id="nextDayMenuTime"
+						type="time"
+						bind:value={$editableSettings.products.nextDayMenuTime}
+						class="input input-bordered w-32"
+						step="900"
+					/>
 				<p class="text-sm text-gray-500">
 					Do tohoto času lze objednat jídlo na další den
 				</p>
@@ -133,11 +135,12 @@
 
 		{#if $editableSettings.products.timeSlotsEnabled}
 			<div class="form-control mb-4">
-				<label class="label">
+				<label class="label" for="advanceOrderDays">
 					<span class="label-text">Předobjednávky</span>
 				</label>
 				<div class="flex items-center gap-3">
 					<input
+						id="advanceOrderDays"
 						type="number"
 						bind:value={$editableSettings.products.advanceOrderDays}
 						class="input input-bordered w-24"
@@ -152,11 +155,12 @@
 			</div>
 
 			<div class="form-control mb-4">
-				<label class="label">
+				<label class="label" for="orderDeadlineTime">
 					<span class="label-text">Uzavírací čas objednávek</span>
 				</label>
 				<div class="flex items-center gap-3">
 					<input
+						id="orderDeadlineTime"
 						type="time"
 						bind:value={$editableSettings.products.orderDeadlineTime}
 						class="input input-bordered w-32"
@@ -323,11 +327,12 @@
 		{/if}
 		
 		<div class="form-control mb-3">
-			<label class="label">
+			<label class="label" for="menuVariantsCount">
 				<span class="label-text">Výchozí počet variant hlavního chodu</span>
 			</label>
 			<div class="flex items-center gap-3">
 				<input
+					id="menuVariantsCount"
 					type="number"
 					bind:value={$editableSettings.products.menuVariantsCount}
 					class="input input-bordered w-24"
@@ -357,11 +362,12 @@
 		
 		<div class="grid grid-cols-2 gap-4">
 			<div class="form-control">
-				<label class="label">
+				<label class="label" for="minVariants">
 					<span class="label-text">Minimální počet variant</span>
 				</label>
 				<div class="flex items-center gap-3">
 					<input
+						id="minVariants"
 						type="number"
 						bind:value={$editableSettings.products.minVariants}
 						class="input input-bordered w-20"
@@ -373,11 +379,12 @@
 			</div>
 			
 			<div class="form-control">
-				<label class="label">
+				<label class="label" for="maxVariants">
 					<span class="label-text">Maximální počet variant</span>
 				</label>
 				<div class="flex items-center gap-3">
 					<input
+						id="maxVariants"
 						type="number"
 						bind:value={$editableSettings.products.maxVariants}
 						class="input input-bordered w-20"

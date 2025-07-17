@@ -10,10 +10,11 @@
 
 	<div class="space-y-4">
 		<div class="form-control">
-			<label class="label">
+			<label class="label" for="contactEmail">
 				<span class="label-text">E-mail</span>
 			</label>
 			<input
+				id="contactEmail"
 				type="email"
 				bind:value={$editableSettings.contact.email}
 				class="input input-bordered w-full"
@@ -21,10 +22,11 @@
 		</div>
 
 		<div class="form-control">
-			<label class="label">
+			<label class="label" for="contactPhone">
 				<span class="label-text">Hlavní telefon</span>
 			</label>
 			<input
+				id="contactPhone"
 				type="tel"
 				bind:value={$editableSettings.contact.phone}
 				class="input input-bordered w-full"
@@ -32,10 +34,11 @@
 		</div>
 
 		<div class="form-control">
-			<label class="label">
+			<label class="label" for="contactPhone1">
 				<span class="label-text">Telefon 1</span>
 			</label>
 			<input
+				id="contactPhone1"
 				type="tel"
 				bind:value={$editableSettings.contact.phone1}
 				class="input input-bordered w-full"
@@ -43,10 +46,11 @@
 		</div>
 
 		<div class="form-control">
-			<label class="label">
+			<label class="label" for="contactPhone2">
 				<span class="label-text">Telefon 2</span>
 			</label>
 			<input
+				id="contactPhone2"
 				type="tel"
 				bind:value={$editableSettings.contact.phone2}
 				class="input input-bordered w-full"
@@ -54,10 +58,11 @@
 		</div>
 
 		<div class="form-control">
-			<label class="label">
+			<label class="label" for="contactAddress">
 				<span class="label-text">Adresa</span>
 			</label>
 			<textarea
+				id="contactAddress"
 				bind:value={$editableSettings.contact.address}
 				class="textarea textarea-bordered w-full"
 			></textarea>
@@ -69,10 +74,11 @@
 			</label>
 			<div class="grid grid-cols-2 gap-4">
 				<div>
-					<label class="label">
+					<label class="label" for="contactLat">
 						<span class="label-text">Zeměpisná šířka (Lat)</span>
 					</label>
 					<input
+						id="contactLat"
 						type="number"
 						step="0.000001"
 						bind:value={$editableSettings.contact.mapCoordinates.lat}
@@ -80,10 +86,11 @@
 					/>
 				</div>
 				<div>
-					<label class="label">
+					<label class="label" for="contactLng">
 						<span class="label-text">Zeměpisná délka (Lng)</span>
 					</label>
 					<input
+						id="contactLng"
 						type="number"
 						step="0.000001"
 						bind:value={$editableSettings.contact.mapCoordinates.lng}
