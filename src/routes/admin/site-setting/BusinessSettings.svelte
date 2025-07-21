@@ -20,7 +20,7 @@
 				class="input input-bordered w-full"
 			/>
 		</div>
-		<div class="grid grid-cols-4 gap-8">
+		<div class="grid grid-cols-4 gap-4">
 			
 			<div class="form-control">
 				<label class="label" for="businessStreet">

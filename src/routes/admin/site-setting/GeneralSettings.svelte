@@ -47,17 +47,6 @@
 				class="input input-bordered w-full input-sm sm:input-md"
 			/>
 		</div>
-
-		<div class="form-control">
-			<label class="label">
-				<span class="label-text text-sm sm:text-base">Krátký název</span>
-			</label>
-			<input
-				type="text"
-				bind:value={$editableSettings.general.shortName}
-				class="input input-bordered w-full input-sm sm:input-md"
-			/>
-		</div>
 		
 		<!-- Měny -->
 		<div class="mb-6 border-t pt-4 mt-4">

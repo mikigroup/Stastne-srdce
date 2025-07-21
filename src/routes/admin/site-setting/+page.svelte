@@ -434,11 +434,7 @@
 	const availableCurrencies = [
 		{ code: "CZK", name: "Česká koruna" },
 		{ code: "EUR", name: "Euro" },
-		{ code: "USD", name: "Americký dolar" },
-		{ code: "GBP", name: "Britská libra" },
-		{ code: "PLN", name: "Polský zlotý" },
-		{ code: "HUF", name: "Maďarský forint" },
-		{ code: "SKK", name: "Slovenská koruna" }
+		{ code: "USD", name: "Americký dolar" }
 	];
 
 	// Handle přidání měny z selectu - pouze jedna měna

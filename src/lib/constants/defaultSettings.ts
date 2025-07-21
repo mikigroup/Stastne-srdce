@@ -12,9 +12,6 @@
 export const UNIFIED_DEFAULT_SETTINGS = {
   general: {
     shopName: 'Šťastné srdce',
-    shortName: 'ŠS', // Using the shorter version as it's more practical for UI
-    slogan: 'Zdravé stravování a rozvoz jídla',
-    legalName: 'Šťastné srdce s.r.o.',
     currencies: ['CZK', 'EUR']
   },
 
@@ -23,6 +20,23 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     metaDescription: 'Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost.',
     metaKeywords: 'šťastné srdce, mikulovice, zdraví, dietolog, kamila kučerová, rozvoz jídla, jeseník',
     ogImage: '/og-image.jpg',
+    // Meta tagy
+    metaAuthor: 'malyleo.cz',
+    metaCopyright: 'Šťastné srdce',
+    metaRobots: 'index, follow',
+    // Open Graph
+    ogType: 'website',
+    ogUrl: 'https://www.stastnesrdce.cz',
+    ogLocale: 'cs_CZ',
+    // Twitter
+    twitterCard: 'summary_large_image',
+    // Web App
+    appleTouchIcon: '/favi/apple-touch-icon.png',
+    webManifest: '/favi/site.webmanifest',
+    // Custom scripts
+    customHeadScripts: '',
+    customBodyScripts: '',
+    // Analytics
     googleAnalyticsId: '',
     googleAnalyticsEnabled: false,
     facebookPixelEnabled: false,
@@ -64,28 +78,11 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     primaryColor: '#3CB371',
     secondaryColor: '#4A5568',
     footerText: 'Šťastné srdce s.r.o. 2022 - 2025',
-    // Meta tagy
-    metaAuthor: 'malyleo.cz',
-    metaCopyright: 'Šťastné srdce',
-    metaRobots: 'index, follow',
-    // Open Graph
-    ogType: 'website',
-    ogUrl: 'https://www.stastnesrdce.cz',
-    ogLocale: 'cs_CZ',
-    // Twitter
-    twitterCard: 'summary_large_image',
-    // Apple touch icon
-    appleTouchIcon: '/favi/apple-touch-icon.png',
-    // Web manifest
-    webManifest: '/favi/site.webmanifest',
     // FontAwesome
     fontAwesomeEnabled: true,
     fontAwesomeKit: 'e5ce1babf6',
     // Lottie player
-    lottiePlayerEnabled: true,
-    // Custom scripts
-    customHeadScripts: '',
-    customBodyScripts: ''
+    lottiePlayerEnabled: true
   },
 
   business: {

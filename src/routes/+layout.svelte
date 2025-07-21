@@ -59,16 +59,16 @@
 <!-- Globální SEO meta tagy pro celý web -->
 <svelte:head>
 	<!-- Základní meta tagy -->
-	{#if appearanceSettings?.metaAuthor}
-		<meta name="author" content={appearanceSettings.metaAuthor} />
+	{#if seoSettings?.metaAuthor}
+		<meta name="author" content={seoSettings.metaAuthor} />
 	{/if}
 	
-	{#if appearanceSettings?.metaCopyright}
-		<meta name="copyright" content={appearanceSettings.metaCopyright} />
+	{#if seoSettings?.metaCopyright}
+		<meta name="copyright" content={seoSettings.metaCopyright} />
 	{/if}
 	
-	{#if appearanceSettings?.metaRobots}
-		<meta name="robots" content={appearanceSettings.metaRobots} />
+	{#if seoSettings?.metaRobots}
+		<meta name="robots" content={seoSettings.metaRobots} />
 	{/if}
 
 	<!-- SEO meta tagy -->
@@ -87,16 +87,16 @@
 	{/if}
 	
 	<!-- Open Graph meta tagy -->
-	{#if appearanceSettings?.ogType}
-		<meta property="og:type" content={appearanceSettings.ogType} />
+	{#if seoSettings?.ogType}
+		<meta property="og:type" content={seoSettings.ogType} />
 	{/if}
 	
-	{#if appearanceSettings?.ogUrl}
-		<meta property="og:url" content={appearanceSettings.ogUrl} />
+	{#if seoSettings?.ogUrl}
+		<meta property="og:url" content={seoSettings.ogUrl} />
 	{/if}
 	
-	{#if appearanceSettings?.ogLocale}
-		<meta property="og:locale" content={appearanceSettings.ogLocale} />
+	{#if seoSettings?.ogLocale}
+		<meta property="og:locale" content={seoSettings.ogLocale} />
 	{/if}
 	
 	{#if seoSettings?.metaTitle}
@@ -114,8 +114,8 @@
 	{/if}
 	
 	<!-- Twitter meta tagy -->
-	{#if appearanceSettings?.twitterCard}
-		<meta name="twitter:card" content={appearanceSettings.twitterCard} />
+	{#if seoSettings?.twitterCard}
+		<meta name="twitter:card" content={seoSettings.twitterCard} />
 	{/if}
 	
 	{#if seoSettings?.metaTitle}
@@ -133,12 +133,12 @@
 		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
 	{/if}
 	
-	{#if appearanceSettings?.appleTouchIcon}
-		<link rel="apple-touch-icon" href={appearanceSettings.appleTouchIcon} />
+	{#if seoSettings?.appleTouchIcon}
+		<link rel="apple-touch-icon" href={seoSettings.appleTouchIcon} />
 	{/if}
 	
-	{#if appearanceSettings?.webManifest}
-		<link rel="manifest" href={appearanceSettings.webManifest} />
+	{#if seoSettings?.webManifest}
+		<link rel="manifest" href={seoSettings.webManifest} />
 	{/if}
 	
 	<!-- Scripts -->
@@ -153,8 +153,8 @@
 		type="module"></script>
 	
 	<!-- Custom Head Scripts -->
-	{#if appearanceSettings?.customHeadScripts}
-		{@html appearanceSettings.customHeadScripts}
+	{#if seoSettings?.customHeadScripts}
+		{@html seoSettings.customHeadScripts}
 	{/if}
 	
 	<!-- Google Analytics -->
@@ -250,8 +250,8 @@
 <Footer />
 
 <!-- Custom Body Scripts -->
-{#if appearanceSettings?.customBodyScripts}
-	{@html appearanceSettings.customBodyScripts}
+{#if seoSettings?.customBodyScripts}
+	{@html seoSettings.customBodyScripts}
 {/if}
 
 <style lang="postcss">
