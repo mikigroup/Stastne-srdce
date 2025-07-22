@@ -26,6 +26,11 @@
 	let selectedTimeSlot: string = '';
 	let availableTimeSlots: TimeSlotAvailability[] = [];
 	let timeSlotSettings: any = null;
+	
+	// Nové proměnné pro dopravu
+	let deliverySettings: any = null;
+	let deliveryPrice = 0;
+	let isDeliveryFree = false;
 
 	$: ({ session, supabase, user } = data);
 
@@ -35,17 +40,48 @@
 	$: totalPieces = $totalPiecesStore;
 
 	// Calculate total price
-	$: totalPrice = cartItems.reduce((sum, item) => {
+	$: totalPrice = cartItems.reduce((sum: number, item: any) => {
 		if (!item?.variants?.length) return sum;
 		return (
 			sum +
 			item.variants.reduce(
-				(variantSum, variant) =>
+				(variantSum: number, variant: any) =>
 					variantSum + (variant.price || 0) * (variant.quantity || 0),
 				0
 			)
 		);
 	}, 0);
+
+	// Výpočet ceny dopravy a celkové ceny
+	$: if (deliverySettings && totalPrice > 0) {
+		// Kontrola dopravy zdarma
+		isDeliveryFree = totalPrice >= (deliverySettings.freeDeliveryThreshold || 0);
+		
+		// Výpočet ceny dopravy
+		if (isDeliveryFree) {
+			deliveryPrice = 0;
+		} else {
+			// Najdeme nejlevnější dopravní metodu
+			const availableMethods = deliverySettings.shippingMethods?.filter((method: any) => method.enabled !== false) || [];
+			if (availableMethods.length > 0) {
+				deliveryPrice = Math.min(...availableMethods.map((method: any) => method.price || 0));
+			} else {
+				deliveryPrice = 0;
+			}
+		}
+	} else {
+		deliveryPrice = 0;
+		isDeliveryFree = false;
+	}
+
+	// Celková cena včetně dopravy
+	$: totalPriceWithDelivery = totalPrice + deliveryPrice;
+
+	// Kontrola minimální hodnoty objednávky
+	$: minimumOrderMet = !deliverySettings?.minimumOrderValue || totalPrice >= deliverySettings.minimumOrderValue;
+	$: minimumOrderMessage = deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue 
+		? `Minimální hodnota objednávky je ${deliverySettings.minimumOrderValue} Kč. Chybí ${deliverySettings.minimumOrderValue - totalPrice} Kč.`
+		: '';
 
 	async function getProfile() {
 		if (!user?.id) return;
@@ -72,6 +108,24 @@
 			console.error("Error fetching profile:", error);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadDeliverySettings() {
+		try {
+			const { data: deliveryData } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'delivery')
+				.single();
+
+			if (deliveryData?.value) {
+				deliverySettings = typeof deliveryData.value === 'string' 
+					? JSON.parse(deliveryData.value) 
+					: deliveryData.value;
+			}
+		} catch (error) {
+			console.error("Error loading delivery settings:", error);
 		}
 	}
 
@@ -117,6 +171,12 @@
 			return;
 		}
 
+		// Validace minimální hodnoty objednávky
+		if (!minimumOrderMet) {
+			errorMessage = minimumOrderMessage;
+			return;
+		}
+
 		// Validace profilu před zobrazením modálu
 		if (profileData && user?.email) {
 			const validationResult = validateProfileForInvoicing({
@@ -128,27 +188,14 @@
 				errorMessage = `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`;
 				return;
 			}
-		} else {
-			errorMessage = 'Nepodařilo se načíst údaje z profilu. Zkuste stránku obnovit.';
-			return;
 		}
-		
-		orderDetails = {
-			totalPieces,
-			totalPrice
-		};
-		console.log('Order details set:', orderDetails);
-		
-		// Vyčistíme případnou chybovou zprávu, protože validace prošla
+
+		// Vyčistíme chybové zprávy
 		errorMessage = '';
-		
-		// Zobrazíme modální okno pro potvrzení
-		console.log('Showing modal');
+
+		// Zobrazíme potvrzovací modál
 		if (modal) {
-			modal.show();
-			console.log('Modal shown');
-		} else {
-			console.error('Modal component not found');
+			modal.open();
 		}
 	}
 
@@ -157,8 +204,12 @@
 		return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 	}
 
-	onMount(() => {
-		getProfile();
+	onMount(async () => {
+		await Promise.all([
+			getProfile(),
+			loadDeliverySettings(),
+			loadTimeSlots()
+		]);
 	});
 
 	// Reakce na změnu košíku - načtení časových slotů
@@ -446,21 +497,38 @@
 								placeholder="poznámka k objednávce" />
 						</div>
 
-						<div class="grid p-5 border-b justify-items-end">
-							{#if $page.data.session}
-								<p class="text-sm text-gray-500">
-									Máte již vyplněný
-									<a
-										href="/profile"
-										class="text-sm text-blue-500 underline hover:text-blue-700">
-										účet?
-									</a>
+						<div class="grid p-5 border-b justify-items-end">			
+							
+							<!-- Cena dopravy -->
+							{#if deliveryPrice > 0}
+								<p class="text-right">
+									{#if isDeliveryFree}
+										<span class="text-green-600">Doprava zdarma</span>
+									{:else}
+										Doprava: <strong>{deliveryPrice} Kč</strong>
+									{/if}
 								</p>
 							{/if}
-							<p>
-								Celkově: <strong>{totalPieces} ks</strong> obědů v ceně
-								<strong>{totalPrice} Kč</strong>
+							
+							<!-- Celková cena -->
+							<p class="text-right text-lg border-t pt-5">
+								Celkově: <strong>{totalPieces} ks</strong> obědů za
+								<strong>{totalPriceWithDelivery} Kč</strong>
 							</p>
+							
+							<!-- Informace o dopravě zdarma -->
+							{#if deliverySettings?.freeDeliveryThreshold && totalPrice > 0 && totalPrice < deliverySettings.freeDeliveryThreshold}
+								<p class="text-sm text-blue-600">
+									Pro dopravu zdarma přidejte ještě {deliverySettings.freeDeliveryThreshold - totalPrice} Kč
+								</p>
+							{/if}
+							
+							<!-- Chyba minimální hodnoty -->
+							{#if !minimumOrderMet}
+								<p class="text-sm text-red-500">
+									{minimumOrderMessage}
+								</p>
+							{/if}
 						</div>
 
 						{#if errorMessage}
@@ -473,7 +541,7 @@
 							<button
 								type="button"
 								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-								disabled={isSubmitting || cartItems.length === 0}
+								disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet}
 								on:click={handleSubmit}
 							>
 								{#if isSubmitting}

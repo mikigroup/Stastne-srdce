@@ -75,6 +75,29 @@ export const actions: Actions = {
 				0
 			);
 
+			// Načtení nastavení dopravy pro validaci
+			const { data: deliveryData } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'delivery')
+				.single();
+
+			let deliverySettings = null;
+			if (deliveryData?.value) {
+				deliverySettings = typeof deliveryData.value === 'string' 
+					? JSON.parse(deliveryData.value) 
+					: deliveryData.value;
+			}
+
+			// Validace minimální hodnoty objednávky
+			if (deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue) {
+				return {
+					success: false,
+					type: 'failure',
+					message: `Minimální hodnota objednávky je ${deliverySettings.minimumOrderValue} Kč. Aktuální hodnota: ${totalPrice} Kč.`
+				};
+			}
+
 			// Kontrola a automatická aktualizace statusu registrace pomocí globální služby
 			const registrationCheck = await checkAndUpdateRegistrationStatus(supabase, user.id, email);
 			

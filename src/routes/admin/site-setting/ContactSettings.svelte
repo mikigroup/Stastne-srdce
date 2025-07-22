@@ -3,6 +3,11 @@
 	import type { Writable } from "svelte/store";
 
 	export let editableSettings: Writable<any>;
+
+	// Inicializace showOpeningHours pokud neexistuje
+	$: if ($editableSettings.contact && $editableSettings.contact.showOpeningHours === undefined) {
+		$editableSettings.contact.showOpeningHours = true;
+	}
 </script>
 
 <div in:fade={{ duration: 300 }}>
@@ -101,31 +106,43 @@
 		</div>
 
 		<div class="form-control">
-			<label class="label mb-2">
-				<span class="label-text">Otevírací doba</span>
-			</label>
-
-			<div class="space-y-2">
-				{#each ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as day}
-					<div class="flex gap-2 items-center">
-						<label class="w-32 text-sm font-medium">
-							{#if day === "monday"}Pondělí
-							{:else if day === "tuesday"}Úterý
-							{:else if day === "wednesday"}Středa
-							{:else if day === "thursday"}Čtvrtek
-							{:else if day === "friday"}Pátek
-							{:else if day === "saturday"}Sobota
-							{:else if day === "sunday"}Neděle{/if}
-						</label>
-						<input
-							type="text"
-							bind:value={$editableSettings.contact.openingHours[day]}
-							class="input input-bordered flex-grow"
-							placeholder="např. 8:00-16:00 nebo Zavřeno"
-						/>
-					</div>
-				{/each}
+			<div class="flex items-start gap-3 mb-4">
+				<input 
+					type="checkbox" 
+					bind:checked={$editableSettings.contact.showOpeningHours} 
+					class="checkbox checkbox-primary mt-1" 
+				/>
+				<div>
+					<span class="label-text font-medium">Zobrazovat otevírací dobu na webu</span>
+					<p class="text-xs text-gray-500 mt-1">
+						Pokud je zaškrtnuto, otevírací doba se zobrazí na stránce kontaktů.
+					</p>
+				</div>
 			</div>
+
+			{#if $editableSettings.contact.showOpeningHours}
+				<div class="space-y-2">
+					{#each ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as day}
+						<div class="flex gap-2 items-center">
+							<label class="w-32 text-sm font-medium">
+								{#if day === "monday"}Pondělí
+								{:else if day === "tuesday"}Úterý
+								{:else if day === "wednesday"}Středa
+								{:else if day === "thursday"}Čtvrtek
+								{:else if day === "friday"}Pátek
+								{:else if day === "saturday"}Sobota
+								{:else if day === "sunday"}Neděle{/if}
+							</label>
+							<input
+								type="text"
+								bind:value={$editableSettings.contact.openingHours[day]}
+								class="input input-bordered flex-grow"
+								placeholder="např. 8:00-16:00 nebo Zavřeno"
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	</div>
 </div> 

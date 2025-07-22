@@ -44,23 +44,24 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   contact: {
-    email: 'info@stastnesrdce.cz',
-    phone: '777111222',
-    phone1: '+420 724 448 377 Kamila Kučerová',
-    phone2: '+420 732 722 115 Martin Forejt',
-    address: 'Potoční 16, Mikulovice 79084',
+    email: '',
+    phone: '',
+    phone1: '',
+    phone2: '',
+    address: '',
     mapCoordinates: { 
       lat: 50.299513, 
       lng: 17.324304 
     },
+    showOpeningHours: true,
     openingHours: {
-      monday: '8:00-16:00',
-      tuesday: '8:00-16:00',
-      wednesday: '8:00-16:00',
-      thursday: '8:00-16:00',
-      friday: '8:00-16:00',
-      saturday: 'Zavřeno',
-      sunday: 'Zavřeno'
+      monday: '',
+      tuesday: '',
+      wednesday: '',
+      thursday: '',
+      friday: '',
+      saturday: '',
+      sunday: ''
     }
   },
 
@@ -77,7 +78,7 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     favicon: '/favi/favicon.ico',
     primaryColor: '#3CB371',
     secondaryColor: '#4A5568',
-    footerText: 'Šťastné srdce s.r.o. 2022 - 2025',
+    footerText: '',
     // FontAwesome
     fontAwesomeEnabled: true,
     fontAwesomeKit: 'e5ce1babf6',
@@ -86,14 +87,14 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   business: {
-    companyName: 'Šťastné srdce s.r.o.',
-    street: 'Potoční',
-    streetNumber: '16', // Using the canonical address
-    zipCode: '79084',
-    city: 'Mikulovice',
-    ico: '21300674',
-    dic: 'CZ21300674',
-    bankAccount: '670100-2210515001/6210',
+    companyName: '',
+    street: '',
+    streetNumber: '',
+    zipCode: '',
+    city: '',
+    ico: '',
+    dic: '',
+    bankAccount: '',
     // Including fields from current DB that aren't in other defaults
     paymentMethods: ['Hotově', 'Převodem'],
     deliveryOptions: ['Osobní odběr', 'Rozvoz']

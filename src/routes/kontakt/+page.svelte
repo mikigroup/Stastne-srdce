@@ -22,6 +22,19 @@
 	// Extrahujeme data z settings
 	$: contact = settings?.contact || {};
 	$: business = settings?.business || {};
+	
+	// Debug výpis pro kontrolu dat
+	$: console.log('🔍 Kontakt - Svelte data:', {
+		contact: contact,
+		showOpeningHours: contact?.showOpeningHours,
+		openingHours: contact?.openingHours,
+		shouldShow: contact?.showOpeningHours && contact?.openingHours
+	});
+	
+	// Title pro mapu z nastavení
+	$: mapTitle = business?.companyName && contact?.address ? 
+		`${business.companyName} - ${contact.address}` : 
+		'';
 
 	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
 	const State = {
@@ -84,7 +97,7 @@
 						<div class="flex items-center gap-3 border-b pb-4">
 							<Building2 class="w-6 h-6 text-green-700" />
 							<h2 class="text-xl font-semibold text-gray-800">
-								{business?.companyName || "Šťastné srdce s.r.o."}
+								{business?.companyName || ''}
 							</h2>
 						</div>
 
@@ -92,46 +105,86 @@
 							<div class="flex items-center gap-3">
 								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<p class="text-gray-600">
-									{contact?.address || business?.street} {business?.companyStreetNumber || business?.streetNumber}, {business?.city} {business?.zipCode}
+									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}`}
 								</p>
 							</div>
 							<div class="flex items-center gap-3">
 								<Globe class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
-									<p class="text-gray-600">IČO: {business?.ico || "21300674"}</p>
-									<p class="text-gray-600">DIČ: {business?.dic || "CZ21300674"}</p>
+									<p class="text-gray-600">IČO: {business?.ico}</p>
+									<p class="text-gray-600">DIČ: {business?.dic}</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
 									<p class="text-gray-600">
-										<a href="tel:+420724448377" class="hover:text-green-700 hover:underline">
-											{contact?.phone1 || "+420 724 448 377 Kamila Kučerová"}
+										<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
+											{contact.phone}
 										</a>
 									</p>
 									<p class="text-gray-600">
-										<a href="tel:+420732722115" class="hover:text-green-700 hover:underline">
-											{contact?.phone2 || "+420 732 722 115 Martin Forejt"}
+										<a href="tel:{contact?.phone1 }" class="hover:text-green-700 hover:underline">
+											{contact?.phone1 }
+										</a>
+									</p>
+									<p class="text-gray-600">
+										<a href="tel:{contact?.phone2}" class="hover:text-green-700 hover:underline">
+											{contact?.phone2}
 										</a>
 									</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<p class="text-gray-600">{contact?.email || "stastnesrdcekk@seznam.cz"}</p>
-							</div>
+								<p class="text-gray-600">{contact?.email}</p>
+							</div>					
+							
+							<!-- Otevírací doba -->
+							{#if contact?.showOpeningHours && contact?.openingHours}
+								<div class="flex items-start gap-3">
+									<Clock class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+									<div>
+										<p class="text-gray-600 font-medium mb-1">Otevírací doba:</p>
+										<div class="text-sm text-gray-600 space-y-1">
+											{#each Object.entries(contact.openingHours) as [day, hours]}
+												<div class="flex justify-between gap-4">
+													<span class="capitalize">
+														{#if day === "monday"}Pondělí
+														{:else if day === "tuesday"}Úterý
+														{:else if day === "wednesday"}Středa
+														{:else if day === "thursday"}Čtvrtek
+														{:else if day === "friday"}Pátek
+														{:else if day === "saturday"}Sobota
+														{:else if day === "sunday"}Neděle{/if}
+													</span>
+													<span>{hours}</span>
+												</div>
+											{/each}
+										</div>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 
 					<!-- Mapa -->
 					<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
-						<iframe
-							class="w-full h-full"
-							src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
-							loading="lazy"
-							referrerpolicy="no-referrer-when-downgrade"
-							title="Šťastné srdce" />
+						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng}
+							<iframe
+								class="w-full h-full"
+								src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
+								loading="lazy"
+								referrerpolicy="no-referrer-when-downgrade"
+								title={mapTitle} />
+						{:else}
+							<iframe
+								class="w-full h-full"
+								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
+								loading="lazy"
+								referrerpolicy="no-referrer-when-downgrade"
+								title={mapTitle} />
+						{/if}
 					</div>
 				</div>
 

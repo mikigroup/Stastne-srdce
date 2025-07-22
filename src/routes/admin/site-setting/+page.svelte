@@ -34,8 +34,6 @@
 
 	export const form: FormData | null = null;
 
-	// Supabase bude dostupné přes locals v komponentě
-
 	// State management
 	let loading = false;
 	let saved = false;
@@ -436,25 +434,6 @@
 		{ code: "EUR", name: "Euro" },
 		{ code: "USD", name: "Americký dolar" }
 	];
-
-	// Handle přidání měny z selectu - pouze jedna měna
-	function handleCurrencyAdd(event: Event) {
-		const target = event.target as HTMLSelectElement;
-		const currencyCode = target.value;
-		
-		if (currencyCode && currencyCode.trim() !== "") {
-			if (!$editableSettings.general) {
-				$editableSettings.general = {};
-			}
-			
-			// Nastavíme pouze jednu měnu (přepíše původní)
-			$editableSettings.general.currencies = [currencyCode];
-			$editableSettings = $editableSettings;
-			
-			// Reset selectu
-			target.value = "";
-		}
-	}
 
 	// Remove currency - smaže všechny měny
 	function removeCurrency(index: number) {

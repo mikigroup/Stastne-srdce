@@ -2,9 +2,7 @@
 	import { writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
-	// Získáme nastavení z page data
-	$: settings = $page.data.settings;
-	$: footerText = settings?.appearance?.footerText || '© Šťastné srdce s.r.o. 2022 - 2025. Všechna práva vyhrazena.';
+	$: footerText = $page.data.appearanceSettings?.footerText || '';
 </script>
 
 <footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner pt-20">
@@ -22,8 +20,10 @@
 				</a>
 			</div>
 
-			<div class="text-gray-500 text-xs md:text-sm mt-5 md:mt-0">
-				<p>{footerText}</p>
+			<div class="text-gray-500 text-xs md:text-sm mt-5 md:mt-0 text-center">
+				{#if footerText}
+					<p>{footerText}</p>
+				{/if}
 			</div>
 		</div>
 

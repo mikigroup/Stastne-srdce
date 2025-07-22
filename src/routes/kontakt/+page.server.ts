@@ -4,6 +4,7 @@ import nodemailer from "nodemailer";
 import * as yup from "yup";
 import type { FormData } from "$lib/types/form";
 import { PRIVATE_seznam_key } from "$env/static/private";
+import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 // Definice schématu pro validaci formuláře
 const contactSchema = yup.object({
@@ -71,9 +72,14 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 					typeof contactSettings.value === "string"
 						? JSON.parse(contactSettings.value)
 						: contactSettings.value;
+			} else {
+				// Použijeme výchozí nastavení pokud nejsou data v databázi
+				contact = getDefaultSettings('contact');
 			}
 		} catch (e) {
 			console.error("Chyba při parsování kontaktních údajů:", e);
+			// Použijeme výchozí nastavení při chybě
+			contact = getDefaultSettings('contact');
 		}
 
 		try {
@@ -82,10 +88,22 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 					typeof businessSettings.value === "string"
 						? JSON.parse(businessSettings.value)
 						: businessSettings.value;
+			} else {
+				// Použijeme výchozí nastavení pokud nejsou data v databázi
+				business = getDefaultSettings('business');
 			}
 		} catch (e) {
 			console.error("Chyba při parsování obchodních údajů:", e);
+			// Použijeme výchozí nastavení při chybě
+			business = getDefaultSettings('business');
 		}
+
+		// Debug výpis pro kontrolu dat
+		console.log('🔍 Kontakt - Načtená data:', {
+			contact: contact,
+			showOpeningHours: contact?.showOpeningHours,
+			openingHours: contact?.openingHours
+		});
 
 		return {
 			settings: {
