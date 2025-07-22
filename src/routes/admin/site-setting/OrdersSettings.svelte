@@ -81,11 +81,10 @@
 	</div>
 	
 	<!-- Další nastavení zakázek -->
-	<div class="mb-6">
-		<h3 class="text-base sm:text-lg font-medium mb-3">Základní nastavení</h3>
+	<div class="mb-6">		
 		
 		<div class="space-y-4">
-			<div class="form-control">
+			<!-- <div class="form-control">
 				<label class="label">
 					<span class="label-text text-sm sm:text-base">Prefix čísla objednávky</span>
 				</label>
@@ -107,7 +106,7 @@
 					class="input input-bordered input-sm sm:input-md w-full"
 					min="1"
 				/>
-			</div>
+			</div> -->
 
 			<div class="form-control">
 				<label class="label cursor-pointer justify-start gap-3">

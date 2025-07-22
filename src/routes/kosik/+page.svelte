@@ -9,6 +9,7 @@
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
 	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
+	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 	export let data;
 	export let form: Actions;
@@ -130,7 +131,7 @@
 	}
 
 	async function loadTimeSlots() {
-		if (!cartItems.length) return;
+		console.log('🔍 Debug - loadTimeSlots called, cartItems.length:', cartItems.length);
 
 		try {
 			// Načtení nastavení časových slotů
@@ -140,22 +141,48 @@
 				.eq('key', 'products')
 				.single();
 
+			console.log('🔍 Debug - productsSettings:', productsSettings);
+			console.log('🔍 Debug - productsSettings.value:', productsSettings?.value);
+
 			if (productsSettings?.value) {
-				timeSlotSettings = productsSettings.value;
+				// Zkusíme parsovat JSON, pokud je to string
+				if (typeof productsSettings.value === 'string') {
+					timeSlotSettings = JSON.parse(productsSettings.value);
+				} else {
+					timeSlotSettings = productsSettings.value;
+				}
+				console.log('🔍 Debug - timeSlotSettings:', timeSlotSettings);
 				
-				// Získání dostupných časových slotů pro první den v košíku
-				const firstDate = cartItems[0]?.date;
-				if (firstDate && timeSlotSettings.timeSlotsEnabled) {
+				// Kontrola, zda jsou časové sloty povolené
+				if (timeSlotSettings.timeSlotsEnabled) {
+					console.log('🔍 Debug - Loading time slots...');
+					
+					// Vyčistíme stará data (maxOrders)
+					if (timeSlotSettings.timeSlots) {
+						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map(slot => ({
+							startTime: slot.startTime,
+							endTime: slot.endTime
+							// Odstraníme maxOrders
+						}));
+					}
+					
+					const firstDate = cartItems[0]?.date;
+					console.log('🔍 Debug - firstDate:', firstDate);
+					console.log('🔍 Debug - timeSlotsEnabled:', timeSlotSettings.timeSlotsEnabled);
+					
 					availableTimeSlots = await getAvailableTimeSlots(supabase, firstDate, timeSlotSettings);
+					console.log('🔍 Debug - availableTimeSlots:', availableTimeSlots);
 					
 					// Nastavení výchozího slotu
 					if (availableTimeSlots.length > 0) {
-						const defaultSlot = availableTimeSlots.find(slot => slot.isAvailable);
-						if (defaultSlot) {
-							selectedTimeSlot = `${defaultSlot.slot.startTime}-${defaultSlot.slot.endTime}`;
-						}
+						selectedTimeSlot = `${availableTimeSlots[0].slot.startTime}-${availableTimeSlots[0].slot.endTime}`;
+						console.log('🔍 Debug - selectedTimeSlot:', selectedTimeSlot);
 					}
 				}
+			} else {
+				// Fallback na defaultní hodnoty
+				console.log('🔍 Debug - No data from DB, using defaults');
+				timeSlotSettings = getDefaultSettings('products');
 			}
 		} catch (error) {
 			console.error("Error loading time slots:", error);
@@ -195,7 +222,7 @@
 
 		// Zobrazíme potvrzovací modál
 		if (modal) {
-			modal.open();
+			modal.show();
 		}
 	}
 
@@ -447,8 +474,18 @@
 				</div>
 
 				<!-- Total and checkout -->
-				{#if cartItems.length}
+				{#if cartItems.length || (timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0)}
 					<div class="mt-5 border rounded-lg border-gray-300">
+						<!-- Debug informace -->
+						<div class="p-4 bg-yellow-50 border-b border-yellow-200">
+							<p class="text-sm text-yellow-800">
+								🔍 Debug: timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled || 'undefined'}, 
+								availableTimeSlots.length={availableTimeSlots?.length || 0},
+								timeSlots={timeSlotSettings?.timeSlots?.length || 0} slotů,
+								timeSlotSettings.timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled}
+							</p>
+						</div>
+
 						<!-- Časové sloty -->
 						{#if timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0}
 							<div class="grid p-5 border-b">
@@ -457,28 +494,19 @@
 								</label>
 								<div class="space-y-2">
 									{#each availableTimeSlots as slot}
-										<label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {!slot.isAvailable ? 'opacity-50 cursor-not-allowed' : ''}">
+										<label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
 											<input
 												type="radio"
 												name="timeSlot"
 												value="{slot.slot.startTime}-{slot.slot.endTime}"
 												bind:group={selectedTimeSlot}
-												disabled={!slot.isAvailable}
 												class="mr-3"
 											/>
 											<div class="flex-1">
 												<div class="font-medium">
 													{formatTimeSlot(slot.slot)}
 												</div>
-												{#if timeSlotSettings.showTimeSlotAvailability}
-													<div class="text-sm text-gray-500">
-														Dostupnost: {slot.availableOrders} z {slot.slot.maxOrders} míst
-													</div>
-												{/if}
 											</div>
-											{#if !slot.isAvailable}
-												<span class="text-sm text-red-500">Plné</span>
-											{/if}
 										</label>
 									{/each}
 								</div>
@@ -486,77 +514,79 @@
 							</div>
 						{/if}
 
-						<div class="grid p-5 border-b">
-							<label for="note">Poznámka</label>
-							<textarea
-								class="bg-gray-50 border rounded-lg block w-full p-2.5 focus:outline-none focus:border-green-600 mb-5 border-gray-300"
-								id="note"
-								name="note"
-								rows="4"
-								cols="50"
-								placeholder="poznámka k objednávce" />
-						</div>
+						{#if cartItems.length}
+							<div class="grid p-5 border-b">
+								<label for="note">Poznámka</label>
+								<textarea
+									class="bg-gray-50 border rounded-lg block w-full p-2.5 focus:outline-none focus:border-green-600 mb-5 border-gray-300"
+									id="note"
+									name="note"
+									rows="4"
+									cols="50"
+									placeholder="poznámka k objednávce" />
+							</div>
 
-						<div class="grid p-5 border-b justify-items-end">			
-							
-							<!-- Cena dopravy -->
-							{#if deliveryPrice > 0}
-								<p class="text-right">
-									{#if isDeliveryFree}
-										<span class="text-green-600">Doprava zdarma</span>
+							<div class="grid p-5 border-b justify-items-end">			
+								
+								<!-- Cena dopravy -->
+								{#if deliveryPrice > 0}
+									<p class="text-right">
+										{#if isDeliveryFree}
+											<span class="text-green-600">Doprava zdarma</span>
+										{:else}
+											Doprava: <strong>{deliveryPrice} Kč</strong>
+										{/if}
+									</p>
+								{/if}
+								
+								<!-- Celková cena -->
+								<p class="text-right text-lg border-t pt-5">
+									Celkově: <strong>{totalPieces} ks</strong> obědů za
+									<strong>{totalPriceWithDelivery} Kč</strong>
+								</p>
+								
+								<!-- Informace o dopravě zdarma -->
+								{#if deliverySettings?.freeDeliveryThreshold && totalPrice > 0 && totalPrice < deliverySettings.freeDeliveryThreshold}
+									<p class="text-sm text-blue-600">
+										Pro dopravu zdarma přidejte ještě {deliverySettings.freeDeliveryThreshold - totalPrice} Kč
+									</p>
+								{/if}
+								
+								<!-- Chyba minimální hodnoty -->
+								{#if !minimumOrderMet}
+									<p class="text-sm text-red-500">
+										{minimumOrderMessage}
+									</p>
+								{/if}
+							</div>
+
+							{#if errorMessage}
+								<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+									<p class="text-red-700">{@html errorMessage}</p>
+								</div>
+							{/if}
+
+							<div class="m-5">
+								<button
+									type="button"
+									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+									disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet}
+									on:click={handleSubmit}
+								>
+									{#if isSubmitting}
+										<span class="inline-flex items-center">
+											<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+												<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+											</svg>
+											Odesílám objednávku...
+										</span>
 									{:else}
-										Doprava: <strong>{deliveryPrice} Kč</strong>
+										Odeslat objednávku
 									{/if}
-								</p>
-							{/if}
-							
-							<!-- Celková cena -->
-							<p class="text-right text-lg border-t pt-5">
-								Celkově: <strong>{totalPieces} ks</strong> obědů za
-								<strong>{totalPriceWithDelivery} Kč</strong>
-							</p>
-							
-							<!-- Informace o dopravě zdarma -->
-							{#if deliverySettings?.freeDeliveryThreshold && totalPrice > 0 && totalPrice < deliverySettings.freeDeliveryThreshold}
-								<p class="text-sm text-blue-600">
-									Pro dopravu zdarma přidejte ještě {deliverySettings.freeDeliveryThreshold - totalPrice} Kč
-								</p>
-							{/if}
-							
-							<!-- Chyba minimální hodnoty -->
-							{#if !minimumOrderMet}
-								<p class="text-sm text-red-500">
-									{minimumOrderMessage}
-								</p>
-							{/if}
-						</div>
-
-						{#if errorMessage}
-							<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-								<p class="text-red-700">{@html errorMessage}</p>
+								</button>
 							</div>
 						{/if}
-
-						<div class="m-5">
-							<button
-								type="button"
-								class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-								disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet}
-								on:click={handleSubmit}
-							>
-								{#if isSubmitting}
-									<span class="inline-flex items-center">
-										<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-											<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-											<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-										</svg>
-										Odesílám objednávku...
-									</span>
-								{:else}
-									Odeslat objednávku
-								{/if}
-							</button>
-						</div>
 					</div>
 				{/if}
 			</div>

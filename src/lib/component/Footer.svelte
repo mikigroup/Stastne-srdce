@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 
 	$: footerText = $page.data.appearanceSettings?.footerText || '';
+    $: socialSettings = $page.data.socialSettings || {};
 </script>
 
 <footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner pt-20">
@@ -19,6 +20,35 @@
 					GDRP
 				</a>
 			</div>
+
+            <!-- Sociální sítě -->
+            <div class="flex justify-center gap-4 mt-4">
+                {#if socialSettings.facebook}
+                    <a href="{socialSettings.facebook}" target="_blank" rel="noopener" aria-label="Facebook" class="text-gray-500 hover:text-green-700 text-2xl">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                {/if}
+                {#if socialSettings.instagram}
+                    <a href="{socialSettings.instagram}" target="_blank" rel="noopener" aria-label="Instagram" class="text-gray-500 hover:text-green-700 text-2xl">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                {/if}
+                {#if socialSettings.twitter}
+                    <a href="{socialSettings.twitter}" target="_blank" rel="noopener" aria-label="Twitter" class="text-gray-500 hover:text-green-700 text-2xl">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                {/if}
+                {#if socialSettings.linkedin}
+                    <a href="{socialSettings.linkedin}" target="_blank" rel="noopener" aria-label="LinkedIn" class="text-gray-500 hover:text-green-700 text-2xl">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                {/if}
+                {#if socialSettings.youtube}
+                    <a href="{socialSettings.youtube}" target="_blank" rel="noopener" aria-label="YouTube" class="text-gray-500 hover:text-green-700 text-2xl">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                {/if}
+            </div>
 
 			<div class="text-gray-500 text-xs md:text-sm mt-5 md:mt-0 text-center">
 				{#if footerText}

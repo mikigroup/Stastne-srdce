@@ -327,7 +327,7 @@
 		{ id: "appearance", label: "Vzhled", icon: "fa-solid fa-palette" },
 		{ id: "business", label: "Firemní údaje", icon: "fa-solid fa-building" },
 		{ id: "email", label: "Šablony e-mailů", icon: "fa-solid fa-envelope" },
-		{ id: "notifications", label: "Automatické notifikace", icon: "fa-solid fa-bell" },
+		/* { id: "notifications", label: "Automatické notifikace", icon: "fa-solid fa-bell" }, */
 		{ id: "integrations", label: "Integrace", icon: "fa-solid fa-plug" },
 		{ id: "orders", label: "Objednávky", icon: "fa-solid fa-clipboard-list" },
 		{ id: "delivery", label: "Doprava", icon: "fa-solid fa-truck" },

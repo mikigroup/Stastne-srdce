@@ -202,9 +202,9 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     advanceOrderDays: 1, // Počet dnů dopředu pro objednávky
     orderDeadlineTime: '10:00', // Uzavírací čas objednávek
     timeSlots: [
-      { startTime: '11:00', endTime: '12:00', maxOrders: 10 },
-      { startTime: '12:00', endTime: '13:00', maxOrders: 15 },
-      { startTime: '13:00', endTime: '14:00', maxOrders: 10 }
+      { startTime: '11:00', endTime: '12:00' },
+      { startTime: '12:00', endTime: '13:00' },
+      { startTime: '13:00', endTime: '14:00' }
     ],
     showTimeSlotAvailability: true // Zobrazovat dostupnost slotů
   },

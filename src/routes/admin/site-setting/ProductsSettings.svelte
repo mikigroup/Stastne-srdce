@@ -4,26 +4,6 @@
 
 	export let editableSettings: Writable<any>;
 
-	// Add product feature
-	function addProductFeature() {
-		if (!$editableSettings.products) {
-			$editableSettings.products = {};
-		}
-		if (!$editableSettings.products.features) {
-			$editableSettings.products.features = [];
-		}
-		$editableSettings.products.features.push({ title: "", description: "" });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove product feature
-	function removeProductFeature(index: number) {
-		if ($editableSettings.products?.features && $editableSettings.products.features.length > index) {
-			$editableSettings.products.features.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
 	// Add time slot
 	function addTimeSlot() {
 		if (!$editableSettings.products) {
@@ -35,7 +15,6 @@
 		$editableSettings.products.timeSlots.push({ 
 			startTime: "11:00", 
 			endTime: "12:00", 
-			maxOrders: 10 
 		});
 		$editableSettings = $editableSettings;
 	}
@@ -135,47 +114,6 @@
 
 		{#if $editableSettings.products.timeSlotsEnabled}
 			<div class="form-control mb-4">
-				<label class="label" for="advanceOrderDays">
-					<span class="label-text">Předobjednávky</span>
-				</label>
-				<div class="flex items-center gap-3">
-					<input
-						id="advanceOrderDays"
-						type="number"
-						bind:value={$editableSettings.products.advanceOrderDays}
-						class="input input-bordered w-24"
-						min="0"
-						max="30"
-						placeholder="1"
-					/>
-					<p class="text-sm text-gray-500">
-						Počet dnů dopředu, na které lze objednat (0 = pouze dnešní den)
-					</p>
-				</div>
-			</div>
-
-			<div class="form-control mb-4">
-				<label class="label" for="orderDeadlineTime">
-					<span class="label-text">Uzavírací čas objednávek</span>
-				</label>
-				<div class="flex items-center gap-3">
-					<input
-						id="orderDeadlineTime"
-						type="time"
-						bind:value={$editableSettings.products.orderDeadlineTime}
-						class="input input-bordered w-32"
-						step="900"
-					/>
-					<p class="text-sm text-gray-500">
-						Do kdy lze objednat jídlo na daný den
-					</p>
-				</div>
-				<span class="text-xs text-gray-500 mt-1">
-					Například: 10:00 = objednávky na dnešní den se uzavřou v 10:00
-				</span>
-			</div>
-
-			<div class="form-control mb-4">
 				<label class="label">
 					<span class="label-text">Časové sloty</span>
 				</label>
@@ -199,14 +137,6 @@
 								class="input input-bordered w-32"
 								step="900"
 							/>
-							<input
-								type="number"
-								bind:value={slot.maxOrders}
-								class="input input-bordered w-20"
-								min="1"
-								placeholder="10"
-							/>
-							<span class="text-sm text-gray-500">max objednávek</span>
 							<button
 								type="button"
 								class="btn btn-sm btn-error"
@@ -226,21 +156,7 @@
 					</button>
 				</div>
 				<span class="text-xs text-gray-500 mt-1">
-					Definujte časové okna pro vyzvednutí objednávek a maximální počet objednávek na slot
-				</span>
-			</div>
-
-			<div class="form-control mb-4">
-				<label class="label cursor-pointer justify-start gap-2">
-					<input 
-						type="checkbox" 
-						class="checkbox checkbox-primary" 
-						bind:checked={$editableSettings.products.showTimeSlotAvailability} 
-					/>
-					<span class="label-text">Zobrazovat dostupnost časových slotů</span>
-				</label>
-				<span class="text-xs text-gray-500 mt-1">
-					Zákazníci uvidí, kolik objednávek je ještě možné v každém slotu
+					Definujte časové okna pro vyzvednutí objednávek
 				</span>
 			</div>
 		{/if}

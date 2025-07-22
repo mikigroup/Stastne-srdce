@@ -13,18 +13,20 @@
 <div in:fade={{ duration: 300 }}>
 	<h2 class="text-xl font-semibold mb-4">Kontaktní údaje</h2>
 
+	<div class="form-control">
+		<label class="label" for="contactAddress">
+			<span class="label-text">Adresa</span>
+		</label>
+		<textarea
+			id="contactAddress"
+			bind:value={$editableSettings.contact.address}
+			class="textarea textarea-bordered w-full"
+		></textarea>
+	</div>
+
+
 	<div class="space-y-4">
-		<div class="form-control">
-			<label class="label" for="contactEmail">
-				<span class="label-text">E-mail</span>
-			</label>
-			<input
-				id="contactEmail"
-				type="email"
-				bind:value={$editableSettings.contact.email}
-				class="input input-bordered w-full"
-			/>
-		</div>
+		
 
 		<div class="form-control">
 			<label class="label" for="contactPhone">
@@ -61,16 +63,17 @@
 				class="input input-bordered w-full"
 			/>
 		</div>
-
+		
 		<div class="form-control">
-			<label class="label" for="contactAddress">
-				<span class="label-text">Adresa</span>
+			<label class="label" for="contactEmail">
+				<span class="label-text">E-mail</span>
 			</label>
-			<textarea
-				id="contactAddress"
-				bind:value={$editableSettings.contact.address}
-				class="textarea textarea-bordered w-full"
-			></textarea>
+			<input
+				id="contactEmail"
+				type="email"
+				bind:value={$editableSettings.contact.email}
+				class="input input-bordered w-full"
+			/>
 		</div>
 
 		<div class="form-control">
