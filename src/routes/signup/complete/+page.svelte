@@ -92,15 +92,40 @@
 				Dokončení registrace
 			</div>
 
-			{#if profileValidationMessage}
-				<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-					<p class="text-yellow-800">
-						<span class="font-medium">Upozornění:</span> {profileValidationMessage}
-					</p>
+			{#if !data.session}
+				<!-- Zobrazení pro uživatele bez session -->
+				<div class="text-center space-y-4">
+					<div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+						<p class="text-blue-800">
+							<span class="font-medium">Registrace byla úspěšná!</span><br>
+							Pro dokončení registrace se prosím přihlaste.
+						</p>
+					</div>
+					
+					<div class="space-y-3">
+						<a 
+							href="/login" 
+							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
+						>
+							Přihlásit se
+						</a>
+						
+						<p class="text-sm text-gray-600">
+							Po přihlášení budete přesměrováni na dokončení registrace.
+						</p>
+					</div>
 				</div>
-			{/if}
+			{:else}
+				<!-- Zobrazení pro přihlášené uživatele -->
+				{#if profileValidationMessage}
+					<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+						<p class="text-yellow-800">
+							<span class="font-medium">Upozornění:</span> {profileValidationMessage}
+						</p>
+					</div>
+				{/if}
 
-			<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
+				<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
 				<!-- Osobní údaje -->
 				<div class="space-y-4 pt-5">
 					<h3 class="text-lg font-medium">Osobní údaje</h3>
@@ -304,7 +329,8 @@
 						</p>
 					</div>
 				{/if}
-			</form>
+				</form>
+			{/if}
 		</div>
 	</div>
 </section>
