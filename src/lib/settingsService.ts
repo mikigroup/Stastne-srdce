@@ -4,9 +4,6 @@ import { writable, derived } from "svelte/store";
 // Základní rozhraní pro nastavení
 export interface GeneralSettings {
 	shopName: string;
-	shortName: string;
-	slogan: string;
-	legalName: string;
 	currencies: string[];
 }
 
@@ -15,6 +12,23 @@ export interface SeoSettings {
 	metaDescription: string;
 	metaKeywords: string;
 	ogImage?: string;
+	// Meta tagy
+	metaAuthor?: string;
+	metaCopyright?: string;
+	metaRobots?: string;
+	// Open Graph
+	ogType?: string;
+	ogUrl?: string;
+	ogLocale?: string;
+	// Twitter
+	twitterCard?: string;
+	// Web App
+	appleTouchIcon?: string;
+	webManifest?: string;
+	// Custom scripts
+	customHeadScripts?: string;
+	customBodyScripts?: string;
+	// Analytics
 	googleAnalyticsId?: string;
 	googleAnalyticsEnabled: boolean;
 	facebookPixelEnabled: boolean;
@@ -40,28 +54,11 @@ export interface AppearanceSettings {
 	headerText?: string;
 	showLogo?: boolean;
 	showFooter?: boolean;
-	// Meta tagy
-	metaAuthor?: string;
-	metaCopyright?: string;
-	metaRobots?: string;
-	// Open Graph
-	ogType?: string;
-	ogUrl?: string;
-	ogLocale?: string;
-	// Twitter
-	twitterCard?: string;
-	// Apple touch icon
-	appleTouchIcon?: string;
-	// Web manifest
-	webManifest?: string;
 	// FontAwesome
 	fontAwesomeEnabled?: boolean;
 	fontAwesomeKit?: string;
 	// Lottie player
 	lottiePlayerEnabled?: boolean;
-	// Custom scripts
-	customHeadScripts?: string;
-	customBodyScripts?: string;
 }
 
 export interface BusinessSettings {

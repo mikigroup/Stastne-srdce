@@ -1,239 +1,82 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { refreshUserToken } from '$lib/fakturoidAuth';
+import { env } from '$env/dynamic/private';
+import { refreshGlobalToken } from '$lib/fakturoidAuth';
 
-export const POST: RequestHandler = async ({ request, locals: { supabase, safeGetSession } }) => {
+export const POST: RequestHandler = async ({ locals: { supabase, safeGetSession } }) => {
 	const { session } = await safeGetSession();
 	
 	if (!session) {
 		return json({ error: 'Nepřihlášený uživatel' }, { status: 401 });
 	}
 
-	// Získáme volitelný parametr pro výběr konkrétního účtu
-	let targetAccountEmail = null;
 	try {
-		const body = await request.json();
-		targetAccountEmail = body?.account_email;
-	} catch (e) {
-		// Pokud není JSON tělo, pokračujeme bez parametru
-	}
+		console.log('🔄 Force refresh Fakturoid token...');
 
-	try {
-		console.log('🌐 Global force refresh token request');
-		if (targetAccountEmail) {
-			console.log('🎯 Target account specified:', targetAccountEmail);
-		}
-
-		// DEBUGGING: Nejdřív se podívejme na všechny tokeny
-		const { data: allTokens, error: allTokensError } = await supabase
-			.from('fakturoid_tokens')
-			.select('account_email, status, last_used_at, user_id')
-			.in('status', ['active', 'expired']);
-
-		console.log('🔍 All available tokens:', allTokens);
-
-		// ZMĚNA: Najdeme token podle specifikace nebo fallback na globální přístup
-		let tokenQuery = supabase
+		// Najdeme aktivní token v systému
+		const { data: tokens, error: tokenError } = await supabase
 			.from('fakturoid_tokens')
 			.select('*')
-			.in('status', ['active', 'expired']);
+			.in('status', ['active', 'expired'])
+			.neq('status', 'revoked')
+			.order('last_used_at', { ascending: false })
+			.limit(1);
 
-		if (targetAccountEmail) {
-			// Pokud je specifikován email, hledáme konkrétní účet
-			console.log('🎯 Searching for specific account:', targetAccountEmail);
-			tokenQuery = tokenQuery.eq('account_email', targetAccountEmail);
-		} else {
-			// NOVÉ: Priorita pro stastnesrdce účet místo last_used_at
-			console.log('🏆 PRIORITY SEARCH: Looking for stastnesrdcekk@seznam.cz first');
-			tokenQuery = tokenQuery.eq('account_email', 'stastnesrdcekk@seznam.cz');
+		if (tokenError) {
+			console.error('Error fetching tokens:', tokenError);
+			return json({ 
+				error: 'Chyba při načítání tokenů',
+				success: false 
+			}, { status: 500 });
 		}
 
-		let { data: tokenData, error: tokenError } = await tokenQuery.limit(1);
-		console.log('🔍 Priority query result:', { tokenData, tokenError });
-
-		// Pokud nenajdeme preferovaný účet, zkusíme fallback na jakýkoliv
-		if (tokenError || !tokenData || tokenData.length === 0) {
-			console.log('⚠️ Priority account not found, trying fallback to any active token...');
-			
-			const { data: fallbackData, error: fallbackError } = await supabase
-				.from('fakturoid_tokens')
-				.select('*')
-				.in('status', ['active', 'expired'])
-				.order('last_used_at', { ascending: false })
-				.limit(1);
-
-			console.log('🔄 Fallback query result:', { fallbackData, fallbackError });
-
-			if (fallbackError || !fallbackData || fallbackData.length === 0) {
-				const errorMsg = targetAccountEmail 
-					? `Token pro účet ${targetAccountEmail} nebyl nalezen`
-					: 'Žádný Fakturoid token nebyl nalezen v systému';
-				
-				return json({ 
-					error: `${errorMsg}. Připojte účet znovu.`,
-					success: false,
-					requiresReauth: true
-				}, { status: 404 });
-			}
-
-			// Použijeme fallback token
-			tokenData = fallbackData;
-			console.log('🔄 Using fallback token for:', fallbackData[0].account_email);
-		} else {
-			console.log('✅ Using priority token for:', tokenData[0].account_email);
+		if (!tokens || tokens.length === 0) {
+			return json({ 
+				error: 'Žádný Fakturoid token nebyl nalezen v systému. Připojte účet.',
+				success: false,
+				requiresReauth: true
+			}, { status: 404 });
 		}
 
-		const token = tokenData[0];
-		console.log('🔧 FINAL TOKEN SELECTED:', {
-			email: token.account_email,
-			user_id: token.user_id,
-			account_name: token.account_name,
-			account_slug: token.account_slug,
-			status: token.status,
-			expires_at: token.expires_at
-		});
+		const token = tokens[0];
+		console.log('🔍 Force refreshing token for:', token.account_email);
 
-		// Pokusíme se o force refresh s globálním tokenem
-		const refreshSuccess = await refreshUserToken(token.user_id, supabase);
+		// Zkusíme refresh tokenu
+		const refreshSuccess = await refreshGlobalToken(token.account_email, supabase);
 
 		if (refreshSuccess) {
-			// NOVÉ: Po úspěšném refreshu aktualizujeme také údaje o účtech
-			console.log('🔄 Token refreshed successfully, now updating account info...');
+			console.log('✅ Token successfully force refreshed');
+			return json({
+				success: true,
+				message: 'Token úspěšně obnoven',
+				accountEmail: token.account_email
+			});
+		} else {
+			console.log('❌ Failed to force refresh token');
 			
-			// Načteme čerstvý token z databáze
-			const { data: freshToken, error: freshTokenError } = await supabase
+			// Zkontrolujeme, zda je token revoked
+			const { data: currentToken } = await supabase
 				.from('fakturoid_tokens')
-				.select('access_token, account_slug')
-				.eq('user_id', token.user_id)
+				.select('status')
+				.eq('account_email', token.account_email)
 				.single();
 
-			if (freshTokenError || !freshToken) {
-				console.error('Error fetching fresh token:', freshTokenError);
+			if (currentToken?.status === 'revoked') {
 				return json({
-					success: true,
-					message: `Token byl obnoven pro účet ${token.account_email}, ale nepodařilo se aktualizovat údaje o účtech`,
-					newExpiry: null,
-					tokenStatus: 'active',
-					refreshAttempts: 0,
-					tokenOwner: token.account_email
-				});
-			}
-
-			// Zavoláme Fakturoid API pro aktuální údaje o účtech
-			let userResponse;
-			try {
-				userResponse = await fetch('https://app.fakturoid.cz/api/v3/user.json', {
-					headers: {
-						'Authorization': `Bearer ${freshToken.access_token}`,
-						'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)',
-						'Content-Type': 'application/json'
-					}
-				});
-
-				if (!userResponse.ok) {
-					throw new Error(`API responded with ${userResponse.status}`);
-				}
-
-				const userData = await userResponse.json();
-				console.log('📊 Fresh account data received:', {
-					userEmail: userData.email,
-					accountsCount: userData.accounts?.length || 0,
-					accountNames: userData.accounts?.map((acc: any) => acc.name) || []
-				});
-
-				// Najdeme aktivní účet - priorita: současný account_slug nebo první účet
-				let activeAccount = null;
-				if (freshToken.account_slug && userData.accounts) {
-					activeAccount = userData.accounts.find((acc: any) => 
-						acc.slug === freshToken.account_slug || acc.subdomain === freshToken.account_slug
-					);
-				}
-				
-				// Pokud nenajdeme současný účet, použijeme první dostupný
-				if (!activeAccount && userData.accounts?.length > 0) {
-					activeAccount = userData.accounts[0];
-					console.log('⚠️ Previous account not found, switching to first available account');
-				}
-
-				// Aktualizujeme údaje o účtu v databázi
-				if (activeAccount) {
-					const { error: updateError } = await supabase
-						.from('fakturoid_tokens')
-						.update({
-							account_name: activeAccount.name || userData.name || userData.email,
-							account_id: activeAccount.id?.toString() || null,
-							account_slug: activeAccount.slug || activeAccount.subdomain || null,
-							account_subdomain: activeAccount.slug || activeAccount.subdomain || null,
-							account_currency: activeAccount.currency || null,
-							account_plan: activeAccount.plan || null,
-							updated_at: new Date().toISOString()
-						})
-						.eq('user_id', token.user_id);
-
-					if (updateError) {
-						console.error('Error updating account info:', updateError);
-					} else {
-						console.log('✅ Account info updated successfully:', {
-							accountName: activeAccount.name,
-							accountSlug: activeAccount.slug || activeAccount.subdomain,
-							accountCurrency: activeAccount.currency
-						});
-					}
-				}
-
-			} catch (apiError) {
-				console.error('Error fetching account info from Fakturoid:', apiError);
-				// Pokračujeme i když se nezdaří aktualizace účtů - token je refreshnutý
-			}
-
-			// Načteme finální aktualizovaný token
-			const { data: updatedToken, error: fetchError } = await supabase
-				.from('fakturoid_tokens')
-				.select('expires_at, status, refresh_attempts, account_name, account_slug')
-				.eq('user_id', token.user_id)
-				.single();
-
-			if (fetchError) {
-				console.error('Error fetching updated token:', fetchError);
-				return json({ 
-					error: 'Token byl obnoven, ale nepodařilo se načíst nové údaje',
-					success: true
-				});
+					success: false,
+					error: 'Token je neplatný a nelze ho obnovit',
+					requiresReauth: true
+				}, { status: 400 });
 			}
 
 			return json({
-				success: true,
-				message: `Token i údaje o účtu byly úspěšně obnoveny pro ${updatedToken.account_name || token.account_email}`,
-				newExpiry: updatedToken.expires_at,
-				tokenStatus: updatedToken.status,
-				refreshAttempts: updatedToken.refresh_attempts,
-				tokenOwner: token.account_email,
-				accountName: updatedToken.account_name,
-				accountSlug: updatedToken.account_slug
-			});
-
-		} else {
-			// Refresh selhal - zjistíme proč
-			const { data: failedToken } = await supabase
-				.from('fakturoid_tokens')
-				.select('status, refresh_attempts')
-				.eq('user_id', token.user_id)
-				.single();
-
-			const attempts = failedToken?.refresh_attempts || 0;
-			const requiresReauth = attempts > 3;
-
-			return json({ 
-				error: `Nepodařilo se obnovit token pro ${token.account_email} (pokus ${attempts}/3)`,
 				success: false,
-				requiresReauth,
-				refreshAttempts: attempts,
-				tokenOwner: token.account_email
+				error: 'Nepodařilo se obnovit token'
 			}, { status: 500 });
 		}
 
 	} catch (error) {
-		console.error('Chyba při force refresh tokenu:', error);
+		console.error('Error during force refresh:', error);
 		return json({ 
 			error: `Neočekávaná chyba: ${error instanceof Error ? error.message : 'Unknown error'}`,
 			success: false 

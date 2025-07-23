@@ -53,9 +53,11 @@
 	let updateMessage = "";
 	let orderStates: string[] = [];
 	let isInitialLoad = true;
+	let previousOrderId: string | null = null;
 
 	// Reaktivní aktualizace všech polí při změně order dat (kromě dropdown hodnot které se synchronizují zvlášť)
-	$: if (order) {
+	$: if (order && order.id !== previousOrderId) {
+		previousOrderId = order.id;
 		date = order.date ?? "";
 		orderId = order.id ?? "";
 		formattedDate = date ? formatSupabaseDate(date) : "";
@@ -365,6 +367,8 @@
 	}
 
 	async function createInvoice() {
+		// ZJEDNODUŠENÉ: Přeskočíme složitou refresh logiku a necháme backend, aby to vyřešil
+		console.log('Přesměrování na vytvoření faktury...');
 		await goto(`/admin/order/${orderId}/create-invoice`);
 	}
 
@@ -445,18 +449,16 @@
 					? 'Fakturoid není povolen'
 					: !orderSettings?.fakturoid?.connected
 						? 'Fakturoid není připojen'
-						: !orderSettings?.fakturoid?.tokenValid
-							? 'Fakturoid token vypršel'
-							: !orderSettings?.fakturoid?.subdomain
-								? 'Není vybrán slug/účet'
-								: 'Vytvořit fakturu',
+						: !orderSettings?.fakturoid?.subdomain
+							? 'Není vybrán slug/účet'
+							: 'Vytvořit fakturu',
 			onClick: invoiceExistsForCurrentSlug ? () => {
 				if (currentSlugInvoice?.invoice_url) {
 					window.open(currentSlugInvoice.invoice_url, '_blank');
 				}
 			} : createInvoice,
 			variant: 'secondary' as const,
-			disabled: loading || invoiceExistsForCurrentSlug || (!fakturoidReady && !invoiceExistsForCurrentSlug)
+			disabled: loading || invoiceExistsForCurrentSlug || (!orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected || !orderSettings?.fakturoid?.subdomain)
 		},
 		{
 			label: loading ? 'Maže se...' : 'Smazat',

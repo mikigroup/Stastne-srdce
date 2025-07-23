@@ -18,12 +18,45 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Načtení nastavení produktů
 		const productsSettings = await getSetting(supabase, 'products');
 		const visibleDays = productsSettings?.visibleDays || 7;
+		const nextDayMenuEnabled = productsSettings?.nextDayMenuEnabled ?? true;
+		const nextDayMenuTime = productsSettings?.nextDayMenuTime || '17:00';
 
-		// Výpočet startovního data (po 17:00 = další den)
+		// Výpočet startovního data podle nastavení
 		const now = new Date();
 		const currentDate = new Date(now);
-		if (now.getHours() >= 17) {
-			currentDate.setDate(currentDate.getDate() + 1);
+		
+		console.log('🍽️ Obědy - Nastavení zobrazení menu:', {
+			nextDayMenuEnabled,
+			nextDayMenuTime,
+			currentTime: now.toLocaleTimeString('cs-CZ'),
+			originalDate: currentDate.toLocaleDateString('cs-CZ')
+		});
+		
+		if (nextDayMenuEnabled) {
+			// Parsování času z nastavení (např. "17:00")
+			const [hours, minutes] = nextDayMenuTime.split(':').map(Number);
+			const nextDayThreshold = new Date(now);
+			nextDayThreshold.setHours(hours, minutes, 0, 0);
+			
+			console.log('🍽️ Obědy - Porovnání časů:', {
+				currentTime: now.toLocaleTimeString('cs-CZ'),
+				currentTimeISO: now.toISOString(),
+				thresholdTime: nextDayThreshold.toLocaleTimeString('cs-CZ'),
+				thresholdTimeISO: nextDayThreshold.toISOString(),
+				shouldShowNextDay: now >= nextDayThreshold,
+				timeDifference: now.getTime() - nextDayThreshold.getTime()
+			});
+			
+			// Pokud je aktuální čas před nastaveným časem, zobrazíme menu pro další den (lze objednat)
+			// Po nastaveném čase už se menu pro další den nezobrazuje (nelze objednat)
+			if (now < nextDayThreshold) {
+				currentDate.setDate(currentDate.getDate() + 1);
+				console.log('🍽️ Obědy - Zobrazuji menu pro další den (lze objednat):', currentDate.toLocaleDateString('cs-CZ'));
+			} else {
+				console.log('🍽️ Obědy - Zobrazuji menu pro dnešní den (objednávky na zítřek uzavřeny):', currentDate.toLocaleDateString('cs-CZ'));
+			}
+		} else {
+			console.log('🍽️ Obědy - Funkce zobrazení menu pro další den je vypnuta');
 		}
 
 		// Výpočet koncového data (větší rozsah pro nalezení dostatečného počtu menu)
@@ -70,7 +103,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			visibleDays,
 			texts: textsResult.data?.[0] || null,
 			allergens: allergensResult.data || [],
-			productsSettings: productsSettings || {}
+			productsSettings: {
+				...(productsSettings || {}),
+				nextDayMenuEnabled,
+				nextDayMenuTime
+			}
 		};
 	} catch (err) {
 		console.error("Chyba při načítání jídelníčku:", err);

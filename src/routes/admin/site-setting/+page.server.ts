@@ -1,6 +1,9 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { getSetting, saveSetting, serializeSettingValue } from "$lib/services/siteSettingsService";
+import type { Database } from "$lib/types/database.types";
+
+type SiteSettingsRow = Database['public']['Tables']['site_settings']['Row'];
 
 interface SettingRecord {
 	id?: number;
@@ -25,50 +28,50 @@ export const load: PageServerLoad = async ({
 	if (!session) throw redirect(303, "/login");
 
 	// Získáme aktivní záložku z URL
-	const activeTab = url.searchParams.get('tab') || 'general';
-	const success = url.searchParams.get('success');
+	const activeTab = url.searchParams.get("tab") || "general";
+	const success = url.searchParams.get("success");
 	
 	// Pokud je success=fakturoid_connected nebo fakturoid_disconnected, vyčistíme cache
-	if (success === 'fakturoid_connected' || success === 'fakturoid_disconnected') {
-		console.log('OAuth success/disconnect detected, clearing cache...');
+	if (success === "fakturoid_connected" || success === "fakturoid_disconnected") {
+		console.log("OAuth success/disconnect detected, clearing cache...");
 		settingsCache.clear();
 	}
 	
 	// Načteme parent data
 	const parentData = await parent();
 	
-	// Zkontrolujeme cache
-	const cacheKey = 'all_settings';
-	const cached = settingsCache.get(cacheKey);
-	const now = Date.now();
-	
-	let settings;
-	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
-		// Použijeme cache
-		settings = cached.data;
-		console.log('Using cached settings');
-	} else {
-		// Načteme všechna nastavení z databáze		
-		const { data, error } = await supabase
-			.from("site_settings")
-			.select("*");
-
-		if (error) {
-			console.error("Chyba při načítání nastavení:", error);
-			settings = [];
+			// Zkontrolujeme cache
+		const cacheKey = "all_settings";
+		const cached = settingsCache.get(cacheKey);
+		const now = Date.now();
+		
+		let settings: SiteSettingsRow[];
+		if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+			// Použijeme cache
+			settings = cached.data;
+			console.log("Using cached settings");
 		} else {
-			settings = data || [];
-			// Uložíme do cache
-			settingsCache.set(cacheKey, { data: settings, timestamp: now });
+			// Načteme všechna nastavení z databáze		
+			const { data, error } = await supabase
+				.from("site_settings")
+				.select("*");
+
+			if (error) {
+				console.error("Chyba při načítání nastavení:", error);
+				settings = [];
+			} else {
+				settings = data || [];
+				// Uložíme do cache
+				settingsCache.set(cacheKey, { data: settings, timestamp: now });
+			}
 		}
-	}
 	
 	// Logujeme specificky integrations nastavení
-	const integrationsItem = settings.find(item => item.key === 'integrations');
+	const integrationsItem = settings.find((item: SiteSettingsRow) => item.key === "integrations");
 	if (integrationsItem) {
-		console.log('Integrations setting found:', JSON.stringify(integrationsItem.value, null, 2));
+		console.log("Integrations setting found:", JSON.stringify(integrationsItem.value, null, 2));
 	} else {
-		console.log('No integrations setting found in database');
+		console.log("No integrations setting found in database");
 	}
 
 	return {
@@ -85,9 +88,9 @@ export const actions: Actions = {
 		if (!session) throw redirect(303, "/login");
 
 		const formData = await request.formData();
-		const settingsJson = formData.get('settings');
+		const settingsJson = formData.get("settings");
 
-		if (!settingsJson || typeof settingsJson !== 'string') {
+		if (!settingsJson || typeof settingsJson !== "string") {
 			return fail(400, { error: "Neplatná data nastavení" });
 		}
 
@@ -107,7 +110,7 @@ export const actions: Actions = {
 		const { error } = await supabase
 			.from("site_settings")
 			.upsert(settingsData, {
-				onConflict: 'key'
+				onConflict: "key"
 			});
 
 		if (error) {
@@ -133,7 +136,7 @@ export const actions: Actions = {
 
 		try {
 			// Importujeme getAccessToken z fakturoidAuth
-			const { getAccessToken } = await import('$lib/fakturoidAuth');
+			const { getAccessToken } = await import("$lib/fakturoidAuth");
 			
 			// Pokusíme se získat OAuth token
 			const accessToken = await getAccessToken();
@@ -145,11 +148,11 @@ export const actions: Actions = {
 			}
 
 			// Test připojení k Fakturoid API pomocí OAuth tokenu
-			const response = await fetch('https://app.fakturoid.cz/api/v3/user.json', {
+			const response = await fetch("https://app.fakturoid.cz/api/v3/user.json", {
 				headers: {
-					'Authorization': `Bearer ${accessToken}`,
-					'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
-					'Content-Type': 'application/json'
+					"Authorization": `Bearer ${accessToken}`,
+					"User-Agent": "Stastne-srdce-app (support@stastne-srdce.cz)",
+					"Content-Type": "application/json"
 				}
 			});
 

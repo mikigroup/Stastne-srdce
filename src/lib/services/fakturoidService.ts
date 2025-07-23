@@ -184,7 +184,7 @@ export class FakturoidService {
 		
 		if (!accessToken) {
 			console.error('No valid access token available');
-			throw new Error('Váš Fakturoid token není dostupný nebo vypršel. Prosím reconnectujte svůj Fakturoid účet.');
+			throw new Error('Váš Fakturoid token není dostupný. Zkuste to prosím znovu nebo reconnectujte svůj Fakturoid účet.');
 		}
 		
 		console.log('Access token available, proceeding with API calls...');
@@ -197,17 +197,17 @@ export class FakturoidService {
 		} catch (error) {
 			console.error('Fakturoid connection test failed:', error);
 			
-			// Specifičtější chybové hlášky podle typu chyby
-			if (error instanceof Error) {
-				if (error.message.includes('401') || error.message.includes('unauthorized')) {
-					throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Prosím reconnectujte svůj Fakturoid účet.');
-				}
-				if (error.message.includes('403') || error.message.includes('forbidden')) {
-					throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
-				}
+					// Specifičtější chybové hlášky podle typu chyby
+		if (error instanceof Error) {
+			if (error.message.includes('401') || error.message.includes('unauthorized')) {
+				throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Zkuste to prosím znovu nebo reconnectujte svůj Fakturoid účet.');
 			}
-			
-			throw new Error('Nepodařilo se připojit k Fakturoid API. Zkontrolujte připojení a oprávnění.');
+			if (error.message.includes('403') || error.message.includes('forbidden')) {
+				throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
+			}
+		}
+		
+		throw new Error('Nepodařilo se připojit k Fakturoid API. Zkuste to prosím znovu nebo zkontrolujte připojení.');
 		}
 
 		// Vytvoříme nebo najdeme kontakt

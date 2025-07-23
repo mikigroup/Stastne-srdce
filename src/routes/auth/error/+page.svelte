@@ -33,7 +33,7 @@
 		{/if}
 
 		<div class="flex flex-col sm:flex-row gap-4">
-			<a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
+							<a href="/auth/login" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
 				Přihlásit se
 			</a>
 			<a href="/signup" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-center">

@@ -127,7 +127,7 @@
 						{/if}
 					</div>
 					{#if !$page.data.session}
-						<a href="/login" class="flex justify-end pt-2">
+						<a href="/auth/login" class="flex justify-end pt-2">
 							<div
 								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
 								<div class="text-base">Přihlaš se</div>
@@ -143,7 +143,9 @@
 							<div
 								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100">
 								<div class="">
-									<p class="text-base justify-end flex">{variant.price} Kč</p>
+									{#if productsSettings?.showPrices}
+										<p class="text-base justify-end flex">{variant.price} Kč</p>
+									{/if}
 									<p class="text-sm uppercase">Do košíku</p>
 								</div>
 							</div>

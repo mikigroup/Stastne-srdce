@@ -4,6 +4,7 @@
 	import { goto } from "$app/navigation";
 	import { readable } from "svelte/store";
 	import { slide } from "svelte/transition";
+	import { onMount } from "svelte";
 
 	export let data;
 	let { supabase, session, user } = data;
@@ -40,9 +41,40 @@
 
 	let menuVisible = false;
 	let loading = false;
+	let menuElement;
+	let buttonElement;
 	$: totalPieces = $totalPiecesStore;
 
 	const { generalSettings } = data;
+
+	// Funkce pro zavření menu
+	function closeMenu() {
+		menuVisible = false;
+	}
+
+	// Funkce pro přepnutí menu
+	function toggleMenu() {
+		menuVisible = !menuVisible;
+	}
+
+	// Event listener pro kliknutí mimo menu
+	onMount(() => {
+		function handleClickOutside(event) {
+			if (menuVisible && 
+				menuElement && 
+				!menuElement.contains(event.target) && 
+				buttonElement && 
+				!buttonElement.contains(event.target)) {
+				closeMenu();
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside);
+
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 </script>
 
 <header class="fixed top-0 left-0 w-full bg-white z-10">
@@ -103,14 +135,14 @@
 				{:else}
 					<!-- Desktop nav for guests -->
 					<div class="hidden xl:flex items-center gap-2">
-						<a href="/login" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-						<a href="/signup" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
+						<a href="/auth/login" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
+						<a href="/auth/signup" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
 					</div>
 				{/if}
 
 				<!-- Mobile menu button and cart -->
 				<div class="flex items-center xl:hidden">
-					<button on:click={() => (menuVisible = !menuVisible)} class="p-2">
+					<button bind:this={buttonElement} on:click={toggleMenu} class="p-2">
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 						</svg>
@@ -124,7 +156,7 @@
 
 		<!-- Mobile menu -->
 		{#if menuVisible}
-			<div transition:slide={{ duration: 400 }} class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
+			<div bind:this={menuElement} transition:slide={{ duration: 400 }} class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
 				<div class="flex flex-col space-y-4 p-4 w-full">
 					<hr />
 					<ul class="space-y-2">
@@ -156,8 +188,8 @@
 							<a href="/profile" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
 							<button on:click={signOut} disabled={loading} class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
 						{:else}
-							<a href="/login" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-							<a href="/signup" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
+							<a href="/auth/login" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
+							<a href="/auth/signup" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
 						{/if}
 					</div>
 				</div>

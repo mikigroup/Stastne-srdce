@@ -3,18 +3,23 @@
 	import { goto, invalidate } from "$app/navigation";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
 	import { formatPrice, formatDateToCzechShort, formatDateTimeToCzechShort } from "$lib/utils/formatting";
+	import { getContext } from "svelte";
 	
 	export let data: any;
+	
+	// Získání supabase z kontextu
+	const supabase = getContext("supabase");
 	
 	// Destructuring dat ze serveru
 	$: customer = data.customer;
 	$: orders = data.orders;
 	$: stats = data.stats;
 	$: loyaltyInfo = data.loyaltyInfo;
-	$: supabase = data.supabase;
 	$: session = data.session;
 	$: previousCustomer = data.previousCustomer;
 	$: nextCustomer = data.nextCustomer;
+
+
 
 
 
@@ -33,10 +38,10 @@
 	// Helper funkce pro získání CSS tříd podle úrovně věrnosti
 	function getLoyaltyClasses(color: string): string {
 		const colorMap: Record<string, string> = {
-			purple: 'bg-purple-50 border-purple-200 text-purple-700',
-			yellow: 'bg-yellow-50 border-yellow-200 text-yellow-700',
-			blue: 'bg-blue-50 border-blue-200 text-blue-700',
-			gray: 'bg-gray-50 border-gray-200 text-gray-700'
+			purple: "bg-purple-50 border-purple-200 text-purple-700",
+			yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
+			blue: "bg-blue-50 border-blue-200 text-blue-700",
+			gray: "bg-gray-50 border-gray-200 text-gray-700"
 		};
 		return colorMap[color] || colorMap.gray;
 	}
@@ -66,23 +71,23 @@
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
 		{
-			label: loading ? 'Ukládá se...' : 'Uložit změny',
+			label: loading ? "Ukládá se..." : "Uložit změny",
 			onClick: () => customerDetailComponent?.saveCustomer(),
-			variant: 'primary' as const,
+			variant: "primary" as const,
 			loading,
 			disabled: loading
 		},
 		{
-			label: 'Zkontrolovat a aktualizovat status',
+			label: "Zkontrolovat a aktualizovat status",
 			onClick: () => customerDetailComponent?.updateRegistrationStatus(),
-			variant: 'secondary' as const,
+			variant: "secondary" as const,
 			loading,
 			disabled: loading
 		},
 		{
-			label: loading ? 'Maže se...' : 'Smazat',
+			label: loading ? "Maže se..." : "Smazat",
 			onClick: () => customerDetailComponent?.deleteCustomer(),
-			variant: 'danger' as const,
+			variant: "danger" as const,
 			loading,
 			disabled: loading
 		}
@@ -95,7 +100,7 @@
 
 <AdminPageLayout
 	title="Detail zákazníka"
-	subtitle="{customer?.first_name ?? ''} {customer?.last_name ?? ''}"
+			subtitle="{customer?.first_name ?? ""} {customer?.last_name ?? ""}"
 	backUrl="/admin/customer"
 	{actions}>
 
@@ -127,112 +132,9 @@
 		</div>
 	{/if}
 
+
+
 	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
-
-	<!-- Věrnostní systém zákazníka -->
-	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
-		<h2 class="text-xl font-semibold mb-6">Věrnostní profil zákazníka</h2>
-		
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Úroveň věrnosti -->
-			<div class="lg:col-span-2">
-				<div class="border-2 rounded-lg p-6 {getLoyaltyClasses(loyaltyInfo.color)}">
-					<div class="flex items-center justify-between mb-4">
-						<div class="flex items-center">
-							<span class="text-3xl mr-3">{loyaltyInfo.icon}</span>
-							<div>
-								<h3 class="text-xl font-bold">{loyaltyInfo.label}</h3>
-								<p class="text-sm opacity-75">
-									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent, true)} celkem
-								</p>
-							</div>
-						</div>
-						<div class="text-right">
-							{#if loyaltyInfo.isActive}
-								<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-									<span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-									Aktivní
-								</span>
-							{:else}
-								<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-									<span class="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
-									Neaktivní
-								</span>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Progress bar pro další úroveň -->
-					{#if loyaltyInfo.level !== 'VIP'}
-						{@const nextLevelThresholds = { NEW: 3, REGULAR: 10, LOYAL: 20 }}
-						{@const nextThreshold = loyaltyInfo.level === 'NEW' ? 3 : loyaltyInfo.level === 'REGULAR' ? 10 : 20}
-						{@const progress = Math.min((stats.totalOrders / nextThreshold) * 100, 100)}
-						{@const remaining = Math.max(nextThreshold - stats.totalOrders, 0)}
-						
-						<div class="mt-4">
-							<div class="flex justify-between text-sm mb-2">
-								<span>Pokrok k další úrovni</span>
-								<span>{remaining} objednávek zbývá</span>
-							</div>
-							<div class="w-full bg-gray-200 rounded-full h-2">
-								<div class="h-2 rounded-full bg-current transition-all duration-300" style="width: {progress}%"></div>
-							</div>
-						</div>
-					{:else}
-						<div class="mt-4 text-center">
-							<span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-								🏆 Maximální úroveň dosažena!
-							</span>
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Časové údaje -->
-			<div class="space-y-4">
-				<div class="bg-gray-50 rounded-lg p-4">
-					<h4 class="font-semibold text-gray-900 mb-3">Časové údaje</h4>
-					<div class="space-y-3 text-sm">
-						<div class="flex justify-between">
-							<span class="text-gray-600">Zákazník od:</span>
-							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : 'N/A'}</span>
-						</div>
-						<div class="flex justify-between">
-							<span class="text-gray-600">Poslední objednávka:</span>
-							<span class="font-medium">
-								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? '0' : 
-								 loyaltyInfo.daysSinceLastOrder === 0 ? 'Dnes' : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
-							</span>
-						</div>
-						<div class="flex justify-between">
-							<span class="text-gray-600">Průměr/objednávka:</span>
-							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : '0 Kč'}</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Doporučené akce -->
-				<div class="bg-blue-50 rounded-lg p-4">
-					<h4 class="font-semibold text-blue-900 mb-3">Doporučené akce</h4>
-					<div class="space-y-2">
-						{#if !loyaltyInfo.isActive}
-							<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
-								📧 Poslat nabídku pro návrat
-							</button>
-						{/if}
-						{#if loyaltyInfo.level === 'VIP' || loyaltyInfo.level === 'LOYAL'}
-							<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
-								🎁 Poslat speciální slevu
-							</button>
-						{/if}
-						<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
-							📞 Kontaktovat zákazníka
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 
 	<!-- Statistiky zákazníka -->
 	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
@@ -327,6 +229,123 @@
 				</div>
 			</div>
 		{/if}
+	</div>
+
+	<!-- Věrnostní systém zákazníka -->
+	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">
+		<h2 class="text-xl font-semibold mb-6">Věrnostní profil zákazníka</h2>
+		
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<!-- Úroveň věrnosti -->
+			<div class="lg:col-span-2">
+				<div class="border-2 rounded-lg p-6 {getLoyaltyClasses(loyaltyInfo.color)}">
+					<div class="flex items-center justify-between mb-4">
+						<div class="flex items-center">
+							<span class="text-3xl mr-3">{loyaltyInfo.icon}</span>
+							<div>
+								<h3 class="text-xl font-bold">{loyaltyInfo.label}</h3>
+								<p class="text-sm opacity-75">
+									{stats.totalOrders} objednávek • {formatPrice(stats.totalSpent, true)} celkem
+									{#if loyaltyInfo.currentPoints !== undefined}
+										• {loyaltyInfo.currentPoints} bodů
+									{/if}
+								</p>
+							</div>
+						</div>
+						<div class="text-right">
+							{#if loyaltyInfo.isActive}
+								<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+									<span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+									Aktivní
+								</span>
+							{:else}
+								<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+									<span class="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+									Neaktivní
+								</span>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Progress bar pro další úroveň -->
+					{#if loyaltyInfo.level !== "VIP"}
+						{@const nextLevelThresholds = { NEW: 3, REGULAR: 10, LOYAL: 20 }}
+						{@const nextThreshold = loyaltyInfo.level === "NEW" ? 3 : loyaltyInfo.level === "REGULAR" ? 10 : 20}
+						{@const progress = Math.min((stats.totalOrders / nextThreshold) * 100, 100)}
+						{@const remaining = Math.max(nextThreshold - stats.totalOrders, 0)}
+						
+						<div class="mt-4">
+							<div class="flex justify-between text-sm mb-2">
+								<span>Pokrok k další úrovni</span>
+								<span>{remaining} objednávek zbývá</span>
+							</div>
+							<div class="w-full bg-gray-200 rounded-full h-2">
+								<div class="h-2 rounded-full bg-current transition-all duration-300" style="width: {progress}%"></div>
+							</div>
+						</div>
+					{:else}
+						<div class="mt-4 text-center">
+							<span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+								🏆 Maximální úroveň dosažena!
+							</span>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Časové údaje -->
+			<div class="space-y-4">
+				<div class="bg-gray-50 rounded-lg p-4">					
+					<div class="space-y-3 text-sm">
+						<div class="flex justify-between">
+							<span class="text-gray-600">Zákazník od:</span>
+							<span class="font-medium">{customer.created_at ? formatDateToCzechShort(customer.created_at) : "N/A"}</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">Poslední objednávka:</span>
+							<span class="font-medium">
+								{loyaltyInfo.daysSinceLastOrder === null || loyaltyInfo.daysSinceLastOrder === undefined ? "0" : 
+								 loyaltyInfo.daysSinceLastOrder === 0 ? "Dnes" : `před ${loyaltyInfo.daysSinceLastOrder} dny`}
+							</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">Průměr/objednávka:</span>
+							<span class="font-medium">{stats.averageOrderValue && stats.averageOrderValue > 0 ? formatPrice(stats.averageOrderValue, true) : "0 Kč"}</span>
+						</div>
+						{#if loyaltyInfo.currentPoints !== undefined}
+							<div class="flex justify-between">
+								<span class="text-gray-600">Aktuální body:</span>
+								<span class="font-medium">{loyaltyInfo.currentPoints} bodů</span>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-gray-600">Celkem získané body:</span>
+								<span class="font-medium">{loyaltyInfo.totalPointsEarned} bodů</span>
+							</div>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Doporučené akce -->
+				<div class="bg-blue-50 rounded-lg p-4">
+					<h4 class="font-semibold text-blue-900 mb-3">Doporučené akce</h4>
+					<div class="space-y-2">
+						{#if !loyaltyInfo.isActive}
+							<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
+								📧 Poslat nabídku pro návrat
+							</button>
+						{/if}
+						{#if loyaltyInfo.level === "VIP" || loyaltyInfo.level === "LOYAL"}
+							<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
+								🎁 Poslat speciální slevu
+							</button>
+						{/if}
+						<button class="w-full text-left px-3 py-2 text-sm bg-white border border-blue-200 rounded hover:bg-blue-50 transition-colors">
+							📞 Kontaktovat zákazníka
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Historie objednávek -->

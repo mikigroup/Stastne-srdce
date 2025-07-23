@@ -31,12 +31,14 @@
 		class="mt-10 mb-10 text-4xl font-extrabold leading-none text-center md:text-5xl lg:text-6xl">
 		Nastavení
 	</h1>
+	
+	<!-- Profil uživatele -->
 	<form
-		class=""
+		class="mb-8"
 		method="POST"
 		action="?/update"
 		use:enhance={handleSubmit}>
-		<h2>Uživatel</h2>
+		<h2 class="text-2xl font-bold mb-4">Profil uživatele</h2>
 		<div class="grid mb-6 justify-items-center">
 			<label
 				for="email"
@@ -85,55 +87,23 @@
 			</div>			
 		</div>
 
-
-		<hr class="my-10" />
 		<button
 			disabled={loading}
 			type="submit"
 			class="w-full btn btn-outline btn-success">
 			{loading ? "Ukládá se..." : "Potvrdit změnu"}
 		</button>
-
-		<!-- Další nastavení -->
-		<hr class="my-10" />
-		<div class="space-y-4">
-			<h2 class="text-2xl font-bold text-gray-900">Další nastavení</h2>
-			
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<a 
-					href="/admin/settings/loyalty"
-					class="flex items-center p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-				>
-					<div class="flex-shrink-0">
-						<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-							<span class="text-xl">💎</span>
-						</div>
-					</div>
-					<div class="ml-4">
-						<h3 class="text-lg font-medium text-gray-900">Věrnostní systém</h3>
-						<p class="text-sm text-gray-600">Nastavení bodů, úrovní a výhod pro zákazníky</p>
-					</div>
-					<div class="ml-auto">
-						<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-						</svg>
-					</div>
-				</a>
-			</div>
-		</div>
-		{#if form?.message}
-			<div class="flex w-full p-2 my-4 border rounded-lg">
-				<p
-					class:success={form.message.success}
-					class:error={!form.message.success}>
-					{form.message.display}
-				</p>
-			</div>
-		{/if}
 	</form>
-	<!-- <div class="flex justify-center">
-<Rezervace {rezcalendar} />
-</div> -->
+
+	{#if form?.message}
+		<div class="flex w-full p-2 my-4 border rounded-lg">
+			<p
+				class:success={form.message.success}
+				class:error={!form.message.success}>
+				{form.message.display}
+			</p>
+		</div>
+	{/if}
 </div>
 
 <style>

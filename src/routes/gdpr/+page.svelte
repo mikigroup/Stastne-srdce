@@ -1,24 +1,22 @@
-<script lang="ts">
-	import { Heading2 } from "lucide-svelte";
-
+<script lang="ts">	
 	export let data;
 
 	const { generalSettings } = data;
 </script>
+
 <svelte:head>
-	<title>GDPR - {generalSettings.shopName}</title>
+	<title>GDPR - {generalSettings?.shopName}</title>
+	<meta name="description" content="GDPR - Zásady ochrany osobních údajů" />
 </svelte:head>
 
-<section class="">
-	<div
-		class="max-w-screen-lg px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
-		<h1
-			class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
-			GDPR - Zásady ochrany osobních údajů
-		</h1>
-		<div class="max-w-4xl pb-2 mx-auto">
-			<div
-				class="grid grid-cols-1 p-5 bg-white border rounded-lg md:grid-cols-1">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+	<h1
+		class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+		GDPR - Zásady ochrany osobních údajů
+	</h1>
+	<div class="max-w-4xl pb-2 mx-auto">
+		<div
+			class="grid grid-cols-1 p-5 bg-white border rounded-lg md:grid-cols-1">
 				<div class="mb-4 ">
 					<p>
 						Správce osobních údajů Šťastné srdce s.r.o., Potoční 16, Mikulovice 79084
@@ -219,5 +217,4 @@
 				</div>
 			</div>
 		</div>
-	</div>
 </section>

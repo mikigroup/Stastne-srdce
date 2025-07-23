@@ -12,9 +12,6 @@
 export const UNIFIED_DEFAULT_SETTINGS = {
   general: {
     shopName: 'Šťastné srdce',
-    shortName: 'ŠS', // Using the shorter version as it's more practical for UI
-    slogan: 'Zdravé stravování a rozvoz jídla',
-    legalName: 'Šťastné srdce s.r.o.',
     currencies: ['CZK', 'EUR']
   },
 
@@ -23,6 +20,23 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     metaDescription: 'Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost.',
     metaKeywords: 'šťastné srdce, mikulovice, zdraví, dietolog, kamila kučerová, rozvoz jídla, jeseník',
     ogImage: '/og-image.jpg',
+    // Meta tagy
+    metaAuthor: 'malyleo.cz',
+    metaCopyright: 'Šťastné srdce',
+    metaRobots: 'index, follow',
+    // Open Graph
+    ogType: 'website',
+    ogUrl: 'https://www.stastnesrdce.cz',
+    ogLocale: 'cs_CZ',
+    // Twitter
+    twitterCard: 'summary_large_image',
+    // Web App
+    appleTouchIcon: '/favi/apple-touch-icon.png',
+    webManifest: '/favi/site.webmanifest',
+    // Custom scripts
+    customHeadScripts: '',
+    customBodyScripts: '',
+    // Analytics
     googleAnalyticsId: '',
     googleAnalyticsEnabled: false,
     facebookPixelEnabled: false,
@@ -30,23 +44,24 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   contact: {
-    email: 'info@stastnesrdce.cz',
-    phone: '777111222',
-    phone1: '+420 724 448 377 Kamila Kučerová',
-    phone2: '+420 732 722 115 Martin Forejt',
-    address: 'Potoční 16, Mikulovice 79084',
+    email: '',
+    phone: '',
+    phone1: '',
+    phone2: '',
+    address: '',
     mapCoordinates: { 
       lat: 50.299513, 
       lng: 17.324304 
     },
+    showOpeningHours: true,
     openingHours: {
-      monday: '8:00-16:00',
-      tuesday: '8:00-16:00',
-      wednesday: '8:00-16:00',
-      thursday: '8:00-16:00',
-      friday: '8:00-16:00',
-      saturday: 'Zavřeno',
-      sunday: 'Zavřeno'
+      monday: '',
+      tuesday: '',
+      wednesday: '',
+      thursday: '',
+      friday: '',
+      saturday: '',
+      sunday: ''
     }
   },
 
@@ -63,40 +78,23 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     favicon: '/favi/favicon.ico',
     primaryColor: '#3CB371',
     secondaryColor: '#4A5568',
-    footerText: 'Šťastné srdce s.r.o. 2022 - 2025',
-    // Meta tagy
-    metaAuthor: 'malyleo.cz',
-    metaCopyright: 'Šťastné srdce',
-    metaRobots: 'index, follow',
-    // Open Graph
-    ogType: 'website',
-    ogUrl: 'https://www.stastnesrdce.cz',
-    ogLocale: 'cs_CZ',
-    // Twitter
-    twitterCard: 'summary_large_image',
-    // Apple touch icon
-    appleTouchIcon: '/favi/apple-touch-icon.png',
-    // Web manifest
-    webManifest: '/favi/site.webmanifest',
+    footerText: '',
     // FontAwesome
     fontAwesomeEnabled: true,
     fontAwesomeKit: 'e5ce1babf6',
     // Lottie player
-    lottiePlayerEnabled: true,
-    // Custom scripts
-    customHeadScripts: '',
-    customBodyScripts: ''
+    lottiePlayerEnabled: true
   },
 
   business: {
-    companyName: 'Šťastné srdce s.r.o.',
-    street: 'Potoční',
-    streetNumber: '16', // Using the canonical address
-    zipCode: '79084',
-    city: 'Mikulovice',
-    ico: '21300674',
-    dic: 'CZ21300674',
-    bankAccount: '670100-2210515001/6210',
+    companyName: '',
+    street: '',
+    streetNumber: '',
+    zipCode: '',
+    city: '',
+    ico: '',
+    dic: '',
+    bankAccount: '',
     // Including fields from current DB that aren't in other defaults
     paymentMethods: ['Hotově', 'Převodem'],
     deliveryOptions: ['Osobní odběr', 'Rozvoz']
@@ -104,15 +102,26 @@ export const UNIFIED_DEFAULT_SETTINGS = {
 
   email: {
     orderConfirmationTemplate: 'Děkujeme za Vaši objednávku č. {{orderNumber}}.',
-    contactFormTemplate: 'Děkujeme za Váš dotaz, budeme Vás kontaktovat co nejdříve.'
+    contactFormTemplate: 'Děkujeme za Váš dotaz, budeme Vás kontaktovat co nejdříve.',
+    // Nové šablony pro lepší komunikaci
+    welcomeEmailTemplate: 'Vítejte v Šťastném srdci! Děkujeme za registraci.',
+    birthdayEmailTemplate: 'Všechno nejlepší k narozeninám! Máte slevu {{discount}}%.',
+    loyaltyUpgradeTemplate: 'Gratulujeme! Byli jste povýšeni na {{tierName}}.',
+    orderReminderTemplate: 'Nezapomeňte si objednat oběd na zítra!',
+    deliveryNotificationTemplate: 'Vaše objednávka byla odeslána k doručení.',
+    paymentReminderTemplate: 'Připomínáme platbu za objednávku č. {{orderNumber}}.',
+    menuUpdateTemplate: 'Nové menu je k dispozici! Podívejte se na naše nabídky.',
+    specialOfferTemplate: 'Speciální nabídka jen pro vás: {{offer}}',
+    feedbackRequestTemplate: 'Jak se vám líbilo vaše jídlo? Dejte nám vědět!',
+    reactivationTemplate: 'Váš účet byl úspěšně obnoven. Vítejte zpět!'
   },
 
   integrations: {
     fakturoid: {
       enabled: false,
       connected: false,
+      subdomain: '', // Ruční zadání subdomény
       accounts: [],
-      subdomain: '',
       defaultLanguage: 'cz',
       autoCreateInvoices: false,
       invoiceDueDays: 14,
@@ -184,7 +193,20 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     menuVariantsCount: 3,
     allowVariableVariants: true,
     minVariants: 1,
-    maxVariants: 10
+    maxVariants: 10,
+    // Nastavení pro zobrazení menu pro další den
+    nextDayMenuTime: '17:00', // Čas, kdy se začne zobrazovat menu pro další den
+    nextDayMenuEnabled: true, // Zda zobrazovat menu pro další den
+    // Časové sloty pro objednávky
+    timeSlotsEnabled: false, // Zda povolit časové sloty
+    advanceOrderDays: 1, // Počet dnů dopředu pro objednávky
+    orderDeadlineTime: '10:00', // Uzavírací čas objednávek
+    timeSlots: [
+      { startTime: '11:00', endTime: '12:00' },
+      { startTime: '12:00', endTime: '13:00' },
+      { startTime: '13:00', endTime: '14:00' }
+    ],
+    showTimeSlotAvailability: true // Zobrazovat dostupnost slotů
   },
 
   customer: {

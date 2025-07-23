@@ -45,7 +45,7 @@
 
 	// Výchozí stav řazení
 	let sorting: SortingState = [
-		{ id: 'created_at', desc: true } // Výchozí řazení podle data registrace sestupně
+		{ id: "created_at", desc: true } // Výchozí řazení podle data registrace sestupně
 	];
 
 	// Column definitions
@@ -86,19 +86,19 @@
 		id: key,
 		header: columnNames[key],
 		// Nastavení velikostí sloupců
-		size: key === 'email' ? 200 :
-			key === 'created_at' ? 150 :
-				key === 'registration_status' ? 130 :
-				key === 'telephone' ? 120 : 100,
+		size: key === "email" ? 200 :
+			key === "created_at" ? 150 :
+				key === "registration_status" ? 130 :
+				key === "telephone" ? 120 : 100,
 		// Nastavení řazení
 		enableSorting: true,
-		sortingFn: key === 'created_at' ? 'datetime' : 'alphanumeric'
+		sortingFn: key === "created_at" ? "datetime" : "alphanumeric"
 	}));
 
 	// Přidáme sloupec "Upravit"
 	columns.push({
-		id: 'actions',
-		header: 'Editovat',
+		id: "actions",
+		header: "Editovat",
 		size: 80,
 		enableSorting: false
 	});
@@ -251,13 +251,13 @@
 >
 	<svelte:fragment slot="cell" let:cell let:row>
 		{#if cell.column.id === "created_at"}
-			{@const value = cell.getValue()}
-			{formatDateTimeToCzechShort(String(value ?? ''))}
+					{@const value = cell.getValue()}
+		{formatDateTimeToCzechShort(String(value ?? ""))}
 		{:else if cell.column.id === "registration_status"}
 			{@const customer = row.original}
 			{@const validationResult = validateProfileForInvoicing(customer)}
-			{@const actualStatus = validationResult.isComplete ? 'completed' : 
-				customer.registration_status === 'completed' ? 'incomplete_data' : 'pending'}
+					{@const actualStatus = validationResult.isComplete ? "completed" : 
+			customer.registration_status === "completed" ? "incomplete_data" : "pending"}
 			{@const statusStyles = getRegistrationStatusStyles(actualStatus)}
 			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {statusStyles.badge}">
 				{getRegistrationStatusMessage(actualStatus)}
@@ -269,9 +269,9 @@
 				</a>
 			</div>
 		{:else if cell.column.id === "email"}
-			<div class="truncate max-w-xs" title={String(cell.getValue() ?? '')}>
-				{cell.getValue() ?? ""}
-			</div>
+					<div class="truncate max-w-xs" title={String(cell.getValue() ?? "")}>
+			{cell.getValue() ?? ""}
+		</div>
 		{:else}
 			{cell.getValue() ?? ""}
 		{/if}
