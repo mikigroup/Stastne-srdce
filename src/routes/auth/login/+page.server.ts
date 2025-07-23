@@ -121,7 +121,7 @@ export const actions: Actions = {
 					// Pokud je registrace nedokončená, přesměrovat na complete stránku
 					if (profile.registration_status !== 'completed') {
 						console.log('📝 [LOGIN] Registration not completed, redirecting to complete page');
-						throw redirect(303, "/signup/complete");
+						throw redirect(303, "/auth/signup/complete");
 					}
 				}
 			} catch (redirectError) {
