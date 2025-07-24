@@ -477,16 +477,17 @@
 				{#if cartItems.length || (timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0)}
 					<div class="mt-5 border rounded-lg border-gray-300">
 						<!-- Debug informace -->
-						<div class="p-4 bg-yellow-50 border-b border-yellow-200">
+					<!-- 	<div class="p-4 bg-yellow-50 border-b border-yellow-200">
 							<p class="text-sm text-yellow-800">
 								🔍 Debug: timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled || 'undefined'}, 
 								availableTimeSlots.length={availableTimeSlots?.length || 0},
 								timeSlots={timeSlotSettings?.timeSlots?.length || 0} slotů,
 								timeSlotSettings.timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled}
 							</p>
-						</div>
+						</div> -->
 
-						<!-- Časové sloty -->
+						<!-- Časové sloty - ZAKOMENTOVÁNO PRO VÝVOJ -->
+						<!--
 						{#if timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0}
 							<div class="grid p-5 border-b">
 								<label class="block mb-2 text-sm font-medium text-gray-700">
@@ -513,6 +514,7 @@
 								<input type="hidden" name="timeSlot" value={selectedTimeSlot} />
 							</div>
 						{/if}
+						-->
 
 						{#if cartItems.length}
 							<div class="grid p-5 border-b">
