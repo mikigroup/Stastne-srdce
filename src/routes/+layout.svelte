@@ -14,13 +14,19 @@
 	import type { Profile } from "$lib/types/profile";
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
+	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 
 	export let data: {
 		session: Session | null;
 		supabase: SupabaseClient;
 		user: User | null;
-		settings: Partial<AllSettings>;
+		settings: {
+			general: any;
+			contact: any;
+			social: any;
+			seo: any;
+			appearance: any;
+		};
 		generalSettings: GeneralSettings | undefined;
 		profile: Profile | null;
 	};

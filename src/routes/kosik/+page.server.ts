@@ -142,7 +142,7 @@ export const actions: Actions = {
 				p_customer_zip_code: customer.zip_code || '',
 				p_customer_telephone: customer.telephone || '',
 				p_customer_email: email,
-				p_note: timeSlot ? JSON.stringify({ timeSlot, originalNote: note }) : note,
+				p_note: timeSlot ? `Čas vyzvednutí: ${timeSlot}${note ? `\nPoznámka: ${note}` : ''}` : note,
 				p_total_pieces: totalPieces,
 				p_total_price: totalPrice,
 				p_currency: "CZK",

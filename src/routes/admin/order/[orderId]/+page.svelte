@@ -367,9 +367,76 @@
 	}
 
 	async function createInvoice() {
-		// ZJEDNODUŠENÉ: Přeskočíme složitou refresh logiku a necháme backend, aby to vyřešil
-		console.log('Přesměrování na vytvoření faktury...');
-		await goto(`/admin/order/${orderId}/create-invoice`);
+		try {
+			loading = true;
+			await goto(`/admin/order/${orderId}/create-invoice`);
+		} catch (error) {
+			console.error("Error navigating to create invoice:", error);
+			alert("Chyba při přesměrování na vytvoření faktury");
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function restoreFakturoidData() {
+		try {
+			loading = true;
+			
+			// Zobrazíme potvrzovací dialog
+			if (!confirm('Chcete obnovit chybějící Fakturoid data pro tuto objednávku? Tato operace může trvat několik sekund.')) {
+				return;
+			}
+
+			// Voláme server action pro obnovu dat
+			const response = await fetch(`/admin/order/${orderId}/restore-fakturoid-data`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Fakturoid data byla úspěšně obnovena!\n\nNalezené faktury: ${result.invoices?.length || 0}\n\n${result.message || ''}`);
+				// Obnovíme stránku pro zobrazení nových dat
+				window.location.reload();
+			} else {
+				alert(`❌ Chyba při obnově dat: ${result.message || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error restoring Fakturoid data:", error);
+			alert("Chyba při obnově Fakturoid dat");
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function diagnoseFakturoid() {
+		try {
+			loading = true;
+			
+			// Voláme server action pro diagnostiku
+			const response = await fetch(`/admin/order/${orderId}/diagnose-fakturoid`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Diagnostika Fakturoid připojení:\n\n${result.diagnosis || 'Všechny kontroly prošly úspěšně'}`);
+			} else {
+				alert(`❌ Problémy s Fakturoid připojením:\n\n${result.diagnosis || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error diagnosing Fakturoid:", error);
+			alert("Chyba při diagnostice Fakturoid připojení");
+		} finally {
+			loading = false;
+		}
 	}
 
 	// Získáme barvu pro stav objednávky - s fallbackem pro neznámé stavy
@@ -460,6 +527,18 @@
 			variant: 'secondary' as const,
 			disabled: loading || invoiceExistsForCurrentSlug || (!orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected || !orderSettings?.fakturoid?.subdomain)
 		},
+		// {
+		// 	label: 'Obnovit Fakturoid data',
+		// 	onClick: restoreFakturoidData,
+		// 	variant: 'secondary' as const,
+		// 	disabled: loading || !orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected
+		// },
+		// {
+		// 	label: '🔧 Diagnostika Fakturoid',
+		// 	onClick: diagnoseFakturoid,
+		// 	variant: 'secondary' as const,
+		// 	disabled: loading
+		// },
 		{
 			label: loading ? 'Maže se...' : 'Smazat',
 			onClick: deleteOrder,

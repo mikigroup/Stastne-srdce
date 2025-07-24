@@ -241,6 +241,40 @@
 		goto("/admin/order/new");
 	}
 
+	async function restoreAllFakturoidData() {
+		try {
+			loading = true;
+			
+			// Zobrazíme potvrzovací dialog
+			if (!confirm('Chcete obnovit chybějící Fakturoid data pro všechny objednávky? Tato operace může trvat několik minut.')) {
+				return;
+			}
+
+			// Voláme server action pro obnovu všech dat
+			const response = await fetch('/admin/order/restore-all-fakturoid-data', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Fakturoid data byla úspěšně obnovena!\n\nObnoveno objednávek: ${result.updatedOrders || 0}\nNalezené faktury: ${result.totalInvoices || 0}\n\n${result.message || ''}`);
+				// Obnovíme stránku pro zobrazení nových dat
+				window.location.reload();
+			} else {
+				alert(`❌ Chyba při obnově dat: ${result.message || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error restoring all Fakturoid data:", error);
+			alert("Chyba při obnově Fakturoid dat");
+		} finally {
+			loading = false;
+		}
+	}
+
 	function formatPayState(pay_state: boolean) {
 		return pay_state ? "Zaplaceno" : "Nezaplaceno";
 	}
@@ -435,13 +469,15 @@
 </svelte:head>
 
 <section>
-	<div class="flex justify-between">
+			<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row items-center">
-			<!--<div>
-				<button on:click={newOrderPage} class="btn btn-outline" disabled>
-					Vytvořit objednávku
-				</button>
-			</div>-->
+			<!-- <button
+				on:click={restoreAllFakturoidData}
+				disabled={loading}
+				class="btn btn-secondary btn-sm"
+			>
+				{loading ? 'Obnovuji...' : '🔄 Obnovit Fakturoid data'}
+			</button> -->
 			<div>
 				<input 
 					type="date" 

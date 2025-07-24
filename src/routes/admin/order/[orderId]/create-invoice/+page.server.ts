@@ -1,14 +1,10 @@
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import {
-	createInvoiceFromOrder,
-	sendInvoiceEmail,
-	markInvoiceAsPaid
-} from "$lib/services/fakturoidService";
-import type { Order } from "$lib/types/order";
-import type { Profile } from "$lib/types/profile";
 import { getSetting } from "$lib/services/siteSettingsService";
 import type { IntegrationsSettings } from "$lib/types/siteSettings";
+import { createFakturoidService, getFakturoidConfigFromSettings } from "$lib/services/fakturoidService";
+import type { Order } from "$lib/types/order";
+import type { Profile } from "$lib/types/profile";
 
 export const load: PageServerLoad = async ({
 	params,
@@ -172,7 +168,6 @@ export const actions: Actions = {
 			}
 
 			// Získáme Fakturoid konfiguraci pro předání ostatním funkcím
-			const { getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
 			const fakturoidConfig = getFakturoidConfigFromSettings({ integrations });
 			
 			if (!fakturoidConfig) {
@@ -219,7 +214,28 @@ export const actions: Actions = {
 			}
 
 			// 5. Vytvoření faktury
-			const invoice = await createInvoiceFromOrder(order, profile, integrations, supabase);
+			const fakturoidService = createFakturoidService(fakturoidConfig, supabase);
+			const invoice = await fakturoidService.createInvoiceFromOrder({
+				customer: {
+					name: `${profile.first_name} ${profile.last_name}`,
+					email: profile.email,
+					phone: profile.telephone,
+					address: {
+						street: `${profile.street} ${profile.street_number}`,
+						city: profile.city,
+						zip: profile.zip_code,
+						country: 'CZ'
+					}
+				},
+				orderNumber: order.order_number,
+				items: order.order_items.map((item: any) => ({
+					name: item.variant_id.description,
+					quantity: item.quantity,
+					price: item.price,
+					vat: 21
+				})),
+				currency: order.currency || 'CZK'
+			});
 
 			if (!invoice?.id) {
 				return fail(500, {
@@ -232,7 +248,7 @@ export const actions: Actions = {
 			const newInvoice = {
 				invoice_id: invoice.id,
 				invoice_number: invoice.number,
-				invoice_url: invoice.html_url,
+				invoice_url: `https://app.fakturoid.cz/${activeAccountId}/invoices/${invoice.id}`,
 				account_id: activeAccountId,
 				created_at: new Date().toISOString()
 			};
@@ -293,7 +309,7 @@ export const actions: Actions = {
 			// 7. Odeslání emailu (pokud požadováno)
 			if (sendEmail) {
 				try {
-					await sendInvoiceEmail(invoice.id, supabase, fakturoidConfig);
+					await fakturoidService.sendInvoiceEmail(invoice.id);
 				} catch (error) {
 					console.error("Chyba při odesílání emailu:", error);
 					// Pokračujeme dál, i když se email nepodařilo odeslat
@@ -303,7 +319,7 @@ export const actions: Actions = {
 			// 8. Označení jako zaplaceno (pokud požadováno)
 			if (markPaid) {
 				try {
-					await markInvoiceAsPaid(invoice.id, supabase, fakturoidConfig);
+					await fakturoidService.markInvoiceAsPaid(invoice.id);
 				} catch (error) {
 					console.error("Chyba při označování faktury jako zaplacené:", error);
 					// Pokračujeme dál, i když se nepodařilo označit jako zaplacené
