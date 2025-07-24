@@ -51,7 +51,7 @@ export const actions: Actions = {
 				
 				const { data: profile, error: profileError } = await supabase
 					.from('profiles')
-					.select('id, email, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name')
+					.select('id, email, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, registration_status')
 					.eq('id', data.user.id)
 					.single();
 
@@ -107,6 +107,29 @@ export const actions: Actions = {
 			} catch (postReactivationError) {
 				console.error('❌ [LOGIN] Error in post-reactivation process:', postReactivationError);
 				// Pokračovat v normálním flow i když post-reaktivace selže
+			}
+
+			// 🔧 KROK 3: Zkontrolovat registration_status a přesměrovat podle potřeby
+			try {
+				const { data: profile, error: profileError } = await supabase
+					.from('profiles')
+					.select('registration_status')
+					.eq('id', data.user.id)
+					.single();
+
+				if (!profileError && profile) {
+					// Pokud je registrace nedokončená, přesměrovat na complete stránku
+					if (profile.registration_status !== 'completed') {
+						console.log('📝 [LOGIN] Registration not completed, redirecting to complete page');
+						throw redirect(303, "/auth/signup/complete");
+					}
+				}
+			} catch (redirectError) {
+				// Pokud je to redirect, nechat ho projít
+				if (redirectError instanceof Response) {
+					throw redirectError;
+				}
+				console.error('❌ [LOGIN] Error checking registration status:', redirectError);
 			}
 
 			throw redirect(303, "/obedy");

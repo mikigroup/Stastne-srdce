@@ -34,7 +34,7 @@
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/auth/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -225,7 +225,7 @@
 			<div class="ml-3">
 				<p class="text-sm text-yellow-700">
 					Pro plné využití všech funkcí je potřeba dokončit registraci.
-					<a href="/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+					<a href="/auth/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
 						Dokončit registraci
 					</a>
 				</p>

@@ -2,36 +2,59 @@ import { redirect, fail } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, session }
+	locals: { supabase, session },
+	url
 }) => {
-	if (!session) {
+	// Pokud nemá session, ale má parametr success=signup, umožníme přístup
+	const successParam = url.searchParams.get("success");
+	
+	if (!session && successParam !== "signup") {
 		throw redirect(303, "/login");
 	}
 
-	// Kontrola existence profilu a načtení všech polí
-	const { data: profile } = await supabase
-		.from("profiles")
-		.select(`
-			*,
-			allergies,
-			allergies_description,
-			delivery_method,
-			payment_method
-		`)
-		.eq("id", session.user.id)
-		.single();
+	// Pokud má session, načteme profil
+	if (session) {
+		// Kontrola existence profilu a načtení všech polí
+		const { data: profile } = await supabase
+			.from("profiles")
+			.select(`
+				*,
+				allergies,
+				allergies_description,
+				delivery_method,
+				payment_method
+			`)
+			.eq("id", session.user.id)
+			.single();
 
-	if (profile?.registration_status === "completed") {
-		throw redirect(303, "/");
+		if (profile?.registration_status === "completed") {
+			throw redirect(303, "/");
+		}
+
+		return { profile };
 	}
 
-	return { profile };
+	// Pokud nemá session ale má success parametr, vrátíme prázdný profil
+	return { profile: null };
 };
 
 export const actions: Actions = {
-	complete: async ({ request, locals: { supabase, session } }) => {
-		if (!session) {
+	complete: async ({ request, locals: { supabase, session }, url }) => {
+		// Pokud nemá session, ale má parametr success=signup, umožníme pokračování
+		const successParam = url.searchParams.get("success");
+		
+		if (!session && successParam !== "signup") {
 			throw redirect(303, "/login");
+		}
+
+		// Pokud nemá session, nemůžeme pokračovat s dokončením registrace
+		if (!session) {
+			return fail(400, {
+				message: {
+					success: false,
+					display: "Pro dokončení registrace je nutné se přihlásit"
+				}
+			});
 		}
 
 		try {
