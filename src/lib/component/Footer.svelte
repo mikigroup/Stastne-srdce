@@ -2,7 +2,11 @@
 	import { writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
-	export let version = import.meta.env.PUBLIC_VERSION || 'dev';
+	export let version = import.meta.env.PUBLIC_VERSION || '1.1.0-dev';
+
+	// Debug informace
+	$: console.log('PUBLIC_VERSION:', import.meta.env.PUBLIC_VERSION);
+	$: console.log('Final version:', version);
 
 	$: footerText = $page.data.appearanceSettings?.footerText || '';
     $: socialSettings = $page.data.socialSettings || {};
