@@ -45,9 +45,16 @@ jobs:
           git commit -am "chore: update footer to ${{ env.VERSION_WITH_HASH }}"
           git push
 
+      # Nastavení PUBLIC_VERSION pro Vercel build
+      - name: Set PUBLIC_VERSION for Vercel
+        run: |
+          echo "PUBLIC_VERSION=${{ env.VERSION_WITH_HASH }}" >> $GITHUB_ENV
+          echo "PUBLIC_VERSION set to: ${{ env.VERSION_WITH_HASH }}"
+
       # Deploy na Vercel (vlastní trigger)
       - name: Trigger Vercel Deploy
         run: curl -X POST "https://api.vercel.com/v1/integrations/deploy/$VERCEL_PROJECT_ID"  # Automaticky deployne změny
         env:
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }} 
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          PUBLIC_VERSION: ${{ env.VERSION_WITH_HASH }} 

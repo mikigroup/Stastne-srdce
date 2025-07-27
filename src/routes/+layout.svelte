@@ -45,7 +45,11 @@
 		return () => data.subscription.unsubscribe();
 	});
 
-	$: isAdminRoute = browser && $page.url.pathname.startsWith("/admin");
+	let isAdminRoute = false;
+	
+	onMount(() => {
+		isAdminRoute = $page.url.pathname.startsWith("/admin");
+	});
 	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
