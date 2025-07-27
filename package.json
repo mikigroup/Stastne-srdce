@@ -1,9 +1,10 @@
 {
   "name": "Malý Leo",
-  "version": "1.0a",
+  "version": "1.1.0",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "PUBLIC_VERSION=$(node -p 'require(\"./package.json\").version')-local vite dev",
+    "build": "PUBLIC_VERSION=$(node -p 'require(\"./package.json\").version') vite build",
+    "build:dev": "PUBLIC_VERSION=$(node -p 'require(\"./package.json\").version')-dev vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

@@ -2,6 +2,8 @@
 	import { writable } from 'svelte/store';
 	import { page } from '$app/stores';
 
+	export let version = import.meta.env.PUBLIC_VERSION || 'dev';
+
 	$: footerText = $page.data.appearanceSettings?.footerText || '';
     $: socialSettings = $page.data.socialSettings || {};
 </script>
@@ -63,7 +65,7 @@
 				<a href="https://www.malyleo.cz/" target="_blank" class="text-sm flex items-center">
 					<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo™
 				</a>
-				<span class="text-gray-400 text-xs">core1.1b</span>
+				<span class="text-gray-400 text-xs">core{version}</span>
 			</div>
 			<p>Tento web používá cookies pro lepší uživatelský zážitek.</p>
 		</div>

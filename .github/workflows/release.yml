@@ -1,0 +1,53 @@
+name: Release
+on:
+  push:
+    branches: [main]  # Automaticky při každém commitu do main
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      
+      # Získání GitHub hash
+      - name: Get commit hash
+        id: commit_hash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      # Zvýšení verze + commit
+      - name: Bump version
+        uses: JS-DevTools/npm-bump@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: true
+          tag: true
+          push: true
+          # Pouze patch verze při tagu
+          version: patch
+
+      # Přidání hash k verzi
+      - name: Add hash to version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          HASH_VERSION="${VERSION}-${{ steps.commit_hash.outputs.hash }}"
+          echo "VERSION_WITH_HASH=$HASH_VERSION" >> $GITHUB_ENV
+          echo "Version with hash: $HASH_VERSION"
+
+      # Aktualizace patičky
+      - name: Update footer version
+        run: |
+          sed -i "s/core[0-9]\+\.[0-9]\+\.[0-9]\+[^0-9]*/core${{ env.VERSION_WITH_HASH }}/g" src/lib/component/Footer.svelte
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -am "chore: update footer to ${{ env.VERSION_WITH_HASH }}"
+          git push
+
+      # Deploy na Vercel (vlastní trigger)
+      - name: Trigger Vercel Deploy
+        run: curl -X POST "https://api.vercel.com/v1/integrations/deploy/$VERCEL_PROJECT_ID"  # Automaticky deployne změny
+        env:
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }} 
