@@ -13,6 +13,7 @@ const FakturoidAccountSchema = yup.object({
 export const FakturoidIntegrationSchema = yup.object().shape({
     enabled: yup.boolean().required(),
     connected: yup.boolean().required(),
+    subdomain: yup.string().optional(), // Ruční zadání subdomény
     accounts: yup.array().of(FakturoidAccountSchema).required(),
     defaultLanguage: yup.string().optional().default('cz'),
     autoCreateInvoices: yup.boolean().optional().default(false),

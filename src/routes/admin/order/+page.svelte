@@ -56,6 +56,10 @@
 	let selectedState = ""; // Lokální proměnná pro filtrování
 	let transitionKey = 0;
 
+	// Možnosti pro počet položek na stránce
+	const itemsPerPageOptions = [10, 25, 50, 100];
+	let selectedItemsPerPage = itemsPerPage;
+
 	// Výchozí stav řazení
 	let sorting: SortingState = [
 		{ id: 'order_number', desc: true } // Výchozí řazení sestupně podle čísla objednávky
@@ -151,6 +155,7 @@
 				params.set('page', (currentPage - 1).toString());
 				if (searchQuery) params.set('search', searchQuery);
 				if (dateQuery) params.set('date', dateQuery);
+				params.set('itemsPerPage', selectedItemsPerPage.toString());
 				await goto(`?${params.toString()}`);
 			}
 		} catch (error) {
@@ -170,6 +175,7 @@
 				params.set('page', (currentPage + 1).toString());
 				if (searchQuery) params.set('search', searchQuery);
 				if (dateQuery) params.set('date', dateQuery);
+				params.set('itemsPerPage', selectedItemsPerPage.toString());
 				await goto(`?${params.toString()}`);
 			}
 		} catch (error) {
@@ -187,6 +193,7 @@
 			params.set('page', '1');
 			if (searchInput) params.set('search', searchInput);
 			if (dateQuery) params.set('date', dateQuery);
+			params.set('itemsPerPage', selectedItemsPerPage.toString());
 			await goto(`?${params.toString()}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání:", error);
@@ -201,8 +208,9 @@
 		try {
 			const params = new URLSearchParams();
 			params.set('page', '1');
-			if (dateInput) params.set('date', dateInput);
 			if (searchQuery) params.set('search', searchQuery);
+			if (dateInput) params.set('date', dateInput);
+			params.set('itemsPerPage', selectedItemsPerPage.toString());
 			await goto(`?${params.toString()}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání podle data:", error);
@@ -211,8 +219,60 @@
 		}
 	}
 
+	// Handle change of items per page
+	async function handleItemsPerPageChange() {
+		loading = true;
+		try {
+			// Reset to first page when changing items per page
+			const params = new URLSearchParams();
+			params.set('page', '1');
+			if (searchQuery) params.set('search', searchQuery);
+			if (dateQuery) params.set('date', dateQuery);
+			params.set('itemsPerPage', selectedItemsPerPage.toString());
+			await goto(`?${params.toString()}`);
+		} catch (error) {
+			console.error("Chyba při změně počtu položek na stránce:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
 	function newOrderPage() {
 		goto("/admin/order/new");
+	}
+
+	async function restoreAllFakturoidData() {
+		try {
+			loading = true;
+			
+			// Zobrazíme potvrzovací dialog
+			if (!confirm('Chcete obnovit chybějící Fakturoid data pro všechny objednávky? Tato operace může trvat několik minut.')) {
+				return;
+			}
+
+			// Voláme server action pro obnovu všech dat
+			const response = await fetch('/admin/order/restore-all-fakturoid-data', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Fakturoid data byla úspěšně obnovena!\n\nObnoveno objednávek: ${result.updatedOrders || 0}\nNalezené faktury: ${result.totalInvoices || 0}\n\n${result.message || ''}`);
+				// Obnovíme stránku pro zobrazení nových dat
+				window.location.reload();
+			} else {
+				alert(`❌ Chyba při obnově dat: ${result.message || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error restoring all Fakturoid data:", error);
+			alert("Chyba při obnově Fakturoid dat");
+		} finally {
+			loading = false;
+		}
 	}
 
 	function formatPayState(pay_state: boolean) {
@@ -409,13 +469,15 @@
 </svelte:head>
 
 <section>
-	<div class="flex justify-between">
+			<div class="flex justify-between">
 		<div class="flex flex-col gap-2 md:flex-row items-center">
-			<!--<div>
-				<button on:click={newOrderPage} class="btn btn-outline" disabled>
-					Vytvořit objednávku
-				</button>
-			</div>-->
+			<!-- <button
+				on:click={restoreAllFakturoidData}
+				disabled={loading}
+				class="btn btn-secondary btn-sm"
+			>
+				{loading ? 'Obnovuji...' : '🔄 Obnovit Fakturoid data'}
+			</button> -->
 			<div>
 				<input 
 					type="date" 
@@ -496,11 +558,32 @@
 		</button>
 	</div>
 
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet objednávek: {totalItems}</p>
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} objednávek</p>
+	<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full my-4">
+		<div class="text-center md:text-left">
+			<p>Celkový počet objednávek: {totalItems}</p>
+		</div>
+
+		<div class="flex items-center justify-center gap-2 text-nowrap">
+			<span>Položek na stránce:</span>
+			<select
+				class="select select-bordered select-sm"
+				style="line-height: 2; padding-top: 0; padding-bottom: 0;"
+				bind:value={selectedItemsPerPage}
+				on:change={handleItemsPerPageChange}
+			>
+				{#each itemsPerPageOptions as option}
+					<option value={option} class="leading-normal flex items-center justify-center">{option}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div class="text-center">
+			<p>Stránka {currentPage} z {totalPages}</p>
+		</div>
+		
+		<div class="text-center md:text-right">
+			<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} objednávek</p>
+		</div>
 	</div>
 </section>
 

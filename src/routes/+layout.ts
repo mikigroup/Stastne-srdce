@@ -6,8 +6,10 @@ import {
 } from "@supabase/ssr";
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 // import { PRIVATE_SBKey, PRIVATE_SBUrl } from "$env/static/private";
-import { loadSettings } from "$lib/settingsService";
 import type { LayoutLoad } from "./$types";
+import { browser } from '$app/environment';
+import { writable } from 'svelte/store';
+import { getSetting } from '$lib/services/siteSettingsService';
 
 export const load: LayoutLoad = async ({ data, depends, fetch, url }) => {
 	depends("supabase:auth");
@@ -61,14 +63,24 @@ export const load: LayoutLoad = async ({ data, depends, fetch, url }) => {
 	// Použijeme session pouze pokud user je ověřený
 	const safeSession = user ? session : null;
 
-	// Načtení nastavení s optimalizovaným cachováním a pouze pro aktuální stránku
-	const settings = await loadSettings(supabase, url.pathname, !!user);
+	// Načtení základních nastavení
+	const generalSettings = await getSetting(supabase, 'general');
+	const contactSettings = await getSetting(supabase, 'contact');
+	const socialSettings = await getSetting(supabase, 'social');
+	const seoSettings = await getSetting(supabase, 'seo');
+	const appearanceSettings = await getSetting(supabase, 'appearance');
 
 	return {
 		session: safeSession,
 		supabase,
 		user,
-		settings,
-		generalSettings: settings.general
+		settings: {
+			general: generalSettings,
+			contact: contactSettings,
+			social: socialSettings,
+			seo: seoSettings,
+			appearance: appearanceSettings
+		},
+		generalSettings: generalSettings
 	};
 };

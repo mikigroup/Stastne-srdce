@@ -30,11 +30,11 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Děkujeme za objednávku</title>
+	<title>Děkujeme za objednávku - {generalSettings?.shopName}</title>
 	<meta name="description" content="Děkujeme za objednávku" />
 </svelte:head>
 
-<div class="max-w-screen-lg px-4 py-8 py-16 mx-auto mt-20 rounded-lg bg-orange-50">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-orange-50">
 	<div class="letter-container">
 		<div class="letter-image">
 			<div class="animated-mail">
@@ -69,7 +69,7 @@
 			Zpět na obědy
 		</a>
 	</div>
-</div>
+</section>
 
 <style>
 	.letter-container {

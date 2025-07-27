@@ -1,14 +1,29 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
+	import { writable, type Writable } from "svelte/store";
 	import { fade, fly } from "svelte/transition";
-	import type { PageData } from './$types';
+	import type { PageData } from "./$types";
 	import { enhance } from "$app/forms";
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
+	import { page } from "$app/stores";
+	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
+	import { browser } from "$app/environment";
 
-	export let data: PageData;
+	import GeneralSettings from "./GeneralSettings.svelte";
+	import SeoSettings from "./SeoSettings.svelte";
+	import ContactSettings from "./ContactSettings.svelte";
+	import SocialSettings from "./SocialSettings.svelte";
+	import AppearanceSettings from "./AppearanceSettings.svelte";
+	import BusinessSettings from "./BusinessSettings.svelte";
+	import EmailSettings from "./EmailSettings.svelte";
+	import IntegrationsSettings from "./IntegrationsSettings.svelte";
+	import OrdersSettings from "./OrdersSettings.svelte";
+	import DeliverySettings from "./DeliverySettings.svelte";
+	import ProductsSettings from "./ProductsSettings.svelte";
+	import CustomerSettings from "./CustomerSettings.svelte";
+	import LoyaltySettings from "./LoyaltySettings.svelte";
+	import NotificationSettings from "./NotificationSettings.svelte";
+
+		export let data: PageData;
 
 	type FormData = {
 		message?: {
@@ -17,7 +32,7 @@
 		};
 	};
 
-	export let form: FormData | null = null;
+	export const form: FormData | null = null;
 
 	// State management
 	let loading = false;
@@ -28,8 +43,14 @@
 	let showMessage = false;
 	let loadingTab = false;
 
+	// File upload state
+	let uploadingLogo: boolean = false;
+	let uploadingFavicon: boolean = false;
+	let logoFileInput!: HTMLInputElement;
+	let faviconFileInput!: HTMLInputElement;
+
 	// Cache management
-	const CACHE_KEY = 'site_settings_cache';
+	const CACHE_KEY = "site_settings_cache";
 	const CACHE_DURATION = 5 * 60 * 1000; // 5 minut
 
 	// Funkce pro práci s cache
@@ -50,7 +71,7 @@
 			
 			return data;
 		} catch (e) {
-			console.error('Chyba při čtení cache:', e);
+			console.error("Chyba při čtení cache:", e);
 			return null;
 		}
 	}
@@ -64,7 +85,7 @@
 				timestamp: Date.now()
 			}));
 		} catch (e) {
-			console.error('Chyba při ukládání do cache:', e);
+			console.error("Chyba při ukládání do cache:", e);
 		}
 	}
 
@@ -75,56 +96,56 @@
 
 	// Zpracování OAuth úspěchu a chyb
 	onMount(() => {
-		const success = $page.url.searchParams.get('success');
-		const error = $page.url.searchParams.get('error');
-		const message = $page.url.searchParams.get('message');
-		const tab = $page.url.searchParams.get('tab');
+		const success = $page.url.searchParams.get("success");
+		const error = $page.url.searchParams.get("error");
+		const message = $page.url.searchParams.get("message");
+		const tab = $page.url.searchParams.get("tab");
 		
 		// Automatické přepnutí na zadanou záložku
-		if (tab && ['general', 'seo', 'contact', 'social', 'appearance', 'business', 'email', 'integrations', 'orders', 'delivery', 'products', 'customer', 'inventory'].includes(tab)) {
+		if (tab && ["general", "seo", "contact", "social", "appearance", "business", "email", "integrations", "orders", "delivery", "products", "customer", "inventory"].includes(tab)) {
 			activeTab = tab;
 		}
 		
-		if (success === 'fakturoid_connected') {
-			activeTab = 'integrations';
-			saveMessage = 'Fakturoid byl úspěšně připojen přes OAuth!';
-			saveMessageType = 'success';
+		if (success === "fakturoid_connected") {
+			activeTab = "integrations";
+			saveMessage = "Fakturoid byl úspěšně připojen přes OAuth!";
+			saveMessageType = "success";
 			showMessage = true;
 			
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
-		} else if (success === 'fakturoid_disconnected') {
-			activeTab = 'integrations';
+		} else if (success === "fakturoid_disconnected") {
+			activeTab = "integrations";
 			// Vyčistíme local cache
 			clearCache();
 			// Vynucíme refresh dat
-			window.location.hash = '#refresh';
+			window.location.hash = "#refresh";
 			
-			saveMessage = 'Fakturoid byl úspěšně odpojeno!';
-			saveMessageType = 'success';
+			saveMessage = "Fakturoid byl úspěšně odpojeno!";
+			saveMessageType = "success";
 			showMessage = true;
 			
 			setTimeout(() => {
 				showMessage = false;
 			}, 5000);
 		} else if (error) {
-			activeTab = 'integrations';
+			activeTab = "integrations";
 			
 			// Mapování chybových kódů na uživatelsky přívětivé zprávy
 			const errorMessages: Record<string, string> = {
-				'oauth_state_mismatch': 'Chyba ověření OAuth stavu. Zkuste to prosím znovu.',
-				'missing_oauth_params': 'Chybí OAuth parametry. Zkuste připojení znovu.',
-				'invalid_state_format': 'Neplatný formát OAuth stavu.',
-				'token_request_failed': 'Nepodařilo se získat přístupový token od Fakturoid.',
-				'user_info_failed': 'Nepodařilo se načíst informace o uživateli z Fakturoid.',
-				'token_save_failed': 'Nepodařilo se uložit přístupový token do databáze.',
-				'settings_update_failed': 'Nepodařilo se aktualizovat nastavení integrace.',
-				'callback_failed': 'Obecná chyba při OAuth callback.'
+				"oauth_state_mismatch": "Chyba ověření OAuth stavu. Zkuste to prosím znovu.",
+				"missing_oauth_params": "Chybí OAuth parametry. Zkuste připojení znovu.",
+				"invalid_state_format": "Neplatný formát OAuth stavu.",
+				"token_request_failed": "Nepodařilo se získat přístupový token od Fakturoid.",
+				"user_info_failed": "Nepodařilo se načíst informace o uživateli z Fakturoid.",
+				"token_save_failed": "Nepodařilo se uložit přístupový token do databáze.",
+				"settings_update_failed": "Nepodařilo se aktualizovat nastavení integrace.",
+				"callback_failed": "Obecná chyba při OAuth callback."
 			};
 			
-			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : 'Neznámá chyba při připojování Fakturoid účtu.');
-			saveMessageType = 'error';
+			saveMessage = errorMessages[error] || (message ? decodeURIComponent(message) : "Neznámá chyba při připojování Fakturoid účtu.");
+			saveMessageType = "error";
 			showMessage = true;
 			
 			setTimeout(() => {
@@ -132,6 +153,8 @@
 			}, 8000);
 		}
 	});
+
+
 
 	// Get settings from data or cache
 	let settings = data.settings;
@@ -156,7 +179,7 @@
 	}
 	
 	// Reactive refresh dat při změně URL parametrů
-	$: if ($page.url.searchParams.get('success') === 'fakturoid_disconnected') {
+	$: if ($page.url.searchParams.get("success") === "fakturoid_disconnected") {
 		// Force refresh dat po odpojení
 		setTimeout(() => {
 			editableSettings.set(structureSettings(settings));
@@ -164,7 +187,7 @@
 	}
 
 	// Import unified default values
-	import { UNIFIED_DEFAULT_SETTINGS } from '$lib/constants/defaultSettings';
+	import { UNIFIED_DEFAULT_SETTINGS } from "$lib/constants/defaultSettings";
 
 	// Use unified defaults as the single source of truth
 	const DEFAULT_VALUES = UNIFIED_DEFAULT_SETTINGS;
@@ -180,7 +203,7 @@
 
 		// Pokud nemáme žádná data, vrátíme výchozí hodnoty
 		if (!settingsData || !Array.isArray(settingsData)) {
-			console.warn('Žádná data pro strukturování nastavení');
+			console.warn("Žádná data pro strukturování nastavení");
 			return structured;
 		}
 
@@ -191,7 +214,7 @@
 			}
 
 			// Ignorujeme neplatné klíče
-			if (item.key === 'action' || item.key === 'settings') {
+		if (item.key === "action" || item.key === "settings") {
 				return;
 			}
 
@@ -252,7 +275,7 @@
 	}
 
 	// Initialize editable settings
-	let editableSettings = writable(structureSettings(settings));
+	let editableSettings: Writable<Record<string, any>> = writable<Record<string, any>>(structureSettings(data.settings));
 
 	// Watch for changes in data
 	$: if (settings) {
@@ -269,18 +292,18 @@
 		loadingTab = true;
 		
 		try {
-			const response = await fetch('?/loadSetting', {
-				method: 'POST',
+			const response = await fetch("?/loadSetting", {
+				method: "POST",
 				body: (() => {
 					const formData = new FormData();
-					formData.append('key', tabId);
+					formData.append("key", tabId);
 					return formData;
 				})()
 			});
 
 			if (response.ok) {
 				const result = await response.json();
-				if (result.type === 'success' && result.data?.setting) {
+				if (result.type === "success" && result.data?.setting) {
 					// Aktualizujeme pouze toto konkrétní nastavení
 					editableSettings.update(s => ({
 						...s,
@@ -289,7 +312,7 @@
 				}
 			}
 		} catch (e) {
-			console.error('Chyba při načítání nastavení:', e);
+			console.error("Chyba při načítání nastavení:", e);
 		} finally {
 			loadingTab = false;
 		}
@@ -297,19 +320,20 @@
 
 	// Tabs configuration
 	const tabs = [
-		{ id: 'general', label: 'Obecné', icon: 'fa-solid fa-gear' },
-		{ id: 'seo', label: 'SEO', icon: 'fa-solid fa-magnifying-glass' },
-		{ id: 'contact', label: 'Kontakt', icon: 'fa-solid fa-address-book' },
-		{ id: 'social', label: 'Sociální sítě', icon: 'fa-solid fa-share-nodes' },
-		{ id: 'appearance', label: 'Vzhled', icon: 'fa-solid fa-palette' },
-		{ id: 'business', label: 'Firemní údaje', icon: 'fa-solid fa-building' },
-		{ id: 'email', label: 'Šablony e-mailů', icon: 'fa-solid fa-envelope' },
-		{ id: 'integrations', label: 'Integrace', icon: 'fa-solid fa-plug' },
-		{ id: 'orders', label: 'Objednávky', icon: 'fa-solid fa-clipboard-list' },
-		{ id: 'delivery', label: 'Doprava', icon: 'fa-solid fa-truck' },
-		{ id: 'products', label: 'Produkty', icon: 'fa-solid fa-utensils' },
-		{ id: 'customer', label: 'Zákazníci', icon: 'fa-solid fa-users' },
-		{ id: 'inventory', label: 'Inventář', icon: 'fa-solid fa-boxes-stacked' }
+		{ id: "general", label: "Obecné", icon: "fa-solid fa-gear" },
+		{ id: "seo", label: "SEO", icon: "fa-solid fa-magnifying-glass" },
+		{ id: "contact", label: "Kontakt", icon: "fa-solid fa-address-book" },
+		{ id: "social", label: "Sociální sítě", icon: "fa-solid fa-share-nodes" },
+		{ id: "appearance", label: "Vzhled", icon: "fa-solid fa-palette" },
+		{ id: "business", label: "Firemní údaje", icon: "fa-solid fa-building" },
+		{ id: "email", label: "Šablony e-mailů", icon: "fa-solid fa-envelope" },
+		/* { id: "notifications", label: "Automatické notifikace", icon: "fa-solid fa-bell" }, */
+		{ id: "integrations", label: "Integrace", icon: "fa-solid fa-plug" },
+		{ id: "orders", label: "Objednávky", icon: "fa-solid fa-clipboard-list" },
+		{ id: "delivery", label: "Doprava", icon: "fa-solid fa-truck" },
+		{ id: "products", label: "Produkty", icon: "fa-solid fa-utensils" },
+		{ id: "customer", label: "Zákazníci", icon: "fa-solid fa-users" },
+		{ id: "loyalty", label: "Věrnostní systém", icon: "fa-solid fa-gem" }
 	];
 
 	// Set active tab with lazy loading
@@ -319,267 +343,18 @@
 		await loadTabSettings(tabId);
 	}
 
-	// Note: We're using the form action to save settings
-	// The form in the HTML section below submits the settings directly to the server
-
-	// Add opening hours entry
-	function addOpeningHoursDay() {
-		if (!$editableSettings.contact?.openingHours) {
-			$editableSettings.contact = { ...$editableSettings.contact, openingHours: {} };
-		}
-		$editableSettings.contact.openingHours['newDay'] = '';
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove opening hours entry
-	function removeOpeningHoursDay(day: string) {
-		if ($editableSettings.contact?.openingHours?.[day]) {
-			delete $editableSettings.contact.openingHours[day];
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add payment method
-	function addPaymentMethod() {
-		if (!$editableSettings.business?.paymentMethods) {
-			$editableSettings.business = { ...$editableSettings.business, paymentMethods: [] };
-		}
-		$editableSettings.business.paymentMethods.push('');
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove payment method
-	function removePaymentMethod(index: number) {
-		if ($editableSettings.business?.paymentMethods && $editableSettings.business.paymentMethods.length > index) {
-			$editableSettings.business.paymentMethods.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add delivery option
-	function addDeliveryOption() {
-		if (!$editableSettings.business?.deliveryOptions) {
-			$editableSettings.business = { ...$editableSettings.business, deliveryOptions: [] };
-		}
-		$editableSettings.business.deliveryOptions.push('');
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove delivery option
-	function removeDeliveryOption(index: number) {
-		if ($editableSettings.business?.deliveryOptions && $editableSettings.business.deliveryOptions.length > index) {
-			$editableSettings.business.deliveryOptions.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
 	// Reset settings to defaults
 	function resetSettings() {
-		if (confirm('Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.')) {
+		if (confirm("Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.")) {
 			editableSettings.set(structureSettings(settings));
-			saveMessage = 'Nastavení byla obnovena na původní hodnoty';
-			saveMessageType = 'info';
+			saveMessage = "Nastavení byla obnovena na původní hodnoty";
+			saveMessageType = "info";
 			showMessage = true;
 
 			setTimeout(() => {
 				showMessage = false;
 			}, 3000);
 		}
-	}
-
-	// Add phone contact
-	function addPhoneContact() {
-		if (!$editableSettings.contact?.phoneContacts) {
-			$editableSettings.contact = { ...$editableSettings.contact, phoneContacts: [] };
-		}
-		$editableSettings.contact.phoneContacts.push({ name: '', phone: '' });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove phone contact
-	function removePhoneContact(index: number) {
-		if ($editableSettings.contact?.phoneContacts && $editableSettings.contact.phoneContacts.length > index) {
-			$editableSettings.contact.phoneContacts.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add order state
-	function addOrderState() {
-		if (!$editableSettings.orders) {
-			$editableSettings.orders = {};
-		}
-		if (!$editableSettings.orders.orderStates) {
-			$editableSettings.orders.orderStates = [];
-		}
-		$editableSettings.orders.orderStates.push({ name: '', color: '#3b82f6' });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove order state
-	function removeOrderState(index: number) {
-		if ($editableSettings.orders?.orderStates && $editableSettings.orders.orderStates.length > index) {
-			$editableSettings.orders.orderStates.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-
-	// Dostupné měny pro výběr
-	const availableCurrencies = [
-		{ code: 'CZK', name: 'Česká koruna' },
-		{ code: 'EUR', name: 'Euro' },
-		{ code: 'USD', name: 'Americký dolar' },
-		{ code: 'GBP', name: 'Britská libra' },
-		{ code: 'PLN', name: 'Polský zlotý' },
-		{ code: 'CHF', name: 'Švýcarský frank' }
-	];
-
-	// Získá název měny podle kódu
-	function getCurrencyName(code: string): string {
-		const currency = availableCurrencies.find(c => c.code === code);
-		return currency ? currency.name : code;
-	}
-
-	// Handle přidání měny z selectu
-	function handleCurrencyAdd(event: Event) {
-		const target = event.target as HTMLSelectElement;
-		const currencyCode = target.value;
-		
-		if (currencyCode && currencyCode.trim() !== '') {
-			if (!$editableSettings.general) {
-				$editableSettings.general = {};
-			}
-			if (!$editableSettings.general.currencies) {
-				$editableSettings.general.currencies = [];
-			}
-			
-			// Přidáme pouze pokud už tam není
-			if (!$editableSettings.general.currencies.includes(currencyCode)) {
-				$editableSettings.general.currencies.push(currencyCode);
-				$editableSettings = $editableSettings;
-			}
-			
-			// Reset selectu
-			target.value = '';
-		}
-	}
-
-	// Remove currency
-	function removeCurrency(index: number) {
-		if ($editableSettings.general?.currencies && $editableSettings.general.currencies.length > index) {
-			$editableSettings.general.currencies.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add shipping method
-	function addShippingMethod() {
-		if (!$editableSettings.delivery) {
-			$editableSettings.delivery = {};
-		}
-		if (!$editableSettings.delivery.shippingMethods) {
-			$editableSettings.delivery.shippingMethods = [];
-		}
-		$editableSettings.delivery.shippingMethods.push({ name: '', price: 0 });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove shipping method
-	function removeShippingMethod(index: number) {
-		if ($editableSettings.delivery?.shippingMethods && $editableSettings.delivery.shippingMethods.length > index) {
-			$editableSettings.delivery.shippingMethods.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add homepage service
-	function addHomepageService() {
-		if (!$editableSettings.homepage) {
-			$editableSettings.homepage = {};
-		}
-		if (!$editableSettings.homepage.services) {
-			$editableSettings.homepage.services = [];
-		}
-		$editableSettings.homepage.services.push({ title: '', link: '' });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove homepage service
-	function removeHomepageService(index: number) {
-		if ($editableSettings.homepage?.services && $editableSettings.homepage.services.length > index) {
-			$editableSettings.homepage.services.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add product feature
-	function addProductFeature() {
-		if (!$editableSettings.products) {
-			$editableSettings.products = {};
-		}
-		if (!$editableSettings.products.features) {
-			$editableSettings.products.features = [];
-		}
-		$editableSettings.products.features.push({ title: '', description: '' });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove product feature
-	function removeProductFeature(index: number) {
-		if ($editableSettings.products?.features && $editableSettings.products.features.length > index) {
-			$editableSettings.products.features.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Add legal section
-	function addLegalSection() {
-		if (!$editableSettings.pages) {
-			$editableSettings.pages = {};
-		}
-		if (!$editableSettings.pages.legalSections) {
-			$editableSettings.pages.legalSections = [];
-		}
-		$editableSettings.pages.legalSections.push({ title: '', content: '' });
-		$editableSettings = $editableSettings;
-	}
-
-	// Remove legal section
-	function removeLegalSection(index: number) {
-		if ($editableSettings.pages?.legalSections && $editableSettings.pages.legalSections.length > index) {
-			$editableSettings.pages.legalSections.splice(index, 1);
-			$editableSettings = $editableSettings;
-		}
-	}
-
-	// Fakturoid connection functions
-	async function connectFakturoid() {
-		try {
-			// Přesměrujeme na správný OAuth endpoint pro Fakturoid
-			window.location.href = '/auth/fakturoid/connect';
-		} catch (error) {
-			console.error('Chyba při připojování Fakturoid:', error);
-			saveMessage = 'Chyba při připojování k Fakturoid';
-			saveMessageType = 'error';
-			showMessage = true;
-			setTimeout(() => showMessage = false, 5000);
-		}
-	}
-
-	async function disconnectFakturoid() {
-		if (!confirm('Opravdu chcete odpojit Fakturoid účet?')) {
-			return;
-		}
-
-		// Použijeme klasický form submit místo fetch API pro správný redirect
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '?/disconnectFakturoid';
-		form.style.display = 'none';
-		
-		document.body.appendChild(form);
-		form.submit();
 	}
 
 	// Handler pro enhance na save tlačítku
@@ -602,1044 +377,269 @@
 			}
 		};
 	}
+
+	// Handler pro enhance na upload formulářích
+	function handleUploadEnhance({ formData }: any) {
+		const fileType = formData.get("fileType") as string;
+		
+		if (fileType === "logo") {
+			uploadingLogo = true;
+		} else if (fileType === "favicon") {
+			uploadingFavicon = true;
+		}
+
+		return async ({ result, update }: { result: any, update: () => Promise<void> }) => {
+			await update();
+
+			// Reset loading states
+			uploadingLogo = false;
+			uploadingFavicon = false;
+
+			if (result.type === "success" && result.data?.success) {
+				// Zobrazíme success zprávu
+				saveMessage = result.data.message || "Soubor byl úspěšně nahrán";
+				saveMessageType = "success";
+				showMessage = true;
+
+				// Aktualizujeme nastavení s novou URL
+				if (result.data.fileUrl) {
+					if (fileType === "logo") {
+						$editableSettings.appearance.logo = result.data.fileUrl;
+						if (logoFileInput) logoFileInput.value = "";
+					} else if (fileType === "favicon") {
+						$editableSettings.appearance.favicon = result.data.fileUrl;
+						if (faviconFileInput) faviconFileInput.value = "";
+					}
+				}
+
+				setTimeout(() => {
+					showMessage = false;
+				}, 5000);
+			} else if (result.type === "failure") {
+				// Zobrazíme error zprávu
+				saveMessage = result.data?.error || "Chyba při nahrávání souboru";
+				saveMessageType = "error";
+				showMessage = true;
+
+				setTimeout(() => {
+					showMessage = false;
+				}, 8000);
+			}
+		};
+	}
+
+	// Available currencies
+	const availableCurrencies = [
+		{ code: "CZK", name: "Česká koruna" },
+		{ code: "EUR", name: "Euro" },
+		{ code: "USD", name: "Americký dolar" }
+	];
+
+	// Remove currency - smaže všechny měny
+	function removeCurrency(index: number) {
+		if ($editableSettings.general?.currencies) {
+			$editableSettings.general.currencies = [];
+			$editableSettings = $editableSettings;
+		}
+	}
 </script>
 
-<svelte:head>
-	<title>LEO - Nastavení webu</title>
-</svelte:head>
-
-<div class="p-3 sm:p-5 bg-white rounded-lg shadow-md border border-gray-300">
-	<h1 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Nastavení webu</h1>
-
-	<!-- Notification Message -->
-	{#if showMessage}
-		<div
-			in:fade={{ duration: 300 }}
-			out:fade={{ duration: 200 }}
-			class="mb-4 p-4 rounded-lg border {saveMessageType === 'success' ? 'bg-green-50 border-green-300 text-green-800' : saveMessageType === 'error' ? 'bg-red-50 border-red-300 text-red-800' : 'bg-blue-50 border-blue-300 text-blue-800'}"
-		>
-			{saveMessage}
-		</div>
-	{/if}
-
-	<!-- Tabs and Content -->
-	<div class="flex flex-col lg:flex-row gap-4">
-		<!-- Tab Navigation -->
-		<div class="lg:w-1/4">
-			<!-- Mobile Tabs - Horizontal Scroll -->
-			<div class="lg:hidden mb-4">
-				<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-					{#each tabs as tab}
-						<button
-							on:click={() => setActiveTab(tab.id)}
-							class="flex-shrink-0 px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-1 whitespace-nowrap {activeTab === tab.id ? 'bg-cyan-700 text-white' : 'bg-gray-100 hover:bg-gray-200'}"
-						>
-							<i class="{tab.icon} text-xs"></i>
-							<span class="text-xs">{tab.label}</span>
-						</button>
-					{/each}
-				</div>
+<!-- Success/Error Message -->
+{#if showMessage}
+	<div class="fixed top-4 right-4 z-50">
+		<div class="alert {saveMessageType === 'success' ? 'alert-success' : saveMessageType === 'error' ? 'alert-error' : 'alert-info'} shadow-lg">
+			<div>
+				{#if saveMessageType === 'success'}
+					<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				{:else if saveMessageType === 'error'}
+					<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+					</svg>
+				{/if}
+				<span>{saveMessage}</span>
 			</div>
+		</div>
+	</div>
+{/if}
 
-			<!-- Desktop Tabs - Vertical -->
-			<div class="hidden lg:block bg-gray-100 rounded-lg p-2">
-				<ul>
-					{#each tabs as tab}
-						<li class="mb-1">
-							<button
-								on:click={() => setActiveTab(tab.id)}
-								class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-2 {activeTab === tab.id ? 'bg-cyan-700 text-white' : 'hover:bg-gray-200'}"
-							>
-								<i class="{tab.icon}"></i>
-								<span>{tab.label}</span>
-							</button>
-						</li>
-					{/each}
-				</ul>
-
-				<!-- Action Buttons (Desktop Only) -->
-				<div class="hidden lg:block mt-6 p-4 border-t border-gray-300 space-y-3">
+<div class="min-h-screen bg-gray-100">
+	<!-- Header -->
+	<div class="bg-white shadow-sm border-b border-gray-200">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center py-4">
+				<div>
+					<h1 class="text-2xl font-bold text-gray-900">Nastavení systému</h1>					
+				</div>
+				
+				<!-- Desktop Save Button -->
+				<div class="hidden lg:flex items-center gap-4">
 					<form method="POST" action="?/update" use:enhance={handleSaveEnhance}>
 						<input type="hidden" name="settings" value={JSON.stringify($editableSettings)} />
 						<button
 							type="submit"
 							disabled={loading}
-							class="w-full btn btn-primary bg-green-800 text-white hover:bg-green-700"
+							class="btn btn-primary bg-green-800 text-white hover:bg-green-700"
 						>
 							{#if loading}
+								<span class="loading loading-spinner loading-sm"></span>
 								Ukládání...
 							{:else if saved}
+								<i class="fa-solid fa-check"></i>
 								Uloženo
 							{:else}
+								<i class="fa-solid fa-save"></i>
 								Uložit změny
 							{/if}
 						</button>
-					</form>
-
-			
-		<!--		<button
-						on:click={resetSettings}
-						class="w-full btn btn-outline"
-					>
-						Obnovit výchozí
-					</button>
-				-->
+					</form>					
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- Tab Content -->
-		<div class="lg:w-3/4">
-			<div class="bg-gray-50 rounded-lg p-3 sm:p-6 border border-gray-300">
-				<!-- General Settings -->
-				{#if activeTab === 'general' && $editableSettings.general}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Obecné nastavení</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text text-sm sm:text-base">Název obchodu</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.general.shopName}
-									class="input input-bordered w-full input-sm sm:input-md"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text text-sm sm:text-base">Krátký název</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.general.shortName}
-									class="input input-bordered w-full input-sm sm:input-md"
-								/>
-							</div>
-
-							<!--<div class="form-control">
-								<label class="label">
-									<span class="label-text">Slogan</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.general.slogan}
-									class="input input-bordered w-full"
-								/>
-							</div>-->
-							
-							<!-- Měny -->
-							<div class="mb-6 border-t pt-4 mt-4">
-								<h3 class="text-base sm:text-lg font-medium mb-3">Měny</h3>
-								<p class="text-gray-500 mb-3 text-sm">Vyberte měny, které chcete podporovat v systému</p>
-								
-								<!-- Dostupné měny k výběru -->
-								<div class="mb-3">
-									<label class="label">
-										<span class="label-text text-sm sm:text-base">Přidat měnu</span>
-									</label>
-									<select 
-										class="select select-bordered input-sm sm:input-md w-full max-w-xs"
-										on:change={handleCurrencyAdd}>
-										<option value="">Vyberte měnu</option>
-										{#each availableCurrencies as currency}
-											{#if !$editableSettings.general?.currencies?.includes(currency.code)}
-												<option value={currency.code}>{currency.code} - {currency.name}</option>
-											{/if}
-										{/each}
-									</select>
-								</div>
-								
-								<!-- Vybrané měny -->
-								{#if $editableSettings.general?.currencies && $editableSettings.general.currencies.length > 0}
-									<div class="space-y-2 max-w-xs">
-										<label class="label">
-											<span class="label-text text-sm sm:text-base">Vybrané měny</span>
-										</label>
-										{#each $editableSettings.general.currencies as currency, index}
-											<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white">
-												<div class="flex gap-2 flex-1 items-center">
-													<span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-md text-sm font-medium min-w-0">
-														{currency}
-													</span>
-												</div>
-												<button 
-													class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
-													on:click={() => removeCurrency(index)}>
-													×
-												</button>
-											</div>
-										{/each}
+	<!-- Main Content -->
+	<div class="max-w-7xl mx-auto py-6">
+		<div class="flex flex-col lg:flex-row gap-6">			
+			<!-- Sidebar -->
+			<div class="lg:w-1/4">
+				<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">										
+					<!-- Desktop Tabs -->
+					<div class="hidden lg:block">
+						<div class="space-y-2">
+							{#each tabs as tab}
+								<button
+									class="w-full text-left px-4 py-3 rounded-lg transition-colors {activeTab === tab.id ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'hover:bg-gray-50 text-gray-700'}"
+									on:click={() => setActiveTab(tab.id)}
+								>
+									<div class="flex items-center gap-3">
+										<i class="{tab.icon} text-lg"></i>
+										<span class="font-medium">{tab.label}</span>
 									</div>
-								{:else}
-									<p class="text-gray-500 text-sm">Žádné měny nebyly vybrány</p>
-								{/if}
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- SEO Settings -->
-				{#if activeTab === 'seo' && $editableSettings.seo}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">SEO nastavení</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Meta titulek</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.seo.metaTitle}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Meta popis</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.seo.metaDescription}
-									class="textarea textarea-bordered w-full h-24"
-								></textarea>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Meta klíčová slova</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.seo.metaKeywords}
-									class="textarea textarea-bordered w-full h-24"
-									placeholder="Klíčová slova oddělená čárkami"
-								></textarea>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">OG obrázek (URL)</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.seo.ogImage}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="checkbox"
-										bind:checked={$editableSettings.seo.googleAnalyticsEnabled}
-										class="checkbox checkbox-primary"
-									/>
-									<span class="label-text">Google Analytics</span>
-								</label>
-								{#if $editableSettings.seo.googleAnalyticsEnabled}
-									<input
-										type="text"
-										bind:value={$editableSettings.seo.googleAnalyticsId}
-										class="input input-bordered w-full mt-2"
-										placeholder="G-XXXXXXXXXX"
-									/>
-								{/if}
-							</div>
-
-							<div class="form-control">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="checkbox"
-										bind:checked={$editableSettings.seo.facebookPixelEnabled}
-										class="checkbox checkbox-primary"
-									/>
-									<span class="label-text">Facebook Pixel</span>
-								</label>
-								{#if $editableSettings.seo.facebookPixelEnabled}
-									<input
-										type="text"
-										bind:value={$editableSettings.seo.facebookPixelId}
-										class="input input-bordered w-full mt-2"
-										placeholder="123456789012345"
-									/>
-								{/if}
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Contact Settings -->
-				{#if activeTab === 'contact' && $editableSettings.contact}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Kontaktní údaje</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">E-mail</span>
-								</label>
-								<input
-									type="email"
-									bind:value={$editableSettings.contact.email}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Hlavní telefon</span>
-								</label>
-								<input
-									type="tel"
-									bind:value={$editableSettings.contact.phone}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Telefon 1</span>
-								</label>
-								<input
-									type="tel"
-									bind:value={$editableSettings.contact.phone1}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Telefon 2</span>
-								</label>
-								<input
-									type="tel"
-									bind:value={$editableSettings.contact.phone2}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Adresa</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.contact.address}
-									class="textarea textarea-bordered w-full"
-								></textarea>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Souřadnice na mapě</span>
-								</label>
-								<div class="grid grid-cols-2 gap-4">
-									<div>
-										<label class="label">
-											<span class="label-text">Zeměpisná šířka (Lat)</span>
-										</label>
-										<input
-											type="number"
-											step="0.000001"
-											bind:value={$editableSettings.contact.mapCoordinates.lat}
-											class="input input-bordered w-full"
-										/>
-									</div>
-									<div>
-										<label class="label">
-											<span class="label-text">Zeměpisná délka (Lng)</span>
-										</label>
-										<input
-											type="number"
-											step="0.000001"
-											bind:value={$editableSettings.contact.mapCoordinates.lng}
-											class="input input-bordered w-full"
-										/>
-									</div>
-								</div>
-							</div>
-
-							<div class="form-control">
-								<label class="label mb-2">
-									<span class="label-text">Otevírací doba</span>
-								</label>
-
-								<div class="space-y-2">
-									{#each ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as day}
-										<div class="flex gap-2 items-center">
-											<label class="w-32 text-sm font-medium">
-												{#if day === 'monday'}Pondělí
-												{:else if day === 'tuesday'}Úterý
-												{:else if day === 'wednesday'}Středa
-												{:else if day === 'thursday'}Čtvrtek
-												{:else if day === 'friday'}Pátek
-												{:else if day === 'saturday'}Sobota
-												{:else if day === 'sunday'}Neděle{/if}
-											</label>
-											<input
-												type="text"
-												bind:value={$editableSettings.contact.openingHours[day]}
-												class="input input-bordered flex-grow"
-												placeholder="např. 8:00-16:00 nebo Zavřeno"
-											/>
-										</div>
-									{/each}
-								</div>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Social Media Settings -->
-				{#if activeTab === 'social' && $editableSettings.social}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Sociální sítě</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Facebook URL</span>
-								</label>
-								<input
-									type="url"
-									bind:value={$editableSettings.social.facebook}
-									class="input input-bordered w-full"
-									placeholder="https://facebook.com/vasestanka"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Instagram URL</span>
-								</label>
-								<input
-									type="url"
-									bind:value={$editableSettings.social.instagram}
-									class="input input-bordered w-full"
-									placeholder="https://instagram.com/vasestanka"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Twitter URL</span>
-								</label>
-								<input
-									type="url"
-									bind:value={$editableSettings.social.twitter}
-									class="input input-bordered w-full"
-									placeholder="https://twitter.com/vasestanka"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">LinkedIn URL</span>
-								</label>
-								<input
-									type="url"
-									bind:value={$editableSettings.social.linkedin}
-									class="input input-bordered w-full"
-									placeholder="https://linkedin.com/company/vasestanka"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">YouTube URL</span>
-								</label>
-								<input
-									type="url"
-									bind:value={$editableSettings.social.youtube}
-									class="input input-bordered w-full"
-									placeholder="https://youtube.com/c/vasestanka"
-								/>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Appearance Settings -->
-				{#if activeTab === 'appearance' && $editableSettings.appearance}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Vzhled</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Logo URL</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.appearance.logo}
-									class="input input-bordered w-full"
-								/>
-								{#if $editableSettings.appearance.logo}
-									<div class="mt-2">
-										<img
-											src={$editableSettings.appearance.logo}
-											alt="Logo"
-											class="h-16 object-contain"
-										/>
-									</div>
-								{/if}
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Favicon URL</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.appearance.favicon}
-									class="input input-bordered w-full"
-								/>
-								{#if $editableSettings.appearance.favicon}
-									<div class="mt-2">
-										<img
-											src={$editableSettings.appearance.favicon}
-											alt="Favicon"
-											class="h-8 object-contain"
-										/>
-									</div>
-								{/if}
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Text v patičce</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.appearance.footerText}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div class="form-control">
-									<label class="label">
-										<span class="label-text">Primární barva</span>
-									</label>
-									<div class="flex gap-2">
-										<input
-											type="color"
-											bind:value={$editableSettings.appearance.primaryColor}
-											class="w-12 h-12 cursor-pointer rounded-md"
-										/>
-										<input
-											type="text"
-											bind:value={$editableSettings.appearance.primaryColor}
-											class="input input-bordered w-full"
-										/>
-									</div>
-								</div>
-
-								<div class="form-control">
-									<label class="label">
-										<span class="label-text">Sekundární barva</span>
-									</label>
-									<div class="flex gap-2">
-										<input
-											type="color"
-											bind:value={$editableSettings.appearance.secondaryColor}
-											class="w-12 h-12 cursor-pointer rounded-md"
-										/>
-										<input
-											type="text"
-											bind:value={$editableSettings.appearance.secondaryColor}
-											class="input input-bordered w-full"
-										/>
-									</div>
-								</div>
-							</div> -->
-						</div>
-					</div>
-				{/if}
-
-				<!-- Business Settings -->
-				{#if activeTab === 'business' && $editableSettings.business}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Firemní údaje</h2>
-
-<div class="gap-8 grid">
-
-						<div class="form-control w-3/4">
-							<label class="label">
-								<span class="label-text">Název firmy</span>
-							</label>
-							<input
-								type="text"
-								bind:value={$editableSettings.business.companyName}
-								class="input input-bordered w-full"
-							/>
-						</div>
-						<div class="grid grid-cols-4 gap-8">
-							
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Ulice</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.street}
-									class="input input-bordered w-full"
-								/>
-							</div>
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Číslo</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.streetNumber}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Město</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.city}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">PSČ</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.zipCode}
-									class="input input-bordered w-full"
-								/>
-							</div>							
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">IČO</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.ico}
-									class="input input-bordered w-full"
-								/>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">DIČ</span>
-								</label>
-								<input
-									type="text"
-									bind:value={$editableSettings.business.dic}
-									class="input input-bordered w-full"
-								/>
-							</div>
-							
-						</div>
-						<div class="form-control w-1/3">
-							<label class="label">
-								<span class="label-text">Bankovní účet</span>
-							</label>
-							<input
-								type="text"
-								bind:value={$editableSettings.business.bankAccount}
-								class="input input-bordered w-full"
-							/>
-						</div>
-						
-					</div>
-
-					</div>
-				{/if}
-
-				<!-- Email Templates Settings -->
-				{#if activeTab === 'email' && $editableSettings.email}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Šablony e-mailů</h2>
-
-						<div class="space-y-4">
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Šablona potvrzení objednávky</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.email.orderConfirmationTemplate}
-									class="textarea textarea-bordered w-full h-32"
-									placeholder="Použijte {'{{orderNumber}}'} pro vložení čísla objednávky."
-								></textarea>
-								<span class="text-xs text-gray-500 mt-1">
-									Můžete použít {'{{orderNumber}}'} pro vložení čísla objednávky.
-								</span>
-							</div>
-
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Šablona kontaktního formuláře</span>
-								</label>
-								<textarea
-									bind:value={$editableSettings.email.contactFormTemplate}
-									class="textarea textarea-bordered w-full h-32"
-								></textarea>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Integrations Settings -->
-				{#if activeTab === 'integrations' && $editableSettings.integrations}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Integrace</h2>
-						
-						<!-- Fakturoid Section -->
-						<div class="mb-6 border-b pb-6">
-							<h3 class="text-lg font-medium mb-4 flex items-center gap-2">
-								<i class="fa-solid fa-file-invoice text-green-600"></i>
-								Fakturoid
-							</h3>
-							
-							<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-								<h4 class="font-medium text-blue-800 mb-2">
-									<i class="fa-solid fa-info-circle"></i>
-									Informace o integraci
-								</h4>
-								<p class="text-sm text-blue-700 mb-2">
-									Fakturoid je služba pro online fakturaci. Po konfiguraci budete moci automaticky vytvářet faktury pro objednávky.
-								</p>
-								<p class="text-sm text-blue-700">
-									<strong>Potřebné údaje:</strong> API token, subdoména účtu a číslo účtu pro párování plateb.
-								</p>
-							</div>
-
-							<!-- Enable/Disable Toggle -->
-							<div class="form-control mb-4">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input 
-										type="checkbox" 
-										bind:checked={$editableSettings.integrations.fakturoid.enabled} 
-										class="checkbox checkbox-primary"
-									/>
-									<span class="label-text font-medium">Povolit integraci s Fakturoid</span>
-								</label>
-							</div>
-
-							{#if $editableSettings.integrations.fakturoid.enabled}
-								<div class="space-y-4 pl-4 border-l-4 border-green-200">
-									<!-- OAuth Connection Status -->
-									<div class="flex items-center justify-between">
-										<div>
-											<h3 class="text-lg font-medium">Fakturoid</h3>
-											{#if $editableSettings.integrations?.fakturoid?.connected}
-												<p class="text-sm text-gray-500">Připojeno k účtu: {$editableSettings.integrations.fakturoid.accounts[0]?.email}</p>
-											{:else}
-												<p class="text-sm text-gray-500">Fakturoid používá bezpečné OAuth 2.0 ověření. Klikněte níže pro připojení vašeho Fakturoid účtu.</p>
-											{/if}
-										</div>
-										{#if $editableSettings.integrations?.fakturoid?.connected}
-											<button
-												on:click={() => disconnectFakturoid()}
-												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-											>
-												Odpojit účet
-											</button>
-										{:else}
-											<button
-												on:click={() => connectFakturoid()}
-												class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-											>
-												Připojit účet
-											</button>
-										{/if}
-									</div>
-									
-									{#if $editableSettings.integrations.fakturoid.connected}
-										<div class="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
-											<strong>Účet:</strong> {$editableSettings.integrations.fakturoid.accounts.length > 0 ? $editableSettings.integrations.fakturoid.accounts[0].name : 'Připojeno'}
-											{#if $editableSettings.integrations.fakturoid.accounts.length > 0 && $editableSettings.integrations.fakturoid.accounts[0].subdomain}
-												<br><strong>Subdoména:</strong> {$editableSettings.integrations.fakturoid.accounts[0].subdomain}
-											{/if}
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-				{/if}
-
-				<!-- Orders Settings -->
-				{#if activeTab === 'orders' && $editableSettings.orders}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-base sm:text-xl font-semibold mb-4">Nastavení zakázek</h2>
-						
-						<!-- Stavy zakázek -->
-						<div class="mb-6 border-b pb-4">
-							<h3 class="text-base sm:text-lg font-medium mb-3">Stavy zakázek</h3>
-							<p class="text-xs sm:text-sm text-gray-600 mb-3">Definujte stavy objednávek, které se používají v systému. Stavy jsou automaticky načteny z existujících objednávek.</p>
-							
-							{#if !$editableSettings.orders.orderStates || $editableSettings.orders.orderStates.length === 0}
-								<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-									<p class="text-yellow-800 text-xs sm:text-sm">
-										<i class="fa-solid fa-exclamation-triangle"></i>
-										Žádné stavy zakázek nebyly definovány. Klikněte na "Načíst ze systému" pro automatické načtení stavů z existujících objednávek.
-									</p>
-								</div>
-							{:else}
-								<div class="space-y-2">
-									{#each $editableSettings.orders.orderStates as state, index}
-										<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-											<div class="flex gap-2 flex-1">
-												<input 
-													type="text" 
-													bind:value={state.name} 
-													class="input input-bordered input-sm flex-grow min-w-0"
-													placeholder="Název stavu"
-												/>
-												<input 
-													type="color" 
-													bind:value={state.color} 
-													class="w-10 h-8 rounded border border-gray-300 flex-shrink-0"
-													title="Barva stavu"
-												/>
-											</div>
-											<button 
-												class="btn btn-xs btn-outline btn-error self-end sm:self-auto" 
-												on:click={() => removeOrderState(index)}
-												title="Smazat stav">
-												×
-											</button>
-										</div>
-									{/each}
-								</div>
-							{/if}
-							
-							<div class="flex flex-col sm:flex-row gap-2 mt-3">
-								<button 
-									class="btn btn-xs sm:btn-sm btn-outline w-full sm:w-auto" 
-									on:click={addOrderState}>
-									<i class="fa-solid fa-plus"></i>
-									<span class="hidden sm:inline">Přidat stav zakázky</span>
-									<span class="sm:hidden">Přidat stav</span>
-								</button>								
-							</div>
-						</div>
-						
-						<!-- Další nastavení zakázek -->
-						<div class="mb-6">
-							<h3 class="text-base sm:text-lg font-medium mb-3">Notifikace</h3>
-							
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text text-sm sm:text-base">E-mail pro notifikace</span>
-								</label>
-								<input
-									type="email"
-									bind:value={$editableSettings.orders.notificationEmail}
-									class="input input-bordered input-sm sm:input-md w-full"
-									placeholder="admin@example.com"
-								/>
-								<span class="text-xs text-gray-500 mt-1">
-									E-mail, na který budou zasílány notifikace o nových objednávkách
-								</span>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Delivery Settings -->
-				{#if activeTab === 'delivery'}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Nastavení dopravy</h2>
-						
-						<!-- Způsoby dopravy -->
-						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Způsoby dopravy</h3>
-							
-							{#if !$editableSettings.delivery?.shippingMethods || $editableSettings.delivery.shippingMethods.length === 0}
-								<p class="text-gray-500 mb-2">Žádné způsoby dopravy nebyly definovány</p>
-							{:else}
-								<div class="space-y-2">
-									{#each $editableSettings.delivery.shippingMethods as method, index}
-										<div class="flex items-center gap-2">
-											<input 
-												type="text" 
-												bind:value={method.name} 
-												class="input input-bordered flex-grow"
-												placeholder="Název"
-											/>
-											<input 
-												type="number" 
-												bind:value={method.price} 
-												class="input input-bordered w-32"
-												placeholder="Cena"
-											/>
-											<button 
-												class="btn btn-sm btn-outline btn-error" 
-												on:click={() => removeShippingMethod(index)}>
-												×
-											</button>
-										</div>
-									{/each}
-								</div>
-							{/if}
-							
-							<button 
-								class="btn btn-sm btn-outline mt-2" 
-								on:click={addShippingMethod}>
-								Přidat způsob dopravy
-							</button>
-						</div>
-						
-						<!-- Nastavení dopravy -->
-						<div class="mb-6">
-							<h3 class="text-lg font-medium mb-3">Obecná nastavení dopravy</h3>
-							
-							<div class="form-control mb-3">
-								<label class="label">
-									<span class="label-text">Minimální hodnota objednávky pro dopravu</span>
-								</label>
-								<div class="flex items-center gap-3">
-									<input
-										type="number"
-										bind:value={$editableSettings.delivery.minimumOrderValue}
-										class="input input-bordered w-32"
-										min="0"
-										step="10"
-										placeholder="0"
-									/>
-									<p class="text-sm text-gray-500">
-										Minimální částka pro objednání
-									</p>
-								</div>
-							</div>
-							
-							<div class="form-control mb-3">
-								<label class="label">
-									<span class="label-text">Hranice pro dopravu zdarma</span>
-								</label>
-								<div class="flex items-center gap-3">
-									<input
-										type="number"
-										bind:value={$editableSettings.delivery.freeDeliveryThreshold}
-										class="input input-bordered w-32"
-										min="0"
-										step="100"
-										placeholder="1000"
-									/>
-									<p class="text-sm text-gray-500">
-										Hodnota objednávky, od které je doprava zdarma
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Products Settings -->
-				{#if activeTab === 'products' && $editableSettings.products}
-					<div in:fade={{ duration: 300 }}>
-						<h2 class="text-xl font-semibold mb-4">Nastavení produktů</h2>
-						
-						<!-- Jídelníček -->
-						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Nastavení jídelníčku</h3>
-												
-							
-						
-							<div class="form-control">
-								<label class="label">
-									<span class="label-text">Počet viditelných dnů</span>
-								</label>
-								<div class="flex items-center gap-3">
-									<input
-										type="number"
-										bind:value={$editableSettings.products.visibleDays}
-										class="input input-bordered w-24"
-										min="1"
-										max="70"
-										placeholder="7"
-									/>
-									<p class="text-sm text-gray-500">
-										Počet dnů, které se zobrazí na stránce jídelníčku
-									</p>
-								</div>
-							</div>
-						</div>
-						
-						<!-- Funkce produktů -->
-						<div class="mb-6 border-b pb-4">
-							<h3 class="text-lg font-medium mb-3">Funkce produktů</h3>
-							
-							<div class="space-y-3">
-								{#if !$editableSettings.products.features || $editableSettings.products.features.length === 0}
-									<p class="text-gray-500 mb-2">Žádné funkce nebyly definovány</p>
-								{:else}
-									{#each $editableSettings.products.features as feature, index}
-										<div class="flex items-center gap-2">
-											<input 
-												type="text" 
-												bind:value={feature.title} 
-												class="input input-bordered w-1/3"
-												placeholder="Název funkce"
-											/>
-											<input 
-												type="text" 
-												bind:value={feature.description} 
-												class="input input-bordered flex-grow"
-												placeholder="Popis funkce"
-											/>
-											<button 
-												class="btn btn-sm btn-outline btn-error" 
-												on:click={() => removeProductFeature(index)}>
-												×
-											</button>
-										</div>
-									{/each}
-								{/if}
-								
-								<button 
-									class="btn btn-sm btn-outline mt-2" 
-									on:click={addProductFeature}>
-									Přidat funkci
 								</button>
-							</div>
-						</div>
-						
-						<!-- Zobrazení alergenů -->
-						<div class="mb-6">
-							<h3 class="text-lg font-medium mb-3">Zobrazení alergenů</h3>
-							
-							<div class="form-control">
-								<label class="label cursor-pointer justify-start gap-2">
-									<input 
-										type="checkbox" 
-										class="checkbox checkbox-primary" 
-										bind:checked={$editableSettings.products.showAllergens} 
-									/>
-									<span class="label-text">Zobrazit alergeny u produktů</span>
-								</label>
-							</div>
-							
-							<div class="form-control mt-3">
-								<label class="label cursor-pointer justify-start gap-2">
-									<input 
-										type="checkbox" 
-										class="checkbox checkbox-primary" 
-										bind:checked={$editableSettings.products.showAllergensTooltip} 
-									/>
-									<span class="label-text">Zobrazit popis alergenů v nápovědě</span>
-								</label>
-							</div>
+							{/each}
 						</div>
 					</div>
-				{/if}
+
+					<!-- Mobile Tabs -->
+					<div class="lg:hidden">
+						<div class="flex overflow-x-auto scrollbar-thin gap-2 pb-2">
+							{#each tabs as tab}
+								<button
+									class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors {activeTab === tab.id ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+									on:click={() => setActiveTab(tab.id)}
+								>
+									<div class="flex items-center gap-2">
+										<i class="{tab.icon}"></i>
+										<span>{tab.label}</span>
+									</div>
+								</button>
+							{/each}
+						</div>
+					</div>
+				</div>
 			</div>
+
+			<!-- Tab Content -->
+			<div class="lg:w-3/4">
+				<div class="bg-gray-50 rounded-lg p-3 sm:p-6 border border-gray-300">
+					{#if loadingTab}
+						<div class="flex items-center justify-center py-8">
+							<span class="loading loading-spinner loading-lg"></span>
+							<span class="ml-2">Načítání...</span>
+						</div>
+					{:else}
+						<!-- General Settings -->
+						{#if activeTab === 'general' && $editableSettings.general}
+							<GeneralSettings {editableSettings} {availableCurrencies} />
+						{/if}
+
+						<!-- SEO Settings -->
+						{#if activeTab === 'seo' && $editableSettings.seo}
+							<SeoSettings {editableSettings} />
+						{/if}
+
+						<!-- Contact Settings -->
+						{#if activeTab === 'contact' && $editableSettings.contact}
+							<ContactSettings {editableSettings} />
+						{/if}
+
+						<!-- Social Settings -->
+						{#if activeTab === 'social' && $editableSettings.social}
+							<SocialSettings {editableSettings} />
+						{/if}
+
+						<!-- Appearance Settings -->
+						{#if activeTab === 'appearance' && $editableSettings.appearance}
+							<AppearanceSettings 
+								{editableSettings} 
+								{uploadingLogo} 
+								{uploadingFavicon} 
+								{logoFileInput} 
+								{faviconFileInput} 
+							/>
+						{/if}
+
+						<!-- Business Settings -->
+						{#if activeTab === 'business' && $editableSettings.business}
+							<BusinessSettings {editableSettings} />
+						{/if}
+
+						<!-- Email Settings -->
+						{#if activeTab === 'email' && $editableSettings.email}
+							<EmailSettings {editableSettings} />
+						{/if}
+
+						<!-- Integrations Settings -->
+						{#if activeTab === 'integrations' && $editableSettings.integrations}
+							<IntegrationsSettings {editableSettings} />
+						{/if}
+
+						<!-- Orders Settings -->
+						{#if activeTab === 'orders' && $editableSettings.orders}
+							<OrdersSettings {editableSettings} />
+						{/if}
+
+						<!-- Delivery Settings -->
+						{#if activeTab === 'delivery' && $editableSettings.delivery}
+							<DeliverySettings {editableSettings} />
+						{/if}
+
+						<!-- Products Settings -->
+						{#if activeTab === 'products' && $editableSettings.products}
+							<ProductsSettings {editableSettings} />
+						{/if}
+
+						<!-- Customer Settings -->
+						{#if activeTab === 'customer' && $editableSettings.customer}
+							<CustomerSettings {editableSettings} />
+						{/if}
+
+						<!-- Loyalty Settings -->
+						{#if activeTab === 'loyalty' && $editableSettings.customer?.loyalty}
+							<LoyaltySettings {editableSettings} />
+						{/if}
+
+						<!-- Notification Settings -->
+						{#if activeTab === 'notifications'}
+							<NotificationSettings {editableSettings} />
+						{/if}						
+					{/if}
+				</div>
+			</div>			
+		</div>	
+		<div class="">
+		<button
+			on:click={resetSettings}
+			class="btn btn-sm btn-outline my-5"
+		>
+			Obnovit výchozí nastavení
+		</button>
 		</div>
 	</div>
 
@@ -1660,20 +660,12 @@
 					Uložit změny
 				{/if}
 			</button>
-		</form>
-
-		<button
-			on:click={resetSettings}
-			class="w-full btn btn-sm btn-outline"
-		>
-			Obnovit výchozí
-		</button>
+		</form>		
 	</div>
 
 	<!-- Mobile Bottom Padding -->
 	<div class="lg:hidden h-24"></div>
 </div>
-
 
 <style>
 	/* Custom scrollbar for mobile tabs */

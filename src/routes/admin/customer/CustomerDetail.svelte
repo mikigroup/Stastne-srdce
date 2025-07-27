@@ -1,8 +1,17 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
+	import { writable } from "svelte/store";
+	import { goto, invalidate } from "$app/navigation";
 	import { fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
+	import { enhance } from "$app/forms";
 	import type { Database } from "$lib/types/database.types";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation.js";
+	import { 
+		getRegistrationStatus, 
+		getRegistrationStatusMessage, 
+		getRegistrationStatusStyles
+	} from "$lib/services/registrationStatusService";
+	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 
 	// Definice typů pro data zákazníka
 	type Customer = Database["public"]["Tables"]["profiles"]["Row"];
@@ -32,14 +41,16 @@
 	export let data: ComponentProps["data"];
 	export let customer: ComponentProps["customer"] = null; // If null, we're creating a new customer
 
-	let { supabase, session } = data;
-	$: ({ supabase, session } = data);
+	let { session } = data;
+	$: ({ session } = data);
+	
+
 
 	// State variables s typizací
 	export let loading = false;
 	let updateMessage = "";
 
-	// Customer data fields - initialize with existing customer data or empty strings
+	// Customer data fields - inicializace s customer data (jako v profile komponentě)
 	let first_name: string = customer?.first_name ?? "";
 	let last_name: string = customer?.last_name ?? "";
 	let telephone: string = customer?.telephone ?? "";
@@ -57,6 +68,32 @@
 	let allergies_description: string = customer?.allergies_description || "";
 	let delivery_method: string = customer?.delivery_method || "";
 	let payment_method: string = customer?.payment_method || "";
+
+	// Sledujeme změnu zákazníka a aktualizujeme inputy pouze při změně ID
+	let previousCustomerId: string | undefined = customer?.id;
+	$: if (customer && customer.id !== previousCustomerId) {
+		previousCustomerId = customer.id;
+		first_name = customer.first_name ?? "";
+		last_name = customer.last_name ?? "";
+		telephone = customer.telephone ?? "";
+		street = customer.street ?? "";
+		city = customer.city ?? "";
+		street_number = customer.street_number ?? "";
+		zip_code = customer.zip_code ?? "";
+		ico = customer.ico ?? "";
+		dic = customer.dic ?? "";
+		company = customer.company ?? "";
+		website = customer.website ?? "";
+		username = customer.username ?? "";
+		email = customer.email ?? "";
+		allergies = customer.allergies === true ? "yes" : "no";
+		allergies_description = customer.allergies_description || "";
+		delivery_method = customer.delivery_method || "";
+		payment_method = customer.payment_method || "";
+	}
+
+	// Get all delivery method options for admin (all 5 values)
+	const deliveryMethodOptions = getAllDeliveryMethods();
 
 	// Definice typu pro customerData
 	type CustomerData = {
@@ -103,35 +140,56 @@
 			};
 
 			if (customer) {
-				// Update existing customer
-				const { error } = await supabase
-					.from("profiles")
-					.update(customerData)
-					.eq("id", customer.id)
-					.select();
+				// Update existing customer using server action
+				const formData = new FormData();
+				formData.append("customerId", customer.id);
+				formData.append("customerData", JSON.stringify(customerData));
 
-				if (error) throw error;
-				updateMessage = "Zákazník úspěšně uložen!";
+				// Použijeme SvelteKit form handling
+				const response = await fetch("?/updateCustomer", {
+					method: "POST",
+					body: formData
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+
+				const result = await response.json();
+				console.log("Výsledek server action:", result);
+
+				// Zkusíme různé formáty odpovědi
+				if (result.success === true || (result.type === 'success' && result.status === 200)) {
+					updateMessage = "✅ Zákazník úspěšně uložen!";
+					// Aktualizovat lokální customer objekt s novými daty
+					customer = { ...customer, ...customerData };
+					
+					// Vyčistit zprávu po 3 sekundách
+					setTimeout(() => {
+						updateMessage = "";
+					}, 3000);
+				} else {
+					throw new Error(result.error || "Chyba při ukládání");
+				}
+				
 			} else {
-				// Create new customer
+				// Create new customer - zatím ponecháme původní logiku
 				if (!session?.user?.id) {
 					throw new Error("Uživatel není přihlášen");
 				}
 
-				const { error } = await supabase
-					.from("customers")
-					.insert({
-						...customerData,
-						id: session.user.id
-					});
-
-				if (error) throw error;
-				goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
+				// TODO: Implementovat server action pro vytvoření nového zákazníka
+				throw new Error("Vytvoření nového zákazníka zatím není implementováno");
 			}
 		} catch (error) {
 			const apiError = error as ApiError;
 			console.error("Chyba při ukládání:", apiError);
-			alert(apiError.message || "Došlo k chybě při ukládání zákazníka");
+			updateMessage = `❌ ${apiError.message || "Došlo k chybě při ukládání zákazníka"}`;
+			
+			// Vyčistit chybovou zprávu po 5 sekundách
+			setTimeout(() => {
+				updateMessage = "";
+			}, 5000);
 		} finally {
 			loading = false;
 		}
@@ -142,13 +200,8 @@
 
 		try {
 			loading = true;
-			const { error } = await supabase
-				.from("customers")
-				.delete()
-				.eq("id", customer.id);
-
-			if (error) throw error;
-			await goto($ROUTES.ADMIN.CUSTOMER.LIST, { replaceState: true });
+			// TODO: Implementovat server action pro mazání zákazníka
+			alert("Mazání zákazníka zatím není implementováno");
 		} catch (error) {
 			const apiError = error as ApiError;
 			console.error("Error deleting customer:", apiError);
@@ -161,6 +214,38 @@
 	function back(): void {
 		goto($ROUTES.ADMIN.CUSTOMER.LIST);
 	}
+
+	// Funkce pro ruční aktualizaci statusu registrace
+	export async function updateRegistrationStatus(): Promise<void> {
+		if (!customer?.id) return;
+		
+		try {
+			loading = true;
+			// TODO: Implementovat server action pro aktualizaci statusu registrace
+			alert("Aktualizace statusu registrace zatím není implementována");
+		} catch (error) {
+			console.error("Chyba při aktualizaci statusu:", error);
+			alert("Došlo k chybě při aktualizaci statusu registrace");
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Používáme zjednodušenou validaci pro zobrazení v admin rozhraní (bez automatické aktualizace)
+	$: validationResult = customer ? validateProfileForInvoicing(customer) : { isComplete: false, missingFields: [] };
+	$: isRegistrationActuallyCompleted = validationResult.isComplete;
+
+	// Určení skutečného statusu registrace pomocí globální služby
+	$: actualRegistrationStatus = !customer ? null :
+		(isRegistrationActuallyCompleted ? "completed" :
+		customer.registration_status === "completed" ? "incomplete_data" :
+		"pending") as "completed" | "incomplete_data" | "pending";
+
+	// Použití globálních utility funkcí
+	$: registrationStatusMessage = actualRegistrationStatus ? getRegistrationStatusMessage(actualRegistrationStatus) : "";
+	$: statusStyles = actualRegistrationStatus ? getRegistrationStatusStyles(actualRegistrationStatus) : getRegistrationStatusStyles("pending");
+	$: statusColor = statusStyles.container;
+	$: statusBadgeColor = statusStyles.badge;
 </script>
 
 <!-- Tlačítka jsou nyní v AdminPageLayout headeru -->
@@ -172,16 +257,54 @@
 {/if}
 
 <!-- Status registrace -->
-{#if customer?.registration_status}
-	<div class="mb-4 p-3 rounded-lg border {customer.registration_status === 'pending' ? 'bg-red-100 border-red-200 text-red-800' : customer.registration_status === 'completed' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-gray-100 border-gray-200 text-gray-800'}">
+{#if customer}
+	<div class="mb-4 p-3 rounded-lg border {statusColor}">
 		<div class="flex items-center gap-2">
 			<span class="font-medium">Status registrace:</span>
-			<span class="px-2 py-1 rounded text-sm font-semibold {customer.registration_status === 'pending' ? 'bg-red-200 text-red-900' : customer.registration_status === 'completed' ? 'bg-green-200 text-green-900' : 'bg-gray-200 text-gray-900'}">
-				{customer.registration_status === 'pending' ? 'Čeká na dokončení' : customer.registration_status === 'completed' ? 'Dokončeno' : customer.registration_status}
+			<span class="px-2 py-1 rounded text-sm font-semibold {statusBadgeColor}">
+				{registrationStatusMessage}
 			</span>
+			{#if customer.registration_status !== actualRegistrationStatus}
+				<span class="text-xs opacity-75">
+					(DB: {customer.registration_status || "null"})
+				</span>
+			{/if}
 		</div>
-		{#if customer.registration_status === 'pending'}
+		{#if actualRegistrationStatus === "pending"}
 			<p class="text-sm mt-1">Zákazník ještě nedokončil registraci. Může mít omezený přístup k některým funkcím.</p>
+		{:else if actualRegistrationStatus === "incomplete_data"}
+			<p class="text-sm mt-1">Registrace je označena jako dokončená, ale chybí některé povinné údaje:</p>
+			<ul class="text-sm mt-1 ml-4 list-disc">
+				{#each validationResult.missingFields as field}
+					<li>{field}</li>
+				{/each}
+			</ul>
+		{:else if actualRegistrationStatus === "completed"}
+			<p class="text-sm mt-1">Všechny povinné údaje jsou vyplněny.</p>
+		{/if}
+		
+		<!-- Tlačítko pro ruční aktualizaci statusu pouze pokud se skutečný status liší od DB statusu -->
+		{#if customer && customer.registration_status !== actualRegistrationStatus && validationResult.isComplete}
+			<div class="mt-3">
+				<button
+					on:click={updateRegistrationStatus}
+					disabled={loading}
+					class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					{#if loading}
+						<svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						Aktualizuje se...
+					{:else}
+						Opravit status registrace
+					{/if}
+				</button>
+				<p class="text-xs text-gray-500 mt-1">
+					Data jsou kompletní, ale status v databázi není aktuální.
+				</p>
+			</div>
 		{/if}
 	</div>
 {/if}
@@ -317,33 +440,17 @@
 			<div class="space-y-4">
 				<h4 class="font-medium text-gray-900">Způsob dodání</h4>
 				<div class="space-y-2">
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="own"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">Vlastní nosič</span>
-					</label>
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="reBox"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">REkrabička</span>
-					</label>
-					<label class="flex items-center">
-						<input
-							type="radio"
-							name="deliveryMethod"
-							value="menuBox"
-							bind:group={delivery_method}
-							class="mr-2" />
-						<span class="text-sm">Menu Box</span>
-					</label>
+					{#each deliveryMethodOptions as option}
+						<label class="flex items-center">
+							<input
+								type="radio"
+								name="deliveryMethod"
+								value={option.value}
+								bind:group={delivery_method}
+								class="mr-2" />
+							<span class="text-sm">{option.label}</span>
+						</label>
+					{/each}
 				</div>
 			</div>
 

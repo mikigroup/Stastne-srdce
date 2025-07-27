@@ -27,10 +27,27 @@ export interface FakturoidIntegration {
 }
 
 export interface IntegrationsSettings {
-  // Fakturoid
-  fakturoidEnabled: boolean;
-  fakturoidAccounts: Record<string, FakturoidAccount>;
-  fakturoidActiveAccount: string | null;
+  fakturoid: {
+    enabled: boolean;
+    connected: boolean;
+    subdomain?: string; // Ruční zadání slugu - PRIORITA
+    accounts: Array<{
+      name: string;
+      email: string;
+      subdomain: string;
+      isActive: boolean;
+      connectedAt: string;
+      accountId?: string;
+      currency?: string;
+      plan?: string;
+    }>;
+    defaultLanguage?: string;
+    autoCreateInvoices?: boolean;
+    invoiceDueDays?: number;
+    defaultPaymentMethod?: string;
+    sendInvoiceEmail?: boolean;
+    invoiceNote?: string;
+  };
   
   // Ostatní integrace
   googleAnalyticsEnabled?: boolean;

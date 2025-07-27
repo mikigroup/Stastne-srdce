@@ -6,17 +6,17 @@
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Obchodní podmínky</title>
+	<title>Obchodní podmínky - {generalSettings?.shopName}</title>
 	<meta name="description" content="Obchodní podmínky Šťastné srdce s.r.o. upravující vztahy mezi prodávajícím a kupujícím při prodeji a dovozu obědů." />
 </svelte:head>
 
-<section>
-	<div class="max-w-screen-lg py-16 mx-auto mt-20 mb-10 rounded-lg px-4 md:px-8 bg-stone-100">
-		<h1 class="mb-10 text-4xl md:text-5xl font-extrabold tracking-tight text-center text-gray-900">
-			Obchodní podmínky
-		</h1>
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
+		Obchodní podmínky
+	</h1>
 
-		<div class="max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-md border border-gray-300">
+	<div class="max-w-4xl mx-auto">
+		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
 			<div in:fly={{ y: 50, duration: 500 }} class="prose prose-lg max-w-none">
 				<section class="mb-8">
 					<h2 class="text-2xl font-bold text-gray-800 mb-4">1. Obecná ustanovení</h2>

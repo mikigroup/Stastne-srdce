@@ -5,6 +5,7 @@
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
+	import { getAllDeliveryMethods, getDeliveryMethodLabel } from '$lib/constants/deliveryMethods';
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");
@@ -23,10 +24,10 @@
 	let date: string = "";
 	let orderId: string = "";
 	let formattedDate = "";
-	let selectedPaymentMethod: string = "";
-	let selectedOrderState: string = "";
-	let selectedCurrency: string = "";
-	let selectedShippingMethod: string = "";
+	let selectedPaymentMethod: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedOrderState: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedCurrency: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
+	let selectedShippingMethod: string = ""; // Zůstává prázdný dokud se nenačtou všechna data
 	let isPaid: boolean = false;
 	let note: string = "";
 
@@ -51,17 +52,21 @@
 
 	let updateMessage = "";
 	let orderStates: string[] = [];
+	let isInitialLoad = true;
+	let previousOrderId: string | null = null;
 
-	// Reaktivní aktualizace všech polí při změně order dat
-	$: if (order) {
+	// Reaktivní aktualizace všech polí při změně order dat (kromě dropdown hodnot které se synchronizují zvlášť)
+	$: if (order && order.id !== previousOrderId) {
+		previousOrderId = order.id;
 		date = order.date ?? "";
 		orderId = order.id ?? "";
 		formattedDate = date ? formatSupabaseDate(date) : "";
-		selectedPaymentMethod = order.pay_method ?? "";
-		selectedOrderState = order.state ?? "";
-		selectedCurrency = order.currency ?? "";
-		selectedShippingMethod = order.shipping_method ?? "";
-		isPaid = order.pay_state || false;
+		// Dropdown hodnoty se nastavují zvlášť v synchronizačních funkcích
+		// selectedPaymentMethod = order.pay_method ?? "";
+		// selectedOrderState se nastavuje zvlášť v synchronizačním bloku
+		// selectedCurrency = order.currency ?? "";
+		// selectedShippingMethod = order.shipping_method ?? "";
+		// isPaid = order.pay_state || false;
 		note = order.note ?? "";
 
 		// Fakturační údaje
@@ -98,8 +103,121 @@
 		orderStates = [...new Set([...settingsStates, ...allPossibleStates])];
 		
 		console.log('Debug - orderStates:', orderStates);
-		console.log('Debug - current selectedOrderState:', selectedOrderState);
 		console.log('Debug - orderSettings:', orderSettings);
+	}
+
+	// Synchronizace selectedOrderState pomocí onMount (vyhneme se cyclické závislosti)
+	function initializeSelectedOrderState() {
+		if (order && orderStates.length > 0) {
+			const orderState = order.state;
+			
+			// Pouze pokud existuje order.state (nejedná se o novou objednávku)
+			if (orderState && orderStates.includes(orderState)) {
+				selectedOrderState = orderState;
+				console.log('Initial sync: selectedOrderState set to:', selectedOrderState);
+			} else if (orderState && !orderStates.includes(orderState)) {
+				console.warn('Order state not found in orderStates:', orderState, 'Available:', orderStates);
+				// Fallback na první dostupný stav pouze pokud order.state není v seznamu
+				selectedOrderState = orderStates[0] || "";
+			} else if (!orderState) {
+				// Pokud order.state je null/undefined/empty, použij první stav (nová objednávka)
+				selectedOrderState = orderStates[0] || "";
+				console.log('New order - selectedOrderState set to first available:', selectedOrderState);
+			}
+			
+			console.log('Final selectedOrderState after initial sync:', selectedOrderState);
+		}
+	}
+
+	// Synchronizace selectedPaymentMethod
+	function initializeSelectedPaymentMethod() {
+		if (order && paymentMethods.length > 0) {
+			const orderPaymentMethod = order.pay_method;
+			console.log('=== PAYMENT METHOD INIT ===');
+			console.log('order.pay_method:', orderPaymentMethod);
+			console.log('paymentMethods:', paymentMethods);
+			
+			if (orderPaymentMethod && paymentMethods.includes(orderPaymentMethod)) {
+				selectedPaymentMethod = orderPaymentMethod;
+				console.log('Initial sync: selectedPaymentMethod set to:', selectedPaymentMethod);
+			} else if (orderPaymentMethod && !paymentMethods.includes(orderPaymentMethod)) {
+				console.warn('Payment method not found in paymentMethods:', orderPaymentMethod, 'Available:', paymentMethods);
+				selectedPaymentMethod = paymentMethods[0] || "";
+			} else {
+				selectedPaymentMethod = paymentMethods[0] || "";
+				console.log('New order - selectedPaymentMethod set to first available:', selectedPaymentMethod);
+			}
+			console.log('=== END PAYMENT METHOD INIT ===');
+		}
+	}
+
+	// Synchronizace selectedCurrency
+	function initializeSelectedCurrency() {
+		if (order && currencies.length > 0) {
+			const orderCurrency = order.currency;
+			
+			if (orderCurrency && currencies.includes(orderCurrency)) {
+				selectedCurrency = orderCurrency;
+				console.log('Initial sync: selectedCurrency set to:', selectedCurrency);
+			} else if (orderCurrency && !currencies.includes(orderCurrency)) {
+				console.warn('Currency not found in currencies:', orderCurrency, 'Available:', currencies);
+				selectedCurrency = currencies[0] || "";
+			} else {
+				selectedCurrency = currencies[0] || "";
+				console.log('New order - selectedCurrency set to first available:', selectedCurrency);
+			}
+		}
+	}
+
+	// Synchronizace selectedShippingMethod
+	function initializeSelectedShippingMethod() {
+		if (order && shippingMethods.length > 0) {
+			const orderShippingMethod = order.shipping_method;
+			
+			if (orderShippingMethod && shippingMethods.includes(orderShippingMethod)) {
+				selectedShippingMethod = orderShippingMethod;
+				console.log('Initial sync: selectedShippingMethod set to:', selectedShippingMethod);
+			} else if (orderShippingMethod && !shippingMethods.includes(orderShippingMethod)) {
+				console.warn('Shipping method not found in shippingMethods:', orderShippingMethod, 'Available:', shippingMethods);
+				selectedShippingMethod = shippingMethods[0] || "";
+			} else {
+				selectedShippingMethod = shippingMethods[0] || "";
+				console.log('New order - selectedShippingMethod set to first available:', selectedShippingMethod);
+			}
+		}
+	}
+
+	// Synchronizace isPaid
+	function initializeIsPaid() {
+		if (order) {
+			isPaid = order.pay_state || false;
+			console.log('Initial sync: isPaid set to:', isPaid);
+		}
+	}
+
+	// Sleduje změny v order a orderStates pro inicializaci
+	// KRITICKÉ: Musí počkat na oba - order data i orderStates
+	$: if (order && orderStates.length > 0 && isInitialLoad) {
+		console.log('=== INITIALIZING ALL DROPDOWNS ===');
+		initializeSelectedOrderState();
+		
+		// Inicializace ostatních dropdown pokud jsou data dostupná
+		if (paymentMethods.length > 0) {
+			initializeSelectedPaymentMethod();
+		}
+		
+		if (currencies.length > 0) {
+			initializeSelectedCurrency();
+		}
+		
+		if (shippingMethods.length > 0) {
+			initializeSelectedShippingMethod();
+		}
+		
+		initializeIsPaid();
+		
+		isInitialLoad = false;
+		console.log('=== ALL DROPDOWNS INITIALIZED ===');
 	}
 
 	// Získáme seznam měn - nyní již jen stringy
@@ -107,8 +225,8 @@
 		? orderSettings.currencies 
 		: ['CZK', 'EUR'];
 
-	// Získáme seznam způsobů doručení
-	$: shippingMethods = orderSettings?.shippingMethods?.map((method: any) => method.name) || ['Osobní odběr', 'Doručení na adresu'];
+	// Získáme seznam způsobů doručení - používáme všechny centralizované hodnoty
+	$: shippingMethods = getAllDeliveryMethods().map(option => option.value);
 
 	// Získáme seznam platebních metod - pokud jsou to objekty, extrahujeme názvy, jinak použijeme přímo
 	$: paymentMethods = Array.isArray(orderSettings?.paymentMethods) 
@@ -155,6 +273,15 @@
 		try {
 			loading = true;
 
+			// Debug informace před uložením
+			console.log("=== UPDATE ORDER DEBUG ===");
+			console.log("selectedOrderState:", selectedOrderState);
+			console.log("isPaid:", isPaid);
+			console.log("selectedCurrency:", selectedCurrency);
+			console.log("selectedShippingMethod:", selectedShippingMethod);
+			console.log("selectedPaymentMethod:", selectedPaymentMethod);
+			console.log("=== END UPDATE ORDER DEBUG ===");
+
 			const update = {
 				updated_at: new Date().toISOString(),
 				date: date ? new Date(date).toISOString() : null,
@@ -191,6 +318,7 @@
 				throw error;
 			} else {
 				console.log("Order saved successfully!");
+				console.log("Saved data:", data);
 				updateMessage = "Objednávka úspěšně uložena !";
 			}
 		} catch (error) {
@@ -239,7 +367,76 @@
 	}
 
 	async function createInvoice() {
-		await goto(`/admin/order/${orderId}/create-invoice`);
+		try {
+			loading = true;
+			await goto(`/admin/order/${orderId}/create-invoice`);
+		} catch (error) {
+			console.error("Error navigating to create invoice:", error);
+			alert("Chyba při přesměrování na vytvoření faktury");
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function restoreFakturoidData() {
+		try {
+			loading = true;
+			
+			// Zobrazíme potvrzovací dialog
+			if (!confirm('Chcete obnovit chybějící Fakturoid data pro tuto objednávku? Tato operace může trvat několik sekund.')) {
+				return;
+			}
+
+			// Voláme server action pro obnovu dat
+			const response = await fetch(`/admin/order/${orderId}/restore-fakturoid-data`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Fakturoid data byla úspěšně obnovena!\n\nNalezené faktury: ${result.invoices?.length || 0}\n\n${result.message || ''}`);
+				// Obnovíme stránku pro zobrazení nových dat
+				window.location.reload();
+			} else {
+				alert(`❌ Chyba při obnově dat: ${result.message || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error restoring Fakturoid data:", error);
+			alert("Chyba při obnově Fakturoid dat");
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function diagnoseFakturoid() {
+		try {
+			loading = true;
+			
+			// Voláme server action pro diagnostiku
+			const response = await fetch(`/admin/order/${orderId}/diagnose-fakturoid`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert(`✅ Diagnostika Fakturoid připojení:\n\n${result.diagnosis || 'Všechny kontroly prošly úspěšně'}`);
+			} else {
+				alert(`❌ Problémy s Fakturoid připojením:\n\n${result.diagnosis || 'Neznámá chyba'}`);
+			}
+		} catch (error) {
+			console.error("Error diagnosing Fakturoid:", error);
+			alert("Chyba při diagnostice Fakturoid připojení");
+		} finally {
+			loading = false;
+		}
 	}
 
 	// Získáme barvu pro stav objednávky - s fallbackem pro neznámé stavy
@@ -263,6 +460,46 @@
 
 	// Používáme centrální funkci pro formátování data přímo
 
+	// Reaktivní kontrola Fakturoid stavu
+	$: fakturoidReady = orderSettings?.fakturoid?.enabled && 
+	                   orderSettings?.fakturoid?.connected && 
+	                   orderSettings?.fakturoid?.tokenValid && 
+	                   orderSettings?.fakturoid?.subdomain; // Musí mít konkrétní subdomain
+
+	// Helper funkce pro práci s fakturami
+	function getCurrentSlugInvoice(order: any, currentSlug: string) {
+		if (!order?.fakturoid_data || !currentSlug) return null;
+		
+		// Nová struktura - pole faktur
+		if (order.fakturoid_data.invoices && Array.isArray(order.fakturoid_data.invoices)) {
+			return order.fakturoid_data.invoices.find((invoice: any) => invoice.account_id === currentSlug);
+		}
+		
+		// Stará struktura - jednotlivá faktura (zpětná kompatibilita)
+		if (order.fakturoid_data.invoice_id && order.fakturoid_data.account_id === currentSlug) {
+			return {
+				invoice_id: order.fakturoid_data.invoice_id,
+				invoice_number: order.fakturoid_data.invoice_number,
+				invoice_url: order.fakturoid_data.invoice_url,
+				account_id: order.fakturoid_data.account_id
+			};
+		}
+		
+		return null;
+	}
+
+	// Kontrola zda faktura existuje pro aktuální slug
+	$: currentSlugInvoice = getCurrentSlugInvoice(order, orderSettings?.fakturoid?.subdomain);
+	$: invoiceExistsForCurrentSlug = !!currentSlugInvoice;
+	
+	// Kontrola zda existují faktury pro jiné slugy
+	$: invoiceExistsForDifferentSlug = order?.fakturoid_data && !invoiceExistsForCurrentSlug && (
+		// Nová struktura
+		(order.fakturoid_data.invoices && order.fakturoid_data.invoices.length > 0) ||
+		// Stará struktura
+		(order.fakturoid_data.invoice_id && order.fakturoid_data.account_id !== orderSettings?.fakturoid?.subdomain)
+	);
+
 	// Definice akcí pro AdminPageLayout
 	$: actions = [
 		{
@@ -273,11 +510,35 @@
 			disabled: loading
 		},
 		{
-			label: order?.fakturoid_data?.invoice_id ? 'Faktura vytvořena' : 'Vytvořit fakturu',
-			onClick: createInvoice,
+			label: invoiceExistsForCurrentSlug 
+				? `Faktura ${currentSlugInvoice?.invoice_number || currentSlugInvoice?.invoice_id}` 
+				: !orderSettings?.fakturoid?.enabled 
+					? 'Fakturoid není povolen'
+					: !orderSettings?.fakturoid?.connected
+						? 'Fakturoid není připojen'
+						: !orderSettings?.fakturoid?.subdomain
+							? 'Není vybrán slug/účet'
+							: 'Vytvořit fakturu',
+			onClick: invoiceExistsForCurrentSlug ? () => {
+				if (currentSlugInvoice?.invoice_url) {
+					window.open(currentSlugInvoice.invoice_url, '_blank');
+				}
+			} : createInvoice,
 			variant: 'secondary' as const,
-			disabled: loading || order?.fakturoid_data?.invoice_id
+			disabled: loading || invoiceExistsForCurrentSlug || (!orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected || !orderSettings?.fakturoid?.subdomain)
 		},
+		// {
+		// 	label: 'Obnovit Fakturoid data',
+		// 	onClick: restoreFakturoidData,
+		// 	variant: 'secondary' as const,
+		// 	disabled: loading || !orderSettings?.fakturoid?.enabled || !orderSettings?.fakturoid?.connected
+		// },
+		// {
+		// 	label: '🔧 Diagnostika Fakturoid',
+		// 	onClick: diagnoseFakturoid,
+		// 	variant: 'secondary' as const,
+		// 	disabled: loading
+		// },
 		{
 			label: loading ? 'Maže se...' : 'Smazat',
 			onClick: deleteOrder,
@@ -299,6 +560,25 @@
 		console.log("Navigation available:", !!navigation);
 		console.log("Prev order ID:", navigation?.prevOrderId);
 		console.log("Next order ID:", navigation?.nextOrderId);
+		
+		// Debug Fakturoid stavu
+		console.log("=== FAKTUROID DEBUG ===");
+		console.log("Fakturoid config:", orderSettings?.fakturoid);
+		console.log("Fakturoid ready:", fakturoidReady);
+		console.log("Invoice exists for current slug:", invoiceExistsForCurrentSlug);
+		console.log("Invoice exists for different slug:", invoiceExistsForDifferentSlug);
+		console.log("Current subdomain:", orderSettings?.fakturoid?.subdomain);
+		console.log("Configured subdomain:", orderSettings?.fakturoid?.configuredSubdomain);
+		console.log("Available accounts:", orderSettings?.fakturoid?.availableAccounts);
+		if (order?.fakturoid_data) {
+			console.log("Existing invoice data:", order.fakturoid_data);
+			console.log("Invoice account vs current:", {
+				invoiceAccount: order.fakturoid_data.account_id,
+				currentAccount: orderSettings?.fakturoid?.subdomain,
+				match: order.fakturoid_data.account_id === orderSettings?.fakturoid?.subdomain
+			});
+		}
+		console.log("=== END FAKTUROID DEBUG ===");
 		
 		// Detailní výpis kontaktních údajů
 		if (order) {
@@ -412,29 +692,54 @@
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Stav objednávky</label>
-						<select
-							bind:value={selectedOrderState}
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							{#each orderStates as state}
-								<option value={state}>{state}</option>
-							{/each}
-						</select>
+						{#if !isInitialLoad && selectedOrderState !== ""}
+							<select
+								bind:value={selectedOrderState}
+								on:change={() => console.log('SELECT CHANGED to:', selectedOrderState)}
+								class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								{#each orderStates as state}
+									<option value={state}>{state}</option>
+								{/each}
+							</select>
+						{:else}
+							<!-- Loading placeholder -->
+							<div class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500">
+								Načítá se...
+							</div>
+						{/if}						
 					</div>
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Stav platby</label>
-						<select 
-							bind:value={isPaid}
-							class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							<option value={false}>Neuhrazena</option>
-							<option value={true}>Uhrazena</option>
-						</select>
+						{#if !isInitialLoad && order}
+							<select 
+								bind:value={isPaid}
+								class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+								<option value={false}>Neuhrazena</option>
+								<option value={true}>Uhrazena</option>
+							</select>
+						{:else}
+							<div class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500">
+								Načítá se...
+							</div>
+						{/if}
 					</div>
 				</div>
 			</div>
 
 			<!-- Osobní údaje zákazníka -->
 			<div class="space-y-4">
-				<h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Kontaktní údaje</h3>
+				<div class="flex items-center justify-between border-b border-gray-200 pb-2">
+					<h3 class="text-lg font-medium text-gray-900">Kontaktní údaje</h3>
+					{#if order?.user_id}
+						<a 
+							href="/admin/customer/{order.user_id}" 
+							class="text-sm text-blue-600 hover:text-blue-800 underline"
+							data-sveltekit-preload-data
+						>
+							Upravit globálně
+						</a>
+					{/if}
+				</div>
 				
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
@@ -487,24 +792,36 @@
 					<div class="space-y-3">
 						<div>
 							<label class="block text-sm text-gray-600 mb-1">Způsob platby</label>
-							<select
-								bind:value={selectedPaymentMethod}
-								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-								{#each paymentMethods as method}
-									<option value={method}>{method}</option>
-								{/each}
-							</select>
+							{#if !isInitialLoad && paymentMethods.length > 0}
+								<select
+									bind:value={selectedPaymentMethod}
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+									{#each paymentMethods as method}
+										<option value={method}>{method}</option>
+									{/each}
+								</select>
+							{:else}
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+									Načítá se...
+								</div>
+							{/if}
 						</div>
 						<div class="grid grid-cols-2 gap-2">
 							<div>
 								<label class="block text-sm text-gray-600 mb-1">Měna</label>
-								<select
-									bind:value={selectedCurrency}
-									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-									{#each currencies as currency}
-										<option value={currency}>{currency}</option>
-									{/each}
-								</select>
+								{#if !isInitialLoad && currencies.length > 0}
+									<select
+										bind:value={selectedCurrency}
+										class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+										{#each currencies as currency}
+											<option value={currency}>{currency}</option>
+										{/each}
+									</select>
+								{:else}
+									<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+										Načítá se...
+									</div>
+								{/if}
 							</div>
 							<div>
 								<label class="block text-sm text-gray-600 mb-1">Celkem</label>
@@ -522,13 +839,19 @@
 					<div class="space-y-3">
 						<div>
 							<label class="block text-sm text-gray-600 mb-1">Doprava</label>
-							<select
-								bind:value={selectedShippingMethod}
-								class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-								{#each shippingMethods as method}
-									<option value={method}>{method}</option>
-								{/each}
-							</select>
+							{#if !isInitialLoad && shippingMethods.length > 0}
+								<select
+									bind:value={selectedShippingMethod}
+									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+									{#each shippingMethods as method}
+										<option value={method}>{getDeliveryMethodLabel(method)}</option>
+									{/each}
+								</select>
+							{:else}
+								<div class="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-500">
+									Načítá se...
+								</div>
+							{/if}
 						</div>						
 					</div>
 				</div>
@@ -576,12 +899,51 @@
 					</div>
 				</div>
 			</div>
-			{#if order?.fakturoid_data?.invoice_url}
+			{#if invoiceExistsForCurrentSlug && currentSlugInvoice?.invoice_url}
 							<div class="mt-2">
-								<a href={order.fakturoid_data.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 text-sm">
+								<a href={currentSlugInvoice.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 text-sm">
 									Otevřít fakturu ve Fakturoidu
 								</a>
 							</div>
+						{/if}
+
+						<!-- Zobrazení všech faktur pro tuto objednávku -->
+						{#if order?.fakturoid_data}
+							{@const allInvoices = order.fakturoid_data.invoices && Array.isArray(order.fakturoid_data.invoices) 
+								? order.fakturoid_data.invoices 
+								: order.fakturoid_data.invoice_id 
+									? [{
+										invoice_id: order.fakturoid_data.invoice_id,
+										invoice_number: order.fakturoid_data.invoice_number,
+										invoice_url: order.fakturoid_data.invoice_url,
+										account_id: order.fakturoid_data.account_id,
+										created_at: order.fakturoid_data.created_at || 'neznámé'
+									}]
+									: []
+							}
+							{#if allInvoices.length > 1}
+								<div class="mt-4 p-3 bg-gray-50 rounded-lg">
+									<h5 class="text-sm font-medium text-gray-700 mb-2">Všechny faktury pro tuto objednávku:</h5>
+									<div class="space-y-2">
+										{#each allInvoices as invoice}
+											<div class="flex items-center justify-between text-sm">
+												<span class="font-medium">
+													{invoice.invoice_number || invoice.invoice_id}
+													<span class="text-gray-500">({invoice.account_id})</span>
+													{#if invoice.account_id === orderSettings?.fakturoid?.subdomain}
+														<span class="ml-1 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded">aktivní</span>
+													{/if}
+												</span>
+												{#if invoice.invoice_url}
+													<a href={invoice.invoice_url} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
+														Otevřít
+													</a>
+												{/if}
+											</div>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						{/if}
 		</div>
 

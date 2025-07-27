@@ -1,5 +1,7 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { getSetting } from "$lib/services/siteSettingsService";
+import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
@@ -10,7 +12,6 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.order("number");
 
 		if (allergensError) {
-			console.error("Error fetching allergens:", allergensError);
 			throw error(500, "Failed to load allergens");
 		}
 
@@ -21,16 +22,22 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.order("name");
 
 		if (ingredientsError) {
-			console.error("Error fetching ingredients:", ingredientsError);
 			throw error(500, "Failed to load ingredients");
 		}
 
+		// Načtení products settings s fallback na výchozí hodnoty
+		const productsSettings = await getSetting(supabase, 'products') || getDefaultSettings('products');
+
+		// Načtení general settings pro měny - pouze z DB
+		const generalSettings = await getSetting(supabase, 'general');
+
 		return {
 			allAllergens: allergens,
-			allIngredients: ingredients
+			allIngredients: ingredients,
+			productsSettings,
+			generalSettings
 		};
 	} catch (err) {
-		console.error("Unexpected error:", err);
 		throw error(500, "An unexpected error occurred");
 	}
 };

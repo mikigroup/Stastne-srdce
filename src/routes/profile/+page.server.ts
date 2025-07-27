@@ -1,6 +1,8 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
+import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
+import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
@@ -51,6 +53,7 @@ interface ProfileData {
 	delivery_method: string;
 	payment_method: string;
 	updated_at: string;
+	registration_status?: string; // Přidáno pro zachování statusu
 }
 
 export const load: PageServerLoad = async ({
@@ -193,7 +196,7 @@ export const actions: Actions = {
 				});
 			}
 
-			// Uložení do databáze
+			// Uložení do databáze (bez registration_status - nechme ho na globální službě)
 			const { error } = await supabase.from("profiles").upsert(profileData);
 
 			if (error) {
@@ -207,11 +210,20 @@ export const actions: Actions = {
 				});
 			}
 
+			// Po úspěšném uložení použijeme globální službu pro kontrolu a aktualizaci statusu
+			const registrationCheck = await checkAndUpdateRegistrationStatus(
+				supabase, 
+				session.user.id, 
+				session.user.email
+			);
+
 			// Úspěšná aktualizace
 			return {
 				message: {
 					success: true,
-					display: "Profil byl úspěšně aktualizován"
+					display: registrationCheck.wasUpdated 
+						? "Profil byl úspěšně aktualizován a registrace dokončena"
+						: "Profil byl úspěšně aktualizován"
 				},
 				...profileData
 			};
@@ -221,6 +233,107 @@ export const actions: Actions = {
 				message: {
 					success: false,
 					display: "Došlo k neočekávané chybě"
+				}
+			});
+		}
+	},
+
+	requestDataDeletion: async ({ request, url, locals: { supabase, safeGetSession } }: {
+		request: Request;
+		url: URL;
+		locals: {
+			supabase: SupabaseClient<Database>;
+			safeGetSession: () => Promise<{
+				session: Session | null;
+				user: User | null;
+			}>;
+		};
+	}) => {
+		const { session } = await safeGetSession();
+		if (!session) {
+			throw redirect(303, "/login");
+		}
+
+		try {
+			// Get user profile for email personalization
+			const { data: profile, error: profileError } = await supabase
+				.from("profiles")
+				.select("first_name, last_name, email")
+				.eq("id", session.user.id)
+				.single();
+
+			if (profileError || !profile) {
+				console.error("Error fetching user profile:", profileError);
+				return fail(500, {
+					message: {
+						success: false,
+						display: "Chyba při načítání uživatelských dat"
+					}
+				});
+			}
+
+			// Generate secure token for account reactivation
+			const reactivationToken = crypto.randomUUID();
+			const deletionDate = new Date();
+			const scheduledDate = new Date(deletionDate.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
+
+			// Mark user's request for data deletion with 30-day grace period
+			const updateData = {
+				data_deletion_requested: true, // Boolean value
+				data_deletion_date: deletionDate.toISOString(),
+				data_deletion_scheduled: scheduledDate.toISOString(),
+				data_deletion_token: reactivationToken,
+				account_suspended: true, // Boolean value - Suspend account during grace period
+				updated_at: new Date().toISOString()
+			};
+
+			const { error } = await supabase
+				.from("profiles")
+				.update(updateData)
+				.eq("id", session.user.id);
+
+			if (error) {
+				console.error("Error requesting data deletion:", error);
+				return fail(500, {
+					message: {
+						success: false,
+						display: "Chyba při podávání žádosti o smazání dat"
+					}
+				});
+			}
+
+			// Send notification email with reactivation link
+			try {
+				const baseUrl = `${url.protocol}//${url.host}`;
+				await sendDataDeletionRequestEmail({
+					email: session.user.email!,
+					firstName: profile.first_name || 'Vážený zákazníku',
+					lastName: profile.last_name || '',
+					deletionDate: deletionDate.toISOString(),
+					scheduledDate: scheduledDate.toISOString(),
+					reactivationToken,
+					baseUrl
+				});
+			} catch (emailError) {
+				console.error("Error sending deletion request email:", emailError);
+				// Don't fail the deletion request if email fails - log it for admin
+			}
+
+			// TODO: Log this request for GDPR compliance audit
+			// TODO: Schedule deletion process (cron job)
+
+			return {
+				message: {
+					success: true,
+					display: `Žádost o smazání dat byla podána. Máte 30 dní na rozmyšlenou do ${scheduledDate.toLocaleDateString('cs-CZ')}. Poslali jsme vám email s instrukcemi pro případné zrušení žádosti.`
+				}
+			};
+		} catch (error) {
+			console.error("Error in data deletion request:", error);
+			return fail(500, {
+				message: {
+					success: false,
+					display: "Došlo k neočekávané chybě při podávání žádosti"
 				}
 			});
 		}

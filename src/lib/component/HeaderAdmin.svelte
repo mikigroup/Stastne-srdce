@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
+	import { goto } from "$app/navigation";
 	import { readable } from "svelte/store";
 	import { Icon, FaceSmile } from "svelte-hero-icons";
 	import { ROUTES } from "$lib/stores/store";
@@ -80,7 +81,7 @@
 			loading = true;
 			const { error } = await supabase.auth.signOut();
 			if (error) throw error;
-			window.location.href = "/";
+			await goto("/");
 		} catch (error) {
 			if (error instanceof Error) {
 				alert(error.message);
@@ -108,17 +109,15 @@
 							stroke-width="2"
 							d="M4 6h16M4 12h16M4 18h7" /></svg>
 				</div>
-				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<ul
-					tabindex="0"
-					class=" menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-					<li><a class="text-sm" href="/">Klientská část</a></li>
+					class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+					<li><a class="text-sm" href="/"><i class="fas fa-home mr-2"></i>Klientská část</a></li>
 					<hr class="border-gray-300 px-2 mt-2 mb-4" />
-					<li><a class="text-sm" href={$ROUTES.ADMIN.BASE}>Nástěnka</a></li>
-					<li><a class="text-sm" href="/admin/customer">Zákazníci</a></li>
-					<li><a class="text-sm" href="/admin/order">Objednávky</a></li>
-					<li><a class="text-sm" href="/admin/menu">Menu</a></li>
-					<li><a class="text-sm" href="/admin/text">Texty</a></li>
+					<li><a class="text-sm" href={$ROUTES.ADMIN.BASE}><i class="fas fa-chart-line mr-2"></i>Nástěnka</a></li>
+					<li><a class="text-sm" href={$ROUTES.ADMIN.CUSTOMER.LIST}><i class="fas fa-users mr-2"></i>Zákazníci</a></li>
+					<li><a class="text-sm" href={$ROUTES.ADMIN.ORDER.LIST}><i class="fas fa-shopping-bag mr-2"></i>Objednávky</a></li>
+					<li><a class="text-sm" href={$ROUTES.ADMIN.MENU.LIST}><i class="fas fa-utensils mr-2"></i>Menu</a></li>
+					<li><a class="text-sm" href="/admin/text"><i class="fas fa-font mr-2"></i>Texty</a></li>
 				</ul>
 			</div>
 			<p class="text-xl">Malý LEO</p>
@@ -177,8 +176,8 @@
 							</li>
 							<hr>
 							<li>
-								<a class="text-sm py-2" on:click={signOut} disabled={loading}
-									>Odhlásit se</a>
+								<button class="text-sm py-2 w-full text-left" on:click={signOut} disabled={loading}
+									>Odhlásit se</button>
 							</li>
 						</ul>
 					</div>

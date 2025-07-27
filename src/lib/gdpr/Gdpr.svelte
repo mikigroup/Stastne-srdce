@@ -7,11 +7,9 @@
 	const dispatch = createEventDispatcher();
 
 	// Props
-	export let cookieName: string = 'gdpr_consent';
 	export let visible: boolean = true;
 	export let showSettingsButton: boolean = true;
 	export let showEditIcon: boolean = true;
-	export let companyName: string = 'Šťastné srdce';
 	export let privacyPolicyUrl: string = '/gdpr';
 
 	// Text labels - možná přizpůsobit podle jazyka
@@ -21,7 +19,6 @@
 	export let acceptSelectedLabel: string = 'Potvrdit výběr';
 	export let rejectAllLabel: string = 'Odmítnout vše';
 	export let settingsLabel: string = 'Vlastní nastavení';
-	export let closeLabel: string = 'Zavřít';
 	export let editLabel: string = 'Upravit nastavení cookies';
 
 	// Stavy
@@ -157,9 +154,9 @@
 										<label class="cookie-switch">
 											<input
 												type="checkbox"
-												checked={category.value}
+												bind:checked={category.value}
 												disabled={category.required}
-												on:change={(e) => updateCategoryValue(category.id, e.target.checked)}
+												on:change={() => updateCategoryValue(category.id, category.value)}
 											/>
 											<span class="cookie-slider"></span>
 										</label>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import { onMount } from "svelte";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
@@ -13,8 +14,17 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, allAllergens, allIngredients } = data;
-	$: ({ session, supabase, allAllergens, allIngredients } = data);
+	let { session, supabase, allAllergens, allIngredients, productsSettings, generalSettings } = data;
+	$: ({ session, supabase, allAllergens, allIngredients, productsSettings, generalSettings } = data);
+	
+	// Zajistíme, že máme všechna potřebná pole pro varianty
+	$: enhancedProductsSettings = {
+		...productsSettings,
+		menuVariantsCount: productsSettings?.menuVariantsCount ?? 3,
+		allowVariableVariants: productsSettings?.allowVariableVariants ?? true,
+		minVariants: productsSettings?.minVariants ?? 1,
+		maxVariants: productsSettings?.maxVariants ?? 10
+	};
 
 	let loading = false;
 	let updateMessage = "";
@@ -23,6 +33,9 @@
 	// Inicializace nového menu
 	let newMenu: Menu = {
 		id: "",
+		created_at: null,
+		updated_at: null,
+		deleted: false,
 		date: "",
 		soup: "",
 		active: true,
@@ -30,33 +43,31 @@
 		type: "",
 		nutri: "",
 		allergens: [],
-		variants: [
-			{
-				id: "",
-				variant_number: "1",
-				description: "",
-				price: 0,
-				allergens: [],
-				ingredients: []
-			},
-			{
-				id: "",
-				variant_number: "2",
-				description: "",
-				price: 0,
-				allergens: [],
-				ingredients: []
-			},
-			{
-				id: "",
-				variant_number: "3",
-				description: "",
-				price: 0,
-				allergens: [],
-				ingredients: []
-			}
-		]
+		variants: []
 	};
+
+	// Sledování změn productsSettings a inicializace variant
+	let variantsInitialized = false;
+	
+	$: if (enhancedProductsSettings && !variantsInitialized) {
+		newMenu.variants = Array.from({ length: enhancedProductsSettings.menuVariantsCount }, (_, i) => ({
+			id: crypto.randomUUID(),
+			created_at: null,
+			menu_id: "",
+			menu_version_id: null,
+			updated_at: null,
+			variant_number: (i + 1).toString(),
+			description: "",
+			price: 0,
+			currency: generalSettings?.currencies?.[0] || 'N/A',
+			vegetarian: false,
+			allergens: [],
+			ingredients: []
+		}));
+		variantsInitialized = true;
+		// Force reactivity trigger
+		newMenu = { ...newMenu };
+	}
 
 	async function createMenu() {
 		try {
@@ -107,14 +118,15 @@
 
 			// 3. Vytvoření variant pro novou verzi menu
 			for (const variant of newMenu.variants) {
-				if (variant.description && variant.price > 0) {
+				if (variant.description && variant.price !== null && variant.price > 0) {
 					// Vytvoříme novou variantu pro novou verzi
 					const insertedVariant = await createMenuVariant(supabase, {
 						menu_id: menuId,
 						menu_version_id: menuVersionId,
 						variant_number: variant.variant_number,
 						description: variant.description,
-						price: variant.price
+						price: variant.price,
+						vegetarian: variant.vegetarian || false
 					});
 
 					// Přidání alergenů k nové variantě
@@ -141,7 +153,6 @@
 			}, 1500);
 
 		} catch (error) {
-			console.error("Chyba při vytváření menu:", error);
 			errorMessage = "Chyba při vytváření menu: " + (error instanceof Error ? error.message : "Neznámá chyba");
 		} finally {
 			loading = false;
@@ -149,12 +160,7 @@
 	}
 
 	function handleUpdate(event: CustomEvent<Menu>) {
-		console.log(
-			"handleUpdate called with:",
-			JSON.stringify(event.detail, null, 2)
-		);
 		newMenu = event.detail;
-		console.log("newMenu after update:", JSON.stringify(newMenu, null, 2));
 	}
 
 	// Definice akcí pro AdminPageLayout
@@ -177,11 +183,17 @@
 	errorMessage={errorMessage}
 	{loading}>
 
+
+
 	<!-- Menu content -->
 	<MenuItemDetail
 		bind:menu={newMenu}
 		{allAllergens}
 		{allIngredients}
+		productsSettings={enhancedProductsSettings}
+		{generalSettings}
+		{supabase}
+		isNewMenu={true}
 		on:update={handleUpdate} />
 </AdminPageLayout>
 

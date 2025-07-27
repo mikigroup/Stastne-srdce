@@ -33,18 +33,9 @@ export type ProfileData = {
 	avatar_url?: string | null;
 };
 
-/*export type RezcalendarData = {
-	id: number;
-	note: string;
-	date: string;
-	time: string;
-	user_id: string;
-};*/
-
 export type LoadData = {
 	session: any;
 	profiles: ProfileData;
-	// rezcalendar: RezcalendarData[];
 };
 
 export const load: PageServerLoad = async ({
@@ -60,14 +51,6 @@ export const load: PageServerLoad = async ({
 		.eq("id", session.user.id)
 		.single();
 
-	/*  const { data: rezcalendar, error: rezcalendarError } = await supabase
-    .from("rezcalendar")
-    .select(`id, note, date, time, user_id`);
-
-  if (profilesError || rezcalendarError) {
-    console.error("Error fetching profiles or rezcalendar:", profilesError || rezcalendarError);
-    throw profilesError || rezcalendarError;
-  }*/
 	if (profilesError) {
 		console.error("Chyba při načítání profilu:", profilesError);
 		throw profilesError;

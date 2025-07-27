@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import { goto } from "$app/navigation";
-	import { enhance } from "$app/forms";
-	import type { ActionData } from "./+page.server";
-	import { onMount } from "svelte";
-
-	export let form: ActionData | null = null;
+	import { fade } from "svelte/transition";
+	import type { Actions } from "@sveltejs/kit";
+	import AuthCard from "$lib/component/AuthCard.svelte";
+	
+	type FormData = {
+		message?: {
+			success: boolean;
+			display: string;
+		};
+		email?: string;
+		password?: string;
+	};
+	
+	export let form: FormData | null = null;
 	export let data;
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
+	let { session, supabase, user } = data;
+	$: ({ session, supabase, user } = data);
 
 	let loading = false;
 
@@ -24,110 +32,82 @@
 		});
 	}
 
-/*	if (form?.message?.success) {
-		onMount(() => {
-			setTimeout(() => {
-				goto("/admin");
-			}, 3000);
-		});
-	}*/
+	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>LEO - Přihlásit</title>
+	<title>Admin přihlášení - {generalSettings?.shopName}</title>
+	<meta name="description" content="Admin přihlášení" />
 </svelte:head>
 
-<section class="flex justify-center py-20">
-	<div
-		class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8">
-		<form method="POST" action="?/handleLogin">
-			{#if $page.data.session}
-				<div class="flex justify-center w-full text-xl">
-					<p class="">Vítej uživateli</p>
-				</div>
-			{:else}
-				<h1 class="text-3xl text-center text-gray-800">Přihlásit</h1>
-				<div
-					class="text-sm font-medium text-center text-gray-500 dark:text-gray-300">
-					nebo <br />nejsi ještě registrován?
-					<a
-						href="/signup"
-						class="text-blue-700 hover:underline dark:text-blue-500"
-						>Pojď na to!</a>
-				</div>
-				<div>
-					<label
-						for="email"
-						class="block mt-5 mb-2 text-sm font-medium text-gray-900 dark:text-white"
-						>Email</label>
+<AuthCard 
+	title="Admin přihlášení"
+	subtitle="Přihlášení do administrace"
+>
+	{#if $page.data.session}
+		<div class="flex w-full text-xl">
+			<p>Jste přihlášeni jako admin.</p>
+		</div>
+	{:else}
+		<form method="POST" action="?/handleLogin" class="space-y-6">
+			<!-- Email input -->
+			<div class="flex flex-col">
+				<div class="relative flex">
+					<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
+						<svg width="15" height="15" fill="currentColor" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+							<path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z" />
+						</svg>
+					</span>
 					<input
-						value={form?.email ?? "@"}
+						value={form?.email ?? ""}
 						type="email"
 						name="email"
 						id="email"
-						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-						placeholder="novak@leo.cz"
-						required />
+						class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+						required
+						placeholder="Email" />
 				</div>
-				<div>
-					<label
-						for="password"
-						class="block mt-5 mb-2 text-sm font-medium text-gray-900"
-						>Heslo</label>
+			</div>
+
+			<!-- Password input -->
+			<div class="flex flex-col">
+				<div class="relative flex">
+					<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
+						<svg width="15" height="15" fill="currentColor" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+							<path d="M1376 768q40 0 68 28t28 68v576q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-576q0-40 28-68t68-28h32v-320q0-185 131.5-316.5t316.5-131.5 316.5 131.5 131.5 316.5q0 26-19 45t-45 19h-64q-26 0-45-19t-19-45q0-106-75-181t-181-75-181 75-75 181v320h736z" />
+						</svg>
+					</span>
 					<input
 						value={form?.password ?? ""}
 						type="password"
 						name="password"
 						id="password"
-						placeholder="••••••••"
-						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-						required />
+						class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+						required
+						placeholder="Heslo" />
 				</div>
-				<div class="flex items-start">
-					<div class="flex items-start">
-						<!-- <div class="flex items-center h-5">
-                    <input id="remember" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" required>
-                </div>
-                <label for="remember" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Zapamatovat heslo</label> -->
-					</div>
-					<a
-						href="/forgot"
-						class="mt-5 ml-auto text-sm text-blue-700 hover:underline"
-						>Pokud neznáš heslo</a>
+			</div>
+
+			<!-- Forgot password link -->
+			<div class="flex justify-end">
+				<a href="/auth/forgot" class="text-sm text-gray-500 hover:text-gray-700 underline">
+					Zapomněli jste heslo?
+				</a>
+			</div>
+
+			<!-- Submit button -->
+			<button
+				type="submit"
+				class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
+				Přihlásit se
+			</button>
+
+			<!-- Error message -->
+			{#if form?.message?.display}
+				<div class="w-full p-3 border border-red-200 rounded-lg bg-red-50">
+					<p class="text-red-700 text-sm">{form.message.display}</p>
 				</div>
-				<button
-					type="submit"
-					class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center my-10"
-					>Potvrdit</button>
-				{#if form?.message?.display}
-					<div class="flex w-full p-2 my-4 border rounded-lg">
-						<p class="error">{form.message.display}</p>
-					</div>
-				{/if}
-				<hr class="mb-10" />
 			{/if}
 		</form>
-		{#if !$page.data.session}
-			<button
-				on:click={() => {
-					signInWithGoogle();
-				}}
-				value={loading ? "Loading" : "Log in with Google"}
-				disabled={loading}
-				class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center mr-2 mb-2">
-				<svg
-					class="w-4 h-4 mr-2"
-					aria-hidden="true"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="currentColor"
-					viewBox="0 0 18 19">
-					<path
-						fill-rule="evenodd"
-						d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z"
-						clip-rule="evenodd" />
-				</svg>
-				Přihlásit se přes Google
-			</button>
-		{/if}
-	</div>
-</section>
+	{/if}
+</AuthCard>

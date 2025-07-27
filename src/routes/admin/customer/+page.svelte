@@ -2,6 +2,8 @@
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech, formatDateTimeToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+	import { getRegistrationStatusMessage, getRegistrationStatusStyles } from "$lib/services/registrationStatusService";
 	import AdminTable from "$lib/component/AdminTable.svelte";
 	import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/svelte-table";
 
@@ -16,7 +18,8 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		searchQuery
+		searchQuery,
+		itemsPerPage
 	} = data;
 	$: ({
 		supabase,
@@ -27,7 +30,8 @@
 		totalPages,
 		totalItems,
 		itemsOnCurrentPage,
-		searchQuery
+		searchQuery,
+		itemsPerPage
 	} = data);
 
 	// State variables
@@ -35,9 +39,13 @@
 	let searchInput = searchQuery;
 	let transitionKey: number = 0;
 
+	// Možnosti pro počet položek na stránce
+	const itemsPerPageOptions = [10, 25, 50, 100];
+	let selectedItemsPerPage = itemsPerPage;
+
 	// Výchozí stav řazení
 	let sorting: SortingState = [
-		{ id: 'created_at', desc: true } // Výchozí řazení podle data registrace sestupně
+		{ id: "created_at", desc: true } // Výchozí řazení podle data registrace sestupně
 	];
 
 	// Column definitions
@@ -47,6 +55,7 @@
 		last_name: "Příjmení",
 		email: "E-mail",
 		telephone: "Telefon",
+		registration_status: "Status",
 		street: "Ulice",
 		city: "Město",
 		street_number: "Číslo popisné",
@@ -77,18 +86,19 @@
 		id: key,
 		header: columnNames[key],
 		// Nastavení velikostí sloupců
-		size: key === 'email' ? 200 :
-			key === 'created_at' ? 150 :
-				key === 'telephone' ? 120 : 100,
+		size: key === "email" ? 200 :
+			key === "created_at" ? 150 :
+				key === "registration_status" ? 130 :
+				key === "telephone" ? 120 : 100,
 		// Nastavení řazení
 		enableSorting: true,
-		sortingFn: key === 'created_at' ? 'datetime' : 'alphanumeric'
+		sortingFn: key === "created_at" ? "datetime" : "alphanumeric"
 	}));
 
 	// Přidáme sloupec "Upravit"
 	columns.push({
-		id: 'actions',
-		header: 'Editovat',
+		id: "actions",
+		header: "Editovat",
 		size: 80,
 		enableSorting: false
 	});
@@ -99,7 +109,7 @@
 			loading = true;
 			if (currentPage > 1) {
 				transitionKey++;
-				await goto(`?page=${currentPage - 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage - 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání předchozí stránky:", error);
@@ -113,7 +123,7 @@
 			loading = true;
 			if (currentPage < totalPages) {
 				transitionKey++;
-				await goto(`?page=${currentPage + 1}&search=${searchQuery}`);
+				await goto(`?page=${currentPage + 1}&search=${searchQuery}&itemsPerPage=${selectedItemsPerPage}`);
 			}
 		} catch (error) {
 			console.error("Chyba při načítání další stránky:", error);
@@ -126,9 +136,22 @@
 	async function handleSearch() {
 		loading = true;
 		try {
-			await goto(`?search=${searchInput}&page=1`);
+			await goto(`?search=${searchInput}&page=1&itemsPerPage=${selectedItemsPerPage}`);
 		} catch (error) {
 			console.error("Chyba při vyhledávání:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Handle change of items per page
+	async function handleItemsPerPageChange() {
+		loading = true;
+		try {
+			// Reset to first page when changing items per page
+			await goto(`?search=${searchQuery}&page=1&itemsPerPage=${selectedItemsPerPage}`);
+		} catch (error) {
+			console.error("Chyba při změně počtu položek na stránce:", error);
 		} finally {
 			loading = false;
 		}
@@ -184,11 +207,32 @@
 		</button>
 	</div>
 
-	<div
-		class="flex flex-col md:flex-row justify-between items-center w-full my-4">
-		<p>Celkový počet zákazníků: {totalItems}</p>
-		<p>Stránka {currentPage} z {totalPages}</p>
-		<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+	<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full my-4">
+		<div class="text-center md:text-left">
+			<p>Celkový počet zákazníků: {totalItems}</p>
+		</div>
+
+		<div class="flex items-center justify-center gap-2 text-nowrap">
+			<span>Položek na stránce:</span>
+			<select
+				class="select select-bordered select-sm"
+				style="line-height: 2; padding-top: 0; padding-bottom: 0;"
+				bind:value={selectedItemsPerPage}
+				on:change={handleItemsPerPageChange}
+			>
+				{#each itemsPerPageOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div class="text-center">
+			<p>Stránka {currentPage} z {totalPages}</p>
+		</div>
+		
+		<div class="text-center md:text-right">
+			<p>Zobrazeno {itemsOnCurrentPage} z {totalItems} zákazníků</p>
+		</div>
 	</div>
 </section>
 
@@ -207,8 +251,17 @@
 >
 	<svelte:fragment slot="cell" let:cell let:row>
 		{#if cell.column.id === "created_at"}
-			{@const value = cell.getValue()}
-			{formatDateTimeToCzechShort(String(value ?? ''))}
+					{@const value = cell.getValue()}
+		{formatDateTimeToCzechShort(String(value ?? ""))}
+		{:else if cell.column.id === "registration_status"}
+			{@const customer = row.original}
+			{@const validationResult = validateProfileForInvoicing(customer)}
+					{@const actualStatus = validationResult.isComplete ? "completed" : 
+			customer.registration_status === "completed" ? "incomplete_data" : "pending"}
+			{@const statusStyles = getRegistrationStatusStyles(actualStatus)}
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {statusStyles.badge}">
+				{getRegistrationStatusMessage(actualStatus)}
+			</span>
 		{:else if cell.column.id === "actions"}
 			<div class="flex justify-end">
 				<a href="/admin/customer/{row.original.id}" data-sveltekit-preload-data class="font-medium hover:underline">
@@ -216,9 +269,9 @@
 				</a>
 			</div>
 		{:else if cell.column.id === "email"}
-			<div class="truncate max-w-xs" title={String(cell.getValue() ?? '')}>
-				{cell.getValue() ?? ""}
-			</div>
+					<div class="truncate max-w-xs" title={String(cell.getValue() ?? "")}>
+			{cell.getValue() ?? ""}
+		</div>
 		{:else}
 			{cell.getValue() ?? ""}
 		{/if}

@@ -152,6 +152,39 @@ export class FakturoidService {
 	}
 
 	/**
+	 * Získá všechny faktury z Fakturoid API
+	 */
+	async getInvoices(): Promise<any[]> {
+		return await this.request('/invoices.json');
+	}
+
+	/**
+	 * Pošle fakturu emailem
+	 */
+	async sendInvoiceEmail(invoiceId: number): Promise<void> {
+		await this.request(`/invoices/${invoiceId}/message.json`, {
+			method: 'POST',
+			body: JSON.stringify({ 
+				message: {
+					email: true
+				}
+			})
+		});
+	}
+
+	/**
+	 * Označí fakturu jako uhrazenou
+	 */
+	async markInvoiceAsPaid(invoiceId: number): Promise<void> {
+		await this.request(`/invoices/${invoiceId}/fire.json`, {
+			method: 'POST',
+			body: JSON.stringify({ 
+				event: 'pay'
+			})
+		});
+	}
+
+	/**
 	 * Vytvořit fakturu z objednávky (hlavní metoda)
 	 */
 	async createInvoiceFromOrder(orderData: {
@@ -184,7 +217,7 @@ export class FakturoidService {
 		
 		if (!accessToken) {
 			console.error('No valid access token available');
-			throw new Error('Váš Fakturoid token není dostupný nebo vypršel. Prosím reconnectujte svůj Fakturoid účet.');
+			throw new Error('Váš Fakturoid token není dostupný. Zkuste to prosím znovu nebo reconnectujte svůj Fakturoid účet.');
 		}
 		
 		console.log('Access token available, proceeding with API calls...');
@@ -197,17 +230,17 @@ export class FakturoidService {
 		} catch (error) {
 			console.error('Fakturoid connection test failed:', error);
 			
-			// Specifičtější chybové hlášky podle typu chyby
-			if (error instanceof Error) {
-				if (error.message.includes('401') || error.message.includes('unauthorized')) {
-					throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Prosím reconnectujte svůj Fakturoid účet.');
-				}
-				if (error.message.includes('403') || error.message.includes('forbidden')) {
-					throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
-				}
+					// Specifičtější chybové hlášky podle typu chyby
+		if (error instanceof Error) {
+			if (error.message.includes('401') || error.message.includes('unauthorized')) {
+				throw new Error('Váš Fakturoid token vypršel nebo je neplatný. Zkuste to prosím znovu nebo reconnectujte svůj Fakturoid účet.');
 			}
-			
-			throw new Error('Nepodařilo se připojit k Fakturoid API. Zkontrolujte připojení a oprávnění.');
+			if (error.message.includes('403') || error.message.includes('forbidden')) {
+				throw new Error('Nemáte oprávnění k přístupu k tomuto Fakturoid účtu. Zkontrolujte nastavení účtu.');
+			}
+		}
+		
+		throw new Error('Nepodařilo se připojit k Fakturoid API. Zkuste to prosím znovu nebo zkontrolujte připojení.');
 		}
 
 		// Vytvoříme nebo najdeme kontakt
@@ -306,20 +339,6 @@ export class FakturoidService {
 
 		return response;
 	}
-
-	/**
-	 * Poslat fakturu emailem
-	 */
-	private async sendInvoiceEmail(invoiceId: number): Promise<void> {
-		await this.request(`/invoices/${invoiceId}/message.json`, {
-			method: 'POST',
-			body: JSON.stringify({ 
-				message: {
-					email: true
-				}
-			})
-		});
-	}
 }
 
 /**
@@ -339,16 +358,32 @@ export function getFakturoidConfigFromSettings(settings: { integrations: Integra
 		return null;
 	}
 
-	const activeAccount = integrations.fakturoid.accounts.find(acc => acc.isActive);
-	if (!activeAccount) {
-		return null;
+	// PRIORITA: Použij hlavní subdomain ze settings (ruční zadání), nebo najdi aktivní účet
+	let subdomain = integrations.fakturoid.subdomain; // Ruční zadání
+	let accountName = '';
+
+	if (!subdomain) {
+		// Pokud není ručně zadán slug, najdeme aktivní účet
+		const activeAccount = integrations.fakturoid.accounts?.find(acc => acc.isActive);
+		if (!activeAccount) {
+			console.warn('Fakturoid: Žádný aktivní účet ani ručně zadaný slug nenalezen');
+			return null;
+		}
+		subdomain = activeAccount.subdomain;
+		accountName = activeAccount.name;
+	} else {
+		// Pokud je zadán ruční slug, zkusíme najít název účtu
+		const matchingAccount = integrations.fakturoid.accounts?.find(acc => acc.subdomain === subdomain);
+		accountName = matchingAccount?.name || 'Ruční nastavení';
 	}
+
+	console.log('Fakturoid config - Using subdomain:', subdomain, 'Account:', accountName);
 
 	return {
 		enabled: integrations.fakturoid.enabled,
 		connected: integrations.fakturoid.connected,
-		accountName: activeAccount.name,
-		subdomain: activeAccount.subdomain,
+		accountName: accountName,
+		subdomain: subdomain,
 		defaultLanguage: integrations.fakturoid.defaultLanguage || 'cz',
 		autoCreateInvoices: integrations.fakturoid.autoCreateInvoices || false,
 		invoiceDueDays: integrations.fakturoid.invoiceDueDays || 14,
@@ -409,64 +444,4 @@ export async function createInvoiceFromOrder(order: any, profile: any, integrati
 	};
 
 	return await service.createInvoiceFromOrder(orderData);
-}
-
-export async function sendInvoiceEmail(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
-	let accessToken: string | null;
-	
-	if (supabase) {
-		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessTokenWithSupabase(supabase);
-	} else {
-		const { getAccessToken } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessToken();
-	}
-	
-	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/message.json`, {
-		method: 'POST',
-		headers: {
-			'Authorization': `Bearer ${accessToken}`,
-			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ 
-			message: {
-				email: true
-			}
-		})
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při odesílání faktury emailem: ${errorText}`);
-	}
-}
-
-export async function markInvoiceAsPaid(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
-	let accessToken: string | null;
-	
-	if (supabase) {
-		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessTokenWithSupabase(supabase);
-	} else {
-		const { getAccessToken } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessToken();
-	}
-	
-	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/fire.json`, {
-		method: 'POST',
-		headers: {
-			'Authorization': `Bearer ${accessToken}`,
-			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ 
-			event: 'pay'
-		})
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při označení faktury jako uhrazené: ${errorText}`);
-	}
 } 

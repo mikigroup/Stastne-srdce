@@ -189,6 +189,26 @@ export function formatDateRange(start: Date, end: Date): string {
 	}
 }
 
+/**
+ * Formátuje datum pouze den a měsíc
+ * @param date - datum jako string nebo Date objekt
+ * @returns datum ve formátu "2.7."
+ */
+export function formatDateDayMonth(date: string | Date): string {
+	if (!date) return '';
+	
+	const dateObj = typeof date === 'string' ? new Date(date) : date;
+	
+	if (isNaN(dateObj.getTime())) {
+		return '';
+	}
+	
+	return dateObj.toLocaleDateString('cs-CZ', {
+		day: 'numeric',
+		month: 'numeric'
+	}).replace(/\s/g, '');
+}
+
 // =============================================================================
 // FORMÁTOVÁNÍ CENY A MĚNY
 // =============================================================================

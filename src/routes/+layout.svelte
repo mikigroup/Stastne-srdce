@@ -2,6 +2,7 @@
 	import "./app.css";
 	import "./banner.css";
 	import { page } from "$app/stores";
+	import { browser } from "$app/environment";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
@@ -13,13 +14,19 @@
 	import type { Profile } from "$lib/types/profile";
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
+	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 
 	export let data: {
 		session: Session | null;
 		supabase: SupabaseClient;
 		user: User | null;
-		settings: Partial<AllSettings>;
+		settings: {
+			general: any;
+			contact: any;
+			social: any;
+			seo: any;
+			appearance: any;
+		};
 		generalSettings: GeneralSettings | undefined;
 		profile: Profile | null;
 	};
@@ -27,7 +34,7 @@
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/signup/complete');
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/auth/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -38,7 +45,7 @@
 		return () => data.subscription.unsubscribe();
 	});
 
-	$: isAdminRoute = $page.url.pathname.startsWith("/admin");
+	$: isAdminRoute = browser && $page.url.pathname.startsWith("/admin");
 	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
@@ -52,14 +59,29 @@
 	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;
 	$: generalSettings = data.settings?.general;
+	$: appearanceSettings = data.settings?.appearance;
 </script>
 
 <!-- Globální SEO meta tagy pro celý web -->
 <svelte:head>
+	<!-- Základní meta tagy -->
+	{#if seoSettings?.metaAuthor}
+		<meta name="author" content={seoSettings.metaAuthor} />
+	{/if}
+	
+	{#if seoSettings?.metaCopyright}
+		<meta name="copyright" content={seoSettings.metaCopyright} />
+	{/if}
+	
+	{#if seoSettings?.metaRobots}
+		<meta name="robots" content={seoSettings.metaRobots} />
+	{/if}
+
+	<!-- SEO meta tagy -->
 	{#if seoSettings?.metaTitle}
-		<title>{seoSettings.metaTitle}</title>
+		<title>{seoSettings.metaTitle} - {generalSettings?.shopName}</title>
 	{:else if generalSettings?.shopName}
-		<title>{generalSettings.shopName} - Zdravé stravování a rozvoz jídla</title>
+		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
@@ -71,10 +93,22 @@
 	{/if}
 	
 	<!-- Open Graph meta tagy -->
+	{#if seoSettings?.ogType}
+		<meta property="og:type" content={seoSettings.ogType} />
+	{/if}
+	
+	{#if seoSettings?.ogUrl}
+		<meta property="og:url" content={seoSettings.ogUrl} />
+	{/if}
+	
+	{#if seoSettings?.ogLocale}
+		<meta property="og:locale" content={seoSettings.ogLocale} />
+	{/if}
+	
 	{#if seoSettings?.metaTitle}
-		<meta property="og:title" content={seoSettings.metaTitle} />
+		<meta property="og:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
-		<meta property="og:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+		<meta property="og:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
@@ -86,14 +120,47 @@
 	{/if}
 	
 	<!-- Twitter meta tagy -->
+	{#if seoSettings?.twitterCard}
+		<meta name="twitter:card" content={seoSettings.twitterCard} />
+	{/if}
+	
 	{#if seoSettings?.metaTitle}
-		<meta name="twitter:title" content={seoSettings.metaTitle} />
+		<meta name="twitter:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
-		<meta name="twitter:title" content="{generalSettings.shopName} - Zdravé stravování a rozvoz jídla" />
+		<meta name="twitter:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
 		<meta name="twitter:description" content={seoSettings.metaDescription} />
+	{/if}
+	
+	<!-- Favicon a ikony -->
+	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}
+		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
+	{/if}
+	
+	{#if seoSettings?.appleTouchIcon}
+		<link rel="apple-touch-icon" href={seoSettings.appleTouchIcon} />
+	{/if}
+	
+	{#if seoSettings?.webManifest}
+		<link rel="manifest" href={seoSettings.webManifest} />
+	{/if}
+	
+	<!-- Scripts -->
+	<!-- FontAwesome - vždy zapnuté -->
+	<script
+		src="https://kit.fontawesome.com/e5ce1babf6.js"
+		crossorigin="anonymous"></script>
+	
+	<!-- Lottie Player - vždy zapnuté -->
+	<script
+		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+		type="module"></script>
+	
+	<!-- Custom Head Scripts -->
+	{#if seoSettings?.customHeadScripts}
+		{@html seoSettings.customHeadScripts}
 	{/if}
 	
 	<!-- Google Analytics -->
@@ -123,7 +190,8 @@
 		</script>
 		<noscript>
 			<img height="1" width="1" style="display:none" 
-				 src="https://www.facebook.com/tr?id={seoSettings.facebookPixelId}&ev=PageView&noscript=1" />
+				 src="https://www.facebook.com/tr?id={seoSettings.facebookPixelId}&ev=PageView&noscript=1"
+				 alt="Facebook Pixel" />
 		</noscript>
 	{/if}
 </svelte:head>
@@ -140,9 +208,11 @@
 	<div class="" />
 {/if}
 
-<main class="">
-	<slot class="mt-10 container mx-auto " />
+<main>
+	<slot />
 </main>
+
+
 
 {#if showRegistrationBanner}
 	<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed top-0 left-0 right-0 z-50">
@@ -155,7 +225,7 @@
 			<div class="ml-3">
 				<p class="text-sm text-yellow-700">
 					Pro plné využití všech funkcí je potřeba dokončit registraci.
-					<a href="/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+					<a href="/auth/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
 						Dokončit registraci
 					</a>
 				</p>
@@ -185,25 +255,11 @@
 
 <Footer />
 
+<!-- Custom Body Scripts -->
+{#if seoSettings?.customBodyScripts}
+	{@html seoSettings.customBodyScripts}
+{/if}
+
 <style lang="postcss">
-	.textmenu {
-		@apply text-base;
-	}
-	
-	header {
-		@apply fixed top-0 w-full h-[100px] z-10;
-	}
-	
-	.navItem {
-		@apply no-underline relative inline-block;
-		
-		&::after {
-			content: "";
-			@apply bg-[#d2691e] h-[1px] absolute bottom-0 transition-all duration-150 delay-[25ms] left-full right-0;
-		}
-		
-		&:hover::after {
-			@apply left-0 right-0;
-		}
-	}
+	/* CSS selektory jsou nyní využívány v komponentách */
 </style>

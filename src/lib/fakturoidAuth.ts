@@ -1,9 +1,120 @@
-import { supabase } from "./supabase";
-import type { FakturoidToken } from "./types/fakturoid";
+import { supabase } from './supabase';
+import type { FakturoidToken } from './types/fakturoid';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { fakturoidCircuitBreaker } from './fakturoidCircuitBreaker';
+import { env } from '$env/dynamic/private';
+import { FAKTUROID_TOKEN_STATUSES, type FakturoidTokenStatus, isValidTokenStatus } from './constants/fakturoid';
 
+// Cache pro token
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
+
+/**
+ * Helper funkce pro získání správných Fakturoid credentials podle prostředí
+ * Standardní SvelteKit přístup s $env/dynamic/private
+ */
+function getFakturoidCredentials(): { clientId: string; clientSecret: string } {
+	// Pro lokální vývoj použijeme dev credentials
+	if (env.NODE_ENV === 'development' || env.DEV === 'true') {
+		console.log('🔧 Using development Fakturoid credentials');
+		return {
+			clientId: env.PRIVATE_FAKTUROID_DEV_CLIENT_ID || '',
+			clientSecret: env.PRIVATE_FAKTUROID_DEV_CLIENT_SECRET || ''
+		};
+	}
+	
+	// Pro produkci použijeme produkční credentials
+	console.log('🚀 Using production Fakturoid credentials');
+	return {
+		clientId: env.PRIVATE_FAKTUROID_CLIENT_ID || '',
+		clientSecret: env.PRIVATE_FAKTUROID_CLIENT_SECRET || ''
+	};
+}
+
+/**
+ * Exponential backoff konfigurace
+ */
+interface RetryConfig {
+	maxAttempts: number;
+	baseDelayMs: number;
+	maxDelayMs: number;
+	backoffMultiplier: number;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+	maxAttempts: 3,
+	baseDelayMs: 1000, // 1 sekunda
+	maxDelayMs: 30000, // 30 sekund
+	backoffMultiplier: 2
+};
+
+/**
+ * Implementuje exponential backoff delay
+ */
+async function delay(ms: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Vypočítá delay pro exponential backoff
+ */
+function calculateBackoffDelay(attempt: number, config: RetryConfig): number {
+	const exponentialDelay = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt - 1);
+	const jitteredDelay = exponentialDelay * (0.5 + Math.random() * 0.5); // Přidá jitter
+	return Math.min(jitteredDelay, config.maxDelayMs);
+}
+
+/**
+ * Generická retry funkce s exponential backoff
+ */
+async function retryWithBackoff<T>(
+	operation: () => Promise<T>,
+	config: RetryConfig = DEFAULT_RETRY_CONFIG,
+	operationName = 'unknown'
+): Promise<T> {
+	let lastError: any;
+
+	for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
+		try {
+			console.log(`🔄 Attempt ${attempt}/${config.maxAttempts}: ${operationName}`);
+			return await operation();
+		} catch (error: any) {
+			lastError = error;
+			console.error(`❌ Attempt ${attempt} failed for ${operationName}:`, error?.message || error);
+
+			// Pokud je to poslední pokus, nebo se jedná o non-retryable error, nevyčkáváme
+			if (attempt === config.maxAttempts || isNonRetryableError(error)) {
+				break;
+			}
+
+			const delayMs = calculateBackoffDelay(attempt, config);
+			console.log(`⏳ Waiting ${delayMs}ms before next attempt...`);
+			await delay(delayMs);
+		}
+	}
+
+	console.error(`🚫 All attempts failed for ${operationName}`);
+	throw lastError;
+}
+
+/**
+ * Určuje, zda je chyba non-retryable (např. 401, 403)
+ */
+function isNonRetryableError(error: any): boolean {
+	// HTTP status codes které neměníme opakováním
+	const nonRetryableStatuses = [400, 401, 403, 404, 422];
+	
+	if (error?.status && nonRetryableStatuses.includes(error.status)) {
+		return true;
+	}
+	
+	// Response objekt s non-retryable statusem
+	if (error?.response?.status && nonRetryableStatuses.includes(error.response.status)) {
+		return true;
+	}
+	
+	return false;
+}
 
 /**
  * Získá platný access token pro aktuálního uživatele z databáze
@@ -16,10 +127,11 @@ export async function getAccessToken(): Promise<string | null> {
 /**
  * Získá platný access token s konkrétní supabase instancí
  * Pro použití na serveru s session-aware supabase
+ * ZMĚNA: Globální přístup - hledá jakýkoliv aktivní token v systému
  */
 export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient): Promise<string | null> {
-	console.log('=== GET ACCESS TOKEN DEBUG START ===');
-	console.log('Attempting to get access token from database...');
+	console.log('=== GLOBAL ACCESS TOKEN DEBUG START ===');
+	console.log('Attempting to get global access token from database...');
 	
 	// Check if we have a cached token that's still valid
 	if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
@@ -28,36 +140,55 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 	}
 	
 	try {
-		// Získáme aktuálního uživatele
-		const { data, error: userError } = await supabaseClient.auth.getUser();
-		if (userError || !data.user) {
-			console.error('No authenticated user found');
-			return null;
-		}
+		console.log('🌐 Searching for any active Fakturoid token in the system...');
 
-		console.log('User ID:', data.user.id);
-
-		// Načteme token z databáze - zkusíme active i expired tokeny
+		// GLOBÁLNÍ PŘÍSTUP: Najdeme JAKÝKOLIV aktivní token v systému
+		// V globálním systému máme pouze jeden token na Fakturoid účet
 		const { data: tokens, error: tokenError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.select('*')
-			.in('status', ['active', 'expired'])
-			.order('last_used_at', { ascending: false })
+			.in('status', [FAKTUROID_TOKEN_STATUSES.ACTIVE, FAKTUROID_TOKEN_STATUSES.EXPIRED]) // Hledáme i expired tokeny pro refresh
+			.neq('status', FAKTUROID_TOKEN_STATUSES.REVOKED) // Nezabýváme se revoked tokeny
+			.order('last_used_at', { ascending: false }) // Nejnověji používaný token
 			.limit(1);
 
 		if (tokenError) {
-			console.error('Error fetching token from database:', tokenError);
+			console.error('Error fetching global token from database:', tokenError);
 			return null;
 		}
 
-		const tokenData = tokens && tokens.length > 0 ? tokens[0] : null;
-
-		if (!tokenData) {
-			console.log('No Fakturoid token found for user (neither active nor expired)');
+		if (!tokens || tokens.length === 0) {
+			console.log('No active/expired Fakturoid token found in the system');
+			
+			// Zkusíme najít revoked nebo cleared token a obnovit ho
+			const { data: revokedTokens, error: revokedError } = await supabaseClient
+				.from('fakturoid_tokens')
+				.select('*')
+				.in('status', [FAKTUROID_TOKEN_STATUSES.REVOKED, FAKTUROID_TOKEN_STATUSES.CLEARED])
+				.order('updated_at', { ascending: false })
+				.limit(1);
+			
+			if (!revokedError && revokedTokens && revokedTokens.length > 0) {
+				console.log('Found revoked token, attempting to restore...');
+				const revokedToken = revokedTokens[0];
+				
+				// Zkusíme obnovit revoked token
+				const restoredToken = await refreshAccessTokenWithSupabase(revokedToken.refresh_token, revokedToken.user_id, supabaseClient);
+				if (restoredToken) {
+					console.log('✅ Revoked token successfully restored');
+					cachedToken = restoredToken;
+					tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny
+					return cachedToken;
+				} else {
+					console.log('❌ Failed to restore revoked token');
+				}
+			}
+			
 			return null;
 		}
 
-		console.log('Found token with status:', tokenData.status);
+		const tokenData = tokens[0];
+		console.log('Found global token for:', tokenData.account_email, 'owned by user:', tokenData.user_id);
 		console.log('Token expires at:', tokenData.expires_at);
 		console.log('Current time:', new Date().toISOString());
 
@@ -65,11 +196,27 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 		const expiresAt = new Date(tokenData.expires_at);
 		const now = new Date();
 		const isExpired = now >= expiresAt;
+		const minutesToExpiry = Math.floor((expiresAt.getTime() - now.getTime()) / (1000 * 60));
 		
 		console.log('Token is expired:', isExpired);
+		console.log('Minutes to expiry:', minutesToExpiry);
 
-		// Pokud je token už expirovaný
-		if (isExpired) {
+		// AKTUALIZUJEME STATUS podle skutečné expirace
+		if (isExpired && tokenData.status === FAKTUROID_TOKEN_STATUSES.ACTIVE) {
+			console.log('Access token expired, updating status to expired...');
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: FAKTUROID_TOKEN_STATUSES.EXPIRED,
+					updated_at: new Date().toISOString()
+				})
+				.eq('account_email', tokenData.account_email);
+			
+			tokenData.status = FAKTUROID_TOKEN_STATUSES.EXPIRED;
+		}
+
+		// Pokud je token už expirovaný NEBO má status 'expired'
+		if (isExpired || tokenData.status === FAKTUROID_TOKEN_STATUSES.EXPIRED) {
 			console.log('Token expired, attempting to refresh...');
 			console.log('Refresh token available:', !!tokenData.refresh_token);
 			
@@ -77,23 +224,33 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, tokenData.user_id, supabaseClient);
 			if (refreshedToken) {
 				cachedToken = refreshedToken;
-				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny
+				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny cache
 				
 				// Označíme token jako používaný
 				await markTokenAsUsed(tokenData.user_id, supabaseClient);
 				
-				console.log('=== GET ACCESS TOKEN DEBUG END: SUCCESS ===');
+				console.log('=== GLOBAL ACCESS TOKEN DEBUG END: SUCCESS ===');
 				return cachedToken;
 			} else {
-				console.error('Failed to refresh token');
-				console.log('=== GET ACCESS TOKEN DEBUG END: FAILED REFRESH ===');
+				console.error('Failed to refresh global token - but token might still be valid for a short time');
+				console.log('=== GLOBAL ACCESS TOKEN DEBUG END: FAILED REFRESH ===');
+				
+				// **DŮLEŽITÉ: I když refresh selhal, zkusíme použít původní token**
+				// Refresh token může selhat kvůli dočasným problémům, ale access token může být stále platný
+				if (tokenData.access_token) {
+					console.log('Using original token despite refresh failure');
+					cachedToken = tokenData.access_token;
+					tokenExpiry = Date.now() + (5 * 60 * 1000); // 5 minut cache
+					return cachedToken;
+				}
+				
 				return null;
 			}
 		}
 
-		// Pokud token expiruje do 30 minut, spustíme proaktivní refresh na pozadí
-		const thirtyMinutesFromNow = new Date(Date.now() + 30 * 60 * 1000);
-		if (expiresAt <= thirtyMinutesFromNow) {
+		// Pokud token expiruje do 60 minut, spustíme proaktivní refresh na pozadí
+		const sixtyMinutesFromNow = new Date(Date.now() + 60 * 60 * 1000);
+		if (expiresAt <= sixtyMinutesFromNow && tokenData.status === FAKTUROID_TOKEN_STATUSES.ACTIVE) {
 			console.log('Token expires soon, starting proactive refresh...');
 			// Spustíme refresh na pozadí (neblokující)
 			refreshUserToken(tokenData.user_id, supabaseClient).catch(error => {
@@ -108,13 +265,13 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 		// Označíme token jako používaný
 		await markTokenAsUsed(tokenData.user_id, supabaseClient);
 		
-		console.log('Successfully retrieved valid access token from database');
-		console.log('=== GET ACCESS TOKEN DEBUG END: VALID TOKEN ===');
+		console.log('Successfully retrieved valid global access token');
+		console.log('=== GLOBAL ACCESS TOKEN DEBUG END: VALID TOKEN ===');
 		return cachedToken;
 		
 	} catch (error) {
-		console.error('Error getting access token:', error);
-		console.log('=== GET ACCESS TOKEN DEBUG END: ERROR ===');
+		console.error('Error getting global access token:', error);
+		console.log('=== GLOBAL ACCESS TOKEN DEBUG END: ERROR ===');
 		return null;
 	}
 }
@@ -133,9 +290,9 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 	try {
 		console.log('Starting token refresh for user:', userId);
 		
-		const { PRIVATE_FAKTUROID_CLIENT_ID, PRIVATE_FAKTUROID_CLIENT_SECRET } = await import('$env/static/private');
+		const credentials = getFakturoidCredentials();
 		
-		if (!PRIVATE_FAKTUROID_CLIENT_ID || !PRIVATE_FAKTUROID_CLIENT_SECRET) {
+		if (!credentials.clientId || !credentials.clientSecret) {
 			console.error('Missing Fakturoid client credentials');
 			return null;
 		}
@@ -145,16 +302,21 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 			return null;
 		}
 		
-		// Získáme současný počet pokusů o refresh
+		// GLOBÁLNÍ SYSTÉM: Najdeme token podle refresh_token (nejspolehlivější způsob)
 		const { data: currentToken } = await supabaseClient
 			.from('fakturoid_tokens')
-			.select('refresh_attempts')
-			.eq('user_id', userId)
+			.select('refresh_attempts, account_email')
+			.eq('refresh_token', refreshToken)
 			.single();
+		
+		if (!currentToken) {
+			console.error('No token found for user:', userId);
+			return null;
+		}
 		
 		const attemptCount = (currentToken?.refresh_attempts || 0) + 1;
 		
-		// Označíme token jako refreshing
+		// Označíme token jako refreshing (podle account_email pro globální systém)
 		await supabaseClient
 			.from('fakturoid_tokens')
 			.update({
@@ -162,12 +324,15 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 				refresh_attempts: attemptCount,
 				updated_at: new Date().toISOString()
 			})
-			.eq('user_id', userId);
+			.eq('account_email', currentToken.account_email);
+
+		// **ZJEDNODUŠENÉ: Přímé volání Fakturoid API bez circuit breakeru pro refresh**
+		console.log('🔄 Attempting direct Fakturoid refresh...');
 		
 		const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 			method: 'POST',
 			headers: {
-				'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+				'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Accept': 'application/json',
 				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
@@ -189,49 +354,59 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 			console.error('Status text:', response.statusText);
 			console.error('Error response body:', errorText);
 			console.error('Refresh token length:', refreshToken?.length || 0);
-			console.error('Client ID present:', !!PRIVATE_FAKTUROID_CLIENT_ID);
-			console.error('Client secret present:', !!PRIVATE_FAKTUROID_CLIENT_SECRET);
+			console.error('Client ID present:', !!credentials.clientId);
+			console.error('Client secret present:', !!credentials.clientSecret);
 			console.error('=== END ERROR DEBUG ===');
 			
-			// Pokud je refresh token neplatný (400, 401), smažeme ho z databáze
-			if (response.status === 400 || response.status === 401) {
-				console.log('Invalid refresh token, removing from database');
-				await supabaseClient
-					.from('fakturoid_tokens')
-					.delete()
-					.eq('user_id', userId);
-			} else {
-				// Jiné chyby - označíme jako expired
+			// **ZJEDNODUŠENÉ ERROR HANDLING:**
+			// Pouze při skutečně neplatném refresh tokenu označíme jako revoked
+			if (response.status === 400 && errorText.includes('invalid_grant')) {
+				console.log('Invalid refresh token (invalid_grant), marking as revoked');
 				await supabaseClient
 					.from('fakturoid_tokens')
 					.update({
-						status: 'expired'
+						status: 'revoked',
+						updated_at: new Date().toISOString()
 					})
-					.eq('user_id', userId);
+					.eq('account_email', currentToken.account_email);
+			} else {
+				// Jiné chyby (network, server errors) - označíme jako expired pro retry
+				console.log('Temporary error during refresh, marking as expired for retry');
+				await supabaseClient
+					.from('fakturoid_tokens')
+					.update({
+						status: 'expired',
+						updated_at: new Date().toISOString()
+					})
+					.eq('account_email', currentToken.account_email);
 			}
 			
 			return null;
 		}
 
 		const tokenData = await response.json();
+		
 		console.log('=== FAKTUROID REFRESH SUCCESS ===');
 		console.log('New token received, expires in:', tokenData.expires_in, 'seconds');
 		console.log('New access token length:', tokenData.access_token?.length || 0);
 		console.log('New refresh token length:', tokenData.refresh_token?.length || 0);
 		console.log('=== END SUCCESS DEBUG ===');
 
-		// Uložíme nový token do databáze
+		// GLOBÁLNÍ SYSTÉM: Uložíme nový token podle account_email
 		const { error: updateError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.update({
 				access_token: tokenData.access_token,
-				refresh_token: tokenData.refresh_token || refreshToken, // Někdy se refresh token nemění
+				// PODLE DOKUMENTACE: Refresh response NEMUSÍ obsahovat nový refresh_token
+				// Použijeme původní refresh_token, pokud nový není k dispozici
+				refresh_token: tokenData.refresh_token || refreshToken,
 				expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
-				status: 'active',
+				status: 'active', // Nový access token je vždy active
 				last_used_at: new Date().toISOString(),
-				updated_at: new Date().toISOString()
+				updated_at: new Date().toISOString(),
+				refresh_attempts: 0 // Reset počtu pokusů po úspěšném refreshu
 			})
-			.eq('user_id', userId);
+			.eq('account_email', currentToken.account_email);
 
 		if (updateError) {
 			console.error('Failed to update token in database:', updateError);
@@ -241,46 +416,246 @@ async function refreshAccessTokenWithSupabase(refreshToken: string, userId: stri
 		console.log('Token successfully refreshed and saved');
 		return tokenData.access_token;
 
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Error refreshing token:', error);
 		
-		// V případě chyby označíme jako expired
-		await supabaseClient
-			.from('fakturoid_tokens')
-			.update({
-				status: 'expired'
-			})
-			.eq('user_id', userId);
+		// **ZJEDNODUŠENÉ ERROR HANDLING:**
+		try {
+			const { data: errorToken } = await supabaseClient
+				.from('fakturoid_tokens')
+				.select('account_email')
+				.eq('refresh_token', refreshToken)
+				.single();
+			
+			if (errorToken?.account_email) {
+				// Pouze při skutečných chybách označíme jako revoked
+				if (error?.status === 400 || error?.status === 401) {
+					console.log('Invalid refresh token, marking as revoked');
+					await supabaseClient
+						.from('fakturoid_tokens')
+						.update({
+							status: 'revoked',
+							updated_at: new Date().toISOString()
+						})
+						.eq('account_email', errorToken.account_email);
+				} else {
+					// Jiné chyby - označíme jako expired pro retry
+					console.log('Temporary error, marking as expired for retry');
+					await supabaseClient
+						.from('fakturoid_tokens')
+						.update({
+							status: 'expired',
+							updated_at: new Date().toISOString()
+						})
+						.eq('account_email', errorToken.account_email);
+				}
+			}
+		} catch (dbError) {
+			console.error('Error handling token error:', dbError);
+		}
 		
 		return null;
 	}
 }
 
 /**
- * Vymaže uložený token (při odpojení účtu)
+ * Obnoví access token pomocí refresh tokenu přímo
+ * @param refreshToken Refresh token pro obnovu
+ * @param supabaseClient Supabase instance
+ */
+export async function refreshTokenDirect(refreshToken: string, supabaseClient: SupabaseClient): Promise<string | null> {
+	try {
+		console.log('Starting direct token refresh...');
+		
+		const credentials = getFakturoidCredentials();
+		
+		if (!credentials.clientId || !credentials.clientSecret) {
+			console.error('Missing Fakturoid client credentials');
+			return null;
+		}
+		
+		if (!refreshToken) {
+			console.error('No refresh token provided');
+			return null;
+		}
+		
+		// Najdeme token podle refresh_token
+		const { data: currentToken } = await supabaseClient
+			.from('fakturoid_tokens')
+			.select('account_email, refresh_attempts')
+			.eq('refresh_token', refreshToken)
+			.single();
+		
+		if (!currentToken) {
+			console.error('No token found for this refresh token');
+			return null;
+		}
+		
+		const attemptCount = (currentToken?.refresh_attempts || 0) + 1;
+		
+		// Označíme token jako refreshing
+		await supabaseClient
+			.from('fakturoid_tokens')
+			.update({
+				status: 'refreshing',
+				refresh_attempts: attemptCount,
+				updated_at: new Date().toISOString()
+			})
+			.eq('refresh_token', refreshToken);
+
+		// Fakturoid API operace
+		const fakturoidOperation = async () => {
+			const response = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Accept': 'application/json',
+					'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
+				},
+				body: new URLSearchParams({
+					grant_type: 'refresh_token',
+					refresh_token: refreshToken
+				}).toString()
+			});
+
+			console.log('=== FAKTUROID REFRESH DEBUG ===');
+			console.log('Token refresh response status:', response.status);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('=== FAKTUROID REFRESH ERROR ===');
+				console.error('Status:', response.status);
+				console.error('Error response body:', errorText);
+				console.error('=== END ERROR DEBUG ===');
+				
+				const error = new Error(`Fakturoid API returned ${response.status}: ${response.statusText}`);
+				(error as any).status = response.status;
+				(error as any).response = { status: response.status };
+				throw error;
+			}
+
+			return response.json();
+		};
+
+		// Volání s circuit breaker
+		const tokenData = await fakturoidCircuitBreaker.execute(
+			async () => {
+				return await retryWithBackoff(
+					fakturoidOperation,
+					{
+						maxAttempts: 3,
+						baseDelayMs: 2000,
+						maxDelayMs: 20000,
+						backoffMultiplier: 2
+					},
+					`refresh-token-direct`
+				);
+			},
+			`refresh-token-circuit-breaker-direct`
+		);
+		
+		console.log('=== FAKTUROID REFRESH SUCCESS ===');
+		console.log('New token received, expires in:', tokenData.expires_in, 'seconds');
+
+		// Uložíme nový token
+		const { error: updateError } = await supabaseClient
+			.from('fakturoid_tokens')
+			.update({
+				access_token: tokenData.access_token,
+				refresh_token: tokenData.refresh_token || refreshToken,
+				expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+				status: 'active',
+				last_used_at: new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+				refresh_attempts: 0
+			})
+			.eq('refresh_token', refreshToken);
+
+		if (updateError) {
+			console.error('Failed to update token in database:', updateError);
+			return null;
+		}
+
+		console.log('Token successfully refreshed and saved');
+		return tokenData.access_token;
+
+	} catch (error: any) {
+		console.error('Error refreshing token:', error);
+		
+		// Error handling
+		try {
+			if (error?.status === 400 || error?.status === 401 || error?.response?.status === 400 || error?.response?.status === 401) {
+				console.log('Invalid refresh token (invalid_grant), marking as revoked');
+				await supabaseClient
+					.from('fakturoid_tokens')
+					.update({
+						status: 'revoked',
+						updated_at: new Date().toISOString()
+					})
+					.eq('refresh_token', refreshToken);
+			} else if (error?.message?.includes('Circuit breaker is open')) {
+				console.log('Circuit breaker is open, marking token for later retry');
+				await supabaseClient
+					.from('fakturoid_tokens')
+					.update({
+						status: 'expired',
+						updated_at: new Date().toISOString()
+					})
+					.eq('refresh_token', refreshToken);
+			} else {
+				await supabaseClient
+					.from('fakturoid_tokens')
+					.update({
+						status: 'expired'
+					})
+					.eq('refresh_token', refreshToken);
+			}
+		} catch (dbError) {
+			console.error('Error handling token error:', dbError);
+		}
+		
+		return null;
+	}
+}
+
+/**
+ * Vymaže všechny uložené Fakturoid tokeny v systému (při odpojení účtu)
+ * ZMĚNA: Globální mazání všech tokenů
  */
 export async function clearStoredToken(): Promise<void> {
 	try {
-		const { data: { user } } = await supabase.auth.getUser();
-		if (!user) return;
+		console.log('🗑️ Clearing all Fakturoid tokens in the system...');
 
-		// Místo smazání označíme token jako revoked pro audit trail
-		await supabase
+		// ZMĚNA: Označíme všechny tokeny jako revoked místo mazání pro audit trail
+		const { data: updatedTokens, error } = await supabase
 			.from('fakturoid_tokens')
 			.update({
 				status: 'revoked',
 				updated_at: new Date().toISOString()
 			})
-			.eq('user_id', user.id);
+			.neq('status', 'revoked') // Pouze ty, které ještě nejsou revoked
+			.select('account_email, user_id');
+
+		if (error) {
+			console.error('Error revoking global tokens:', error);
+			throw error;
+		}
 
 		// Vymažeme cache
 		cachedToken = null;
 		tokenExpiry = null;
 
-		console.log('Token marked as revoked');
+		const revokedCount = updatedTokens?.length || 0;
+		console.log(`✅ Marked ${revokedCount} Fakturoid tokens as revoked globally`);
+		
+		if (updatedTokens && updatedTokens.length > 0) {
+			console.log('Revoked tokens:', updatedTokens.map(t => t.account_email).join(', '));
+		}
 
 	} catch (error) {
-		console.error('Error clearing stored token:', error);
+		console.error('Error clearing global stored tokens:', error);
+		throw error;
 	}
 }
 
@@ -330,56 +705,89 @@ export async function refreshUserToken(userId: string, supabaseClient: SupabaseC
 	try {
 		console.log(`Proactively refreshing token for user: ${userId}`);
 
-		// Načteme token uživatele
+		// GLOBÁLNÍ SYSTÉM: Najdeme token podle user_id (pro refresh)
 		const { data: tokenData, error: tokenError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.select('*')
 			.eq('user_id', userId)
-			.eq('status', 'active')
-			.maybeSingle();
+			.in('status', ['active', 'expired'])
+			.order('updated_at', { ascending: false })
+			.limit(1);
 
-		if (tokenError || !tokenData) {
-			console.error(`No active token found for user ${userId}:`, tokenError);
+		if (tokenError || !tokenData || tokenData.length === 0) {
+			console.error(`No refreshable token found for user ${userId}:`, tokenError);
 			return false;
 		}
 
-		// Označíme token jako refresh v procesu
+		const token = tokenData[0];
+
+		// Zkontrolujeme, zda máme refresh token
+		if (!token.refresh_token) {
+			console.error(`No refresh token available for user ${userId}`);
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({ status: 'expired' })
+				.eq('account_email', token.account_email);
+			return false;
+		}
+
+		// Zkontrolujeme, zda už není v procesu refresh
+		if (token.status === FAKTUROID_TOKEN_STATUSES.REFRESHING) {
+			console.log(`Token refresh already in progress for user ${userId}`);
+			return false;
+		}
+
+		// Zkontrolujeme počet pokusů
+		if ((token.refresh_attempts || 0) >= 3) {
+			console.error(`Too many refresh attempts for user ${userId}`);
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({ status: 'expired' })
+				.eq('account_email', token.account_email);
+			return false;
+		}
+
+		// GLOBÁLNÍ SYSTÉM: Označíme token jako refresh v procesu (podle account_email)
 		await supabaseClient
 			.from('fakturoid_tokens')
 			.update({
-				status: 'refreshing',
-				refresh_attempts: (tokenData.refresh_attempts || 0) + 1,
+				status: FAKTUROID_TOKEN_STATUSES.REFRESHING,
+				refresh_attempts: (token.refresh_attempts || 0) + 1,
 				updated_at: new Date().toISOString()
 			})
-			.eq('user_id', userId);
+			.eq('account_email', token.account_email);
 
 		// Pokusíme se refresh
 		const refreshedToken = await refreshAccessTokenWithSupabase(
-			tokenData.refresh_token, 
+			token.refresh_token, 
 			userId, 
 			supabaseClient
 		);
 
 		if (refreshedToken) {
-			// Úspěšný refresh - označíme jako active
+			// GLOBÁLNÍ SYSTÉM: Úspěšný refresh - označíme jako active (podle account_email)
 			await supabaseClient
 				.from('fakturoid_tokens')
 				.update({
 					status: 'active',
+					refresh_attempts: 0, // Reset počtu pokusů
 					last_used_at: new Date().toISOString()
 				})
-				.eq('user_id', userId);
+				.eq('account_email', token.account_email);
+
+			// Vyčistíme cache, aby se použil nový token
+			clearTokenCache();
 
 			console.log(`Token for user ${userId} successfully refreshed proactively`);
 			return true;
 		} else {
-			// Neúspěšný refresh - označíme jako expired
+			// GLOBÁLNÍ SYSTÉM: Neúspěšný refresh - označíme jako expired (podle account_email)
 			await supabaseClient
 				.from('fakturoid_tokens')
 				.update({
 					status: 'expired'
 				})
-				.eq('user_id', userId);
+				.eq('account_email', token.account_email);
 
 			console.error(`Failed to refresh token for user ${userId}`);
 			return false;
@@ -387,13 +795,25 @@ export async function refreshUserToken(userId: string, supabaseClient: SupabaseC
 	} catch (error) {
 		console.error(`Error refreshing token for user ${userId}:`, error);
 		
-		// V případě chyby označíme jako expired
-		await supabaseClient
-			.from('fakturoid_tokens')
-			.update({
-				status: 'expired'
-			})
-			.eq('user_id', userId);
+		// GLOBÁLNÍ SYSTÉM: V případě chyby označíme jako expired (podle account_email)
+		try {
+			const { data: errorToken } = await supabaseClient
+				.from('fakturoid_tokens')
+				.select('account_email')
+				.eq('user_id', userId)
+				.single();
+			
+			if (errorToken?.account_email) {
+				await supabaseClient
+					.from('fakturoid_tokens')
+					.update({
+						status: 'expired'
+					})
+					.eq('account_email', errorToken.account_email);
+			}
+		} catch (dbError) {
+			console.error('Error handling refresh error:', dbError);
+		}
 
 		return false;
 	}
@@ -441,18 +861,149 @@ export async function maintainAllTokens(supabaseClient: SupabaseClient): Promise
 }
 
 /**
+ * Proaktivně obnoví globální token (podle account_email)
+ * @param accountEmail Email účtu pro refresh
+ * @param supabaseClient Supabase instance
+ */
+export async function refreshGlobalToken(accountEmail: string, supabaseClient: SupabaseClient): Promise<boolean> {
+	try {
+		console.log(`Proactively refreshing global token for account: ${accountEmail}`);
+
+		// GLOBÁLNÍ SYSTÉM: Najdeme token podle account_email
+		const { data: tokenData, error: tokenError } = await supabaseClient
+			.from('fakturoid_tokens')
+			.select('*')
+			.eq('account_email', accountEmail)
+			.in('status', ['active', 'expired'])
+			.neq('status', 'revoked')
+			.order('updated_at', { ascending: false })
+			.limit(1);
+
+		if (tokenError || !tokenData || tokenData.length === 0) {
+			console.error(`No refreshable token found for account ${accountEmail}:`, tokenError);
+			return false;
+		}
+
+		const token = tokenData[0];
+
+		// Zkontrolujeme, zda máme refresh token
+		if (!token.refresh_token) {
+			console.error(`No refresh token available for account ${accountEmail}`);
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({ status: 'expired' })
+				.eq('account_email', accountEmail);
+			return false;
+		}
+
+		// Zkontrolujeme, zda už není v procesu refresh
+		if (token.status === 'refreshing') {
+			console.log(`Token refresh already in progress for account ${accountEmail}`);
+			return false;
+		}
+
+		// Zkontrolujeme počet pokusů
+		if ((token.refresh_attempts || 0) >= 3) {
+			console.error(`Too many refresh attempts for account ${accountEmail}`);
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({ status: 'expired' })
+				.eq('account_email', accountEmail);
+			return false;
+		}
+
+		// GLOBÁLNÍ SYSTÉM: Označíme token jako refresh v procesu (podle account_email)
+		await supabaseClient
+			.from('fakturoid_tokens')
+			.update({
+				status: 'refreshing',
+				refresh_attempts: (token.refresh_attempts || 0) + 1,
+				updated_at: new Date().toISOString()
+			})
+			.eq('account_email', accountEmail);
+
+		// Pokusíme se refresh
+		console.log('🔄 Attempting to refresh token with refreshAccessTokenWithSupabase...');
+		console.log('Refresh token length:', token.refresh_token?.length || 0);
+		console.log('User ID:', token.user_id);
+		
+		const refreshedToken = await refreshAccessTokenWithSupabase(
+			token.refresh_token, 
+			token.user_id, 
+			supabaseClient
+		);
+
+		console.log('Refresh result:', !!refreshedToken);
+		
+		if (refreshedToken) {
+			// GLOBÁLNÍ SYSTÉM: Úspěšný refresh - označíme jako active (podle account_email)
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: 'active',
+					refresh_attempts: 0, // Reset počtu pokusů
+					last_used_at: new Date().toISOString()
+				})
+				.eq('account_email', accountEmail);
+
+			// Vyčistíme cache, aby se použil nový token
+			clearTokenCache();
+
+			console.log(`Token for account ${accountEmail} successfully refreshed proactively`);
+			return true;
+		} else {
+			// GLOBÁLNÍ SYSTÉM: Neúspěšný refresh - označíme jako expired (podle account_email)
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: 'expired'
+				})
+				.eq('account_email', accountEmail);
+
+			console.error(`Failed to refresh token for account ${accountEmail}`);
+			return false;
+		}
+	} catch (error) {
+		console.error(`Error refreshing token for account ${accountEmail}:`, error);
+		
+		// GLOBÁLNÍ SYSTÉM: V případě chyby označíme jako expired (podle account_email)
+		try {
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					status: 'expired'
+				})
+				.eq('account_email', accountEmail);
+		} catch (dbError) {
+			console.error('Error handling refresh error:', dbError);
+		}
+
+		return false;
+	}
+}
+
+/**
  * Označí token jako používaný (pro tracking posledního použití)
- * @param userId ID uživatele
+ * @param userId ID uživatele (pro nalezení tokenu)
  * @param supabaseClient Supabase instance
  */
 export async function markTokenAsUsed(userId: string, supabaseClient: SupabaseClient): Promise<void> {
 	try {
-		await supabaseClient
+		// GLOBÁLNÍ SYSTÉM: Najdeme token podle user_id a aktualizujeme podle account_email
+		const { data: token } = await supabaseClient
 			.from('fakturoid_tokens')
-			.update({
-				last_used_at: new Date().toISOString()
-			})
-			.eq('user_id', userId);
+			.select('account_email')
+			.eq('user_id', userId)
+			.single();
+		
+		if (token?.account_email) {
+			await supabaseClient
+				.from('fakturoid_tokens')
+				.update({
+					last_used_at: new Date().toISOString()
+				})
+				.eq('account_email', token.account_email);
+		}
 	} catch (error) {
 		console.error('Error marking token as used:', error);
 	}

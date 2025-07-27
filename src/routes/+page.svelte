@@ -7,22 +7,21 @@
 	const { generalSettings } = data;
 
 	let src = "/srdce.png";
-	// console.log(data);
 </script>
 
 <svelte:head>
-	<title>{generalSettings.shopName} - Úvod</title>
+	<title>Úvod - {generalSettings?.shopName}</title>
 	<meta
 		name="description"
 		content="Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost." />
+		<link rel="canonical" href="https://www.malyleo.cz/" />
 </svelte:head>
 
 
-<section>
-	<div class="max-w-screen-xl p-4 px-4 mx-auto sm:px-6 lg:px-8 py-26">
-		<div class="">
-			<div
-				class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
+<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10">
+	<div class="">
+		<div
+			class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 				<div
 					class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl border border-gray-300">
 					<!-- <div class="grid justify-center pb-5">
@@ -67,12 +66,12 @@
 							<img
 								class="w-32 rounded-lg shadow-lg md:w-56 floating-img"
 								width="200"
-								src="meal_01.jpg"
+								src="meal_01.webp"
 								alt="1" />
 							<img
 								class="w-40 rounded-lg shadow-lg md:w-64 floating-img2"
 								width="260"
-								src="meal_02.jpg"
+								src="meal_02.webp"
 								alt="2" />
 						</div>
 						<div
@@ -80,20 +79,19 @@
 							<img
 								class="w-24 rounded-lg shadow-lg md:w-40 floating-img2"
 								width="170"
-								src="meal_03.jpg"
+								src="meal_03.webp"
 								alt="3" />
 							<img
 								class="w-32 rounded-lg shadow-lg md:w-56 floating-img"
 								width="200"
-								src="meal_04.jpg"
+								src="meal_04.webp"
 								alt="4" />
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</section>
+	</section>
 
 <div class="pt-10 mx-10 mt-10">
 	<hr />

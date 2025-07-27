@@ -1,10 +1,25 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { 
-	PRIVATE_FAKTUROID_CLIENT_ID,
-	PRIVATE_FAKTUROID_CLIENT_SECRET
-} from "$env/static/private";
 import { getSetting, saveSetting } from "$lib/services/siteSettingsService";
+import { env } from '$env/dynamic/private';
+
+// Helper funkce pro získání správných Fakturoid credentials podle prostředí
+// Standardní SvelteKit přístup s $env/dynamic/private
+function getFakturoidCredentials() {
+	// Pro lokální vývoj použijeme dev credentials
+	if (env.NODE_ENV === 'development' || env.DEV === 'true') {
+		return {
+			clientId: env.PRIVATE_FAKTUROID_DEV_CLIENT_ID || '',
+			clientSecret: env.PRIVATE_FAKTUROID_DEV_CLIENT_SECRET || ''
+		};
+	}
+	
+	// Pro produkci použijeme produkční credentials
+	return {
+		clientId: env.PRIVATE_FAKTUROID_CLIENT_ID || '',
+		clientSecret: env.PRIVATE_FAKTUROID_CLIENT_SECRET || ''
+	};
+}
 
 export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSession }, cookies }) => {
 	console.log('=== FAKTUROID CALLBACK START ===');
@@ -103,10 +118,11 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	console.log('Requesting access token from Fakturoid...');
 	let tokenResponse;
 	try {
+		const credentials = getFakturoidCredentials();
 		tokenResponse = await fetch('https://app.fakturoid.cz/api/v3/oauth/token', {
 			method: 'POST',
 			headers: {
-				'Authorization': `Basic ${Buffer.from(`${PRIVATE_FAKTUROID_CLIENT_ID}:${PRIVATE_FAKTUROID_CLIENT_SECRET}`).toString('base64')}`,
+				'Authorization': `Basic ${Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')}`,
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Accept': 'application/json',
 				'User-Agent': 'StastneSrdce-App (support@stastne-srdce.cz)'
@@ -162,6 +178,35 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	try {
 		userData = await userResponse.json();
 		console.log('Fakturoid user data:', JSON.stringify(userData, null, 2));
+		
+		// Detailní analýza accounts dat
+		console.log('=== FAKTUROID ACCOUNTS ANALYSIS ===');
+		console.log('User email:', userData.email);
+		console.log('User name:', userData.name);
+		console.log('Accounts in response:', userData.accounts);
+		console.log('Accounts count:', userData.accounts?.length || 0);
+		
+		if (userData.accounts && userData.accounts.length > 0) {
+			console.log('=== INDIVIDUAL ACCOUNTS FROM API ===');
+			userData.accounts.forEach((account: any, index: number) => {
+				console.log(`API Account ${index}:`, {
+					id: account.id,
+					name: account.name,
+					slug: account.slug,
+					subdomain: account.subdomain,
+					email: account.email,
+					phone: account.phone,
+					web: account.web,
+					currency: account.currency,
+					active: account.active,
+					plan: account.plan
+				});
+			});
+		} else {
+			console.log('No accounts found in userData.accounts');
+		}
+		console.log('=== END API ACCOUNTS ANALYSIS ===');
+		
 	} catch (parseError) {
 		console.error('Failed to parse user response:', parseError);
 		return redirect(303, "/admin/site-setting?error=user_info_failed");
@@ -169,20 +214,37 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 
 	// Uložíme token a informace o účtu
 	console.log('Saving token to database...');
+	
+	// Nyní uložíme nový token - nejdříve smažeme existující tokeny pro stejný email
+	console.log('Deleting existing tokens for email:', userData.email);
+	const { error: deleteError } = await supabase
+		.from('fakturoid_tokens')
+		.delete()
+		.eq('account_email', userData.email);
+
+	if (deleteError) {
+		console.error('Error deleting existing tokens:', deleteError);
+		// Pokračujeme i při chybě mazání
+	}
+
+	// Nyní vložíme nový token
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
-		.upsert({
+		.insert({
 			user_id: session.user.id,
 			access_token: tokenData.access_token,
 			refresh_token: tokenData.refresh_token,
 			expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
 			account_email: userData.email,
-			account_name: userData.name,
+			account_name: userData.accounts?.[0]?.name || userData.name || userData.email,
+			account_id: userData.accounts?.[0]?.id?.toString() || null,
+			account_slug: userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain || null,
+			account_subdomain: userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain || null,
+			account_currency: userData.accounts?.[0]?.currency || null,
+			account_plan: userData.accounts?.[0]?.plan || null,
 			status: 'active',
 			refresh_attempts: 0,
 			last_used_at: new Date().toISOString()
-		}, {
-			onConflict: 'user_id'
 		});
 
 	if (tokenSaveError) {
@@ -192,23 +254,43 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	}
 	console.log('Token saved successfully');
 
+	// DODATEČNÝ LOG pro kontrolu uložených dat
+	console.log('=== SAVED TOKEN INFO ===');
+	console.log('Token owner email:', userData.email);
+	console.log('Token owner name:', userData.name);
+	console.log('Active account name:', userData.accounts?.[0]?.name);
+	console.log('Active account ID:', userData.accounts?.[0]?.id);
+	console.log('Active account slug:', userData.accounts?.[0]?.slug || userData.accounts?.[0]?.subdomain);
+	console.log('Active account currency:', userData.accounts?.[0]?.currency);
+	console.log('Active account plan:', userData.accounts?.[0]?.plan);
+	console.log('Final account_name value:', userData.accounts?.[0]?.name || userData.name || userData.email);
+	console.log('=== END SAVED TOKEN INFO ===');
+
 	// Aktualizujeme nastavení integrace
 	const integrationsData = await getSetting(supabase, 'integrations') || {};
 	console.log('Current integrations data before update:', JSON.stringify(integrationsData, null, 2));
+	
+	// Připravíme pole všech účtů
+	const allAccounts = (userData.accounts || []).map((account: any, index: number) => ({
+		name: account.name || userData.name || userData.email,
+		email: account.email || userData.email,
+		subdomain: account.slug || account.subdomain || '',
+		isActive: index === 0, // První účet bude aktivní jako výchozí
+		connectedAt: new Date().toISOString(),
+		accountId: account.id,
+		currency: account.currency,
+		plan: account.plan
+	}));
+	
+	console.log('Prepared accounts array:', JSON.stringify(allAccounts, null, 2));
 	
 	const updatedIntegrations = {
 		...integrationsData,
 		fakturoid: {
 			enabled: true,
 			connected: true,
-			subdomain: userData.accounts[0].slug || '',
-			accounts: [{
-				name: userData.email || userData.name,
-				email: userData.email,
-				subdomain: userData.accounts[0].slug || '',
-				isActive: true,
-				connectedAt: new Date().toISOString()
-			}]
+			subdomain: userData.accounts[0]?.slug || '',
+			accounts: allAccounts
 		}
 	};
 	

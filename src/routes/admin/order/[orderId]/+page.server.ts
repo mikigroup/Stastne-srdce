@@ -145,12 +145,129 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
+		// Načteme Fakturoid integraci z site_settings
+		const { data: integrationsData, error: integrationsError } = await supabase
+			.from('site_settings')
+			.select('value')
+			.eq('key', 'integrations')
+			.single();
+		
+		let fakturoidConfig = null;
+		if (!integrationsError && integrationsData?.value) {
+			try {
+				const integrations = typeof integrationsData.value === 'string' 
+					? JSON.parse(integrationsData.value) 
+					: integrationsData.value;
+				
+				if (integrations?.fakturoid?.enabled) {
+					fakturoidConfig = integrations.fakturoid;
+				}
+			} catch (e) {
+				console.error('Error parsing integrations settings:', e);
+			}
+		}
+
+		// Kontrola Fakturoid tokenu v databázi a ověření přístupu k aktuálnímu slugu
+		let fakturoidTokenValid = false;
+		let currentSubdomain = '';
+		
+		if (fakturoidConfig?.connected) {
+			// Získáme aktuální subdomain - priorita: ruční nastavení nebo aktivní účet
+			currentSubdomain = fakturoidConfig.subdomain;
+			if (!currentSubdomain) {
+				const activeAccount = fakturoidConfig.accounts?.find((acc: any) => acc.isActive);
+				currentSubdomain = activeAccount?.subdomain || '';
+			}
+			
+			console.log('Current subdomain for order:', currentSubdomain);
+
+			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV token v systému (active i expired pro refresh)
+			const { data: tokens, error: tokenError } = await supabase
+				.from('fakturoid_tokens')
+				.select('access_token, expires_at, status, account_email')
+				.in('status', ['active', 'expired'])  // ← Opraveno: hledá i expired tokeny
+				.neq('status', 'revoked') // Nezabýváme se revoked tokeny
+				.order('last_used_at', { ascending: false })
+				.limit(1);
+
+			const tokenData = tokens && tokens.length > 0 ? tokens[0] : null;
+
+			if (tokenError || !tokenData) {
+				console.log('No active tokens found in system');
+			} else {
+				console.log('Using token for:', tokenData.account_email);
+			}
+
+			if (tokenData && currentSubdomain) {
+				// Kontrola zda token nevypršel
+				const now = new Date();
+				const expiresAt = new Date(tokenData.expires_at);
+				const tokenNotExpired = expiresAt > now;
+				
+				// Pokud je token expired, pokusíme se o automatický refresh pomocí FakturoidService
+				if (tokenData.status === 'expired' || !tokenNotExpired) {
+					console.log('Token expired, attempting automatic refresh...');
+					try {
+						const { createFakturoidService, getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
+						const config = getFakturoidConfigFromSettings({ integrations: integrationsData?.value });
+						if (config) {
+							const fakturoidService = createFakturoidService(config, supabase);
+							await fakturoidService.testConnection();
+							fakturoidTokenValid = true;
+						} else {
+							fakturoidTokenValid = false;
+						}
+					} catch (refreshError) {
+						console.error('Automatic token refresh failed:', refreshError);
+						fakturoidTokenValid = false;
+					}
+				} else {
+					// Token je platný
+					fakturoidTokenValid = tokenNotExpired;
+				}
+				
+				console.log('Fakturoid token check:', {
+					hasToken: !!tokenData.access_token,
+					expiresAt: tokenData.expires_at,
+					tokenNotExpired: tokenNotExpired,
+					currentSubdomain: currentSubdomain,
+					isValid: fakturoidTokenValid,
+					now: now.toISOString(),
+					tokenOwner: tokenData.account_email
+				});
+			} else {
+				console.log('Fakturoid token issues:', {
+					hasTokenData: !!tokenData,
+					tokenError: tokenError?.message,
+					hasSubdomain: !!currentSubdomain
+				});
+			}
+		}
+
 		// Zkombinujeme všechna nastavení do jednoho objektu pro snadnější použití
 		const combinedOrderSettings = {
 			...orderSettings,
 			shippingMethods: deliverySettings?.shippingMethods || [],
 			currencies: currencies,
-			paymentMethods: paymentMethods
+			paymentMethods: paymentMethods,
+			// Přidáme Fakturoid informace
+			fakturoid: fakturoidConfig ? {
+				enabled: fakturoidConfig.enabled,
+				connected: fakturoidConfig.connected,
+				tokenValid: fakturoidTokenValid,
+				subdomain: currentSubdomain,
+				configuredSubdomain: fakturoidConfig.subdomain || '',
+				hasActiveAccount: fakturoidConfig.accounts?.some((acc: any) => acc.isActive) || false,
+				availableAccounts: fakturoidConfig.accounts || []
+			} : {
+				enabled: false,
+				connected: false,
+				tokenValid: false,
+				subdomain: '',
+				configuredSubdomain: '',
+				hasActiveAccount: false,
+				availableAccounts: []
+			}
 		};
 
 		const returnData = {

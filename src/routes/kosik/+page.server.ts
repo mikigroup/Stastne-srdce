@@ -3,6 +3,7 @@ import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import type { Profile } from "$lib/types/profile";
 
 const transporter = nodemailer.createTransport({
@@ -28,22 +29,6 @@ export const actions: Actions = {
 			};
 		}
 
-		// Kontrola dokončené registrace
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("registration_status")
-			.eq("id", user.id)
-			.single();
-
-		if (profile?.registration_status !== "completed") {
-			return {
-				success: false,
-				type: 'failure',
-				message: "Pro vytvoření objednávky je potřeba dokončit registraci.",
-				redirectUrl: "/signup/complete"
-			};
-		}
-
 		const email = user.email;
 		if (!email) {
 			return {
@@ -56,6 +41,7 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 			const note = formData.get("note") as string;
+			const timeSlot = formData.get("timeSlot") as string;
 			const cartItemsStr = formData.get("cartItems");
 
 			if (!cartItemsStr) {
@@ -89,7 +75,41 @@ export const actions: Actions = {
 				0
 			);
 
-			// Get customer data
+			// Načtení nastavení dopravy pro validaci
+			const { data: deliveryData } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'delivery')
+				.single();
+
+			let deliverySettings = null;
+			if (deliveryData?.value) {
+				deliverySettings = typeof deliveryData.value === 'string' 
+					? JSON.parse(deliveryData.value) 
+					: deliveryData.value;
+			}
+
+			// Validace minimální hodnoty objednávky
+			if (deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue) {
+				return {
+					success: false,
+					type: 'failure',
+					message: `Minimální hodnota objednávky je ${deliverySettings.minimumOrderValue} Kč. Aktuální hodnota: ${totalPrice} Kč.`
+				};
+			}
+
+			// Kontrola a automatická aktualizace statusu registrace pomocí globální služby
+			const registrationCheck = await checkAndUpdateRegistrationStatus(supabase, user.id, email);
+			
+			if (!registrationCheck.isComplete) {
+				return {
+					success: false,
+					type: 'failure',
+					message: `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${registrationCheck.validationResult.missingFields.join(', ')}.`
+				};
+			}
+
+			// Get customer data for order creation
 			const { data: customer, error: customerError } = await supabase
 				.from("profiles")
 				.select(`
@@ -109,20 +129,6 @@ export const actions: Actions = {
 				};
 			}
 
-			// Validate customer data - add email to validation
-			const validationResult = validateProfileForInvoicing({
-				...customer,
-				email: email
-			});
-			
-			if (!validationResult.isComplete) {
-				return {
-					success: false,
-					type: 'failure',
-					message: `Pro vytvoření objednávky musíte mít vyplněné všechny povinné údaje v <a href="/profile" class="text-blue-600 underline">profilu</a>. Chybí: ${validationResult.missingFields.join(', ')}.`
-				};
-			}
-
 			// Create order using the stored procedure
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
 				p_user_id: user.id,
@@ -136,7 +142,7 @@ export const actions: Actions = {
 				p_customer_zip_code: customer.zip_code || '',
 				p_customer_telephone: customer.telephone || '',
 				p_customer_email: email,
-				p_note: note,
+				p_note: timeSlot ? `Čas vyzvednutí: ${timeSlot}${note ? `\nPoznámka: ${note}` : ''}` : note,
 				p_total_pieces: totalPieces,
 				p_total_price: totalPrice,
 				p_currency: "CZK",

@@ -17,16 +17,34 @@
 	} from "$lib/services/menuService";
 
 	export let data: PageData;
-	let { session, supabase, menu, allAllergens, allIngredients } = data;
-	$: ({ session, supabase, menu, allAllergens, allIngredients } = data);
-
-	// Přidejte kód pro zobrazení dat v konzoli
-	console.log("Menu data:", menu);
-	console.log("Menu variants:", menu.variants);
+	let { session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings, navigation } = data;
+	$: ({ session, supabase, menu, allAllergens, allIngredients, productsSettings, generalSettings, navigation } = data);
+	
+	// Zajistíme, že máme všechna potřebná pole pro varianty
+	$: enhancedProductsSettings = {
+		...productsSettings,
+		menuVariantsCount: productsSettings?.menuVariantsCount ?? 3,
+		allowVariableVariants: productsSettings?.allowVariableVariants ?? true,
+		minVariants: productsSettings?.minVariants ?? 1,
+		maxVariants: productsSettings?.maxVariants ?? 10
+	};
 
 	let loading = false;
 	let updateMessage = "";
 	let errorMessage = "";
+
+	// Navigační funkce
+	async function goToPreviousMenu() {
+		if (navigation?.prevMenuId) {
+			await goto(`/admin/menu/${navigation.prevMenuId}`);
+		}
+	}
+
+	async function goToNextMenu() {
+		if (navigation?.nextMenuId) {
+			await goto(`/admin/menu/${navigation.nextMenuId}`);
+		}
+	}
 
 	async function updateMenu() {
 		try {
@@ -55,7 +73,7 @@
 				nutri: menuToSave.nutri
 			});
 
-			console.log("Vytvořena nová verze menu s ID:", menuVersionId);
+
 
 			// 2. Aktualizace alergenů polévky
 			await updateMenuAllergens(
@@ -72,7 +90,8 @@
 					menu_version_id: menuVersionId,
 					variant_number: variant.variant_number,
 					description: variant.description,
-					price: variant.price
+					price: variant.price,
+					vegetarian: variant.vegetarian || false
 				});
 
 				// Přidání alergenů k nové variantě
@@ -97,7 +116,6 @@
 			menu = refreshedMenu;
 
 		} catch (error) {
-			console.error("Chyba při aktualizaci menu:", error);
 			errorMessage = "Chyba při úpravě menu: " + (error instanceof Error ? error.message : "Neznámá chyba");
 		} finally {
 			loading = false;
@@ -163,9 +181,41 @@
 	errorMessage={errorMessage}
 	{loading}>
 
+	<!-- Navigační šipky -->
+	{#if navigation?.prevMenuId || navigation?.nextMenuId}
+		<div class="flex justify-between items-center mb-6 px-4 py-2 bg-gray-50 rounded-lg border">
+			<button
+				on:click={goToPreviousMenu}
+				disabled={!navigation?.prevMenuId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Předchozí menu (←)">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				Předchozí
+			</button>
+			
+
+			<button
+				on:click={goToNextMenu}
+				disabled={!navigation?.nextMenuId}
+				class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				title="Následující menu (→)">
+				Následující
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	{/if}
+
 	<!-- Menu content -->
 	<MenuItemDetail
 		bind:menu
 		{allAllergens}
-		{allIngredients} />
+		{allIngredients}
+		productsSettings={enhancedProductsSettings}
+		{generalSettings}
+		{supabase}
+		isNewMenu={false} />
 </AdminPageLayout>

@@ -43,7 +43,13 @@ export function validateProfileForInvoicing(profile: {
     }
   });
 
-  // Check allergies description if allergies is true
+  // NOVÉ: Alergie jsou nyní povinné pole
+  // Musí být explicitně vybrána hodnota (true nebo false)
+  if (profile.allergies === null || profile.allergies === undefined) {
+    missingFields.push('Alergie (musí být vybrána odpověď ano/ne)');
+  }
+
+  // Pokud má alergie, musí být vyplněn popis
   if (profile.allergies === true) {
     if (!profile.allergies_description || profile.allergies_description.trim() === '') {
       missingFields.push('Popis alergií');

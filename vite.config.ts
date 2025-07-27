@@ -4,6 +4,11 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import * as fs from "fs";
 import * as path from "path";
 
+// Kontrola existence HTTPS certifikátů
+const keyPath = path.resolve("./mystastnesrdce.local-key.pem");
+const certPath = path.resolve("./mystastnesrdce.local.pem");
+const hasHttpsCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
+
 export default defineConfig({
   plugins: [    
     sentrySvelteKit({
@@ -17,12 +22,18 @@ export default defineConfig({
     sveltekit(),
   ],
   server: {
-    host: "mystastnesrdce.local",
+    host: hasHttpsCerts ? "mystastnesrdce.local" : "localhost",
     port: 5173,
     strictPort: true,
-    https: {
-      key: fs.readFileSync(path.resolve("./mystastnesrdce.local-key.pem")),
-      cert: fs.readFileSync(path.resolve("./mystastnesrdce.local.pem"))
-    }
+    // HTTPS pouze pokud existují certifikáty (lokální development)
+    ...(hasHttpsCerts && {
+      https: {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      },
+      hmr: {
+        protocol: "wss", 
+      }
+    })
   },
 });

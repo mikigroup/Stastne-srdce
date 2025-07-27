@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
         zip_code: order.customer_zip_code,
         email: order.customer_email,
         telephone: order.customer_telephone,
-        delivery_method: order.delivery_method,
+        delivery_method: order.shipping_method,
         payment_method: order.payment_method
     });
 
