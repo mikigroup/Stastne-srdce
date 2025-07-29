@@ -32,7 +32,7 @@
 						Vítejte na stránkách Šťastného srdce
 					</h2>
 					<p class="py-5">
-						Náš tým odborníků <a href="/mgr-bc-kamila-kucerova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
+						Náš tým odborníků <a href="/mgr-bc-kamila-forejtova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
 						<a href="/olga-bednarova" class="!underline">Olga Bednářová</a> Vám nabízí
 					</p>
 		<ul>
