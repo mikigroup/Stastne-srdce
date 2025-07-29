@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "scripts": {
     "dev": "cross-env PUBLIC_VERSION=\"1.1.0-local\" vite dev",
-    "build": "vite build",
+    "build": "cross-env PUBLIC_VERSION=\"1.1.0\" vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -27,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.17",
+    "cross-env": "^7.0.3",
     "daisyui": "^4.7.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
