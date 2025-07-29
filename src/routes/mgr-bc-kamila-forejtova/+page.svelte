@@ -1,19 +1,18 @@
 <script lang="ts">
-	import { page } from "$app/stores";
 	export let data;
 
 	const { generalSettings } = data;
 </script>
 
 <svelte:head>
-	<title>Mgr. Bc. Kamila Kučerová - {generalSettings?.shopName}</title>
-	<meta name="description" content="Mgr. Bc. Kamila Kučerová - dietoložka, zakladatelka Šťastného srdce a specialistka na zdravou výživu s 15 letou praxí." />
+	<title>Mgr. Bc. Kamila Forejtová - {generalSettings?.shopName}</title>
+	<meta name="description" content="Mgr. Bc. Kamila Forejtová - dietoložka, zakladatelka Šťastného srdce a specialistka na zdravou výživu s 15 letou praxí." />
 </svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<div class="max-w-3xl mx-auto">
 		<div class="bg-white border rounded-lg p-6">
-			<h1 class="text-3xl font-bold text-gray-900 border-b pb-3 mb-4">Mgr. Bc. Kamila Kučerová</h1>
+			<h1 class="text-3xl font-bold text-gray-900 border-b pb-3 mb-4">Mgr. Bc. Kamila Forejtová</h1>
 
 			<div class="prose max-w-none">
 				<p>
