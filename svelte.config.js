@@ -7,6 +7,9 @@ const config = {
 		adapter: adapter(),
 		csrf: {
 			checkOrigin: process.env.NODE_ENV === "production"
+		},
+		env: {
+			publicPrefix: 'PUBLIC_'
 		}
 	},
 	preprocess: vitePreprocess()

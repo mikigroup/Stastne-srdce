@@ -1,8 +1,8 @@
 {
   "name": "Malý Leo",
-  "version": "1.0a",
+  "version": "1.1.0",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "cross-env PUBLIC_VERSION=\"1.1.0-local\" vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
