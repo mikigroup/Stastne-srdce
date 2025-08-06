@@ -37,10 +37,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 			 * Safe to set `httpOnly: false` since we're only using cookies to store the session.
 			 */
 			set: (key, value, options) => {
-				event.cookies.set(key, value, { ...options, httpOnly: false });
+				event.cookies.set(key, value, { ...options, httpOnly: false, path: '/' });
 			},
 			remove: (key, options) => {
-				event.cookies.delete(key, { ...options, httpOnly: false });
+				event.cookies.delete(key, { ...options, httpOnly: false, path: '/' });
 			}
 		}
 	});
@@ -73,7 +73,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name')
 					.eq('id', user.id)
 					.single();
 
@@ -135,15 +135,35 @@ const supabase: Handle = async ({ event, resolve }) => {
 		return { session, user };
 	};
 
-	// 🔧 NOVÁ LOGIKA: Nastavit tenant context pro každý request
+	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle domény
 	try {
-		// Prozatím nastavit default tenant (stastnesrdce)
-		await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
+		const hostname = event.url.hostname;
+		const tenantContext = await TenantService.initializeTenantContext(hostname);
 		
-		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
-		await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+		if (tenantContext.tenantId) {
+			// Nastavit tenant context pro hlavní client
+			await TenantService.setTenantContext(tenantContext.tenantId);
+			
+			// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: tenantContext.tenantId });
+			
+			// Uložit tenant info do locals pro použití v aplikaci
+			event.locals.tenant = tenantContext.tenant;
+			event.locals.tenantId = tenantContext.tenantId;
+		} else {
+			// Fallback na default tenant
+			await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+		}
 	} catch (error) {
 		console.error('Error setting tenant context:', error);
+		// Fallback na default tenant při chybě
+		try {
+			await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+		} catch (fallbackError) {
+			console.error('Error in fallback tenant context:', fallbackError);
+		}
 	}
 
 	return resolve(event, {
