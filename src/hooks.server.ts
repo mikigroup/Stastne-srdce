@@ -4,6 +4,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
+import { TenantService } from "$lib/services/tenantService";
 
 // Admin client pro obejití RLS politik
 const adminSupabase = createServerClient(
@@ -133,6 +134,17 @@ const supabase: Handle = async ({ event, resolve }) => {
 
 		return { session, user };
 	};
+
+	// 🔧 NOVÁ LOGIKA: Nastavit tenant context pro každý request
+	try {
+		// Prozatím nastavit default tenant (stastnesrdce)
+		await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
+		
+		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
+		await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+	} catch (error) {
+		console.error('Error setting tenant context:', error);
+	}
 
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {

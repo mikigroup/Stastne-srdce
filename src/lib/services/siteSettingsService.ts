@@ -34,15 +34,50 @@ export function deserializeSettingValue(value: any): any {
 }
 
 /**
- * Načte nastavení z databáze
+ * Získá default tenant ID pro zpětnou kompatibilitu
  */
-export async function getSetting(supabase: TypedSupabaseClient, key: string) {
+async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string | null> {
     try {
         const { data, error } = await supabase
+            .from('tenants')
+            .select('id')
+            .eq('slug', 'stastnesrdce')
+            .single();
+        
+        if (error) {
+            console.error('Error getting default tenant ID:', error);
+            return null;
+        }
+        
+        return data?.id || null;
+    } catch (e) {
+        console.error('Error getting default tenant ID:', e);
+        return null;
+    }
+}
+
+/**
+ * Načte nastavení z databáze s podporou tenant_id
+ */
+export async function getSetting(supabase: TypedSupabaseClient, key: string, tenantId?: string) {
+    try {
+        let query = supabase
             .from('site_settings')
             .select('value')
-            .eq('key', key)
-            .single();
+            .eq('key', key);
+        
+        // Pokud máme tenant_id, použijeme ho
+        if (tenantId) {
+            query = query.eq('tenant_id', tenantId);
+        } else {
+            // Pro zpětnou kompatibilitu použijeme default tenant
+            const defaultTenantId = await getDefaultTenantId(supabase);
+            if (defaultTenantId) {
+                query = query.eq('tenant_id', defaultTenantId);
+            }
+        }
+        
+        const { data, error } = await query.single();
         
         if (error) {
             console.error(`Error loading setting ${key}:`, error);
@@ -69,13 +104,14 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string) {
 }
 
 /**
- * Uloží nastavení do databáze
+ * Uloží nastavení do databáze s podporou tenant_id
  */
 export async function saveSetting(
     supabase: TypedSupabaseClient, 
     key: string, 
     value: any, 
-    userId: string
+    userId: string,
+    tenantId?: string
 ) {
     try {
         // Validace pro integrations
@@ -88,6 +124,17 @@ export async function saveSetting(
             value = validation.data;
         }
 
+        // Získáme tenant_id pro uložení
+        let targetTenantId = tenantId;
+        if (!targetTenantId) {
+            targetTenantId = await getDefaultTenantId(supabase);
+        }
+
+        if (!targetTenantId) {
+            console.error('No tenant ID available for saving setting');
+            return false;
+        }
+
         const { error } = await supabase
             .from('site_settings')
             .upsert({
@@ -95,9 +142,10 @@ export async function saveSetting(
                 value: serializeSettingValue(value),
                 updated_at: new Date().toISOString(),
                 updated_by: userId,
-                user_id: userId
+                user_id: userId,
+                tenant_id: targetTenantId
             }, {
-                onConflict: 'key'
+                onConflict: 'key,tenant_id'
             });
         
         if (error) {
@@ -109,5 +157,39 @@ export async function saveSetting(
     } catch (e) {
         console.error(`Error saving setting ${key}:`, e);
         return false;
+    }
+}
+
+/**
+ * Načte všechna nastavení pro daný tenant
+ */
+export async function getAllSettings(supabase: TypedSupabaseClient, tenantId?: string) {
+    try {
+        let query = supabase
+            .from('site_settings')
+            .select('*');
+        
+        // Pokud máme tenant_id, použijeme ho
+        if (tenantId) {
+            query = query.eq('tenant_id', tenantId);
+        } else {
+            // Pro zpětnou kompatibilitu použijeme default tenant
+            const defaultTenantId = await getDefaultTenantId(supabase);
+            if (defaultTenantId) {
+                query = query.eq('tenant_id', defaultTenantId);
+            }
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+            console.error('Error loading all settings:', error);
+            return [];
+        }
+        
+        return data || [];
+    } catch (e) {
+        console.error('Error loading all settings:', e);
+        return [];
     }
 } 
