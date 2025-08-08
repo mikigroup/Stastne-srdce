@@ -4,6 +4,7 @@
 	import { goto } from "$app/navigation";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
 	import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
+	import { ROUTES } from "$lib/constants/routes";
 
 	export let data: PageData;
 	export let form: {
@@ -55,7 +56,7 @@
 		loading = true;
 		return async ({ result }: { result: { type: string } }) => {
 			if (result.type === 'success') {
-				await goto('/profile');
+				await goto(ROUTES.MAIN.PROFILE);
 			}
 			loading = false;
 		};
@@ -104,7 +105,7 @@
 					
 					<div class="space-y-3">
 						<a 
-							href="/login" 
+							href={ROUTES.AUTH.LOGIN} 
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
 						>
 							Přihlásit se

@@ -1,5 +1,6 @@
 import { redirect, fail } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
+import { ROUTES } from "$lib/constants/routes";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({
 	const successParam = url.searchParams.get("success");
 	
 	if (!session && successParam !== "signup") {
-		throw redirect(303, "/login");
+		throw redirect(303, ROUTES.AUTH.LOGIN);
 	}
 
 	// Pokud má session, načteme profil
@@ -28,7 +29,7 @@ export const load: PageServerLoad = async ({
 			.single();
 
 		if (profile?.registration_status === "completed") {
-			throw redirect(303, "/");
+			throw redirect(303, ROUTES.MAIN.HOME);
 		}
 
 		return { profile };
@@ -44,7 +45,7 @@ export const actions: Actions = {
 		const successParam = url.searchParams.get("success");
 		
 		if (!session && successParam !== "signup") {
-			throw redirect(303, "/login");
+			throw redirect(303, ROUTES.AUTH.LOGIN);
 		}
 
 		// Pokud nemá session, nemůžeme pokračovat s dokončením registrace

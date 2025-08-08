@@ -4,6 +4,7 @@ import type { Profile } from "$lib/types/profile";
 import { getSetting } from "$lib/services/siteSettingsService";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
 import { getRegistrationStatus } from "$lib/services/registrationStatusService";
+import { ROUTES } from "$lib/constants/routes";
 
 export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, supabase } }) => {
 	const { session, user } = await safeGetSession();
@@ -21,8 +22,8 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 		const registrationStatus = await getRegistrationStatus(supabase, user.id, user.email);
 		
 		// Pokud registrace není dokončena a uživatel není na stránce dokončení registrace
-		if (!registrationStatus.isComplete && url.pathname !== '/auth/signup/complete' && !url.pathname.startsWith('/auth/signup/complete/')) {
-			throw redirect(303, '/auth/signup/complete');
+		if (!registrationStatus.isComplete && url.pathname !== ROUTES.AUTH.SIGNUP_COMPLETE && !url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE + '/')) {
+			throw redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
 		}
 
 		// Načteme celý profil pro return

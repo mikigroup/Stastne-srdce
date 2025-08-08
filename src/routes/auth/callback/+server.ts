@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { ROUTES } from "$lib/constants/routes";
 import {
 	PRIVATE_FAKTUROID_CLIENT_ID,
 	PRIVATE_FAKTUROID_CLIENT_SECRET,
@@ -21,7 +22,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 
 	if (!token_hash || !type) {
 		console.error('❌ [AUTH CALLBACK] Missing token_hash or type:', { token_hash: !!token_hash, type });
-		redirectTo.pathname = "/auth/error";
+		redirectTo.pathname = ROUTES.AUTH.ERROR;
 		redirectTo.searchParams.append("error", "missing_token_or_type");
 		return redirect(303, redirectTo);
 	}
@@ -31,7 +32,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 
 		if (error) {
 			console.error('❌ [AUTH CALLBACK] verifyOtp failed:', error);
-			redirectTo.pathname = "/auth/error";
+			redirectTo.pathname = ROUTES.AUTH.ERROR;
 			redirectTo.searchParams.append("error", error.message);
 			redirectTo.searchParams.append("error_code", error.status?.toString() || "unknown");
 			return redirect(303, redirectTo);
@@ -42,14 +43,14 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		redirectTo.searchParams.delete("next");
 
 		if (type === "signup") {
-			redirectTo.pathname = "/auth/signup/complete";
+			redirectTo.pathname = ROUTES.AUTH.SIGNUP_COMPLETE;
 			redirectTo.searchParams.append("success", "signup");
 		} else if (type === "recovery") {
-			redirectTo.pathname = "/reset";
+			redirectTo.pathname = ROUTES.AUTH.RESET;
 			redirectTo.searchParams.append("token", token_hash);
 		} else {
 			console.error('❌ [AUTH CALLBACK] Invalid type:', type);
-			redirectTo.pathname = "/auth/error";
+			redirectTo.pathname = ROUTES.AUTH.ERROR;
 			redirectTo.searchParams.append("error", "invalid_type");
 			return redirect(303, redirectTo);
 		}
@@ -58,7 +59,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		return redirect(303, redirectTo);
 	} catch (unexpectedError) {
 		console.error('❌ [AUTH CALLBACK] Unexpected error:', unexpectedError);
-		redirectTo.pathname = "/auth/error";
+		redirectTo.pathname = ROUTES.AUTH.ERROR;
 		redirectTo.searchParams.append("error", "unexpected_error");
 		redirectTo.searchParams.append("error_message", unexpectedError instanceof Error ? unexpectedError.message : "Unknown error");
 		return redirect(303, redirectTo);
