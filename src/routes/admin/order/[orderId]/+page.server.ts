@@ -204,13 +204,19 @@ export const load: PageServerLoad = async ({
 				const expiresAt = new Date(tokenData.expires_at);
 				const tokenNotExpired = expiresAt > now;
 				
-				// Pokud je token expired, pokusíme se o automatický refresh
+				// Pokud je token expired, pokusíme se o automatický refresh pomocí FakturoidService
 				if (tokenData.status === 'expired' || !tokenNotExpired) {
 					console.log('Token expired, attempting automatic refresh...');
 					try {
-						const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-						const refreshedToken = await getAccessTokenWithSupabase(supabase);
-						fakturoidTokenValid = !!refreshedToken;
+						const { createFakturoidService, getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
+						const config = getFakturoidConfigFromSettings({ integrations: integrationsData?.value });
+						if (config) {
+							const fakturoidService = createFakturoidService(config, supabase);
+							await fakturoidService.testConnection();
+							fakturoidTokenValid = true;
+						} else {
+							fakturoidTokenValid = false;
+						}
 					} catch (refreshError) {
 						console.error('Automatic token refresh failed:', refreshError);
 						fakturoidTokenValid = false;

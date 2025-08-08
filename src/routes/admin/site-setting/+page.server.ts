@@ -1,6 +1,7 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { getSetting, saveSetting, serializeSettingValue } from "$lib/services/siteSettingsService";
+import { serializeSettingValue } from "$lib/services/siteSettingsService";
+import { getAllSettings } from "$lib/services/siteSettingsService";
 import type { Database } from "$lib/types/database.types";
 
 type SiteSettingsRow = Database['public']['Tables']['site_settings']['Row'];
@@ -12,8 +13,8 @@ interface SettingRecord {
 	updated_at?: string;
 	updated_by?: string;
 	user_id?: string;
+	tenant_id?: string;
 }
-
 
 // Cache pro sdílení dat mezi requesty
 const settingsCache = new Map<string, { data: any, timestamp: number }>();
@@ -40,32 +41,24 @@ export const load: PageServerLoad = async ({
 	// Načteme parent data
 	const parentData = await parent();
 	
-			// Zkontrolujeme cache
-		const cacheKey = "all_settings";
-		const cached = settingsCache.get(cacheKey);
-		const now = Date.now();
-		
-		let settings: SiteSettingsRow[];
-		if (cached && (now - cached.timestamp) < CACHE_DURATION) {
-			// Použijeme cache
-			settings = cached.data;
-			console.log("Using cached settings");
-		} else {
-			// Načteme všechna nastavení z databáze		
-			const { data, error } = await supabase
-				.from("site_settings")
-				.select("*");
-
-			if (error) {
-				console.error("Chyba při načítání nastavení:", error);
-				settings = [];
-			} else {
-				settings = data || [];
-				// Uložíme do cache
-				settingsCache.set(cacheKey, { data: settings, timestamp: now });
-			}
-		}
+	// Zkontrolujeme cache
+	const cacheKey = "all_settings";
+	const cached = settingsCache.get(cacheKey);
+	const now = Date.now();
 	
+	let settings: SiteSettingsRow[];
+	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+		// Použijeme cache
+		settings = cached.data;
+		console.log("Using cached settings");
+	} else {
+		// Načteme všechna nastavení z databáze pomocí nové funkce
+		settings = await getAllSettings(supabase);
+		
+		// Uložíme do cache
+		settingsCache.set(cacheKey, { data: settings, timestamp: now });
+	}
+
 	// Logujeme specificky integrations nastavení
 	const integrationsItem = settings.find((item: SiteSettingsRow) => item.key === "integrations");
 	if (integrationsItem) {
@@ -97,31 +90,44 @@ export const actions: Actions = {
 		try {
 			const settings = JSON.parse(settingsJson);
 
-		// Připravíme data pro batch upsert
-		const settingsData = Object.entries(settings).map(([key, value]) => ({
-			key,
-			value: serializeSettingValue(value),
-			updated_at: new Date().toISOString(),
-			updated_by: session.user.id,
-			user_id: session.user.id
-		}));
+			// Získáme default tenant ID
+			const { data: tenantData } = await supabase
+				.from('tenants')
+				.select('id')
+				.eq('slug', 'stastnesrdce')
+				.single();
 
-		// Provedeme jeden batch upsert
-		const { error } = await supabase
-			.from("site_settings")
-			.upsert(settingsData, {
-				onConflict: "key"
-			});
+			if (!tenantData?.id) {
+				console.error("Default tenant not found");
+				return fail(500, { error: "Nepodařilo se najít default tenant" });
+			}
 
-		if (error) {
-			console.error("Chyba při ukládání nastavení:", error);
-			return fail(500, { error: "Nepodařilo se uložit nastavení" });
-		}
+			// Připravíme data pro batch upsert s tenant_id
+			const settingsData = Object.entries(settings).map(([key, value]) => ({
+				key,
+				value: serializeSettingValue(value),
+				updated_at: new Date().toISOString(),
+				updated_by: session.user.id,
+				user_id: session.user.id,
+				tenant_id: tenantData.id
+			}));
 
-		// Vyčistíme cache pro aktualizovaná nastavení
-		settingsCache.clear();
+			// Provedeme jeden batch upsert
+			const { error } = await supabase
+				.from("site_settings")
+				.upsert(settingsData, {
+					onConflict: "key,tenant_id"
+				});
 
-		return { success: true };
+			if (error) {
+				console.error("Chyba při ukládání nastavení:", error);
+				return fail(500, { error: "Nepodařilo se uložit nastavení" });
+			}
+
+			// Vyčistíme cache pro aktualizovaná nastavení
+			settingsCache.clear();
+
+			return { success: true };
 		} catch (error) {
 			console.error("Chyba při zpracování nastavení:", error);
 			return fail(400, { error: "Neplatný formát nastavení" });

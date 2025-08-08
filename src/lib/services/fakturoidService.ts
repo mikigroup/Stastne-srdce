@@ -152,6 +152,39 @@ export class FakturoidService {
 	}
 
 	/**
+	 * Získá všechny faktury z Fakturoid API
+	 */
+	async getInvoices(): Promise<any[]> {
+		return await this.request('/invoices.json');
+	}
+
+	/**
+	 * Pošle fakturu emailem
+	 */
+	async sendInvoiceEmail(invoiceId: number): Promise<void> {
+		await this.request(`/invoices/${invoiceId}/message.json`, {
+			method: 'POST',
+			body: JSON.stringify({ 
+				message: {
+					email: true
+				}
+			})
+		});
+	}
+
+	/**
+	 * Označí fakturu jako uhrazenou
+	 */
+	async markInvoiceAsPaid(invoiceId: number): Promise<void> {
+		await this.request(`/invoices/${invoiceId}/fire.json`, {
+			method: 'POST',
+			body: JSON.stringify({ 
+				event: 'pay'
+			})
+		});
+	}
+
+	/**
 	 * Vytvořit fakturu z objednávky (hlavní metoda)
 	 */
 	async createInvoiceFromOrder(orderData: {
@@ -306,20 +339,6 @@ export class FakturoidService {
 
 		return response;
 	}
-
-	/**
-	 * Poslat fakturu emailem
-	 */
-	private async sendInvoiceEmail(invoiceId: number): Promise<void> {
-		await this.request(`/invoices/${invoiceId}/message.json`, {
-			method: 'POST',
-			body: JSON.stringify({ 
-				message: {
-					email: true
-				}
-			})
-		});
-	}
 }
 
 /**
@@ -425,64 +444,4 @@ export async function createInvoiceFromOrder(order: any, profile: any, integrati
 	};
 
 	return await service.createInvoiceFromOrder(orderData);
-}
-
-export async function sendInvoiceEmail(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
-	let accessToken: string | null;
-	
-	if (supabase) {
-		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessTokenWithSupabase(supabase);
-	} else {
-		const { getAccessToken } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessToken();
-	}
-	
-	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/message.json`, {
-		method: 'POST',
-		headers: {
-			'Authorization': `Bearer ${accessToken}`,
-			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ 
-			message: {
-				email: true
-			}
-		})
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při odesílání faktury emailem: ${errorText}`);
-	}
-}
-
-export async function markInvoiceAsPaid(invoiceId: number, supabase?: SupabaseClient, config?: FakturoidConfig): Promise<void> {
-	let accessToken: string | null;
-	
-	if (supabase) {
-		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessTokenWithSupabase(supabase);
-	} else {
-		const { getAccessToken } = await import('$lib/fakturoidAuth');
-		accessToken = await getAccessToken();
-	}
-	
-	const response = await fetch(`https://app.fakturoid.cz/api/v3/invoices/${invoiceId}/fire.json`, {
-		method: 'POST',
-		headers: {
-			'Authorization': `Bearer ${accessToken}`,
-			'User-Agent': 'Stastne-srdce-app (support@stastne-srdce.cz)',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ 
-			event: 'pay'
-		})
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text();
-		throw new Error(`Chyba při označení faktury jako uhrazené: ${errorText}`);
-	}
 } 

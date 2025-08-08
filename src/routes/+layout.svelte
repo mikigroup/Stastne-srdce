@@ -14,14 +14,19 @@
 	import type { Profile } from "$lib/types/profile";
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import type { AllSettings, GeneralSettings } from '$lib/settingsService';
-	import { ROUTES } from "$lib/constants/routes";
+	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 
 	export let data: {
 		session: Session | null;
 		supabase: SupabaseClient;
 		user: User | null;
-		settings: Partial<AllSettings>;
+		settings: {
+			general: any;
+			contact: any;
+			social: any;
+			seo: any;
+			appearance: any;
+		};
 		generalSettings: GeneralSettings | undefined;
 		profile: Profile | null;
 	};
@@ -29,7 +34,7 @@
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/auth/signup/complete');
 
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -40,7 +45,11 @@
 		return () => data.subscription.unsubscribe();
 	});
 
-	$: isAdminRoute = browser && $page.url.pathname.startsWith("/admin");
+	let isAdminRoute = false;
+	
+	onMount(() => {
+		isAdminRoute = $page.url.pathname.startsWith("/admin");
+	});
 	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
@@ -220,7 +229,7 @@
 			<div class="ml-3">
 				<p class="text-sm text-yellow-700">
 					Pro plné využití všech funkcí je potřeba dokončit registraci.
-					<a href={ROUTES.AUTH.SIGNUP_COMPLETE} class="font-medium underline text-yellow-700 hover:text-yellow-600">
+					<a href="/auth/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
 						Dokončit registraci
 					</a>
 				</p>

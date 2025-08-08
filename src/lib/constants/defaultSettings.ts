@@ -18,7 +18,7 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   seo: {
     metaTitle: 'Šťastné srdce - Zdravé stravování a rozvoz jídla',
     metaDescription: 'Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost.',
-    metaKeywords: 'šťastné srdce, mikulovice, zdraví, dietolog, kamila kučerová, rozvoz jídla, jeseník',
+    metaKeywords: 'šťastné srdce, mikulovice, zdraví, dietolog, kamila forejtová, rozvoz jídla, jeseník',
     ogImage: '/og-image.jpg',
     // Meta tagy
     metaAuthor: 'malyleo.cz',
