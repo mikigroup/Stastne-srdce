@@ -3,6 +3,7 @@
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
+	import { ROUTES } from "$lib/constants/routes";
 	
 	type FormData = {
 		message?: {
@@ -90,7 +91,7 @@
 
 			<!-- Forgot password link -->
 			<div class="flex justify-end">
-				<a href="/auth/forgot" class="text-sm text-gray-500 underline hover:underline hover:text-black">
+				<a href={ROUTES.AUTH.FORGOT} class="text-sm text-gray-500 underline hover:underline hover:text-black">
 					Zapomněli jste heslo?
 				</a>
 			</div>

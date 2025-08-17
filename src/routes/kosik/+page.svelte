@@ -7,6 +7,7 @@
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { ROUTES } from "$lib/constants/routes";
 	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
@@ -600,7 +601,7 @@
 			</h1>
 			<div class="text-center">
 				<p class="text-xl mb-4">Pro přístup ke košíku se musíte přihlásit.</p>
-									<a href="/auth/login" class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
+				<a href={ROUTES.AUTH.LOGIN} class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
 					Přihlásit se
 				</a>
 			</div>

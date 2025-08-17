@@ -1,5 +1,6 @@
 <script>
 	import { page } from "$app/stores";
+	import { ROUTES } from "$lib/constants/routes";
 
 	// Získání chybových informací z URL
 	const errorCode = $page.url.searchParams.get("error_code");
@@ -33,13 +34,13 @@
 		{/if}
 
 		<div class="flex flex-col sm:flex-row gap-4">
-							<a href="/auth/login" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
+			<a href={ROUTES.AUTH.LOGIN} class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center">
 				Přihlásit se
 			</a>
-			<a href="/signup" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-center">
+			<a href={ROUTES.AUTH.SIGNUP} class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-center">
 				Vytvořit nový účet
 			</a>
-			<a href="/forgot" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-center">
+			<a href={ROUTES.AUTH.FORGOT} class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-center">
 				Obnovit heslo
 			</a>
 		</div>

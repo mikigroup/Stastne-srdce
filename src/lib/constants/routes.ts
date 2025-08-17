@@ -8,7 +8,7 @@ export const ROUTES = {
 		CALLBACK: '/auth/callback',
 		ERROR: '/auth/error',
 		RESET: '/reset',
-		FORGOT: '/forgot',
+		FORGOT: '/auth/forgot',
 		REACTIVATE: '/auth/reactivate'
 	},
 	

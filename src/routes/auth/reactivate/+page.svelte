@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { ROUTES } from "$lib/constants/routes";
 
 	export let data: PageData;
 
@@ -11,7 +12,7 @@
 		if (data.justReactivated) {
 			// Počkej 3 sekundy a pak přesměruj na login
 			setTimeout(() => {
-				goto('/login?message=Účet byl úspěšně reaktivován');
+				goto(`${ROUTES.AUTH.LOGIN}?message=Účet byl úspěšně reaktivován`);
 			}, 3000);
 		}
 	});
@@ -38,7 +39,7 @@
 						Kontaktovat podporu
 					</a>
 					<br>
-					<a href="/auth/login" class="text-blue-600 hover:text-blue-800 underline">
+					<a href={ROUTES.AUTH.LOGIN} class="text-blue-600 hover:text-blue-800 underline">
 						Zpět na přihlášení
 					</a>
 				</div>
@@ -68,7 +69,7 @@
 					<p class="text-sm text-gray-500 mb-4">
 						🔄 Budete automaticky přesměrováni na přihlašovací stránku za 3 sekundy...
 					</p>
-					<a href="/auth/login" class="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
+					<a href={ROUTES.AUTH.LOGIN} class="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
 						Přihlásit se nyní
 					</a>
 				</div>
@@ -87,7 +88,7 @@
 				</p>
 				
 				<div class="space-y-4">
-					<a href="/auth/login" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
+					<a href={ROUTES.AUTH.LOGIN} class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors">
 						Přihlásit se
 					</a>
 					<br>

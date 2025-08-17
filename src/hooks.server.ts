@@ -5,6 +5,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
 import { TenantService } from "$lib/services/tenantService";
+import { ROUTES } from "$lib/constants/routes";
 
 // Admin client pro obejití RLS politik
 const adminSupabase = createServerClient(
@@ -188,13 +189,13 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	event.locals.user = user;
 
 	// Admin section logic
-	if (event.url.pathname.startsWith("/admin")) {
+	if (event.url.pathname.startsWith(ROUTES.ADMIN.DASHBOARD)) {
 		if (!event.locals.session && event.url.pathname !== "/admin/signin") {
 			throw redirect(303, "/admin/signin");
 		}
 
 		if (event.locals.session && event.url.pathname === "/admin/signin") {
-			throw redirect(303, "/admin");
+			throw redirect(303, ROUTES.ADMIN.DASHBOARD);
 		}
 	}
 
