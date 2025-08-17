@@ -51,7 +51,13 @@
 					<div class="flex items-center gap-2 text-sm text-blue-700">
 						<i class="fa-solid fa-clock"></i>
 						<span class="text-sm">
-							Objednávky na další den jsou možné do <strong>{data.productsSettings.nextDayMenuTime}</strong>
+							{#if data.productsSettings.isNextDayMenu}
+								✅ <strong>Objednávky na zítřek jsou otevřené</strong> - zobrazuje se menu pro zítřejší den
+							{:else}
+								⏰ <strong>Objednávky na zítřek jsou uzavřeny</strong> - zobrazuje se menu pro pozítří
+							{/if}
+							<br>
+							<small>Uzavírací čas: <strong>{data.productsSettings.nextDayMenuTime}</strong></small>
 						</span>
 					</div>
 				</div>

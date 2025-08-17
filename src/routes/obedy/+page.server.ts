@@ -29,8 +29,12 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			nextDayMenuEnabled,
 			nextDayMenuTime,
 			currentTime: now.toLocaleTimeString('cs-CZ'),
+			currentTimeISO: now.toISOString(),
 			originalDate: currentDate.toLocaleDateString('cs-CZ')
 		});
+		
+		let isNextDayMenu = false;
+		let menuStatus = 'dnešní den';
 		
 		if (nextDayMenuEnabled) {
 			// Parsování času z nastavení (např. "17:00")
@@ -43,17 +47,23 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				currentTimeISO: now.toISOString(),
 				thresholdTime: nextDayThreshold.toLocaleTimeString('cs-CZ'),
 				thresholdTimeISO: nextDayThreshold.toISOString(),
-				shouldShowNextDay: now >= nextDayThreshold,
-				timeDifference: now.getTime() - nextDayThreshold.getTime()
+				shouldShowNextDay: now < nextDayThreshold,
+				timeDifference: now.getTime() - nextDayThreshold.getTime(),
+				timeDifferenceMinutes: Math.round((now.getTime() - nextDayThreshold.getTime()) / (1000 * 60))
 			});
 			
 			// Pokud je aktuální čas před nastaveným časem, zobrazíme menu pro další den (lze objednat)
-			// Po nastaveném čase už se menu pro další den nezobrazuje (nelze objednat)
+			// Po nastaveném čase už se menu pro další den nezobrazuje (nelze objednat) - zobrazujeme pozítří
 			if (now < nextDayThreshold) {
 				currentDate.setDate(currentDate.getDate() + 1);
+				isNextDayMenu = true;
+				menuStatus = 'zítřejší den (lze objednat)';
 				console.log('🍽️ Obědy - Zobrazuji menu pro další den (lze objednat):', currentDate.toLocaleDateString('cs-CZ'));
 			} else {
-				console.log('🍽️ Obědy - Zobrazuji menu pro dnešní den (objednávky na zítřek uzavřeny):', currentDate.toLocaleDateString('cs-CZ'));
+				currentDate.setDate(currentDate.getDate() + 2);
+				isNextDayMenu = false;
+				menuStatus = 'pozítří (objednávky na zítřek uzavřeny)';
+				console.log('🍽️ Obědy - Zobrazuji menu pro pozítří (objednávky na zítřek uzavřeny):', currentDate.toLocaleDateString('cs-CZ'));
 			}
 		} else {
 			console.log('🍽️ Obědy - Funkce zobrazení menu pro další den je vypnuta');
@@ -98,6 +108,15 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			supabase.from("allergens").select("*").order("number")
 		]);
 
+		console.log('🍽️ Obědy - Výsledek načítání:', {
+			menuStatus,
+			isNextDayMenu,
+			startDate: currentDate.toLocaleDateString('cs-CZ'),
+			loadedMenusCount: loadedMenus.length,
+			firstMenuDate: loadedMenus[0]?.date,
+			lastMenuDate: loadedMenus[loadedMenus.length - 1]?.date
+		});
+
 		return {
 			menus: loadedMenus,
 			visibleDays,
@@ -106,7 +125,9 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			productsSettings: {
 				...(productsSettings || {}),
 				nextDayMenuEnabled,
-				nextDayMenuTime
+				nextDayMenuTime,
+				isNextDayMenu,
+				menuStatus
 			}
 		};
 	} catch (err) {
