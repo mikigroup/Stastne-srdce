@@ -22,6 +22,8 @@
 	let loading = false;
 
 	const { generalSettings } = data;
+	
+	// Uživatel je přihlášen po exchangeCodeForSession
 </script>
 
 <svelte:head>

@@ -4,8 +4,7 @@ import type { RequestHandler } from "./$types";
 import { ROUTES } from "$lib/constants/routes";
 import {
 	PRIVATE_FAKTUROID_CLIENT_ID,
-	PRIVATE_FAKTUROID_CLIENT_SECRET,
-	PRIVATE_FAKTUROID_REDIRECT_URI
+	PRIVATE_FAKTUROID_CLIENT_SECRET
 } from "$env/static/private";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
@@ -28,22 +27,22 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	}
 
 	try {
-		// Pro recovery typ použijeme exchangeCodeForSession místo verifyOtp
+		// Pro recovery typ použijeme exchangeCodeForSession (pro vlastní emailovou šablonu)
 		if (type === "recovery") {
 			const { data, error } = await supabase.auth.exchangeCodeForSession(token_hash);
 			
 			if (error) {
-				console.error('❌ [AUTH CALLBACK] exchangeCodeForSession failed:', error);
+				console.error('❌ [AUTH CALLBACK] exchangeCodeForSession recovery failed:', error);
 				redirectTo.pathname = ROUTES.AUTH.ERROR;
 				redirectTo.searchParams.append("error", error.message);
 				redirectTo.searchParams.append("error_code", error.status?.toString() || "unknown");
 				return redirect(303, redirectTo);
 			}
 
-			console.log('✅ [AUTH CALLBACK] exchangeCodeForSession successful:', { type, userId: data.user?.id });
+			console.log('✅ [AUTH CALLBACK] exchangeCodeForSession recovery successful:', { type, userId: data.user?.id });
 			
+			// Pro recovery přesměrujeme na reset stránku (uživatel je přihlášen)
 			redirectTo.pathname = "/auth/reset";
-			redirectTo.searchParams.append("token", token_hash);
 			console.log('🔄 [AUTH CALLBACK] Redirecting to reset page:', redirectTo.pathname);
 			return redirect(303, redirectTo);
 		} else {
