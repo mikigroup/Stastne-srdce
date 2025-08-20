@@ -1,6 +1,7 @@
 import { redirect, fail } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
 import { ROUTES } from "$lib/constants/routes";
+import { getTenantId } from "$lib/utils/tenantUtils";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -121,7 +122,8 @@ export const actions: Actions = {
 			// Teprve nyní nastavíme status jako completed
 			const dataToSave = {
 				...profileData,
-				registration_status: "completed"
+				registration_status: "completed",
+				tenant_id: getTenantId(locals) // Přidáno tenant_id
 			};
 
 			// Uložení profilu

@@ -1,6 +1,7 @@
 import type { TypedSupabaseClient } from "$lib/supabase";
 import { validateIntegrationsSettings, getDefaultIntegrationsSettings } from "$lib/types/siteSettings";
 import { getDefaultSettings } from '$lib/constants/defaultSettings';
+import { PUBLIC_TENANT } from "$env/static/public";
 
 /**
  * Helper funkce pro serializaci hodnoty pro site_settings
@@ -38,18 +39,30 @@ export function deserializeSettingValue(value: any): any {
  */
 async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string | null> {
     try {
+        // Nejprve zkusíme najít tenant podle PUBLIC_TENANT
         const { data, error } = await supabase
+            .from('tenants')
+            .select('id')
+            .eq('id', PUBLIC_TENANT)
+            .single();
+        
+        if (!error && data?.id) {
+            return data.id;
+        }
+        
+        // Fallback na slug 'stastnesrdce'
+        const { data: fallbackData, error: fallbackError } = await supabase
             .from('tenants')
             .select('id')
             .eq('slug', 'stastnesrdce')
             .single();
         
-        if (error) {
-            console.error('Error getting default tenant ID:', error);
+        if (fallbackError) {
+            console.error('Error getting default tenant ID:', fallbackError);
             return null;
         }
         
-        return data?.id || null;
+        return fallbackData?.id || null;
     } catch (e) {
         console.error('Error getting default tenant ID:', e);
         return null;

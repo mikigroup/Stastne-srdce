@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
 import { TenantService } from "$lib/services/tenantService";
 import { ROUTES } from "$lib/constants/routes";
@@ -153,15 +153,15 @@ const supabase: Handle = async ({ event, resolve }) => {
 			event.locals.tenantId = tenantContext.tenantId;
 		} else {
 			// Fallback na default tenant
-			await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
-			await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+			await TenantService.setTenantContext(PUBLIC_TENANT);
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
 		}
 	} catch (error) {
 		console.error('Error setting tenant context:', error);
 		// Fallback na default tenant při chybě
 		try {
-			await TenantService.setTenantContext('ec1383a3-8697-475b-85bb-c51e9c08ed35');
-			await adminSupabase.rpc('set_tenant_context', { tenant_id: 'ec1383a3-8697-475b-85bb-c51e9c08ed35' });
+			await TenantService.setTenantContext(PUBLIC_TENANT);
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
 		} catch (fallbackError) {
 			console.error('Error in fallback tenant context:', fallbackError);
 		}

@@ -2,6 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { onMount } from "svelte";
 	import MenuItemDetail from "../MenuItemDetail.svelte";
+	import { getTenantIdFromData } from "$lib/utils/tenantUtils";
 	import type { PageData } from "./$types";
 	import type { Menu } from "$lib/types/menu";
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
@@ -42,6 +43,7 @@
 		notes: "",
 		type: "",
 		nutri: "",
+		tenant_id: null,
 		allergens: [],
 		variants: []
 	};
@@ -89,7 +91,8 @@
 					active: newMenu.active,
 					notes: newMenu.notes,
 					type: newMenu.type,
-					nutri: newMenu.nutri
+					nutri: newMenu.nutri,
+					tenant_id: getTenantIdFromData(data) // Přidáno tenant_id
 				})
 				.select()
 				.single();
