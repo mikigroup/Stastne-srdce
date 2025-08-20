@@ -136,32 +136,28 @@ const supabase: Handle = async ({ event, resolve }) => {
 		return { session, user };
 	};
 
-	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle domény
+	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle PUBLIC_TENANT (jediný tenant pro tuto doménu)
 	try {
-		const hostname = event.url.hostname;
-		const tenantContext = await TenantService.initializeTenantContext(hostname);
+		// Nastavit tenant context pro hlavní client
+		await TenantService.setTenantContext(PUBLIC_TENANT);
 		
-		if (tenantContext.tenantId) {
-			// Nastavit tenant context pro hlavní client
-			await TenantService.setTenantContext(tenantContext.tenantId);
-			
-			// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
-			await adminSupabase.rpc('set_tenant_context', { tenant_id: tenantContext.tenantId });
-			
-			// Uložit tenant info do locals pro použití v aplikaci
-			event.locals.tenant = tenantContext.tenant;
-			event.locals.tenantId = tenantContext.tenantId;
-		} else {
-			// Fallback na default tenant
-			await TenantService.setTenantContext(PUBLIC_TENANT);
-			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
-		}
+		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
+		await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
+		
+		// Uložit tenant info do locals pro použití v aplikaci
+		event.locals.tenantId = PUBLIC_TENANT;
+		
+		// Získat tenant data pro locals
+		const tenant = await TenantService.getTenantById(PUBLIC_TENANT);
+		event.locals.tenant = tenant;
+		
 	} catch (error) {
 		console.error('Error setting tenant context:', error);
 		// Fallback na default tenant při chybě
 		try {
 			await TenantService.setTenantContext(PUBLIC_TENANT);
 			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
+			event.locals.tenantId = PUBLIC_TENANT;
 		} catch (fallbackError) {
 			console.error('Error in fallback tenant context:', fallbackError);
 		}
@@ -187,17 +183,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;
-
-	// Admin section logic
-	if (event.url.pathname.startsWith(ROUTES.ADMIN.DASHBOARD)) {
-		if (!event.locals.session && event.url.pathname !== "/admin/signin") {
-			throw redirect(303, "/admin/signin");
-		}
-
-		if (event.locals.session && event.url.pathname === "/admin/signin") {
-			throw redirect(303, ROUTES.ADMIN.DASHBOARD);
-		}
-	}
 
 	return resolve(event);
 };

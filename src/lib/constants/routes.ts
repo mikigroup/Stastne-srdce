@@ -7,7 +7,7 @@ export const ROUTES = {
 		SIGNUP_COMPLETE: '/auth/signup/complete',
 		CALLBACK: '/auth/callback',
 		ERROR: '/auth/error',
-		RESET: '/reset',
+		RESET: '/auth/reset',
 		FORGOT: '/auth/forgot',
 		REACTIVATE: '/auth/reactivate'
 	},

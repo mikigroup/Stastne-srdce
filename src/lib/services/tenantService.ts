@@ -68,6 +68,23 @@ export class TenantService {
     return data;
   }
 
+  // Získat tenant podle tenant_id (pro přihlášené uživatele)
+  static async getTenantById(tenantId: string): Promise<Tenant | null> {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', tenantId)
+      .eq('status', 'active')
+      .single();
+
+    if (error) {
+      console.error('Error getting tenant by ID:', error);
+      return null;
+    }
+
+    return data;
+  }
+
   // Získat default tenant (stastnesrdce)
   static async getDefaultTenant(): Promise<Tenant | null> {
     return this.getTenantBySlug('stastnesrdce');
@@ -106,6 +123,25 @@ export class TenantService {
 
       return {
         tenant: tenant || null,
+        tenantId
+      };
+    }
+
+    return {
+      tenant: null,
+      tenantId: null
+    };
+  }
+
+  // Inicializovat tenant context podle tenant_id (pro přihlášené uživatele)
+  static async initializeTenantContextByUserId(tenantId: string): Promise<TenantContext> {
+    const tenant = await this.getTenantById(tenantId);
+    
+    if (tenant) {
+      await this.setTenantContext(tenantId);
+      
+      return {
+        tenant,
         tenantId
       };
     }

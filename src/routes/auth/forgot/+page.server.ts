@@ -66,7 +66,7 @@ export const actions: Actions = {
 			const { error: resetError } = await supabase.auth.resetPasswordForEmail(
 				email,
 				{
-					redirectTo: `${url.origin}/reset-password`
+					redirectTo: `${url.origin}/auth/callback`
 				}
 			);
 
@@ -115,7 +115,7 @@ export const actions: Actions = {
 					type: "recovery",
 					email: email,
 					options: {
-						redirectTo: `${url.origin}/reset`
+						redirectTo: `${url.origin}/auth/callback`
 					}
 				});
 

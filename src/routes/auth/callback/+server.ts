@@ -28,35 +28,53 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	}
 
 	try {
-		const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
+		// Pro recovery typ použijeme exchangeCodeForSession místo verifyOtp
+		if (type === "recovery") {
+			const { data, error } = await supabase.auth.exchangeCodeForSession(token_hash);
+			
+			if (error) {
+				console.error('❌ [AUTH CALLBACK] exchangeCodeForSession failed:', error);
+				redirectTo.pathname = ROUTES.AUTH.ERROR;
+				redirectTo.searchParams.append("error", error.message);
+				redirectTo.searchParams.append("error_code", error.status?.toString() || "unknown");
+				return redirect(303, redirectTo);
+			}
 
-		if (error) {
-			console.error('❌ [AUTH CALLBACK] verifyOtp failed:', error);
-			redirectTo.pathname = ROUTES.AUTH.ERROR;
-			redirectTo.searchParams.append("error", error.message);
-			redirectTo.searchParams.append("error_code", error.status?.toString() || "unknown");
-			return redirect(303, redirectTo);
-		}
-
-		console.log('✅ [AUTH CALLBACK] verifyOtp successful:', { type, userId: data.user?.id });
-
-		redirectTo.searchParams.delete("next");
-
-		if (type === "signup") {
-			redirectTo.pathname = ROUTES.AUTH.SIGNUP_COMPLETE;
-			redirectTo.searchParams.append("success", "signup");
-		} else if (type === "recovery") {
-			redirectTo.pathname = ROUTES.AUTH.RESET;
+			console.log('✅ [AUTH CALLBACK] exchangeCodeForSession successful:', { type, userId: data.user?.id });
+			
+			redirectTo.pathname = "/auth/reset";
 			redirectTo.searchParams.append("token", token_hash);
+			console.log('🔄 [AUTH CALLBACK] Redirecting to reset page:', redirectTo.pathname);
+			return redirect(303, redirectTo);
 		} else {
-			console.error('❌ [AUTH CALLBACK] Invalid type:', type);
-			redirectTo.pathname = ROUTES.AUTH.ERROR;
-			redirectTo.searchParams.append("error", "invalid_type");
+			// Pro ostatní typy použijeme verifyOtp
+			const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
+
+			if (error) {
+				console.error('❌ [AUTH CALLBACK] verifyOtp failed:', error);
+				redirectTo.pathname = ROUTES.AUTH.ERROR;
+				redirectTo.searchParams.append("error", error.message);
+				redirectTo.searchParams.append("error_code", error.status?.toString() || "unknown");
+				return redirect(303, redirectTo);
+			}
+
+			console.log('✅ [AUTH CALLBACK] verifyOtp successful:', { type, userId: data.user?.id });
+
+			redirectTo.searchParams.delete("next");
+
+			if (type === "signup") {
+				redirectTo.pathname = ROUTES.AUTH.SIGNUP_COMPLETE;
+				redirectTo.searchParams.append("success", "signup");
+			} else {
+				console.error('❌ [AUTH CALLBACK] Invalid type:', type);
+				redirectTo.pathname = ROUTES.AUTH.ERROR;
+				redirectTo.searchParams.append("error", "invalid_type");
+				return redirect(303, redirectTo);
+			}
+
+			console.log('🔄 [AUTH CALLBACK] Redirecting to:', redirectTo.pathname);
 			return redirect(303, redirectTo);
 		}
-
-		console.log('🔄 [AUTH CALLBACK] Redirecting to:', redirectTo.pathname);
-		return redirect(303, redirectTo);
 	} catch (unexpectedError) {
 		console.error('❌ [AUTH CALLBACK] Unexpected error:', unexpectedError);
 		redirectTo.pathname = ROUTES.AUTH.ERROR;
