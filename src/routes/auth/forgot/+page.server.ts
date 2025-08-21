@@ -104,8 +104,19 @@ export const actions: Actions = {
 			
 			// Extrahujeme token_hash z původního odkazu
 			const urlParams = new URL(originalLink).searchParams;
-			const token_hash = urlParams.get('token');
+			const token_hash = urlParams.get('token_hash') || urlParams.get('token'); // Zkusíme oba názvy
 			const type = 'recovery';
+			
+			if (!token_hash) {
+				console.error('❌ [FORGOT] Token not found in URL:', originalLink);
+				return fail(500, {
+					message: {
+						success: false,
+						display: "Vyskytla se chyba při generování odkazu pro reset hesla."
+					},
+					email
+				});
+			}
 			
 			// Vytvoříme vlastní odkaz, který půjde přímo na naši callback stránku
 			const resetLink = `${url.origin}/auth/callback?token_hash=${token_hash}&type=${type}`;
