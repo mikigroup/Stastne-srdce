@@ -5,7 +5,7 @@ import { PRIVATE_seznam_key } from "$env/static/private";
 import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import type { Profile } from "$lib/types/profile";
-import { getTenantId } from "$lib/utils/tenantUtils";
+import { getTenantIdFromSession } from "$lib/utils/tenantUtils";
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -149,7 +149,7 @@ export const actions: Actions = {
 				p_currency: "CZK",
 				p_pay_state: false,
 				p_shipping_method: "Rozvoz",
-				p_tenant_id: getTenantId(locals), // Přidáno tenant_id
+				p_tenant_id: getTenantIdFromSession(session), // Přidáno tenant_id
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
 						variant_id: variant.id,
