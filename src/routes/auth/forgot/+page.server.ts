@@ -1,6 +1,8 @@
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { createClient } from "@supabase/supabase-js";
+import { PRIVATE_seznam_key } from "$env/static/private"
+
 
 // Konfigurace Supabase Admin klienta pro přístup k administrativním funkcím
 const supabaseAdmin = createClient(
@@ -20,7 +22,7 @@ async function sendCustomEmail(to: string, subject: string, body: string) {
 			secure: true,
 			auth: {
 				user: "info@stastnesrdce.cz",
-				pass: "#QFUtwxDsQW5LEDT"
+				pass: PRIVATE_seznam_key
 			}
 		});
 
