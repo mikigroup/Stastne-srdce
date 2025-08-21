@@ -19,19 +19,20 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!token) {
-			return fail(400, {
-				password,
-				repassword,
-				message: {
-					success: false,
-					display: "Chybí token pro reset hesla. Zkuste si vyžádat nový odkaz."
-				}
-			});
-		}
+		// Token není potřeba, protože uživatel je již přihlášen po verifyOtp
+		// if (!token) {
+		// 	return fail(400, {
+		// 		password,
+		// 		repassword,
+		// 		message: {
+		// 			success: false,
+		// 			display: "Chybí token pro reset hesla. Zkuste si vyžádat nový odkaz."
+		// 		}
+		// 	});
+		// }
 
 		try {
-			// Pro reset hesla po recovery tokenu použijeme updateUser s tokenem
+			// Pro reset hesla po recovery tokenu použijeme updateUser (uživatel je přihlášen)
 			const { error } = await supabase.auth.updateUser({
 				password: password
 			});
