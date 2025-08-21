@@ -85,10 +85,7 @@ export const actions: Actions = {
 			// Email existuje, použijeme admin API pro generování recovery linku
 			const { data, error } = await supabaseAdmin.auth.admin.generateLink({
 				type: "recovery",
-				email: email,
-				options: {
-					redirectTo: `${url.origin}/auth/callback`
-				}
+				email: email
 			});
 
 			if (error) {
@@ -103,7 +100,15 @@ export const actions: Actions = {
 			}
 
 			// Získáme resetovací odkaz z odpovědi
-			const resetLink = data.properties.action_link;
+			const originalLink = data.properties.action_link;
+			
+			// Extrahujeme token_hash z původního odkazu
+			const urlParams = new URL(originalLink).searchParams;
+			const token_hash = urlParams.get('token');
+			const type = 'recovery';
+			
+			// Vytvoříme vlastní odkaz, který půjde přímo na naši callback stránku
+			const resetLink = `${url.origin}/auth/callback?token_hash=${token_hash}&type=${type}`;
 
 			// Vytvoříme vlastní šablonu e-mailu
 			const emailBody = `
