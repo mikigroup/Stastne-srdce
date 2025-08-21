@@ -8,6 +8,18 @@ export const actions: Actions = {
 		const repassword = formData.get("repassword") as string;
 		const token = url.searchParams.get("token");
 
+		// Validace minimální délky hesla
+		if (password.length < 8) {
+			return fail(400, {
+				password,
+				repassword,
+				message: {
+					success: false,
+					display: "Heslo musí mít alespoň 8 znaků"
+				}
+			});
+		}
+
 		if (password !== repassword) {
 			return fail(400, {
 				password,
@@ -18,18 +30,6 @@ export const actions: Actions = {
 				}
 			});
 		}
-
-		// Token není potřeba, protože uživatel je již přihlášen po verifyOtp
-		// if (!token) {
-		// 	return fail(400, {
-		// 		password,
-		// 		repassword,
-		// 		message: {
-		// 			success: false,
-		// 			display: "Chybí token pro reset hesla. Zkuste si vyžádat nový odkaz."
-		// 		}
-		// 	});
-		// }
 
 		try {
 			// Pro reset hesla po recovery tokenu použijeme updateUser (uživatel je přihlášen)
