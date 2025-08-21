@@ -5,12 +5,13 @@ export const actions: Actions = {
 	resetPass: async ({ request, locals: { supabase }, url }) => {
 		const formData = await request.formData();
 		const password = formData.get("password") as string;
-		const newpassword = formData.get("newpassword") as string;
+		const repassword = formData.get("repassword") as string;
 		const token = url.searchParams.get("token");
 
-		if (password !== newpassword) {
+		if (password !== repassword) {
 			return fail(400, {
 				password,
+				repassword,
 				message: {
 					success: false,
 					display: "Hesla nejsou stejná"
@@ -21,6 +22,7 @@ export const actions: Actions = {
 		if (!token) {
 			return fail(400, {
 				password,
+				repassword,
 				message: {
 					success: false,
 					display: "Chybí token pro reset hesla. Zkuste si vyžádat nový odkaz."
@@ -31,7 +33,7 @@ export const actions: Actions = {
 		try {
 			// Pro reset hesla po recovery tokenu použijeme updateUser s tokenem
 			const { error } = await supabase.auth.updateUser({
-				password: newpassword
+				password: password
 			});
 
 			if (error) {
@@ -50,6 +52,7 @@ export const actions: Actions = {
 
 				return fail(error.status || 500, {
 					password,
+					repassword,
 					message: {
 						success: false,
 						display: displayMessage
@@ -58,7 +61,7 @@ export const actions: Actions = {
 			} else {
 				return {
 					password: "",
-					newpassword: "",
+					repassword: "",
 					message: {
 						success: true,
 						display: "Heslo bylo úspěšně změněno."
@@ -69,6 +72,7 @@ export const actions: Actions = {
 			console.error('Unexpected error during password reset:', error);
 			return fail(500, {
 				password,
+				repassword,
 				message: {
 					success: false,
 					display: "Došlo k neočekávané chybě. Zkuste to prosím znovu."
