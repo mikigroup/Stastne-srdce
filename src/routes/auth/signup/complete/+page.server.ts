@@ -41,7 +41,8 @@ export const load: PageServerLoad = async ({
 };
 
 export const actions: Actions = {
-	complete: async ({ request, locals: { supabase, session }, url }) => {
+	complete: async ({ request, locals, url }) => {
+		const { supabase, session } = locals;
 		// Pokud nemá session, ale má parametr success=signup, umožníme pokračování
 		const successParam = url.searchParams.get("success");
 		

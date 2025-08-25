@@ -54,8 +54,11 @@
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result }: { result: { type: string } }) => {
-			if (result.type === 'success') {
+		return async ({ result }: { result: any }) => {
+			console.log('Form result:', result);
+			
+			// Zjednodušená kontrola - pokud není failure, považujeme za úspěch
+			if (result.type !== 'failure') {
 				await goto(ROUTES.MAIN.PROFILE);
 			}
 			loading = false;
