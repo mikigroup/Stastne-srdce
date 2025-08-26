@@ -1,4 +1,22 @@
 <script lang="ts">
+	/**
+	 * POZNÁMKY K IMPLEMENTACI:
+	 * 
+	 * PROBLÉM: Při prvním načtení stránky se zobrazoval pouze přihlášený uživatel místo všech zákazníků.
+	 * 
+	 * PŘÍČINA: Duplicitní načítání dat v Svelte komponentě:
+	 * - První načtení: let { ... } = data; (řádky 12-22)
+	 * - Druhé načtení: $: ({ ... } = data); (řádky 23-33)
+	 * 
+	 * ŘEŠENÍ: 
+	 * 1. Odstraněno duplicitní načítání - ponechán pouze reaktivní blok $:
+	 * 2. visibleColumns musí být let proměnná (kvůli bind:visibleColumns v AdminTable)
+	 * 3. Přidán reaktivní blok pro aktualizaci visibleColumns při změně profileTableSettings
+	 * 
+	 * DŮLEŽITÉ: Reaktivní proměnné ($:) nelze bindovat, proto visibleColumns musí být let
+	 * s reaktivním blokem pro aktualizaci.
+	 */
+
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
 	import { formatDateToCzech, formatDateTimeToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
@@ -9,18 +27,6 @@
 
 	export let data;
 
-	let {
-		supabase,
-		session,
-		customers,
-		profileTableSettings,
-		currentPage,
-		totalPages,
-		totalItems,
-		itemsOnCurrentPage,
-		searchQuery,
-		itemsPerPage
-	} = data;
 	$: ({
 		supabase,
 		session,
@@ -65,12 +71,15 @@
 	const columnOrder: string[] = Object.keys(columnNames);
 
 	// Initialize visible columns based on profile settings or default to all columns
-	let visibleColumns: VisibilityState =
-		profileTableSettings?.table_settings_customers ??
-		columnOrder.reduce((obj: Record<string, boolean>, column) => {
-			obj[column] = true;
-			return obj;
-		}, {} as Record<string, boolean>);
+	let visibleColumns: VisibilityState = columnOrder.reduce((obj: Record<string, boolean>, column) => {
+		obj[column] = true;
+		return obj;
+	}, {} as Record<string, boolean>);
+
+	// Update visible columns when profile settings change
+	$: if (profileTableSettings?.table_settings_customers) {
+		visibleColumns = profileTableSettings.table_settings_customers as VisibilityState;
+	}
 
 	// Filter customers based on search
 	$: filteredCustomers = customers?.filter((customer) =>
