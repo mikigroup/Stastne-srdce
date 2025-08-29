@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import type { Actions } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from '$env/static/private';
@@ -21,6 +21,14 @@ function createAdminSupabaseClient() {
 		}
 	);
 }
+
+export const load: PageServerLoad = async ({ url }) => {
+	const message = url.searchParams.get("message");
+	
+	return {
+		message
+	};
+};
 
 export const actions: Actions = {
 	handleLogin: async ({ request, locals: { supabase } }) => {

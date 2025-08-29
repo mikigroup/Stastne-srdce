@@ -18,6 +18,9 @@
 	export let data;
 	let { session, supabase, user } = data;
 	$: ({ session, supabase, user } = data);
+	
+	// Message z page data
+	let message = $page.data.message;
 
 	let loading = false;
 
@@ -102,6 +105,13 @@
 				class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
 				Přihlásit se
 			</button>
+
+			<!-- Success message from URL -->
+			{#if message === "email_confirmed"}
+				<div class="w-full p-3 border border-green-200 rounded-lg bg-green-50">
+					<p class="text-green-700 text-sm">✅ Email byl úspěšně potvrzen! Nyní se můžete přihlásit.</p>
+				</div>
+			{/if}
 
 			<!-- Error message -->
 			{#if form?.message?.display}

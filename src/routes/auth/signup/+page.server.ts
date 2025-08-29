@@ -1,6 +1,7 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { sendEmail } from "$lib/email";
+import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
 import * as yup from "yup";
 
 // Yup schéma pro validaci registrace
@@ -53,16 +54,29 @@ export const actions = {
 			}
 			}
 
-			// Supabase registrace s očištěnými daty
+			console.log('🔧 [CUSTOMER SIGNUP] Attempting to create user in Supabase:', email.trim());
+			
+			// Vytvořit uživatele v Supabase Auth (BEZ emailRedirectTo - nepošle Supabase email)
 			const { data: userData, error } = await supabase.auth.signUp({
 				email: email.trim(),
 				password: password.trim(),
 				options: {
-					emailRedirectTo: `${new URL(request.url).origin}/auth/callback`
+					// NEZADÁVÁME emailRedirectTo - Supabase nepošle email
+					data: {
+						user_type: "customer"
+					}
 				}
 			});
 
+			console.log('📊 [CUSTOMER SIGNUP] Supabase signUp result:', { 
+				success: !error, 
+				error: error?.message,
+				userId: userData?.user?.id,
+				emailConfirmed: userData?.user?.email_confirmed_at
+			});
+
 			if (error) {
+				console.error('❌ [CUSTOMER SIGNUP] Supabase signUp failed:', error);
 				return fail(400, {
 					error: true,
 					message:
@@ -73,30 +87,40 @@ export const actions = {
 				});
 			}
 
-			// Odeslání follow-up emailu pro dokončení registrace
-			// ZAKOMENTOVÁNO: Supabase automaticky posílá potvrzovací email
-			// await sendEmail({
-			// 	to: email.trim(),
-			// 	subject: "Dokončete svou registraci",
-			// 	html: `
-			// 		<h1>Vítejte v našem e-shopu!</h1>
-			// 		<p>Děkujeme za registraci. Pro plné využití všech funkcí je potřeba dokončit registraci.</p>
-			// 		<p>Klikněte na tlačítko níže pro dokončení registrace:</p>
-			// 		<a href="${new URL(request.url).origin}/signup/complete" style="
-			// 			display: inline-block;
-			// 			padding: 12px 24px;
-			// 			background-color: #4CAF50;
-			// 			color: white;
-			// 			text-decoration: none;
-			// 			border-radius: 4px;
-			// 			margin: 20px 0;
-			// 		">
-			// 			Dokončit registraci
-			// 		</a>
-			// 		<p>Pokud tlačítko nefunguje, zkopírujte tento odkaz do prohlížeče:</p>
-			// 		<p>${new URL(request.url).origin}/signup/complete</p>
-			// 	`
-			// });
+			if (!userData?.user) {
+				console.error('❌ [CUSTOMER SIGNUP] No user data returned from Supabase');
+				return fail(400, {
+					error: true,
+					message: "Chyba při vytváření uživatele",
+					email
+				});
+			}
+
+			console.log('✅ [CUSTOMER SIGNUP] User created successfully in Supabase:', userData.user.id);
+
+			// Vytvořit confirmation link pro vlastní email šablonu
+			const baseUrl = new URL(request.url).origin;
+			const confirmationLink = `${baseUrl}/auth/confirm?type=customer_signup&email=${encodeURIComponent(email.trim())}`;
+			
+			console.log('🔗 [CUSTOMER SIGNUP] Generated confirmation link:', confirmationLink);
+
+			console.log('📧 [CUSTOMER SIGNUP] Attempting to send email to:', email.trim());
+			
+			// Odeslat vlastní email s šablonou
+			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink, email.trim());
+			
+			try {
+				await sendEmail({
+					to: email.trim(),
+					subject: "Šťastné srdce - Potvrďte svou registraci",
+					html: emailHtml
+				});
+
+				console.log('✅ [CUSTOMER SIGNUP] Custom email sent successfully to:', email.trim());
+			} catch (emailError) {
+				console.error('❌ [CUSTOMER SIGNUP] Email sending failed:', emailError);
+				throw emailError;
+			}
 
 			// Úspěšná registrace
 			return {
