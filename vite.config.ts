@@ -9,15 +9,19 @@ const keyPath = path.resolve("./mystastnesrdce.local-key.pem");
 const certPath = path.resolve("./mystastnesrdce.local.pem");
 const hasHttpsCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
 
+// Kontrola existence Sentry tokenu
+const hasSentryToken = process.env.SENTRY_AUTH_TOKEN;
+
 export default defineConfig({
   plugins: [    
-    sentrySvelteKit({
+    // Sentry plugin pouze když je dostupný auth token
+    ...(hasSentryToken ? [sentrySvelteKit({
       sourceMapsUploadOptions: {
         org: "stastnesrdce",
         project: "javascript-svelte",
         authToken: process.env.SENTRY_AUTH_TOKEN
       }
-    }),
+    })] : []),
     
     sveltekit(),
   ],
