@@ -4,7 +4,6 @@ import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
-import { TenantService } from "$lib/services/tenantService";
 import { ROUTES } from "$lib/constants/routes";
 
 // Admin client pro obejití RLS politik
@@ -136,26 +135,37 @@ const supabase: Handle = async ({ event, resolve }) => {
 		return { session, user };
 	};
 
-	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle PUBLIC_TENANT (jediný tenant pro tuto doménu)
+	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle PUBLIC_TENANT
 	try {
-		// Nastavit tenant context pro hlavní client
-		await TenantService.setTenantContext(PUBLIC_TENANT);
+		// Nastavit tenant context na hlavní client (důležité pro menu!)
+		await event.locals.supabase.rpc('set_tenant_context', { 
+			tenant_id: PUBLIC_TENANT 
+		});
 		
 		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
-		await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
+		await adminSupabase.rpc('set_tenant_context', { 
+			tenant_id: PUBLIC_TENANT 
+		});
 		
-		// Uložit tenant info do locals pro použití v aplikaci
+		// Uložit tenant info do locals
 		event.locals.tenantId = PUBLIC_TENANT;
 		
 		// Získat tenant data pro locals
-		const tenant = await TenantService.getTenantById(PUBLIC_TENANT);
+		const { data: tenant } = await event.locals.supabase
+			.from('tenants')
+			.select('*')
+			.eq('id', PUBLIC_TENANT)
+			.single();
+		
 		event.locals.tenant = tenant;
 		
+		console.log('✅ [TENANT] Tenant context set for PUBLIC_TENANT:', PUBLIC_TENANT);
+		
 	} catch (error) {
-		console.error('Error setting tenant context:', error);
+		console.error('❌ [TENANT] Error setting tenant context:', error);
 		// Fallback na default tenant při chybě
 		try {
-			await TenantService.setTenantContext(PUBLIC_TENANT);
+			await event.locals.supabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
 			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
 			event.locals.tenantId = PUBLIC_TENANT;
 		} catch (fallbackError) {
