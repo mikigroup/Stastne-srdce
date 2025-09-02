@@ -309,18 +309,23 @@ export async function loadMenu(
 
 			if (menuDataError) {
 				console.error("Chyba při načítání menu dat:", menuDataError);
+				// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
+				if (menuDataError.code === 'PGRST116') {
+					console.warn(`Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
+					return null;
+				}
 				throw menuDataError;
 			}
 
 			// Vytvoříme novou verzi
 			const newVersionId = await createMenuVersion(supabase, {
 				id: menuId,
-				date: menuData.date || new Date().toISOString(), // Zajištění, že date není null
-				soup: menuData.soup || "",
-				active: menuData.active === null ? false : menuData.active,
-				notes: menuData.notes || "",
-				type: menuData.type || "",
-				nutri: menuData.nutri || ""
+				date: menuData!.date || new Date().toISOString(), // Zajištění, že date není null
+				soup: menuData!.soup || "",
+				active: menuData!.active === null ? false : menuData!.active,
+				notes: menuData!.notes || "",
+				type: menuData!.type || "",
+				nutri: menuData!.nutri || ""
 			});
 
 			versionId = newVersionId;
@@ -344,6 +349,11 @@ export async function loadMenu(
 
 		if (menuError) {
 			console.error("Chyba při načítání menu:", menuError);
+			// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
+			if (menuError.code === 'PGRST116') {
+				console.warn(`Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
+				return null;
+			}
 			throw menuError;
 		}
 
