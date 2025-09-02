@@ -10,7 +10,7 @@ const certPath = path.resolve("./mystastnesrdce.local.pem");
 const hasHttpsCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
 
 // Kontrola existence Sentry tokenu
-const hasSentryToken = process.env.SENTRY_AUTH_TOKEN;
+const hasSentryToken = process.env.PUBLIC_SENTRY_TOKEN;
 
 export default defineConfig({
   plugins: [    
@@ -19,7 +19,7 @@ export default defineConfig({
       sourceMapsUploadOptions: {
         org: "stastnesrdce",
         project: "javascript-svelte",
-        authToken: process.env.SENTRY_AUTH_TOKEN
+        authToken: process.env.PUBLIC_SENTRY_TOKEN
       }
     })] : []),
     
