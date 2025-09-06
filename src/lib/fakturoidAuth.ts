@@ -140,13 +140,27 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 	}
 	
 	try {
-		console.log('🌐 Searching for any active Fakturoid token in the system...');
+		console.log('🌐 Searching for active Fakturoid token in the system...');
 
-		// GLOBÁLNÍ PŘÍSTUP: Najdeme JAKÝKOLIV aktivní token v systému
-		// V globálním systému máme pouze jeden token na Fakturoid účet
+		// Získáme default tenant ID
+		const { data: tenantData } = await supabaseClient
+			.from('tenants')
+			.select('id')
+			.eq('slug', 'stastnesrdce')
+			.single();
+
+		if (!tenantData?.id) {
+			console.error('Default tenant not found');
+			return null;
+		}
+
+		console.log('Using tenant ID for token search:', tenantData.id);
+
+		// TENANT-AWARE PŘÍSTUP: Najdeme aktivní token pro konkrétní tenant
 		const { data: tokens, error: tokenError } = await supabaseClient
 			.from('fakturoid_tokens')
 			.select('*')
+			.eq('tenant_id', tenantData.id)
 			.in('status', [FAKTUROID_TOKEN_STATUSES.ACTIVE, FAKTUROID_TOKEN_STATUSES.EXPIRED]) // Hledáme i expired tokeny pro refresh
 			.neq('status', FAKTUROID_TOKEN_STATUSES.REVOKED) // Nezabýváme se revoked tokeny
 			.order('last_used_at', { ascending: false }) // Nejnověji používaný token
@@ -158,12 +172,13 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 		}
 
 		if (!tokens || tokens.length === 0) {
-			console.log('No active/expired Fakturoid token found in the system');
+			console.log('No active/expired Fakturoid token found for tenant');
 			
 			// Zkusíme najít revoked nebo cleared token a obnovit ho
 			const { data: revokedTokens, error: revokedError } = await supabaseClient
 				.from('fakturoid_tokens')
 				.select('*')
+				.eq('tenant_id', tenantData.id)
 				.in('status', [FAKTUROID_TOKEN_STATUSES.REVOKED, FAKTUROID_TOKEN_STATUSES.CLEARED])
 				.order('updated_at', { ascending: false })
 				.limit(1);
@@ -625,15 +640,28 @@ export async function refreshTokenDirect(refreshToken: string, supabaseClient: S
  */
 export async function clearStoredToken(): Promise<void> {
 	try {
-		console.log('🗑️ Clearing all Fakturoid tokens in the system...');
+		console.log('🗑️ Clearing Fakturoid tokens for current tenant...');
 
-		// ZMĚNA: Označíme všechny tokeny jako revoked místo mazání pro audit trail
+		// Získáme default tenant ID
+		const { data: tenantData } = await supabase
+			.from('tenants')
+			.select('id')
+			.eq('slug', 'stastnesrdce')
+			.single();
+
+		if (!tenantData?.id) {
+			console.error('Default tenant not found');
+			return;
+		}
+
+		// TENANT-AWARE: Označíme tokeny pro konkrétní tenant jako revoked
 		const { data: updatedTokens, error } = await supabase
 			.from('fakturoid_tokens')
 			.update({
 				status: 'revoked',
 				updated_at: new Date().toISOString()
 			})
+			.eq('tenant_id', tenantData.id)
 			.neq('status', 'revoked') // Pouze ty, které ještě nejsou revoked
 			.select('account_email, user_id');
 
@@ -647,7 +675,7 @@ export async function clearStoredToken(): Promise<void> {
 		tokenExpiry = null;
 
 		const revokedCount = updatedTokens?.length || 0;
-		console.log(`✅ Marked ${revokedCount} Fakturoid tokens as revoked globally`);
+		console.log(`✅ Marked ${revokedCount} Fakturoid tokens as revoked for tenant`);
 		
 		if (updatedTokens && updatedTokens.length > 0) {
 			console.log('Revoked tokens:', updatedTokens.map(t => t.account_email).join(', '));

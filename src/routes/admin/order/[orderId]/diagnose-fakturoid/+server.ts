@@ -55,33 +55,16 @@ export const POST: RequestHandler = async ({ params, locals: { supabase, session
 
 		// 3. Kontrola tokenů v databázi
 		diagnosis.push('🔍 Kontrola Fakturoid tokenů...');
-		const { data: tokens, error: tokenError } = await supabase
-			.from('fakturoid_tokens')
-			.select('*')
-			.order('updated_at', { ascending: false });
-
-		if (tokenError) {
-			return json({ 
-				success: false, 
-				diagnosis: `❌ Chyba při načítání tokenů: ${tokenError.message}` 
-			});
+		
+		// Použijeme getAccessTokenWithSupabase funkci pro test tokenu
+		const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+		const accessToken = await getAccessTokenWithSupabase(supabase);
+		
+		if (accessToken) {
+			diagnosis.push('✅ Platný Fakturoid token nalezen');
+		} else {
+			diagnosis.push('❌ Žádný platný Fakturoid token nenalezen');
 		}
-
-		if (!tokens || tokens.length === 0) {
-			return json({ 
-				success: false, 
-				diagnosis: '❌ Žádné Fakturoid tokeny nebyly nalezeny v databázi' 
-			});
-		}
-
-		diagnosis.push(`✅ Nalezeno ${tokens.length} tokenů v databázi`);
-
-		// 4. Kontrola stavu tokenů
-		const activeTokens = tokens.filter(t => t.status === 'active');
-		const expiredTokens = tokens.filter(t => t.status === 'expired');
-		const revokedTokens = tokens.filter(t => t.status === 'revoked');
-
-		diagnosis.push(`📊 Stav tokenů: ${activeTokens.length} aktivní, ${expiredTokens.length} expirované, ${revokedTokens.length} zrušené`);
 
 		// 5. Test připojení pomocí FakturoidService
 		diagnosis.push('🔍 Test Fakturoid API připojení...');

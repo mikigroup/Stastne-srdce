@@ -145,12 +145,19 @@ export const load: PageServerLoad = async ({
 			}
 		}
 
-		// Načteme Fakturoid integraci z site_settings
-		const { data: integrationsData, error: integrationsError } = await supabase
-			.from('site_settings')
-			.select('value')
-			.eq('key', 'integrations')
-			.single();
+		// Načteme Fakturoid integraci z site_settings - použijeme getSetting funkci
+		// která správně zvládá tenant_id
+		const { getSetting } = await import('$lib/services/siteSettingsService');
+		const integrations = await getSetting(supabase, 'integrations');
+		
+		let integrationsData = null;
+		let integrationsError = null;
+		
+		if (integrations) {
+			integrationsData = { value: integrations };
+		} else {
+			integrationsError = new Error('Integrations settings not found');
+		}
 		
 		let fakturoidConfig = null;
 		if (!integrationsError && integrationsData?.value) {
@@ -181,66 +188,18 @@ export const load: PageServerLoad = async ({
 			
 			console.log('Current subdomain for order:', currentSubdomain);
 
-			// GLOBÁLNÍ PŘÍSTUP: Hledáme JAKÝKOLIV token v systému (active i expired pro refresh)
-			const { data: tokens, error: tokenError } = await supabase
-				.from('fakturoid_tokens')
-				.select('access_token, expires_at, status, account_email')
-				.in('status', ['active', 'expired'])  // ← Opraveno: hledá i expired tokeny
-				.neq('status', 'revoked') // Nezabýváme se revoked tokeny
-				.order('last_used_at', { ascending: false })
-				.limit(1);
-
-			const tokenData = tokens && tokens.length > 0 ? tokens[0] : null;
-
-			if (tokenError || !tokenData) {
-				console.log('No active tokens found in system');
+			// TENANT-AWARE PŘÍSTUP: Použijeme getAccessTokenWithSupabase funkci
+			// která správně zvládá tenant_id
+			const { getAccessTokenWithSupabase } = await import('$lib/fakturoidAuth');
+			const accessToken = await getAccessTokenWithSupabase(supabase);
+			
+			if (accessToken) {
+				// Token je platný
+				fakturoidTokenValid = true;
+				console.log('Fakturoid token je platný');
 			} else {
-				console.log('Using token for:', tokenData.account_email);
-			}
-
-			if (tokenData && currentSubdomain) {
-				// Kontrola zda token nevypršel
-				const now = new Date();
-				const expiresAt = new Date(tokenData.expires_at);
-				const tokenNotExpired = expiresAt > now;
-				
-				// Pokud je token expired, pokusíme se o automatický refresh pomocí FakturoidService
-				if (tokenData.status === 'expired' || !tokenNotExpired) {
-					console.log('Token expired, attempting automatic refresh...');
-					try {
-						const { createFakturoidService, getFakturoidConfigFromSettings } = await import('$lib/services/fakturoidService');
-						const config = getFakturoidConfigFromSettings({ integrations: integrationsData?.value });
-						if (config) {
-							const fakturoidService = createFakturoidService(config, supabase);
-							await fakturoidService.testConnection();
-							fakturoidTokenValid = true;
-						} else {
-							fakturoidTokenValid = false;
-						}
-					} catch (refreshError) {
-						console.error('Automatic token refresh failed:', refreshError);
-						fakturoidTokenValid = false;
-					}
-				} else {
-					// Token je platný
-					fakturoidTokenValid = tokenNotExpired;
-				}
-				
-				console.log('Fakturoid token check:', {
-					hasToken: !!tokenData.access_token,
-					expiresAt: tokenData.expires_at,
-					tokenNotExpired: tokenNotExpired,
-					currentSubdomain: currentSubdomain,
-					isValid: fakturoidTokenValid,
-					now: now.toISOString(),
-					tokenOwner: tokenData.account_email
-				});
-			} else {
-				console.log('Fakturoid token issues:', {
-					hasTokenData: !!tokenData,
-					tokenError: tokenError?.message,
-					hasSubdomain: !!currentSubdomain
-				});
+				fakturoidTokenValid = false;
+				console.log('Fakturoid token není platný nebo nebyl nalezen');
 			}
 		}
 

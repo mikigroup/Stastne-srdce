@@ -215,6 +215,20 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 	// Uložíme token a informace o účtu
 	console.log('Saving token to database...');
 	
+	// Získáme default tenant ID
+	const { data: tenantData } = await supabase
+		.from('tenants')
+		.select('id')
+		.eq('slug', 'stastnesrdce')
+		.single();
+
+	if (!tenantData?.id) {
+		console.error("Default tenant not found");
+		return redirect(303, "/admin/site-setting?error=tenant_not_found");
+	}
+
+	console.log('Using tenant ID:', tenantData.id);
+	
 	// Nyní uložíme nový token - nejdříve smažeme existující tokeny pro stejný email
 	console.log('Deleting existing tokens for email:', userData.email);
 	const { error: deleteError } = await supabase
@@ -227,7 +241,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 		// Pokračujeme i při chybě mazání
 	}
 
-	// Nyní vložíme nový token
+	// Nyní vložíme nový token s tenant_id
 	const { error: tokenSaveError } = await supabase
 		.from('fakturoid_tokens')
 		.insert({
@@ -244,7 +258,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase, safeGetSess
 			account_plan: userData.accounts?.[0]?.plan || null,
 			status: 'active',
 			refresh_attempts: 0,
-			last_used_at: new Date().toISOString()
+			last_used_at: new Date().toISOString(),
+			tenant_id: tenantData.id
 		});
 
 	if (tokenSaveError) {
