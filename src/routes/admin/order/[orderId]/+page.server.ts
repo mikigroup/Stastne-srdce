@@ -90,6 +90,8 @@ export const load: PageServerLoad = async ({
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'delivery')
+			.order('updated_at', { ascending: false })
+			.limit(1)
 			.single();
 		
 		let deliverySettings = getDefaultDeliverySettings();
@@ -108,6 +110,8 @@ export const load: PageServerLoad = async ({
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'general')
+			.order('updated_at', { ascending: false })
+			.limit(1)
 			.single();
 		
 		let currencies = ['CZK', 'EUR'];
@@ -129,6 +133,8 @@ export const load: PageServerLoad = async ({
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'business')
+			.order('updated_at', { ascending: false })
+			.limit(1)
 			.single();
 		
 		let paymentMethods = ['Hotově', 'Kartou', 'Převodem'];
