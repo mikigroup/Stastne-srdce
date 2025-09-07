@@ -145,15 +145,16 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     enabled: true,
     orderStates: [
       { name: 'Nová', color: '#0284c7' },
-      { name: 'Přijatá', color: '#059669' },
-      { name: 'Připravuje se', color: '#d97706' },
-      { name: 'Připraveno', color: '#7c3aed' },
       { name: 'Expedovaná', color: '#eab308' },
-      { name: 'Doručena', color: '#16a34a' },
-      { name: 'Fakturovaná', color: '#10b981' },
-      { name: 'Zaplacena', color: '#059669' },
-      { name: 'Stornovaná', color: '#dc2626' },
-      { name: 'Dokončena', color: '#16a34a' }
+      { name: 'Fakturovaná', color: '#16a34a' },
+      { name: 'Stornovaná', color: '#dc2626' }
+      // Zakomentované stavy - nepoužívají se:
+      // { name: 'Přijatá', color: '#059669' },
+      // { name: 'Připravuje se', color: '#d97706' },
+      // { name: 'Připraveno', color: '#7c3aed' },
+      // { name: 'Doručena', color: '#16a34a' },
+      // { name: 'Zaplacena', color: '#059669' },
+      // { name: 'Dokončena', color: '#16a34a' }
     ],
     notificationEmail: 'admin@stastnesrdce.cz'
   },

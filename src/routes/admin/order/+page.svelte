@@ -75,7 +75,7 @@
 		return true;
 	}) || [];
 
-	// Získáme unikátní stavy z načtených objednávek
+	// Získáme všechny unikátní stavy z načtených objednávek
 	$: availableStates = [...new Set(orders?.map(order => order.state).filter(state => state))];
 
 	// Funkce pro získání barvy stavu z orderSettings

@@ -94,15 +94,12 @@
 		console.log("Customer phone:", customer_telephone);
 	}
 
-	// Získáme seznam stavů objednávek ze site_settings
+	// Získáme seznam stavů objednávek - používáme pouze 4 základní stavy
 	$: {
-		const settingsStates = orderSettings?.orderStates?.map((state: any) => state.name) || [];
-		const allPossibleStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
+		// Používáme pouze 4 základní stavy, které se skutečně používají
+		orderStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
 		
-		// Kombinujeme stavy z nastavení s všemi možnými stavy (bez duplikátů)
-		orderStates = [...new Set([...settingsStates, ...allPossibleStates])];
-		
-		console.log('Debug - orderStates:', orderStates);
+		console.log('Debug - orderStates (fixed 4 states):', orderStates);
 		console.log('Debug - orderSettings:', orderSettings);
 	}
 

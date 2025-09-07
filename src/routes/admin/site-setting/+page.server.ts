@@ -311,15 +311,16 @@ export const actions: Actions = {
 			// Výchozí barvy pro stavy
 			const defaultColors: Record<string, string> = {
 				'Nová': '#0284c7',
-				'Přijatá': '#059669', 
-				'Připravuje se': '#d97706',
-				'Připraveno': '#7c3aed',
 				'Expedovaná': '#eab308',
-				'Doručena': '#16a34a',
-				'Fakturovaná': '#10b981',
-				'Zaplacena': '#059669',
-				'Stornovaná': '#dc2626',
-				'Dokončena': '#16a34a'
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+				// Zakomentované stavy - nepoužívají se:
+				// 'Přijatá': '#059669', 
+				// 'Připravuje se': '#d97706',
+				// 'Připraveno': '#7c3aed',
+				// 'Doručena': '#16a34a',
+				// 'Zaplacena': '#059669',
+				// 'Dokončena': '#16a34a'
 			};
 
 			// Vytvoříme objekty stavů s barvami
