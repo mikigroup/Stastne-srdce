@@ -161,7 +161,7 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 			.from('fakturoid_tokens')
 			.select('*')
 			.eq('tenant_id', tenantData.id)
-			.in('status', [FAKTUROID_TOKEN_STATUSES.ACTIVE, FAKTUROID_TOKEN_STATUSES.EXPIRED]) // Hledáme i expired tokeny pro refresh
+			.in('status', [FAKTUROID_TOKEN_STATUSES.ACTIVE, FAKTUROID_TOKEN_STATUSES.EXPIRED, FAKTUROID_TOKEN_STATUSES.REFRESHING]) // Hledáme i refreshing tokeny
 			.neq('status', FAKTUROID_TOKEN_STATUSES.REVOKED) // Nezabýváme se revoked tokeny
 			.order('last_used_at', { ascending: false }) // Nejnověji používaný token
 			.limit(1);
@@ -228,6 +228,61 @@ export async function getAccessTokenWithSupabase(supabaseClient: SupabaseClient)
 				.eq('account_email', tokenData.account_email);
 			
 			tokenData.status = FAKTUROID_TOKEN_STATUSES.EXPIRED;
+		}
+
+		// Zpracování tokenu se statusem 'refreshing' - pokusíme se dokončit refresh
+		if (tokenData.status === FAKTUROID_TOKEN_STATUSES.REFRESHING) {
+			console.log('Token is in refreshing status, attempting to complete refresh...');
+			
+			// Pokusíme se obnovit token pomocí refresh tokenu
+			const refreshedToken = await refreshAccessTokenWithSupabase(tokenData.refresh_token, tokenData.user_id, supabaseClient);
+			if (refreshedToken) {
+				console.log('✅ Successfully completed refresh for refreshing token');
+				cachedToken = refreshedToken;
+				tokenExpiry = Date.now() + (2 * 60 * 60 * 1000); // 2 hodiny cache
+				
+				// Označíme token jako používaný
+				await markTokenAsUsed(tokenData.user_id, supabaseClient);
+				
+				console.log('=== GLOBAL ACCESS TOKEN DEBUG END: REFRESH COMPLETED ===');
+				return cachedToken;
+			} else {
+				console.log('❌ Failed to complete refresh for refreshing token, checking if original token is still valid...');
+				
+				// Pokud refresh selhal, zkusíme použít původní token, pokud není expirovaný
+				if (!isExpired && tokenData.access_token) {
+					console.log('Using original token from refreshing status (not expired)');
+					cachedToken = tokenData.access_token;
+					tokenExpiry = expiresAt.getTime();
+					
+					// Označíme token jako používaný a změníme status na active
+					await supabaseClient
+						.from('fakturoid_tokens')
+						.update({
+							status: FAKTUROID_TOKEN_STATUSES.ACTIVE,
+							last_used_at: new Date().toISOString(),
+							updated_at: new Date().toISOString()
+						})
+						.eq('account_email', tokenData.account_email);
+					
+					await markTokenAsUsed(tokenData.user_id, supabaseClient);
+					
+					console.log('=== GLOBAL ACCESS TOKEN DEBUG END: REFRESHING TOKEN USED ===');
+					return cachedToken;
+				} else {
+					console.log('❌ Original token is expired, marking as expired for retry');
+					// Označíme token jako expired pro další pokus
+					await supabaseClient
+						.from('fakturoid_tokens')
+						.update({
+							status: FAKTUROID_TOKEN_STATUSES.EXPIRED,
+							updated_at: new Date().toISOString()
+						})
+						.eq('account_email', tokenData.account_email);
+					
+					tokenData.status = FAKTUROID_TOKEN_STATUSES.EXPIRED;
+				}
+			}
 		}
 
 		// Pokud je token už expirovaný NEBO má status 'expired'
