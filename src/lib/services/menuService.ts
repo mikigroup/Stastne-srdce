@@ -295,7 +295,12 @@ export async function loadMenu(
 			return null;
 		}
 
-		console.log(`📋 Aktuální verze menu ${menuId}: ${currentVersionId}`);
+		console.log(`📋 Aktuální verze menu ${menuId}:`, {
+			versionId: currentVersionId,
+			versionIdType: typeof currentVersionId,
+			versionIdIsNull: currentVersionId === null,
+			versionIdIsUndefined: currentVersionId === undefined
+		});
 
 		// 2. Načteme samotné menu (s alergeny)
 		console.log(`🔍 Načítání menu ${menuId} z databáze...`);
@@ -355,6 +360,18 @@ export async function loadMenu(
 				// Místo throw error, vrátíme null - menu se přeskočí
 				return null;
 			}
+			
+			console.log(`📋 Načtená verze menu ${menuId}:`, {
+				versionId: currentVersionId,
+				versionData: versionData ? {
+					id: versionData.id,
+					menu_id: versionData.menu_id,
+					date: versionData.date,
+					active: versionData.active,
+					created_at: versionData.created_at
+				} : null,
+				versionDataIsNull: versionData === null
+			});
 			
 			currentVersion = versionData;
 		}
@@ -483,7 +500,7 @@ export async function loadMenuList(
 		});
 
 		// Základní dotaz pro nalezení všech relevantních menu - BEZ STRÁNKOVÁNÍ
-		let baseQuery = supabase.from("menus").select("*");
+		let baseQuery = supabase.from("menus").select("*").eq("tenant_id", PUBLIC_TENANT);
 
 		// Přidání filtru pro deleted sloupec
 		if (!showDeleted) {

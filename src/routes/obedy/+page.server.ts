@@ -77,16 +77,15 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const endDate = new Date(currentDate);
 		endDate.setDate(endDate.getDate() + searchRangeDays - 1);
 
-		// Načtení menu přímo s tenant filtrem (RLS automaticky filtruje)
+		// Načtení menu podle data verze místo data menu
 		console.log('🍽️ Obědy - Hledám menu od:', formatDate(currentDate), 'do:', formatDate(endDate));
 		const { data: futureMenus, error: menusError } = await supabase
-			.from("menus")
-			.select("id, date")
+			.from("menu_versions")
+			.select("menu_id, date")
 			.gte("date", formatDate(currentDate))
-			.lte("date", formatDate(endDate))
 			.eq("active", true)
-			.eq("deleted", false)
-			.eq("tenant_id", PUBLIC_TENANT) // ← Filtrovat podle tenant_id v aplikaci
+			.lte("date", formatDate(endDate))
+			.is("valid_to", null) // ← Pouze neukončené verze (nejaktuálnější)
 			.order("date", { ascending: true });
 
 		if (menusError) {
@@ -97,9 +96,42 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		console.log('🍽️ Obědy - Nalezená menu:', futureMenus?.length || 0);
 
 		// Získání unikátních ID menu a načtení kompletních dat
-		const uniqueMenuIds = futureMenus?.map((m) => m.id) || [];
+		const uniqueMenuIds = futureMenus?.map((m) => m.menu_id) || [];
 		console.log('🍽️ Obědy - Nalezená menu ID:', uniqueMenuIds);
 		console.log('🍽️ Obědy - Počet menu k načtení:', uniqueMenuIds.length);
+		
+		// Debug: Zkontrolovat konkrétní menu ID
+		const targetMenuId = 'ae64a6f9-0cb0-4319-b08a-3b07f803fcba';
+		const isTargetMenuFound = uniqueMenuIds.includes(targetMenuId);
+		console.log(`🔍 Debug - Hledané menu ${targetMenuId}:`, isTargetMenuFound ? 'NALEZENO' : 'NENALEZENO');
+		
+		if (!isTargetMenuFound) {
+			// Zkusit najít menu přímo v databázi
+			const { data: directMenu, error: directError } = await supabase
+				.from("menus")
+				.select("id, date, active, deleted, tenant_id")
+				.eq("id", targetMenuId)
+				.single();
+			
+			console.log(`🔍 Debug - Přímé vyhledání menu ${targetMenuId}:`, {
+				found: !!directMenu,
+				error: directError,
+				menu: directMenu
+			});
+			
+			if (directMenu) {
+				console.log(`🔍 Debug - Menu ${targetMenuId} detaily:`, {
+					date: directMenu.date,
+					active: directMenu.active,
+					deleted: directMenu.deleted,
+					tenant_id: directMenu.tenant_id,
+					searchStartDate: formatDate(currentDate),
+					searchEndDate: formatDate(endDate),
+					dateInRange: directMenu.date ? (directMenu.date >= formatDate(currentDate) && directMenu.date <= formatDate(endDate)) : false,
+					tenantMatches: directMenu.tenant_id === PUBLIC_TENANT
+				});
+			}
+		}
 		
 		const menuPromises = uniqueMenuIds.map((menuId) => loadMenu(supabase, menuId));
 		const allLoadedMenusResults = await Promise.allSettled(menuPromises);
@@ -129,6 +161,18 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			}
 		});
 		
+		// Debug: Zkontrolovat, jestli se hledané menu načetlo
+		if (isTargetMenuFound) {
+			const targetMenuIndex = uniqueMenuIds.indexOf(targetMenuId);
+			const targetMenuResult = allLoadedMenusResults[targetMenuIndex];
+			console.log(`🔍 Debug - Načítání menu ${targetMenuId}:`, {
+				index: targetMenuIndex,
+				status: targetMenuResult?.status,
+				value: targetMenuResult?.status === 'fulfilled' ? !!targetMenuResult.value : null,
+				error: targetMenuResult?.status === 'rejected' ? targetMenuResult.reason : null
+			});
+		}
+		
 		if (failedMenus.length > 0) {
 			console.warn(`⚠️ Nepodařilo se načíst ${failedMenus.length} menu:`, failedMenus);
 			console.warn(`📊 Statistiky načítání: ${allLoadedMenus.length}/${uniqueMenuIds.length} menu načteno úspěšně`);
@@ -139,14 +183,14 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Filtrace, seřazení a omezení
 		const loadedMenus = allLoadedMenus
 			.sort((a, b) => {
-				if (!a.date || !b.date) return 0;
+				if (!a?.date || !b?.date) return 0;
 				return new Date(a.date).getTime() - new Date(b.date).getTime();
 			})
 			.slice(0, visibleDays);
 
-		// Načtení doplňkových informací
+		// Načtení doplňkových informací s tenant ID filtrací
 		const [textsResult, allergensResult] = await Promise.all([
-			supabase.from("texts").select("*").eq("page", "obedy"),
+			supabase.from("texts").select("*").eq("page", "obedy").eq("tenant_id", PUBLIC_TENANT),
 			supabase.from("allergens").select("*").order("number")
 		]);
 

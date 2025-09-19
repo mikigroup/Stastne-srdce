@@ -1,5 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export type Text = {
 	id: number;
@@ -25,7 +26,7 @@ export type LoadData = {
 export const load: PageServerLoad = async ({
 	locals: { supabase }
 }): Promise<LoadData> => {
-	const { data: texts, error } = await supabase.from("texts").select("*");
+	const { data: texts, error } = await supabase.from("texts").select("*").eq("tenant_id", PUBLIC_TENANT);
 
 	if (error) {
 		console.error("Chyba při načítání textů:", error);
@@ -85,12 +86,13 @@ export const actions: Actions = {
 					});
 				}
 
-				// Vyhledání existujícího záznamu pro danou stránku a pozici
+				// Vyhledání existujícího záznamu pro danou stránku a pozici s tenant_id filtrací
 				const { data: existingText, error: searchError } = await supabase
 					.from("texts")
 					.select("id")
 					.eq("page", page)
 					.eq("position", position)
+					.eq("tenant_id", PUBLIC_TENANT)
 					.maybeSingle();
 
 				if (searchError) {
@@ -130,11 +132,12 @@ export const actions: Actions = {
 					});
 				}
 			} else if (page === "obedy" || page === "jidelnicek") {
-				// Pro stránky obedy a jidelnicek stačí jen text
+				// Pro stránky obedy a jidelnicek stačí jen text s tenant_id filtrací
 				const { data: existingText, error: searchError } = await supabase
 					.from("texts")
 					.select("id")
 					.eq("page", page)
+					.eq("tenant_id", PUBLIC_TENANT)
 					.maybeSingle();
 
 				if (searchError) {

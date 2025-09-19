@@ -1,6 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { loadMenuList } from "$lib/services/menuService";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -31,11 +32,12 @@ export const load: PageServerLoad = async ({
 
 
 
-		// 6. Získáme nastavení tabulky z profilu
+		// 6. Získáme nastavení tabulky z profilu s tenant_id filtrací
 		const { data: profileTableSettings, error: profileError } = await supabase
 			.from("profiles")
 			.select("table_settings_menus")
 			.eq("id", session.user.id)
+			.eq("tenant_id", PUBLIC_TENANT)
 			.single();
 
 		if (profileError) {

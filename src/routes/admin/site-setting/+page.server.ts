@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { serializeSettingValue } from "$lib/services/siteSettingsService";
 import { getAllSettings } from "$lib/services/siteSettingsService";
 import type { Database } from "$lib/types/database.types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 type SiteSettingsRow = Database['public']['Tables']['site_settings']['Row'];
 
@@ -90,16 +91,10 @@ export const actions: Actions = {
 		try {
 			const settings = JSON.parse(settingsJson);
 
-			// Získáme default tenant ID
-			const { data: tenantData } = await supabase
-				.from('tenants')
-				.select('id')
-				.eq('slug', 'stastnesrdce')
-				.single();
-
-			if (!tenantData?.id) {
-				console.error("Default tenant not found");
-				return fail(500, { error: "Nepodařilo se najít default tenant" });
+			// Použijeme PUBLIC_TENANT z environment proměnné
+			if (!PUBLIC_TENANT) {
+				console.error("PUBLIC_TENANT not found in environment");
+				return fail(500, { error: "Nepodařilo se najít tenant ID" });
 			}
 
 			// Připravíme data pro batch upsert s tenant_id
@@ -109,7 +104,7 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString(),
 				updated_by: session.user.id,
 				user_id: session.user.id,
-				tenant_id: tenantData.id
+				tenant_id: PUBLIC_TENANT
 			}));
 
 			// Provedeme jeden batch upsert
@@ -272,6 +267,7 @@ export const actions: Actions = {
 			.from("site_settings")
 			.select("*")
 			.eq("key", key)
+			.eq("tenant_id", PUBLIC_TENANT)
 			.maybeSingle();
 
 		if (error) {
@@ -293,10 +289,11 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Načteme všechny unikátní stavy z objednávek
+			// Načteme všechny unikátní stavy z objednávek s tenant_id filtrací
 			const { data: orderStates, error } = await supabase
 				.from("orders")
 				.select("state")
+				.eq("tenant_id", PUBLIC_TENANT)
 				.not("state", "is", null)
 				.not("state", "eq", "");
 
@@ -406,9 +403,10 @@ export const actions: Actions = {
 					value: serializeSettingValue(updatedAppearance),
 					updated_at: new Date().toISOString(),
 					updated_by: session.user.id,
-					user_id: session.user.id
+					user_id: session.user.id,
+					tenant_id: PUBLIC_TENANT
 				}, {
-					onConflict: 'key'
+					onConflict: 'key,tenant_id'
 				});
 
 			if (updateError) {
