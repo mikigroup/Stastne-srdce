@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "$lib/types/database.types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 // Definice typů pro práci s menu
 export type MenuAllergen = Database["public"]["Tables"]["allergens"]["Row"];
@@ -310,6 +311,7 @@ export async function loadMenu(
       `
 			)
 			.eq("id", menuId)
+			.eq("tenant_id", PUBLIC_TENANT) // ← Filtrovat podle tenant_id v aplikaci
 			.single();
 
 		// Error handling pro menu

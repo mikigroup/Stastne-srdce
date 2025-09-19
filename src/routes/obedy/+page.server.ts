@@ -3,6 +3,7 @@ import { error } from "@sveltejs/kit";
 import { loadMenu } from "$lib/services/menuService";
 import { getSetting } from "$lib/services/siteSettingsService";
 import type { Menu } from "$lib/types/menu";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export const prerender = false;
 
@@ -85,6 +86,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.lte("date", formatDate(endDate))
 			.eq("active", true)
 			.eq("deleted", false)
+			.eq("tenant_id", PUBLIC_TENANT) // ← Filtrovat podle tenant_id v aplikaci
 			.order("date", { ascending: true });
 
 		if (menusError) {
