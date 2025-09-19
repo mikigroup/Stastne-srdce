@@ -26,9 +26,14 @@
 	// Debug výpis pro kontrolu dat
 	$: console.log('🔍 Kontakt - Svelte data:', {
 		contact: contact,
+		business: business,
 		showOpeningHours: contact?.showOpeningHours,
 		openingHours: contact?.openingHours,
-		shouldShow: contact?.showOpeningHours && contact?.openingHours
+		shouldShow: contact?.showOpeningHours && contact?.openingHours,
+		hasContactData: !!contact && Object.keys(contact).length > 0,
+		hasBusinessData: !!business && Object.keys(business).length > 0,
+		contactKeys: contact ? Object.keys(contact) : [],
+		businessKeys: business ? Object.keys(business) : []
 	});
 	
 	// Title pro mapu z nastavení
@@ -105,39 +110,48 @@
 							<div class="flex items-center gap-3">
 								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<p class="text-gray-600">
-									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}`}
+									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}` || 'Adresa není k dispozici'}
 								</p>
 							</div>
 							<div class="flex items-center gap-3">
 								<Globe class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
-									<p class="text-gray-600">IČO: {business?.ico}</p>
-									<p class="text-gray-600">DIČ: {business?.dic}</p>
+									<p class="text-gray-600">IČO: {business?.ico || 'Není k dispozici'}</p>
+									<p class="text-gray-600">DIČ: {business?.dic || 'Není k dispozici'}</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
-									<p class="text-gray-600">
-										<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
-											{contact.phone}
-										</a>
-									</p>
-									<p class="text-gray-600">
-										<a href="tel:{contact?.phone1 }" class="hover:text-green-700 hover:underline">
-											{contact?.phone1 }
-										</a>
-									</p>
-									<p class="text-gray-600">
-										<a href="tel:{contact?.phone2}" class="hover:text-green-700 hover:underline">
-											{contact?.phone2}
-										</a>
-									</p>
+									{#if contact?.phone}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
+												{contact.phone}
+											</a>
+										</p>
+									{/if}
+									{#if contact?.phone1}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone1}" class="hover:text-green-700 hover:underline">
+												{contact.phone1}
+											</a>
+										</p>
+									{/if}
+									{#if contact?.phone2}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone2}" class="hover:text-green-700 hover:underline">
+												{contact.phone2}
+											</a>
+										</p>
+									{/if}
+									{#if !contact?.phone && !contact?.phone1 && !contact?.phone2}
+										<p class="text-gray-600">Telefon není k dispozici</p>
+									{/if}
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<p class="text-gray-600">{contact?.email}</p>
+								<p class="text-gray-600">{contact?.email || 'Email není k dispozici'}</p>
 							</div>					
 							
 							<!-- Otevírací doba -->

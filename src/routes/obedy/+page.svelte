@@ -10,6 +10,11 @@
 		visibleDays: number;
 		generalSettings: any;
 		productsSettings: any;
+		loadingStats: {
+			totalRequested: number;
+			successfullyLoaded: number;
+			failed: number;
+		};
 	};
 
 	let filterVegetarian = false;
@@ -52,6 +57,19 @@
 						<i class="fa-solid fa-clock"></i>
 						<span class="text-sm">
 							Objednávky na další den jsou možné do <strong>{data.productsSettings.nextDayMenuTime}</strong>
+						</span>
+					</div>
+				</div>
+			{/if}
+			
+			<!-- Informace o chybějících menu -->
+			{#if data.loadingStats.failed > 0}
+				<div class="p-3 border-b border-gray-200 bg-yellow-50 m-2">
+					<div class="flex items-center gap-2 text-sm text-yellow-700">
+						<i class="fa-solid fa-exclamation-triangle"></i>
+						<span class="text-sm">
+							Zobrazuje se {data.loadingStats.successfullyLoaded} z {data.loadingStats.totalRequested} menu 
+							({data.loadingStats.failed} menu nebylo možné načíst)
 						</span>
 					</div>
 				</div>

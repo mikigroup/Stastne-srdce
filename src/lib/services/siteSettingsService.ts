@@ -39,32 +39,18 @@ export function deserializeSettingValue(value: any): any {
  */
 async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string | null> {
     try {
-        // Nejprve zkusíme najít tenant podle PUBLIC_TENANT
-        const { data, error } = await supabase
-            .from('tenants')
-            .select('id')
-            .eq('id', PUBLIC_TENANT)
-            .single();
+        console.log('🔄 getDefaultTenantId - PUBLIC_TENANT:', PUBLIC_TENANT);
         
-        if (!error && data?.id) {
-            return data.id;
+        // Použijeme pouze PUBLIC_TENANT, žádný fallback
+        if (PUBLIC_TENANT) {
+            console.log('✅ getDefaultTenantId - Using PUBLIC_TENANT:', PUBLIC_TENANT);
+            return PUBLIC_TENANT;
         }
         
-        // Fallback na slug 'stastnesrdce'
-        const { data: fallbackData, error: fallbackError } = await supabase
-            .from('tenants')
-            .select('id')
-            .eq('slug', 'stastnesrdce')
-            .single();
-        
-        if (fallbackError) {
-            console.error('Error getting default tenant ID:', fallbackError);
-            return null;
-        }
-        
-        return fallbackData?.id || null;
+        console.error('❌ getDefaultTenantId - PUBLIC_TENANT není nastaven');
+        return null;
     } catch (e) {
-        console.error('Error getting default tenant ID:', e);
+        console.error('❌ getDefaultTenantId - Error getting default tenant ID:', e);
         return null;
     }
 }
@@ -74,6 +60,8 @@ async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string
  */
 export async function getSetting(supabase: TypedSupabaseClient, key: string, tenantId?: string) {
     try {
+        console.log(`🔄 getSetting - Načítám nastavení pro klíč: ${key}, tenantId: ${tenantId}`);
+        
         let query = supabase
             .from('site_settings')
             .select('value')
@@ -81,23 +69,31 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string, ten
         
         // Pokud máme tenant_id, použijeme ho
         if (tenantId) {
+            console.log(`🎯 getSetting - Používám explicitní tenant ID: ${tenantId}`);
             query = query.eq('tenant_id', tenantId);
         } else {
             // Pro zpětnou kompatibilitu použijeme default tenant
+            console.log(`⚠️ getSetting - Žádný tenant ID, používám default tenant`);
             const defaultTenantId = await getDefaultTenantId(supabase);
             if (defaultTenantId) {
+                console.log(`🎯 getSetting - Používám default tenant ID: ${defaultTenantId}`);
                 query = query.eq('tenant_id', defaultTenantId);
+            } else {
+                console.warn(`⚠️ getSetting - Žádný default tenant ID nalezen`);
             }
         }
         
         const { data, error } = await query.single();
         
+        console.log(`🔍 getSetting - Raw data pro ${key}:`, data);
+        
         if (error) {
-            console.error(`Error loading setting ${key}:`, error);
+            console.error(`❌ getSetting - Error loading setting ${key}:`, error);
             return null;
         }
         
         const value = deserializeSettingValue(data?.value);
+        console.log(`🔍 getSetting - Deserialized value pro ${key}:`, value);
 
         // Validace pro integrations
         if (key === 'integrations') {

@@ -5,6 +5,7 @@ import * as yup from "yup";
 import type { FormData } from "$lib/types/form";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
+import { getSetting } from "$lib/services/siteSettingsService";
 
 // Definice schématu pro validaci formuláře
 const contactSchema = yup.object({
@@ -41,68 +42,57 @@ const transporter = nodemailer.createTransport({
 // Načítání dat z site_settings
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
-		// Načtení dat z tabulky site_settings
-		const { data: contactSettings, error: contactError } = await supabase
-			.from("site_settings")
-			.select("value")
-			.eq("key", "contact")
-			.single();
+		console.log('🔄 Kontakt - Začínám načítání dat...');
 
-		const { data: businessSettings, error: businessError } = await supabase
-			.from("site_settings")
-			.select("value")
-			.eq("key", "business")
-			.single();
+		// Načtení dat pomocí centralizované služby s tenant_id
+		// Nyní se používá PUBLIC_TENANT automaticky
+		console.log('🎯 Kontakt - Používám PUBLIC_TENANT automaticky');
+		
+		const [contactSettings, businessSettings] = await Promise.allSettled([
+			getSetting(supabase, 'contact'),
+			getSetting(supabase, 'business')
+		]);
 
-		if (contactError) {
-			console.error("Chyba při načítání kontaktních údajů:", contactError);
+		// Zpracování výsledků - pouze z databáze, bez fallbacku
+		const contact = contactSettings.status === 'fulfilled' && contactSettings.value 
+			? contactSettings.value 
+			: null;
+		
+		const business = businessSettings.status === 'fulfilled' && businessSettings.value 
+			? businessSettings.value 
+			: null;
+
+		// Logování chyb
+		if (contactSettings.status === 'rejected') {
+			console.error('❌ Chyba při načítání kontaktních nastavení:', contactSettings.reason);
 		}
-
-		if (businessError) {
-			console.error("Chyba při načítání obchodních údajů:", businessError);
+		if (businessSettings.status === 'rejected') {
+			console.error('❌ Chyba při načítání obchodních nastavení:', businessSettings.reason);
 		}
-
-		// Parsování JSON dat
-		let contact = null;
-		let business = null;
-
-		try {
-			if (contactSettings?.value) {
-				contact =
-					typeof contactSettings.value === "string"
-						? JSON.parse(contactSettings.value)
-						: contactSettings.value;
-			} else {
-				// Použijeme výchozí nastavení pokud nejsou data v databázi
-				contact = getDefaultSettings('contact');
-			}
-		} catch (e) {
-			console.error("Chyba při parsování kontaktních údajů:", e);
-			// Použijeme výchozí nastavení při chybě
-			contact = getDefaultSettings('contact');
+		
+		// Logování výsledků
+		if (contact === null) {
+			console.warn('⚠️ Kontakt - Kontaktní nastavení nebyla načtena z databáze');
+		} else {
+			console.log('✅ Kontakt - Kontaktní nastavení načtena z databáze');
 		}
-
-		try {
-			if (businessSettings?.value) {
-				business =
-					typeof businessSettings.value === "string"
-						? JSON.parse(businessSettings.value)
-						: businessSettings.value;
-			} else {
-				// Použijeme výchozí nastavení pokud nejsou data v databázi
-				business = getDefaultSettings('business');
-			}
-		} catch (e) {
-			console.error("Chyba při parsování obchodních údajů:", e);
-			// Použijeme výchozí nastavení při chybě
-			business = getDefaultSettings('business');
+		
+		if (business === null) {
+			console.warn('⚠️ Kontakt - Obchodní nastavení nebyla načtena z databáze');
+		} else {
+			console.log('✅ Kontakt - Obchodní nastavení načtena z databáze');
 		}
 
 		// Debug výpis pro kontrolu dat
 		console.log('🔍 Kontakt - Načtená data:', {
 			contact: contact,
+			business: business,
 			showOpeningHours: contact?.showOpeningHours,
-			openingHours: contact?.openingHours
+			openingHours: contact?.openingHours,
+			hasContactData: contactSettings.status === 'fulfilled' && !!contactSettings.value,
+			hasBusinessData: businessSettings.status === 'fulfilled' && !!businessSettings.value,
+			contactStatus: contactSettings.status,
+			businessStatus: businessSettings.status
 		});
 
 		return {
@@ -112,7 +102,9 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			}
 		};
 	} catch (error) {
-		console.error("Nepředvídaná chyba při načítání nastavení:", error);
+		console.error("❌ Nepředvídaná chyba při načítání nastavení:", error);
+		console.log('🔄 Kontakt - Vracím null hodnoty kvůli chybě');
+
 		return {
 			settings: {
 				contact: null,
@@ -129,7 +121,7 @@ export const actions: Actions = {
 			email: formData.get("email"),
 			tel: formData.get("tel"),
 			name: formData.get("name"),
-			message: formData.get("message"),
+			content: formData.get("content"),
 			"g-recaptcha-response": formData.get("g-recaptcha-response")
 		};
 
@@ -145,7 +137,7 @@ export const actions: Actions = {
 								Kontaktní osoba: ${formValues.name}
 								Email: ${formValues.email}
 								Telefon: ${formValues.tel}\n
-								Obsah zprávy:\n${formValues.message}`
+								Obsah zprávy:\n${formValues.content}`
 			};
 
 			await transporter.sendMail(options);
@@ -173,7 +165,7 @@ export const actions: Actions = {
 					email: formValues.email,
 					tel: formValues.tel,
 					name: formValues.name,
-					content: formValues.message
+					content: formValues.content
 				});
 			}
 

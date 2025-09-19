@@ -276,7 +276,7 @@ export async function loadMenu(
 	menuId: string
 ) {
 	try {
-		console.log(`Načítání menu pro ID: ${menuId}`);
+		console.log(`🔄 Načítání menu pro ID: ${menuId}`);
 
 		// 1. Nejprve získáme aktuální verzi menu
 		const { data: currentVersionId, error: versionError } = await supabase.rpc(
@@ -285,11 +285,12 @@ export async function loadMenu(
 		);
 
 		if (versionError) {
-			console.error("Chyba při získávání aktuální verze menu:", versionError);
-			throw versionError;
+			console.error(`❌ Chyba při získávání aktuální verze menu ${menuId}:`, versionError);
+			// Místo throw error, vrátíme null - menu se přeskočí
+			return null;
 		}
 
-		console.log(`Aktuální verze menu: ${currentVersionId}`);
+		console.log(`📋 Aktuální verze menu ${menuId}: ${currentVersionId}`);
 
 		// Ošetření případu, kdy není vrácena žádná verze menu
 		let versionId = currentVersionId;
@@ -348,13 +349,14 @@ export async function loadMenu(
 			.single();
 
 		if (menuError) {
-			console.error("Chyba při načítání menu:", menuError);
+			console.error(`❌ Chyba při načítání menu ${menuId}:`, menuError);
 			// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
 			if (menuError.code === 'PGRST116') {
-				console.warn(`Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
+				console.warn(`⚠️ Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
 				return null;
 			}
-			throw menuError;
+			// Místo throw error, vrátíme null - menu se přeskočí
+			return null;
 		}
 
 		// 3. Načteme verzi menu pro získání aktuálních dat
@@ -366,15 +368,16 @@ export async function loadMenu(
 
 		if (currentVersionError) {
 			console.error(
-				"Chyba při načítání aktuální verze menu:",
+				`❌ Chyba při načítání aktuální verze menu ${menuId}:`,
 				currentVersionError
 			);
-			throw currentVersionError;
+			// Místo throw error, vrátíme null - menu se přeskočí
+			return null;
 		}
 
 		// 4. Načteme varianty
 		console.log(
-			`Načítání variant pro menu_id: ${menuId}, menu_version_id: ${versionId}`
+			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${versionId}`
 		);
 
 		let finalVariants = [];
@@ -408,8 +411,9 @@ export async function loadMenu(
 		);*/
 
 		if (variantsError) {
-			console.error("Chyba při načítání variant menu:", variantsError);
-			throw variantsError;
+			console.error(`❌ Chyba při načítání variant menu ${menuId}:`, variantsError);
+			// Místo throw error, vrátíme null - menu se přeskočí
+			return null;
 		}
 
 		// console.log(`Načteno ${variants?.length || 0} variant:`, variants);
@@ -528,11 +532,12 @@ export async function loadMenu(
 						return aNum - bNum;
 					}) || []
 		};
-		//	console.log("Vracím formátované menu:", formattedMenu);
+		console.log(`✅ Menu ${menuId} úspěšně načteno s ${finalVariants.length} variantami`);
 		return formattedMenu;
 	} catch (error) {
-		console.error("Nečekaná chyba při načítání menu:", error);
-		throw error;
+		console.error(`❌ Nečekaná chyba při načítání menu ${menuId}:`, error);
+		// Místo throw error, vrátíme null - menu se přeskočí
+		return null;
 	}
 }
 

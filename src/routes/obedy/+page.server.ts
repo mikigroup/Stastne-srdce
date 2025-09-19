@@ -91,11 +91,28 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		// Získání unikátních ID menu a načtení kompletních dat
 		const uniqueMenuIds = [...new Set(futureVersions?.map((v) => v.menu_id) || [])];
 		const menuPromises = uniqueMenuIds.map((menuId) => loadMenu(supabase, menuId));
-		const allLoadedMenus = await Promise.all(menuPromises);
+		const allLoadedMenusResults = await Promise.allSettled(menuPromises);
+		
+		// Zpracování výsledků - úspěšné menu
+		const allLoadedMenus = allLoadedMenusResults
+			.filter(result => result.status === 'fulfilled')
+			.map(result => result.value)
+			.filter(Boolean);
+		
+		// Zpracování chyb pro debugování
+		const failedMenus = allLoadedMenusResults
+			.filter(result => result.status === 'rejected')
+			.map(result => result.reason);
+		
+		if (failedMenus.length > 0) {
+			console.warn(`⚠️ Nepodařilo se načíst ${failedMenus.length} menu:`, failedMenus);
+			console.warn(`📊 Statistiky načítání: ${allLoadedMenus.length}/${uniqueMenuIds.length} menu načteno úspěšně`);
+		} else {
+			console.log(`✅ Všechna menu načtena úspěšně: ${allLoadedMenus.length}/${uniqueMenuIds.length}`);
+		}
 		
 		// Filtrace, seřazení a omezení
 		const loadedMenus = allLoadedMenus
-			.filter(Boolean)
 			.sort((a, b) => {
 				if (!a.date || !b.date) return 0;
 				return new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -114,7 +131,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			startDate: currentDate.toLocaleDateString('cs-CZ'),
 			loadedMenusCount: loadedMenus.length,
 			firstMenuDate: loadedMenus[0]?.date,
-			lastMenuDate: loadedMenus[loadedMenus.length - 1]?.date
+			lastMenuDate: loadedMenus[loadedMenus.length - 1]?.date,
+			failedMenusCount: failedMenus.length
 		});
 
 		return {
@@ -128,6 +146,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				nextDayMenuTime,
 				isNextDayMenu,
 				menuStatus
+			},
+			loadingStats: {
+				totalRequested: uniqueMenuIds.length,
+				successfullyLoaded: allLoadedMenus.length,
+				failed: failedMenus.length
 			}
 		};
 	} catch (err) {
