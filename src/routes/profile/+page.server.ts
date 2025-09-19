@@ -7,6 +7,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
 
+export const prerender = false;
+
 interface OrderItem {
 	id: string;
 	price: number;

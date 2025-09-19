@@ -5,6 +5,8 @@ import * as yup from "yup";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { getSetting } from "$lib/services/siteSettingsService";
 
+export const prerender = false;
+
 // Definice schématu pro validaci formuláře
 const contactSchema = yup.object({
 	email: yup

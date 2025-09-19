@@ -4,6 +4,8 @@ import { loadMenu } from "$lib/services/menuService";
 import { getSetting } from "$lib/services/siteSettingsService";
 import type { Menu } from "$lib/types/menu";
 
+export const prerender = false;
+
 // Helper funkce pro formátování data
 function formatDate(date: Date): string {
 	return [

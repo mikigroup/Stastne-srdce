@@ -7,6 +7,8 @@ import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStat
 import type { Profile } from "$lib/types/profile";
 import { getTenantIdFromSession } from "$lib/utils/tenantUtils";
 
+export const prerender = false;
+
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
 	port: 465,
