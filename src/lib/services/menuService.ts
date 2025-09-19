@@ -37,11 +37,11 @@ export async function createMenuVersion(
 			{
 				p_menu_id: menuData.id,
 				p_date: menuData.date,
-				p_soup: menuData.soup,
-				p_active: menuData.active,
-				p_notes: menuData.notes,
-				p_type: menuData.type,
-				p_nutri: menuData.nutri
+				p_soup: menuData.soup || "",
+				p_active: menuData.active || false,
+				p_notes: menuData.notes || "",
+				p_type: menuData.type || "",
+				p_nutri: menuData.nutri || ""
 			}
 		);
 
@@ -292,49 +292,7 @@ export async function loadMenu(
 
 		console.log(`📋 Aktuální verze menu ${menuId}: ${currentVersionId}`);
 
-		// Ošetření případu, kdy není vrácena žádná verze menu
-		let versionId = currentVersionId;
-		let isNewVersion = false;
-
-		if (!versionId) {
-			console.warn(
-				`Pro menu ${menuId} nebyla nalezena žádná verze, vytvářím novou...`
-			);
-
-			// Získáme základní data menu
-			const { data: menuData, error: menuDataError } = await supabase
-				.from("menus")
-				.select("*")
-				.eq("id", menuId)
-				.single();
-
-			if (menuDataError) {
-				console.error("Chyba při načítání menu dat:", menuDataError);
-				// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
-				if (menuDataError.code === 'PGRST116') {
-					console.warn(`Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
-					return null;
-				}
-				throw menuDataError;
-			}
-
-			// Vytvoříme novou verzi
-			const newVersionId = await createMenuVersion(supabase, {
-				id: menuId,
-				date: menuData!.date || new Date().toISOString(), // Zajištění, že date není null
-				soup: menuData!.soup || "",
-				active: menuData!.active === null ? false : menuData!.active,
-				notes: menuData!.notes || "",
-				type: menuData!.type || "",
-				nutri: menuData!.nutri || ""
-			});
-
-			versionId = newVersionId;
-			isNewVersion = true;
-			console.log("Vytvořena nová verze menu s ID:", versionId);
-		}
-
-		// 2. Načteme samotné menu
+		// 2. Načteme samotné menu (s alergeny)
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
@@ -348,6 +306,7 @@ export async function loadMenu(
 			.eq("id", menuId)
 			.single();
 
+		// Error handling pro menu
 		if (menuError) {
 			console.error(`❌ Chyba při načítání menu ${menuId}:`, menuError);
 			// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
@@ -359,11 +318,17 @@ export async function loadMenu(
 			return null;
 		}
 
-		// 3. Načteme verzi menu pro získání aktuálních dat
+		// 3. Pokud menu nemá verzi, vrátíme null (nebudeme vytvářet novou verzi)
+		if (!currentVersionId) {
+			console.warn(`⚠️ Menu ${menuId} nemá žádnou verzi - přeskočeno`);
+			return null;
+		}
+
+		// 4. Načteme verzi menu pro získání aktuálních dat
 		const { data: currentVersion, error: currentVersionError } = await supabase
 			.from("menu_versions")
 			.select("*")
-			.eq("id", versionId)
+			.eq("id", currentVersionId)
 			.single();
 
 		if (currentVersionError) {
@@ -375,9 +340,9 @@ export async function loadMenu(
 			return null;
 		}
 
-		// 4. Načteme varianty
+		// 5. Načteme varianty
 		console.log(
-			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${versionId}`
+			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${currentVersionId}`
 		);
 
 		let finalVariants = [];
@@ -396,27 +361,14 @@ export async function loadMenu(
       `
 			)
 			.eq("menu_id", menuId)
-			.eq("menu_version_id", versionId)
+			.eq("menu_version_id", currentVersionId)
 			.order("variant_number");
-
-		/*console.log(
-			"SQL dotaz na varianty:",
-			JSON.stringify({
-				table: "menu_variants",
-				filters: {
-					menu_id: menuId,
-					menu_version_id: versionId
-				}
-			})
-		);*/
 
 		if (variantsError) {
 			console.error(`❌ Chyba při načítání variant menu ${menuId}:`, variantsError);
 			// Místo throw error, vrátíme null - menu se přeskočí
 			return null;
 		}
-
-		// console.log(`Načteno ${variants?.length || 0} variant:`, variants);
 
 		finalVariants = variants || [];
 
@@ -456,13 +408,13 @@ export async function loadMenu(
 				// Pokud existují varianty, ale nemají správnou verzi, aktualizujme je
 				if (allVariants && allVariants.length > 0) {
 					console.log(
-						`Aktualizuji verzi pro ${allVariants.length} variant na ${versionId}`
+						`Aktualizuji verzi pro ${allVariants.length} variant na ${currentVersionId}`
 					);
 
 					for (const variant of allVariants) {
 						const { error: updateError } = await supabase
 							.from("menu_variants")
-							.update({ menu_version_id: versionId })
+							.update({ menu_version_id: currentVersionId })
 							.eq("id", variant.id);
 
 						if (updateError) {
@@ -489,7 +441,7 @@ export async function loadMenu(
               `
 							)
 							.eq("menu_id", menuId)
-							.eq("menu_version_id", versionId)
+							.eq("menu_version_id", currentVersionId)
 							.order("variant_number");
 
 					if (updatedVariantsError) {
@@ -498,17 +450,13 @@ export async function loadMenu(
 							updatedVariantsError
 						);
 					} else {
-						/*	console.log(
-							`Načteno ${updatedVariants?.length || 0} aktualizovaných variant:`,
-							updatedVariants
-						);*/
 						finalVariants = updatedVariants || [];
 					}
 				}
 			}
 		}
 
-		// 5. Formátování dat - použití údajů z aktuální verze
+		// 6. Formátování dat - použití údajů z aktuální verze
 		const formattedMenu = {
 			...menu,
 			// Použijeme data z aktuální verze
@@ -518,7 +466,7 @@ export async function loadMenu(
 			notes: currentVersion.notes,
 			type: currentVersion.type,
 			nutri: currentVersion.nutri,
-			allergens: menu.allergens?.map((a) => a.allergen) || [],
+			allergens: menu?.allergens?.map((a) => a.allergen) || [],
 			variants:
 				finalVariants
 					.map((v) => ({
