@@ -76,26 +76,26 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const endDate = new Date(currentDate);
 		endDate.setDate(endDate.getDate() + searchRangeDays - 1);
 
-		// Načtení verzí menu
+		// Načtení menu přímo s tenant filtrem (RLS automaticky filtruje)
 		console.log('🍽️ Obědy - Hledám menu od:', formatDate(currentDate), 'do:', formatDate(endDate));
-		const { data: futureVersions, error: versionsError } = await supabase
-			.from("menu_versions")
-			.select("menu_id, date")
+		const { data: futureMenus, error: menusError } = await supabase
+			.from("menus")
+			.select("id, date")
 			.gte("date", formatDate(currentDate))
 			.lte("date", formatDate(endDate))
-			.is("valid_to", null)
-			.is("active", true)
+			.eq("active", true)
+			.eq("deleted", false)
 			.order("date", { ascending: true });
 
-		if (versionsError) {
-			console.error('❌ Chyba při načítání verzí menu:', versionsError);
+		if (menusError) {
+			console.error('❌ Chyba při načítání menu:', menusError);
 			throw error(500, "Nepodařilo se najít budoucí menu");
 		}
 		
-		console.log('🍽️ Obědy - Nalezené verze menu:', futureVersions?.length || 0);
+		console.log('🍽️ Obědy - Nalezená menu:', futureMenus?.length || 0);
 
 		// Získání unikátních ID menu a načtení kompletních dat
-		const uniqueMenuIds = [...new Set(futureVersions?.map((v) => v.menu_id) || [])];
+		const uniqueMenuIds = futureMenus?.map((m) => m.id) || [];
 		console.log('🍽️ Obědy - Nalezená menu ID:', uniqueMenuIds);
 		console.log('🍽️ Obědy - Počet menu k načtení:', uniqueMenuIds.length);
 		
@@ -117,7 +117,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		allLoadedMenusResults.forEach((result, index) => {
 			const menuId = uniqueMenuIds[index];
 			if (result.status === 'fulfilled') {
-				console.log(`✅ Menu ${menuId}: načteno úspěšně`);
+				if (result.value) {
+					console.log(`✅ Menu ${menuId}: načteno úspěšně`);
+				} else {
+					console.warn(`⚠️ Menu ${menuId}: vráceno null (není dostupné pro tenant)`);
+				}
 			} else {
 				console.error(`❌ Menu ${menuId}: chyba -`, result.reason);
 			}

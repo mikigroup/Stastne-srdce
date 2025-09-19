@@ -277,6 +277,10 @@ export async function loadMenu(
 ) {
 	try {
 		console.log(`🔄 Načítání menu pro ID: ${menuId}`);
+		
+		// Debug: Zkontrolovat tenant context (pokud existuje RPC funkce)
+		// const { data: tenantContext } = await supabase.rpc('get_current_tenant');
+		// console.log(`🏢 Aktuální tenant context:`, tenantContext);
 
 		// 1. Nejprve získáme aktuální verzi menu
 		const { data: currentVersionId, error: versionError } = await supabase.rpc(
@@ -293,6 +297,8 @@ export async function loadMenu(
 		console.log(`📋 Aktuální verze menu ${menuId}: ${currentVersionId}`);
 
 		// 2. Načteme samotné menu (s alergeny)
+		console.log(`🔍 Načítání menu ${menuId} z databáze...`);
+		
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
 			.select(
@@ -309,12 +315,11 @@ export async function loadMenu(
 		// Error handling pro menu
 		if (menuError) {
 			console.error(`❌ Chyba při načítání menu ${menuId}:`, menuError);
-			// Pokud je chyba PGRST116 (0 řádků), menu není dostupné pro tento tenant
-			if (menuError.code === 'PGRST116') {
-				console.warn(`⚠️ Menu s ID ${menuId} nebylo nalezeno nebo není dostupné pro aktuální tenant`);
-				return null;
-			}
-			// Místo throw error, vrátíme null - menu se přeskočí
+			return null;
+		}
+
+		if (!menu) {
+			console.warn(`⚠️ Menu s ID ${menuId} nebylo nalezeno`);
 			return null;
 		}
 
@@ -416,7 +421,7 @@ export async function loadMenu(
 
 		// 6. Formátování dat - použití údajů z aktuální verze nebo přímo z menu
 		const formattedMenu = {
-			...menu,
+			...(menu || {}),
 			// Použijeme data z aktuální verze
 			date: currentVersion.date,
 			soup: currentVersion.soup,
