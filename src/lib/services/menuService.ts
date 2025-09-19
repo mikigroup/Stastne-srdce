@@ -318,66 +318,77 @@ export async function loadMenu(
 			return null;
 		}
 
-		// 3. Pokud menu nemá verzi, vrátíme null (nebudeme vytvářet novou verzi)
+		// 3. Pokud menu nemá verzi, použijeme data přímo z menu tabulky
+		let currentVersion = null;
+		
 		if (!currentVersionId) {
-			console.warn(`⚠️ Menu ${menuId} nemá žádnou verzi - přeskočeno`);
-			return null;
-		}
+			console.warn(`⚠️ Menu ${menuId} nemá žádnou verzi - použiji data přímo z menu tabulky`);
+			// Použijeme data přímo z menu tabulky
+			currentVersion = {
+				date: menu.date,
+				soup: menu.soup,
+				active: menu.active,
+				notes: menu.notes,
+				type: menu.type,
+				nutri: menu.nutri
+			};
+		} else {
+			// 4. Načteme verzi menu pro získání aktuálních dat
+			const { data: versionData, error: currentVersionError } = await supabase
+				.from("menu_versions")
+				.select("*")
+				.eq("id", currentVersionId)
+				.single();
 
-		// 4. Načteme verzi menu pro získání aktuálních dat
-		const { data: currentVersion, error: currentVersionError } = await supabase
-			.from("menu_versions")
-			.select("*")
-			.eq("id", currentVersionId)
-			.single();
-
-		if (currentVersionError) {
-			console.error(
-				`❌ Chyba při načítání aktuální verze menu ${menuId}:`,
-				currentVersionError
-			);
-			// Místo throw error, vrátíme null - menu se přeskočí
-			return null;
+			if (currentVersionError) {
+				console.error(
+					`❌ Chyba při načítání aktuální verze menu ${menuId}:`,
+					currentVersionError
+				);
+				// Místo throw error, vrátíme null - menu se přeskočí
+				return null;
+			}
+			
+			currentVersion = versionData;
 		}
 
 		// 5. Načteme varianty
 		console.log(
-			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${currentVersionId}`
+			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${currentVersionId || 'žádná verze'}`
 		);
 
 		let finalVariants = [];
 
-		const { data: variants, error: variantsError } = await supabase
-			.from("menu_variants")
-			.select(
-				`
-        *,
-        allergens:variant_allergens(
-          allergen:allergens(*)
-        ),
-        ingredients:variant_ingredients(
-          ingredient:ingredients(*)
-        )
-      `
-			)
-			.eq("menu_id", menuId)
-			.eq("menu_version_id", currentVersionId)
-			.order("variant_number");
+		// Pokud menu má verzi, načteme varianty pro tuto verzi
+		if (currentVersionId) {
+			const { data: variants, error: variantsError } = await supabase
+				.from("menu_variants")
+				.select(
+					`
+          *,
+          allergens:variant_allergens(
+            allergen:allergens(*)
+          ),
+          ingredients:variant_ingredients(
+            ingredient:ingredients(*)
+          )
+        `
+				)
+				.eq("menu_id", menuId)
+				.eq("menu_version_id", currentVersionId)
+				.order("variant_number");
 
-		if (variantsError) {
-			console.error(`❌ Chyba při načítání variant menu ${menuId}:`, variantsError);
-			// Místo throw error, vrátíme null - menu se přeskočí
-			return null;
-		}
+			if (variantsError) {
+				console.error(`❌ Chyba při načítání variant menu ${menuId}:`, variantsError);
+				// Místo throw error, vrátíme null - menu se přeskočí
+				return null;
+			}
 
-		finalVariants = variants || [];
-
-		// Pokud varianty nejsou nalezeny, zkusme načíst varianty bez filtru na verzi
-		if (!variants || variants.length === 0) {
-			console.log(
-				"Žádné varianty nenalezeny s verzí, zkouším načíst všechny varianty pro toto menu"
-			);
-
+			finalVariants = variants || [];
+		} else {
+			// Pokud menu nemá verzi, zkusíme načíst všechny varianty pro toto menu
+			console.log(`Menu ${menuId} nemá verzi - zkouším načíst všechny varianty`);
+			
 			const { data: allVariants, error: allVariantsError } = await supabase
 				.from("menu_variants")
 				.select(
@@ -395,68 +406,15 @@ export async function loadMenu(
 				.order("variant_number");
 
 			if (allVariantsError) {
-				console.error(
-					"Chyba při načítání všech variant menu:",
-					allVariantsError
-				);
-			} else {
-				console.log(
-					`Nalezeno ${allVariants?.length || 0} variant bez filtru na verzi:`,
-					allVariants
-				);
-
-				// Pokud existují varianty, ale nemají správnou verzi, aktualizujme je
-				if (allVariants && allVariants.length > 0) {
-					console.log(
-						`Aktualizuji verzi pro ${allVariants.length} variant na ${currentVersionId}`
-					);
-
-					for (const variant of allVariants) {
-						const { error: updateError } = await supabase
-							.from("menu_variants")
-							.update({ menu_version_id: currentVersionId })
-							.eq("id", variant.id);
-
-						if (updateError) {
-							console.error(
-								`Chyba při aktualizaci varianty ${variant.id}:`,
-								updateError
-							);
-						}
-					}
-
-					// Znovu načteme varianty s aktuální verzí
-					const { data: updatedVariants, error: updatedVariantsError } =
-						await supabase
-							.from("menu_variants")
-							.select(
-								`
-                *,
-                allergens:variant_allergens(
-                  allergen:allergens(*)
-                ),
-                ingredients:variant_ingredients(
-                  ingredient:ingredients(*)
-                )
-              `
-							)
-							.eq("menu_id", menuId)
-							.eq("menu_version_id", currentVersionId)
-							.order("variant_number");
-
-					if (updatedVariantsError) {
-						console.error(
-							"Chyba při načítání aktualizovaných variant:",
-							updatedVariantsError
-						);
-					} else {
-						finalVariants = updatedVariants || [];
-					}
-				}
+				console.error(`❌ Chyba při načítání všech variant menu ${menuId}:`, allVariantsError);
+				// Místo throw error, vrátíme null - menu se přeskočí
+				return null;
 			}
+
+			finalVariants = allVariants || [];
 		}
 
-		// 6. Formátování dat - použití údajů z aktuální verze
+		// 6. Formátování dat - použití údajů z aktuální verze nebo přímo z menu
 		const formattedMenu = {
 			...menu,
 			// Použijeme data z aktuální verze
