@@ -75,6 +75,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		endDate.setDate(endDate.getDate() + searchRangeDays - 1);
 
 		// Načtení verzí menu
+		console.log('🍽️ Obědy - Hledám menu od:', formatDate(currentDate), 'do:', formatDate(endDate));
 		const { data: futureVersions, error: versionsError } = await supabase
 			.from("menu_versions")
 			.select("menu_id, date")
@@ -85,11 +86,17 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			.order("date", { ascending: true });
 
 		if (versionsError) {
+			console.error('❌ Chyba při načítání verzí menu:', versionsError);
 			throw error(500, "Nepodařilo se najít budoucí menu");
 		}
+		
+		console.log('🍽️ Obědy - Nalezené verze menu:', futureVersions?.length || 0);
 
 		// Získání unikátních ID menu a načtení kompletních dat
 		const uniqueMenuIds = [...new Set(futureVersions?.map((v) => v.menu_id) || [])];
+		console.log('🍽️ Obědy - Nalezená menu ID:', uniqueMenuIds);
+		console.log('🍽️ Obědy - Počet menu k načtení:', uniqueMenuIds.length);
+		
 		const menuPromises = uniqueMenuIds.map((menuId) => loadMenu(supabase, menuId));
 		const allLoadedMenusResults = await Promise.allSettled(menuPromises);
 		
@@ -103,6 +110,16 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		const failedMenus = allLoadedMenusResults
 			.filter(result => result.status === 'rejected')
 			.map(result => result.reason);
+		
+		// Detailní logování pro každé menu
+		allLoadedMenusResults.forEach((result, index) => {
+			const menuId = uniqueMenuIds[index];
+			if (result.status === 'fulfilled') {
+				console.log(`✅ Menu ${menuId}: načteno úspěšně`);
+			} else {
+				console.error(`❌ Menu ${menuId}: chyba -`, result.reason);
+			}
+		});
 		
 		if (failedMenus.length > 0) {
 			console.warn(`⚠️ Nepodařilo se načíst ${failedMenus.length} menu:`, failedMenus);

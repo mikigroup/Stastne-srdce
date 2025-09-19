@@ -2,9 +2,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import nodemailer from "nodemailer";
 import * as yup from "yup";
-import type { FormData } from "$lib/types/form";
 import { PRIVATE_seznam_key } from "$env/static/private";
-import { getDefaultSettings } from "$lib/constants/defaultSettings";
 import { getSetting } from "$lib/services/siteSettingsService";
 
 // Definice schématu pro validaci formuláře
@@ -17,15 +15,14 @@ const contactSchema = yup.object({
 		.string()
 		.matches(
 			/^(\+420)?\s*\d{3}\s*\d{3}\s*\d{3}$/,
-			"Neplatný formát telefonu (např. +420 123 456 789)"
+			"Neplatný formát telefonu (např. +420123456789)"
 		)
 		.required("Telefon je povinný"),
 	name: yup
 		.string()
 		.min(2, "Jméno musí mít alespoň 2 znaky")
 		.required("Jméno je povinné"),
-	content: yup.string().min(10).required(),
-	"g-recaptcha-response": yup.string().required("ReCaptcha je povinná")
+	content: yup.string().min(10, "Zpráva musí mít alespoň 10 znaků").required("Zpráva je povinná"),
 });
 
 // Konfigurace nodemailer transporteru
@@ -42,11 +39,8 @@ const transporter = nodemailer.createTransport({
 // Načítání dat z site_settings
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
-		console.log('🔄 Kontakt - Začínám načítání dat...');
-
 		// Načtení dat pomocí centralizované služby s tenant_id
 		// Nyní se používá PUBLIC_TENANT automaticky
-		console.log('🎯 Kontakt - Používám PUBLIC_TENANT automaticky');
 		
 		const [contactSettings, businessSettings] = await Promise.allSettled([
 			getSetting(supabase, 'contact'),
@@ -62,38 +56,6 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			? businessSettings.value 
 			: null;
 
-		// Logování chyb
-		if (contactSettings.status === 'rejected') {
-			console.error('❌ Chyba při načítání kontaktních nastavení:', contactSettings.reason);
-		}
-		if (businessSettings.status === 'rejected') {
-			console.error('❌ Chyba při načítání obchodních nastavení:', businessSettings.reason);
-		}
-		
-		// Logování výsledků
-		if (contact === null) {
-			console.warn('⚠️ Kontakt - Kontaktní nastavení nebyla načtena z databáze');
-		} else {
-			console.log('✅ Kontakt - Kontaktní nastavení načtena z databáze');
-		}
-		
-		if (business === null) {
-			console.warn('⚠️ Kontakt - Obchodní nastavení nebyla načtena z databáze');
-		} else {
-			console.log('✅ Kontakt - Obchodní nastavení načtena z databáze');
-		}
-
-		// Debug výpis pro kontrolu dat
-		console.log('🔍 Kontakt - Načtená data:', {
-			contact: contact,
-			business: business,
-			showOpeningHours: contact?.showOpeningHours,
-			openingHours: contact?.openingHours,
-			hasContactData: contactSettings.status === 'fulfilled' && !!contactSettings.value,
-			hasBusinessData: businessSettings.status === 'fulfilled' && !!businessSettings.value,
-			contactStatus: contactSettings.status,
-			businessStatus: businessSettings.status
-		});
 
 		return {
 			settings: {
@@ -102,8 +64,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			}
 		};
 	} catch (error) {
-		console.error("❌ Nepředvídaná chyba při načítání nastavení:", error);
-		console.log('🔄 Kontakt - Vracím null hodnoty kvůli chybě');
+		console.error("Chyba při načítání nastavení:", error);
 
 		return {
 			settings: {
@@ -121,12 +82,19 @@ export const actions: Actions = {
 			email: formData.get("email"),
 			tel: formData.get("tel"),
 			name: formData.get("name"),
-			content: formData.get("content"),
-			"g-recaptcha-response": formData.get("g-recaptcha-response")
+			content: formData.get("content")
 		};
+
+		console.log('📧 Kontakt - Odesílání formuláře:', {
+			email: formValues.email,
+			tel: formValues.tel,
+			name: formValues.name,
+			content: formValues.content ? `${String(formValues.content).substring(0, 50)}...` : 'prázdné'
+		});
 
 		try {
 			await contactSchema.validate(formValues, { abortEarly: false });
+			console.log('✅ Kontakt - Validace prošla úspěšně');
 
 			const options = {
 				from: "info@stastnesrdce.cz",
@@ -140,14 +108,17 @@ export const actions: Actions = {
 								Obsah zprávy:\n${formValues.content}`
 			};
 
+			console.log('📧 Kontakt - Odesílám email...');
 			await transporter.sendMail(options);
+			console.log('✅ Kontakt - Email úspěšně odeslán');
 
 			return {
 				success: true,
-				message: { success: true, display: "Zpráva byla úspěšně odeslána" }
+				status: { success: true, display: "Zpráva byla úspěšně odeslána" }
 			};
 		} catch (error) {
 			if (error instanceof yup.ValidationError) {
+				console.log('❌ Kontakt - Chyba validace:', error.inner);
 				const errors = error.inner.reduce(
 					(acc, err) => ({
 						...acc,
@@ -155,6 +126,8 @@ export const actions: Actions = {
 					}),
 					{} as Record<string, string>
 				);
+
+				console.log('❌ Kontakt - Chybové zprávy:', errors);
 
 				return fail(400, {
 					errors,
@@ -172,7 +145,7 @@ export const actions: Actions = {
 			console.error("Chyba při odesílání e-mailu:", error);
 
 			return fail(500, {
-				message: { success: false, display: "Chyba při odesílání e-mailu" }
+				status: { success: false, display: "Chyba při odesílání e-mailu" }
 			});
 		}
 	}

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { ActionData } from "./$types";
-	import type { FormData } from "$lib/types/form";
+	import { enhance } from '$app/forms';
 	import {
 		Mail,
 		User,
@@ -13,8 +12,8 @@
 		Globe
 	} from "lucide-svelte";
 
-	export let form: FormData;
-	export let data;
+	export let data: any;
+	export let form: any;
 
 	let { session, supabase, settings } = data;
 	$: ({ session, supabase, settings } = data);
@@ -23,68 +22,18 @@
 	$: contact = settings?.contact || {};
 	$: business = settings?.business || {};
 	
-	// Debug výpis pro kontrolu dat
-	$: console.log('🔍 Kontakt - Svelte data:', {
-		contact: contact,
-		business: business,
-		showOpeningHours: contact?.showOpeningHours,
-		openingHours: contact?.openingHours,
-		shouldShow: contact?.showOpeningHours && contact?.openingHours,
-		hasContactData: !!contact && Object.keys(contact).length > 0,
-		hasBusinessData: !!business && Object.keys(business).length > 0,
-		contactKeys: contact ? Object.keys(contact) : [],
-		businessKeys: business ? Object.keys(business) : []
-	});
 	
 	// Title pro mapu z nastavení
 	$: mapTitle = business?.companyName && contact?.address ? 
 		`${business.companyName} - ${contact.address}` : 
 		'';
 
-	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
-	const State = {
-		idle: "idle",
-		requesting: "requesting",
-		success: "success"
-	};
-
-	let token = "";
-	let state = State.idle;
-	let isSubmitting = false;
-	let focused = "";
-
-	function doRecaptcha(e: any) {
-		state = State.requesting;
-		isSubmitting = true;
-
-		(window as any).grecaptcha.ready(function () {
-			(window as any).grecaptcha
-				.execute(key, { action: "submit" })
-				.then(function (t: any) {
-					state = State.success;
-					token = t;
-
-					const form = e.target;
-					const tokenInput = document.createElement("input");
-					tokenInput.type = "hidden";
-					tokenInput.name = "g-recaptcha-response";
-					tokenInput.value = token;
-					form.appendChild(tokenInput);
-
-					form.submit();
-				})
-				.catch(() => {
-					state = State.idle;
-					isSubmitting = false;
-				});
-		});
-	}
+	// SvelteKit form actions - žádný další kód není potřeba
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Kontakt</title>
 	<meta name="description" content="Kontaktujte nás - Šťastné srdce" />
-	<script src="https://www.google.com/recaptcha/api.js?render={key}"></script>
 </svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
@@ -208,7 +157,7 @@
 					<form
 						method="POST"
 						action="?/sendForm"
-						on:submit|preventDefault={doRecaptcha}
+						use:enhance
 						class="space-y-4">
 						<!-- Email -->
 						<div class="relative">
@@ -228,7 +177,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.email}
 									placeholder="vas@email.cz"
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.email}
 								<p class="mt-1 text-sm text-red-600">
@@ -255,7 +204,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.name}
 									placeholder="Jan Novák"
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.name}
 								<p class="mt-1 text-sm text-red-600">
@@ -281,8 +230,8 @@
 									id="tel"
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.tel}
-									placeholder="+420 123 456 789"
-									disabled={isSubmitting} />
+									placeholder="+420777456789"
+									/>
 							</div>
 							{#if form?.errors?.tel}
 								<p class="mt-1 text-sm text-red-600">
@@ -309,7 +258,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.content}
 									placeholder="Vaše zpráva..."
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.content}
 								<p class="mt-1 text-sm text-red-600">
@@ -321,17 +270,8 @@
 						<!-- Submit Button -->
 						<button
 							type="submit"
-							disabled={isSubmitting}
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed">
-							{#if isSubmitting}
-								<span class="flex items-center justify-center gap-2">
-									<div class="w-5 h-5 border-t-2 border-white rounded-full animate-spin">
-									</div>
-									Odesílám...
-								</span>
-							{:else}
-								Odeslat zprávu
-							{/if}
+							Odeslat zprávu
 						</button>
 
 						<!-- Status Message -->
