@@ -84,7 +84,7 @@
 	}
 </script>
 
-<AdminPageLayout title="Správa tenantů">
+<AdminPageLayout title="Správa tenantů" backUrl="/admin">
 	<div class="space-y-6">
 		<!-- Header -->
 		<div class="flex justify-between items-center">
@@ -204,7 +204,7 @@
 									</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-									{formatDate(tenant.created_at)}
+									{tenant.created_at ? formatDate(tenant.created_at) : 'N/A'}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 									<a

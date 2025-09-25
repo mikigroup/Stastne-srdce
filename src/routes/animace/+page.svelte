@@ -2,8 +2,8 @@
 	import { onMount } from "svelte";
 	import { gsap } from "gsap";
 
-	let grassElement;
-	let grassBlades = [];
+	let grassElement: HTMLElement;
+	let grassBlades: any[] = [];
 
 	onMount(() => {
 		grassBlades = grassElement.querySelectorAll(".grass-blade");
@@ -11,7 +11,7 @@
 			transformOrigin: "bottom"
 		});
 
-		grassBlades.forEach((blade, index) => {
+		grassBlades.forEach((blade: any, index: number) => {
 			gsap.set(blade, {
 				x: gsap.utils.random(-10, 10),
 				y: gsap.utils.random(-20, 0),

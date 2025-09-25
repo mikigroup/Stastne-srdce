@@ -160,7 +160,7 @@
 					
 					// Vyčistíme stará data (maxOrders)
 					if (timeSlotSettings.timeSlots) {
-						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map(slot => ({
+						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map((slot: any) => ({
 							startTime: slot.startTime,
 							endTime: slot.endTime
 							// Odstraníme maxOrders
@@ -281,7 +281,7 @@
 						await goto(redirectUrl, { replaceState: true });
 					} else {
 						console.error('Order submission error:', result);
-						errorMessage = result.data?.message || 'Došlo k chybě při zpracování objednávky.';
+						errorMessage = result.type === 'failure' ? result.data?.message || 'Došlo k chybě při zpracování objednávky.' : 'Došlo k chybě při zpracování objednávky.';
 					}
 					
 					isSubmitting = false;
@@ -366,7 +366,7 @@
 								</div>
 								<div class="pl-2 mb-5 font-light text-center">
 									{cartItem.variants.reduce(
-										(total, variant) =>
+										(total: number, variant: any) =>
 											total + (variant.price || 0) * (variant.quantity || 0),
 										0
 									)} Kč

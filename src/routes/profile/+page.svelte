@@ -562,7 +562,7 @@
                   {order.order_number}
                 </div>
                 <div class="gap-4 flex">
-                  <span class="font-semibold">{formatDateToCzech(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
+                  <span class="font-semibold">{order.created_at ? formatDateToCzech(order.created_at) : 'N/A'}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
                 </div>
               </div>
 
@@ -587,12 +587,12 @@
                 </div>                
 
                 <div class="space-y-4">
-                  {#each order.grouped_items as group}
+                  {#each order.order_items as item}
                     <div class="border border-gray-200 rounded-lg overflow-hidden">
                       <div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
-                        <div class="font-medium">Menu ze dne: {formatDateToCzech(group.date)}</div>
+                        <div class="font-medium">{item.product_name}</div>
                         <div class="text-sm text-gray-500">
-                          {calculateTotalItems(group.items)} položek
+                          {item.quantity}x
                         </div>
                       </div>
 
@@ -702,8 +702,8 @@
                       Žádost o smazání dat je aktivní
                     </h4>
                     <p class="text-sm text-blue-800 mb-2">
-                      <strong>Podáno:</strong> {new Date(data.profile.data_deletion_date).toLocaleDateString('cs-CZ')}<br>
-                      <strong>Smazání:</strong> {new Date(data.profile.data_deletion_scheduled).toLocaleDateString('cs-CZ')}
+                      <strong>Podáno:</strong> {data.profile.data_deletion_date ? new Date(data.profile.data_deletion_date).toLocaleDateString('cs-CZ') : 'N/A'}<br>
+                      <strong>Smazání:</strong> {data.profile.data_deletion_scheduled ? new Date(data.profile.data_deletion_scheduled).toLocaleDateString('cs-CZ') : 'N/A'}
                     </p>
                     <div class="bg-blue-100 rounded p-3 text-xs text-blue-700">
                       <p class="font-medium mb-1">💡 Možnost návratu:</p>

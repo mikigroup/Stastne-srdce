@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	
 	let loading = false;
-	let result = null;
-	let error = null;
-	let tokenInfo = null;
+	let result: any = null;
+	let error: any = null;
+	let tokenInfo: any = null;
 	
 	async function testRefreshToken() {
 		loading = true;
@@ -103,7 +103,7 @@
 					console.error('❌ Test failed (raw response):', responseText);
 				}
 			}
-		} catch (err) {
+		} catch (err: any) {
 			error = {
 				error: 'Network error',
 				details: err.message,
