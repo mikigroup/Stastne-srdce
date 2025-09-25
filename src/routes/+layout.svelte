@@ -89,6 +89,14 @@
 		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
 	{/if}
 	
+	<!-- Canonical URL pro všechny stránky -->
+	<link rel="canonical" href="https://www.stastnesrdce.cz{$page.url.pathname}" />
+	
+	<!-- Robots meta tagy pro problematické stránky -->
+	{#if $page.url.pathname.startsWith('/admin') || $page.url.pathname.startsWith('/auth') || $page.url.searchParams.toString()}
+		<meta name="robots" content="noindex, nofollow" />
+	{/if}
+	
 	{#if seoSettings?.metaDescription}
 		<meta name="description" content={seoSettings.metaDescription} />
 	{/if}
@@ -240,7 +248,6 @@
 {/if}
 
 <GDPR
-	cookieName="stastne_srdce_cookies"
 	visible={showBanner}
 	showEditIcon={true}
 	on:show={() => {}}

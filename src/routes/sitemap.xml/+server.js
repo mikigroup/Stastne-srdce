@@ -4,7 +4,7 @@ export async function GET() {
 	const filePaths = Object.keys(await import.meta.glob("../**/*.{svelte,md}"));
 	
 	// Základní doména pro sitemap
-	const baseUrl = "https://stastne-srdce.cz";
+	const baseUrl = "https://www.stastnesrdce.cz";
 
 	const urls = filePaths
 		.map((filePath) => {
@@ -33,12 +33,24 @@ export async function GET() {
 				// Kontaktní a informační stránky
 				priority = "0.8";
 				changefreq = "weekly";
-			} else if (url.startsWith("admin")) {
-				// Admin stránky - nižší priorita
-				priority = "0.3";
+			} else if (url === "mgr-bc-kamila-forejtova" || url === "mgr-martin-forejt-phd" || url === "olga-bednarova") {
+				// Stránky odborníků - vysoká priorita
+				priority = "0.8";
 				changefreq = "monthly";
-			} else if (url.includes("auth") || url.includes("login") || url.includes("signup")) {
-				// Autentizační stránky - velmi nízká priorita
+			} else if (url === "alergeny" || url === "haccp" || url === "obchodni-podminky") {
+				// Důležité informační stránky
+				priority = "0.7";
+				changefreq = "monthly";
+			} else if (url === "prednasky-a-kurzy" || url === "animace") {
+				// Sekundární stránky
+				priority = "0.6";
+				changefreq = "monthly";
+			} else if (url === "gdpr" || url === "version") {
+				// Technické stránky - nízká priorita
+				priority = "0.3";
+				changefreq = "yearly";
+			} else if (url === "profile" || url === "kosik") {
+				// Uživatelské stránky - velmi nízká priorita
 				priority = "0.2";
 				changefreq = "monthly";
 			}
@@ -55,7 +67,19 @@ export async function GET() {
 			</url>
 		`;
 		})
-		.filter((url) => !url.includes("+layout") && !url.startsWith("admin") && !url.includes("+error"))
+		.filter((url) => 
+			!url.includes("+layout") && 
+			!url.startsWith("admin") && 
+			!url.includes("+error") &&
+			!url.includes("auth") &&
+			!url.includes("login") &&
+			!url.includes("signup") &&
+			!url.includes("forgot") &&
+			!url.includes("reset") &&
+			!url.includes("thankyou") &&
+			!url.includes("test") &&
+			!url.includes("api")
+		)
 		.join("\n");
 
 	return new Response(

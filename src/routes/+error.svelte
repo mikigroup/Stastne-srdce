@@ -2,6 +2,11 @@
 	import { page } from "$app/stores";
 </script>
 
+<svelte:head>
+	<title>Chyba {$page.status} - Šťastné srdce</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <section class="bg-white">
 	<div class="max-w-screen-xl px-4 py-8 mx-auto lg:py-16 lg:px-6">
 		<div class="max-w-screen-sm mx-auto text-center">

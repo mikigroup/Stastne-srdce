@@ -1,4 +1,4 @@
-export const prerender = "auto";
+export const prerender = true;
 export const trailingSlash = "always";
 import type { PageServerLoad } from "./$types";
 
