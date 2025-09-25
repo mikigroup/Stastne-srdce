@@ -590,7 +590,7 @@
                   {#each order.order_items as item}
                     <div class="border border-gray-200 rounded-lg overflow-hidden">
                       <div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
-                        <div class="font-medium">{item.product_name}</div>
+                        <div class="font-medium">{item.variant?.description || 'Produkt'}</div>
                         <div class="text-sm text-gray-500">
                           {item.quantity}x
                         </div>
@@ -603,28 +603,26 @@
                               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0V5z" clip-rule="evenodd" />
                             </svg>
                           </div>
-                          <div class="font-medium">Polévka: {group.items[0].variant.menu.soup}</div>
+                          <div class="font-medium">Polévka: {item.variant?.menu?.soup || 'N/A'}</div>
                         </div>
 
                         <div class="space-y-3">
-                          {#each group.items as item}
-                            <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
-                              <div class="grid md:grid-cols-4 gap-2">
-                                <div class="col-span-2">
-                                  <div class="text-sm text-gray-500">Varianta</div>
-                                  <div>{item.variant.variant_number}. {item.variant.description}</div>
-                                </div>
-                                <div>
-                                  <div class="text-sm text-gray-500">Cena</div>
-                                  <div class="font-medium">{item.price} Kč</div>
-                                </div>
-                                <div>
-                                  <div class="text-sm text-gray-500">Množství</div>
-                                  <div class="font-medium">{item.quantity} ks</div>
-                                </div>
+                          <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                            <div class="grid md:grid-cols-4 gap-2">
+                              <div class="col-span-2">
+                                <div class="text-sm text-gray-500">Varianta</div>
+                                <div>{item.variant?.variant_number}. {item.variant?.description}</div>
+                              </div>
+                              <div>
+                                <div class="text-sm text-gray-500">Cena</div>
+                                <div class="font-medium">{item.price} Kč</div>
+                              </div>
+                              <div>
+                                <div class="text-sm text-gray-500">Množství</div>
+                                <div class="font-medium">{item.quantity} ks</div>
                               </div>
                             </div>
-                          {/each}
+                          </div>
                         </div>
                       </div>
                     </div>
