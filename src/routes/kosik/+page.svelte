@@ -6,9 +6,9 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
-	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 	import { ROUTES } from "$lib/constants/routes";
-	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
+	import { formatDateDayMonth } from "$lib/utils/formatting";
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
@@ -20,10 +20,6 @@
 	let modal: Modal;
 	let isSubmitting = false;
 	let errorMessage = '';
-	let orderDetails = {
-		totalPieces: 0,
-		totalPrice: 0
-	};
 	let profileData: any = null;
 	let selectedTimeSlot: string = '';
 	let availableTimeSlots: TimeSlotAvailability[] = [];
@@ -78,6 +74,13 @@
 
 	// Celková cena včetně dopravy
 	$: totalPriceWithDelivery = totalPrice + deliveryPrice;
+
+	// Funkce pro výpočet ceny variant
+	function calculateVariantPrice(variants: any[]): number {
+		return variants.reduce((total: number, variant: any) => 
+			total + (variant.price || 0) * (variant.quantity || 0), 0
+		);
+	}
 
 	// Kontrola minimální hodnoty objednávky
 	$: minimumOrderMet = !deliverySettings?.minimumOrderValue || totalPrice >= deliverySettings.minimumOrderValue;
@@ -281,7 +284,7 @@
 						await goto(redirectUrl, { replaceState: true });
 					} else {
 						console.error('Order submission error:', result);
-						errorMessage = result.type === 'failure' ? result.data?.message || 'Došlo k chybě při zpracování objednávky.' : 'Došlo k chybě při zpracování objednávky.';
+						errorMessage = result.type === 'failure' ? String(result.data?.message || 'Došlo k chybě při zpracování objednávky.') : 'Došlo k chybě při zpracování objednávky.';
 					}
 					
 					isSubmitting = false;
@@ -365,11 +368,7 @@
 									<p><strong>Cena</strong></p>
 								</div>
 								<div class="pl-2 mb-5 font-light text-center">
-									{cartItem.variants.reduce(
-										(total: number, variant: any) =>
-											total + (variant.price || 0) * (variant.quantity || 0),
-										0
-									)} Kč
+									{calculateVariantPrice(cartItem.variants)} Kč
 								</div>
 							</div>
 						{/each}

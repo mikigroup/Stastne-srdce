@@ -93,7 +93,7 @@
 	<link rel="canonical" href="https://www.stastnesrdce.cz{$page.url.pathname}" />
 	
 	<!-- Robots meta tagy pro problematické stránky -->
-	{#if $page.url.pathname.startsWith('/admin') || $page.url.pathname.startsWith('/auth') || $page.url.searchParams.toString()}
+	{#if $page.url.pathname.startsWith('/admin') || $page.url.pathname.startsWith('/auth')}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 	
