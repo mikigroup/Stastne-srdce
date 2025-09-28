@@ -71,7 +71,7 @@ export function createAdminSignupEmailTemplate(confirmationLink: string, email: 
         }
         .info-box p {
             margin: 5px 0;
-            color: #4A5568;
+            color: #9F9F9F;
         }
         .footer {
             background-color: #F7FAFC;
@@ -122,7 +122,7 @@ export function createAdminSignupEmailTemplate(confirmationLink: string, email: 
         <div class="content">
             <p class="welcome-text">
                 Dobrý den,<br><br>
-                děkujeme za registraci do administrace Šťastné srdce. Pro dokončení registrace prosím potvrďte svůj email kliknutím na tlačítko níže.
+                děkujeme za Váš zájem stát se naším stravníkem. Pro dokončení registrace prosím klikněte na tlačítko níže:
             </p>
             
             <div style="text-align: center;">
