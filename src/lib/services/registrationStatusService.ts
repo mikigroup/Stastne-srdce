@@ -31,13 +31,36 @@ export async function checkAndUpdateRegistrationStatus(
 			.eq("id", userId)
 			.single();
 
-		if (error || !profile) {
+		if (error) {
+			// Pokud je chyba PGRST116, znamená to, že uživatel nemá vytvořený profil
+			if (error.code === 'PGRST116') {
+				console.log("User profile not found - user needs to complete registration:", userId);
+				return {
+					isComplete: false,
+					actualStatus: 'pending',
+					dbStatus: null,
+					validationResult: { isComplete: false, missingFields: ['Profil nenalezen - dokončete registraci'] },
+					wasUpdated: false
+				};
+			}
+			
 			console.error("Error fetching profile for registration check:", error);
 			return {
 				isComplete: false,
 				actualStatus: 'pending',
 				dbStatus: null,
-				validationResult: { isComplete: false, missingFields: ['Profil nenalezen'] },
+				validationResult: { isComplete: false, missingFields: ['Chyba při načítání profilu'] },
+				wasUpdated: false
+			};
+		}
+
+		if (!profile) {
+			console.log("Profile is null - user needs to complete registration:", userId);
+			return {
+				isComplete: false,
+				actualStatus: 'pending',
+				dbStatus: null,
+				validationResult: { isComplete: false, missingFields: ['Profil nenalezen - dokončete registraci'] },
 				wasUpdated: false
 			};
 		}

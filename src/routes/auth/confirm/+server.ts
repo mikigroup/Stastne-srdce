@@ -69,6 +69,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         email: user.email,
                         user_role: 'admin',
                         registration_status: 'completed',
+                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro admin
+                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     });
@@ -146,6 +148,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         email: user.email,
                         user_role: 'customer',
                         registration_status: 'pending',
+                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
+                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     });
