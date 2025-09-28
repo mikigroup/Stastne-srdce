@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
+import { ProfileService } from '$lib/services/profileService';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
@@ -66,20 +67,20 @@ export const load: PageServerLoad = async ({
 		throw redirect(303, "/");
 	}
 
-	// Načtení profilu včetně nových polí
-	const { data: profile, error: profileError } = await supabase
-		.from("profiles")
-		.select(
+	// Načtení profilu včetně nových polí s tenant filtrací
+	const { data: profile, error: profileError } = await ProfileService.getUserProfile(
+		supabase,
+		session.user.id,
+		{
+			selectFields: `
+				*,
+				allergies,
+				allergies_description,
+				delivery_method,
+				payment_method
 			`
-     *,
-     allergies,
-     allergies_description,
-     delivery_method,
-     payment_method
-   `
-		)
-		.eq("id", session.user.id)
-		.single();
+		}
+	);
 
 	if (profileError) {
 		console.error("Error fetching profile:", profileError);
@@ -198,8 +199,8 @@ export const actions: Actions = {
 				});
 			}
 
-			// Uložení do databáze (bez registration_status - nechme ho na globální službě)
-			const { error } = await supabase.from("profiles").upsert(profileData);
+			// Uložení do databáze s tenant filtrací (bez registration_status - nechme ho na globální službě)
+			const { error } = await ProfileService.upsertProfile(supabase, profileData);
 
 			if (error) {
 				console.error("Error updating profile:", error);
@@ -257,12 +258,14 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Get user profile for email personalization
-			const { data: profile, error: profileError } = await supabase
-				.from("profiles")
-				.select("first_name, last_name, email")
-				.eq("id", session.user.id)
-				.single();
+			// Get user profile for email personalization with tenant filtering
+			const { data: profile, error: profileError } = await ProfileService.getUserProfile(
+				supabase,
+				session.user.id,
+				{
+					selectFields: "first_name, last_name, email"
+				}
+			);
 
 			if (profileError || !profile) {
 				console.error("Error fetching user profile:", profileError);
@@ -289,10 +292,11 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString()
 			};
 
-			const { error } = await supabase
-				.from("profiles")
-				.update(updateData)
-				.eq("id", session.user.id);
+			const { error } = await ProfileService.updateUserProfile(
+				supabase,
+				session.user.id,
+				updateData
+			);
 
 			if (error) {
 				console.error("Error requesting data deletion:", error);
