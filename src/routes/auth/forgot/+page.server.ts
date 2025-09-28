@@ -62,8 +62,8 @@ export const actions: Actions = {
 		console.log(`Ověřuji existenci emailu: ${email}`);
 
 		try {
-			// Nejprve zkontrolujeme, zda je email v tabulce profiles
-			const { data: profileData, error: profileError } = await supabase
+			// Nejprve zkontrolujeme, zda je email v tabulce profiles pomocí admin klienta
+			const { data: profileData, error: profileError } = await supabaseAdmin
 				.from("profiles")
 				.select("id, email")
 				.eq("email", email)
