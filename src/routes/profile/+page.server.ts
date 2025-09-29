@@ -115,12 +115,64 @@ export const load: PageServerLoad = async ({
 	if (ordersError) {
 		console.error("Error fetching orders:", ordersError);
 	} else if (orders) {
+		// Načteme aktuální data menu pro každou položku objednávky
+		console.log("Načítání aktuálních dat menu pro profile objednávky...");
+		
+		for (const order of orders) {
+			if (order.order_items) {
+				for (const item of order.order_items) {
+					if (item.variant && item.variant.menu) {
+						const menuId = item.variant.menu.id;
+						console.log(`Načítání aktuální verze menu pro ID: ${menuId}`);
+						
+						try {
+							// Použijeme stejný systém jako admin order detail - načteme aktuální verzi menu
+							const { data: currentVersionId, error: versionError } = await supabase.rpc(
+								"get_current_menu_version",
+								{ p_menu_id: menuId }
+							);
+
+							if (!versionError && currentVersionId) {
+								// Načteme data aktuální verze menu
+								const { data: versionData, error: versionDataError } = await supabase
+									.from("menu_versions")
+									.select("*")
+									.eq("id", currentVersionId)
+									.single();
+
+								if (!versionDataError && versionData) {
+									// Načteme aktuální varianty pro tuto verzi
+									const { data: currentVariants, error: variantsError } = await supabase
+										.from("menu_variants")
+										.select("*")
+										.eq("menu_id", menuId)
+										.eq("menu_version_id", currentVersionId)
+										.eq("variant_number", item.variant.variant_number)
+										.single();
+
+									if (!variantsError && currentVariants) {
+										// Aktualizujeme data položky objednávky aktuálními daty
+										(item as any).menuVersionData = versionData;
+										(item as any).currentVariantData = currentVariants;
+										console.log(`Aktualizována položka objednávky s aktuálními daty menu`);
+									}
+								}
+							}
+						} catch (error) {
+							console.error(`Chyba při načítání aktuální verze menu ${menuId}:`, error);
+						}
+					}
+				}
+			}
+		}
+
 		// Group order items by menu date
 		orders.forEach((order: Order) => {
 			const groupedItems: GroupedItems = {};
 
 			order.order_items.forEach((item) => {
-				const date = item.variant.menu.date;
+				// Použijeme aktuální data pokud jsou dostupná, jinak fallback na původní data
+				const date = (item as any).menuVersionData?.date || item.variant.menu.date;
 				if (!groupedItems[date]) {
 					groupedItems[date] = [];
 				}
