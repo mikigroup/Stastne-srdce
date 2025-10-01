@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { getSetting } from "$lib/services/siteSettingsService";
 import type { IntegrationsSettings } from "$lib/types/siteSettings";
 import { createFakturoidService, getFakturoidConfigFromSettings } from "$lib/services/fakturoidService";
+import { formatOrderItemName } from "$lib/utils/formatting";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
 
@@ -39,6 +40,55 @@ export const load: PageServerLoad = async ({
 			)
 			.eq("id", orderId)
 			.single();
+
+		// Načteme aktuální data menu pro každou položku objednávky
+		if (order && order.order_items) {
+			console.log("Načítání aktuálních dat menu pro Fakturoid fakturu...");
+			
+			for (const item of order.order_items) {
+				if (item.variant_id && item.variant_id.menu_id) {
+					const menuId = item.variant_id.menu_id.id;
+					console.log(`Načítání aktuální verze menu pro ID: ${menuId}`);
+					
+					try {
+						// Použijeme stejný systém jako admin order detail - načteme aktuální verzi menu
+						const { data: currentVersionId, error: versionError } = await supabase.rpc(
+							"get_current_menu_version",
+							{ p_menu_id: menuId }
+						);
+
+						if (!versionError && currentVersionId) {
+							// Načteme data aktuální verze menu
+							const { data: versionData, error: versionDataError } = await supabase
+								.from("menu_versions")
+								.select("*")
+								.eq("id", currentVersionId)
+								.single();
+
+							if (!versionDataError && versionData) {
+								// Načteme aktuální varianty pro tuto verzi
+								const { data: currentVariants, error: variantsError } = await supabase
+									.from("menu_variants")
+									.select("*")
+									.eq("menu_id", menuId)
+									.eq("menu_version_id", currentVersionId)
+									.eq("variant_number", item.variant_id.variant_number)
+									.single();
+
+								if (!variantsError && currentVariants) {
+									// Aktualizujeme data položky objednávky aktuálními daty
+									(item as any).menuVersionData = versionData;
+									(item as any).currentVariantData = currentVariants;
+									console.log(`Aktualizována položka objednávky s aktuálními daty menu pro Fakturoid`);
+								}
+							}
+						}
+					} catch (error) {
+						console.error(`Chyba při načítání aktuální verze menu ${menuId}:`, error);
+					}
+				}
+			}
+		}
 
 		if (orderError) {
 			console.error("Chyba při načítání objednávky:", orderError);
@@ -151,6 +201,55 @@ export const actions: Actions = {
 				.eq("id", orderId)
 				.single();
 
+			// Načteme aktuální data menu pro každou položku objednávky
+			if (order && order.order_items) {
+				console.log("Načítání aktuálních dat menu pro Fakturoid fakturu v action...");
+				
+				for (const item of order.order_items) {
+					if (item.variant_id && item.variant_id.menu_id) {
+						const menuId = item.variant_id.menu_id.id;
+						console.log(`Načítání aktuální verze menu pro ID: ${menuId}`);
+						
+						try {
+							// Použijeme stejný systém jako admin order detail - načteme aktuální verzi menu
+							const { data: currentVersionId, error: versionError } = await supabase.rpc(
+								"get_current_menu_version",
+								{ p_menu_id: menuId }
+							);
+
+							if (!versionError && currentVersionId) {
+								// Načteme data aktuální verze menu
+								const { data: versionData, error: versionDataError } = await supabase
+									.from("menu_versions")
+									.select("*")
+									.eq("id", currentVersionId)
+									.single();
+
+								if (!versionDataError && versionData) {
+									// Načteme aktuální varianty pro tuto verzi
+									const { data: currentVariants, error: variantsError } = await supabase
+										.from("menu_variants")
+										.select("*")
+										.eq("menu_id", menuId)
+										.eq("menu_version_id", currentVersionId)
+										.eq("variant_number", item.variant_id.variant_number)
+										.single();
+
+									if (!variantsError && currentVariants) {
+										// Aktualizujeme data položky objednávky aktuálními daty
+										(item as any).menuVersionData = versionData;
+										(item as any).currentVariantData = currentVariants;
+										console.log(`Aktualizována položka objednávky s aktuálními daty menu pro Fakturoid v action`);
+									}
+								}
+							}
+						} catch (error) {
+							console.error(`Chyba při načítání aktuální verze menu ${menuId}:`, error);
+						}
+					}
+				}
+			}
+
 			if (orderError || !order) {
 				return fail(404, { success: false, message: "Objednávka nenalezena" });
 			}
@@ -229,7 +328,7 @@ export const actions: Actions = {
 				},
 				orderNumber: order.order_number,
 				items: order.order_items.map((item: any) => ({
-					name: item.variant_id.description,
+					name: formatOrderItemName(item),
 					quantity: item.quantity,
 					price: item.price,
 					vat: 21

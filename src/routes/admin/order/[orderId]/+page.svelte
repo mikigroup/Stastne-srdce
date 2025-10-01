@@ -996,7 +996,13 @@
 										{/if}
 									</td>
 									<td class="px-6 py-4">
-										<div class="text-sm font-medium text-gray-900">{item.variant_id.description}</div>
+										<div class="text-sm font-medium text-gray-900">
+											{#if item.currentVariantData}
+												{item.currentVariantData.description}
+											{:else if item.variant_id}
+												{item.variant_id.description}
+											{/if}
+										</div>
 										{#if item.menuVersionData}
 											<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
 										{/if}
@@ -1005,10 +1011,10 @@
 										{item.quantity}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-										{formatPrice(item.price)}
+										{formatPrice(item.price || 0)}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-										{formatPrice(item.quantity * item.price)}
+										{formatPrice((item.quantity || 0) * (item.price || 0))}
 									</td>
 								</tr>
 							{/each}
@@ -1049,7 +1055,13 @@
 						</div>
 
 						<div class="mb-3">
-							<div class="font-medium text-gray-900">{item.variant_id.description}</div>
+							<div class="font-medium text-gray-900">
+								{#if item.currentVariantData}
+									{item.currentVariantData.description}
+								{:else if item.variant_id}
+									{item.variant_id.description}
+								{/if}
+							</div>
 							{#if item.menuVersionData}
 								<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
 							{/if}
@@ -1057,10 +1069,10 @@
 
 						<div class="flex justify-between items-center text-sm">
 							<div class="flex gap-4">
-								<span><span class="font-medium">Množství:</span> {item.quantity}</span>
-								<span><span class="font-medium">Cena/ks:</span> {formatPrice(item.price)}</span>
+								<span><span class="font-medium">Množství:</span> {item.quantity || 0}</span>
+								<span><span class="font-medium">Cena/ks:</span> {formatPrice(item.price || 0)}</span>
 							</div>
-							<div class="font-medium">{formatPrice(item.quantity * item.price)}</div>
+							<div class="font-medium">{formatPrice((item.quantity || 0) * (item.price || 0))}</div>
 						</div>
 					</div>
 				{/each}

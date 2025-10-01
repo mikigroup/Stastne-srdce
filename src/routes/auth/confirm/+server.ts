@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
+import { PUBLIC_TENANT } from '$env/static/public';
 
 // Admin Supabase klient pro potvrzení uživatele
 const adminSupabase = createClient<Database>(
@@ -69,6 +70,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         email: user.email,
                         user_role: 'admin',
                         registration_status: 'completed',
+                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro admin
+                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     });
@@ -146,6 +149,8 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         email: user.email,
                         user_role: 'customer',
                         registration_status: 'pending',
+                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
+                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     });
@@ -175,7 +180,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
         }
     }
     
-    // Pro standardní Supabase flow (pokud by se použil)
+    // Pro standardní Supabase flow (pokud by se použil) - pouze pokud má token_hash
     if (token_hash && type && (type === 'signup' || type === 'recovery' || type === 'magiclink' || type === 'email')) {
         try {
             const { error } = await supabase.auth.verifyOtp({ type: type as any, token_hash });

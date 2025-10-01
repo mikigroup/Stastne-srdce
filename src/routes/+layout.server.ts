@@ -23,7 +23,16 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 		
 		// Pokud registrace není dokončena a uživatel není na stránce dokončení registrace
 		if (!registrationStatus.isComplete && url.pathname !== ROUTES.AUTH.SIGNUP_COMPLETE && !url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE + '/')) {
-			throw redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
+			// Pokud je status 'pending' a profil neexistuje, znamená to, že uživatel čeká na potvrzení emailu
+			// Nepřesměrovávat na /complete, ale nechat uživatele na aktuální stránce
+			if (registrationStatus.actualStatus === 'pending' && registrationStatus.validationResult.missingFields.includes('Profil nenalezen - dokončete registraci')) {
+				console.log('ℹ️ [LAYOUT] User waiting for email confirmation, not redirecting to /complete');
+				// Necháme uživatele pokračovat - bude vidět informaci o potvrzení emailu
+			} else {
+				// Pro ostatní případy (incomplete_data nebo pending s existujícím profilem) přesměrovat na /complete
+				console.log('🔄 [LAYOUT] Redirecting to /complete for user with incomplete registration');
+				throw redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
+			}
 		}
 
 		// Načteme celý profil pro return

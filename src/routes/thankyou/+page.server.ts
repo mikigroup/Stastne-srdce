@@ -37,6 +37,55 @@ export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId }
         throw error(404, 'Objednávka nenalezena');
     }
 
+    // Načteme aktuální data menu pro každou položku objednávky
+    if (order && order.order_items) {
+        console.log("Načítání aktuálních dat menu pro thankyou stránku...");
+        
+        for (const item of order.order_items) {
+            if (item.variant_id && item.variant_id.menu_id) {
+                const menuId = item.variant_id.menu_id.id;
+                console.log(`Načítání aktuální verze menu pro ID: ${menuId}`);
+                
+                try {
+                    // Použijeme stejný systém jako admin order detail - načteme aktuální verzi menu
+                    const { data: currentVersionId, error: versionError } = await supabase.rpc(
+                        "get_current_menu_version",
+                        { p_menu_id: menuId }
+                    );
+
+                    if (!versionError && currentVersionId) {
+                        // Načteme data aktuální verze menu
+                        const { data: versionData, error: versionDataError } = await supabase
+                            .from("menu_versions")
+                            .select("*")
+                            .eq("id", currentVersionId)
+                            .single();
+
+                        if (!versionDataError && versionData) {
+                            // Načteme aktuální varianty pro tuto verzi
+                            const { data: currentVariants, error: variantsError } = await supabase
+                                .from("menu_variants")
+                                .select("*")
+                                .eq("menu_id", menuId)
+                                .eq("menu_version_id", currentVersionId)
+                                .eq("variant_number", item.variant_id.variant_number)
+                                .single();
+
+                            if (!variantsError && currentVariants) {
+                                // Aktualizujeme data položky objednávky aktuálními daty
+                                (item as any).menuVersionData = versionData;
+                                (item as any).currentVariantData = currentVariants;
+                                console.log(`Aktualizována položka objednávky s aktuálními daty menu pro thankyou stránku`);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Chyba při načítání aktuální verze menu ${menuId}:`, error);
+                }
+            }
+        }
+    }
+
     // Validate customer profile data
     const validationResult = validateProfileForInvoicing({
         first_name: order.customer_first_name,
