@@ -133,7 +133,7 @@ export const actions: Actions = {
 			}
 
 			// Create order using the stored procedure
-			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
+			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
 				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
 				p_date: new Date().toISOString(),

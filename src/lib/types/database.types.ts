@@ -499,7 +499,7 @@ export type Database = {
           fakturoid_data?: Json | null
           id?: string
           note?: string | null
-          order_number?: string
+          order_number: string
           pay_method?: string | null
           pay_state?: boolean | null
           shipping_method?: string | null
@@ -555,6 +555,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accessible_tenant_ids: string[] | null
           account_suspended: boolean | null
           allergies: boolean | null
           allergies_description: string | null
@@ -596,6 +597,7 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          accessible_tenant_ids?: string[] | null
           account_suspended?: boolean | null
           allergies?: boolean | null
           allergies_description?: string | null
@@ -637,6 +639,7 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          accessible_tenant_ids?: string[] | null
           account_suspended?: boolean | null
           allergies?: boolean | null
           allergies_description?: string | null
@@ -925,45 +928,105 @@ export type Database = {
           p_user_id: string
         }
         Returns: {
-          created_at: string | null
-          currency: string | null
-          customer_city: string | null
-          customer_email: string | null
-          customer_first_name: string | null
-          customer_last_name: string | null
-          customer_street: string | null
-          customer_street_number: string | null
-          customer_telephone: string | null
-          customer_zip_code: string | null
-          date: string | null
-          delivery_city: string | null
-          delivery_first_name: string | null
-          delivery_last_name: string | null
-          delivery_street: string | null
-          delivery_street_number: string | null
-          delivery_telephone: string | null
-          delivery_zip_code: string | null
-          fakturoid_data: Json | null
+          created_at: string
+          currency: string
+          customer_city: string
+          customer_email: string
+          customer_first_name: string
+          customer_last_name: string
+          customer_street: string
+          customer_street_number: string
+          customer_telephone: string
+          customer_zip_code: string
+          date: string
+          delivery_city: string
+          delivery_first_name: string
+          delivery_last_name: string
+          delivery_street: string
+          delivery_street_number: string
+          delivery_telephone: string
+          delivery_zip_code: string
+          fakturoid_data: Json
           id: string
-          note: string | null
+          note: string
           order_number: string
-          pay_method: string | null
-          pay_state: boolean | null
-          shipping_method: string | null
-          state: string | null
-          tenant_id: string | null
-          total_pieces: number | null
-          total_price: number | null
-          updated_at: string | null
-          user_id: string | null
+          pay_method: string
+          pay_state: boolean
+          shipping_method: string
+          state: string
+          tenant_id: string
+          total_pieces: number
+          total_price: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      create_order_with_items1: {
+        Args: {
+          p_created_at: string
+          p_currency: string
+          p_customer_city: string
+          p_customer_email: string
+          p_customer_first_name: string
+          p_customer_last_name: string
+          p_customer_street: string
+          p_customer_street_number: string
+          p_customer_telephone: string
+          p_customer_zip_code: string
+          p_date: string
+          p_note: string
+          p_order_items: Database["public"]["CompositeTypes"]["order_item_input"][]
+          p_pay_state: boolean
+          p_shipping_method: string
+          p_tenant_id: string
+          p_total_pieces: number
+          p_total_price: number
+          p_user_id: string
+        }
+        Returns: {
+          created_at: string
+          currency: string
+          customer_city: string
+          customer_email: string
+          customer_first_name: string
+          customer_last_name: string
+          customer_street: string
+          customer_street_number: string
+          customer_telephone: string
+          customer_zip_code: string
+          date: string
+          delivery_city: string
+          delivery_first_name: string
+          delivery_last_name: string
+          delivery_street: string
+          delivery_street_number: string
+          delivery_telephone: string
+          delivery_zip_code: string
+          fakturoid_data: Json
+          id: string
+          note: string
+          order_number: string
+          pay_method: string
+          pay_state: boolean
+          shipping_method: string
+          state: string
+          tenant_id: string
+          total_pieces: number
+          total_price: number
+          updated_at: string
+          user_id: string
         }[]
       }
       delete_menu: {
-        Args: { p_menu_id: string }
+        Args: { p_menu_id: string } | { p_menu_id: string; p_tenant_id: string }
         Returns: undefined
       }
       generate_order_number: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_order_number1: {
+        Args: { p_tenant_id: string }
         Returns: string
       }
       get_current_menu_version: {
@@ -975,7 +1038,9 @@ export type Database = {
         Returns: string
       }
       get_menu_version_at_date: {
-        Args: { p_date: string; p_menu_id: string }
+        Args:
+          | { p_date: string; p_menu_id: string }
+          | { p_date: string; p_menu_id: string; p_tenant_id: string }
         Returns: string
       }
       process_scheduled_data_deletions: {
@@ -987,7 +1052,7 @@ export type Database = {
         Returns: undefined
       }
       soft_delete_menu: {
-        Args: { p_menu_id: string }
+        Args: { p_menu_id: string } | { p_menu_id: string; p_tenant_id: string }
         Returns: undefined
       }
       unaccent: {

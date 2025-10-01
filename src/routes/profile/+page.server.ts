@@ -59,7 +59,7 @@ interface ProfileData {
 }
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, safeGetSession }
+	locals: { supabase, safeGetSession, tenantId }
 }) => {
 	const { session } = await safeGetSession();
 	if (!session) {
@@ -109,6 +109,7 @@ export const load: PageServerLoad = async ({
    `
 		)
 		.eq("user_id", session.user.id)
+		.eq("tenant_id", tenantId)  // ← Přidáno
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {

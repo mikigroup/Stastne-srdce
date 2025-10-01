@@ -4,7 +4,7 @@ import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
+export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId } }) => {
     const orderNumber = url.searchParams.get('order');
     
     if (!orderNumber) {
@@ -25,6 +25,7 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
             )
         `)
         .eq('order_number', orderNumber)
+        .eq('tenant_id', tenantId)  // ← Přidáno
         .single();
 
     if (orderError) {
