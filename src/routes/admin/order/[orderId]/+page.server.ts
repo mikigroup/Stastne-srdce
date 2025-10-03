@@ -30,7 +30,26 @@ export const load: PageServerLoad = async ({
 			.from("orders")
 			.select(
 				`*,
-				order_items(*, variant_id(*, menu_id(*), menu_version_id(*)))`
+				order_items(
+					id,
+					price,
+					quantity,
+					variant: menu_variants(
+						id,
+						variant_number,
+						description,
+						menu: menus(
+							id,
+							date,
+							soup
+						),
+						menu_version_id: menu_versions(
+							id,
+							date,
+							soup
+						)
+					)
+				)`
 			)
 			.eq("id", orderId)
 			.single();
@@ -50,55 +69,7 @@ export const load: PageServerLoad = async ({
 			console.log("Order data structure:", JSON.stringify(order, null, 2).substring(0, 500) + "...");
 		}
 
-		// Načteme aktuální data menu pro každou položku objednávky
-		if (order && order.order_items) {
-			console.log("Načítání aktuálních dat menu pro objednávku...");
-			
-			// Pro každou položku objednávky načteme aktuální verzi menu
-			for (const item of order.order_items) {
-				if (item.variant_id && item.variant_id.menu_id) {
-					const menuId = item.variant_id.menu_id.id;
-					console.log(`Načítání aktuální verze menu pro ID: ${menuId}`);
-					
-					try {
-						// Použijeme stejný systém jako obedy stránka - načteme aktuální verzi menu
-						const { data: currentVersionId, error: versionError } = await supabase.rpc(
-							"get_current_menu_version",
-							{ p_menu_id: menuId }
-						);
-
-						if (!versionError && currentVersionId) {
-							// Načteme data aktuální verze menu
-							const { data: versionData, error: versionDataError } = await supabase
-								.from("menu_versions")
-								.select("*")
-								.eq("id", currentVersionId)
-								.single();
-
-							if (!versionDataError && versionData) {
-								// Načteme aktuální varianty pro tuto verzi
-								const { data: currentVariants, error: variantsError } = await supabase
-									.from("menu_variants")
-									.select("*")
-									.eq("menu_id", menuId)
-									.eq("menu_version_id", currentVersionId)
-									.eq("variant_number", item.variant_id.variant_number)
-									.single();
-
-								if (!variantsError && currentVariants) {
-									// Aktualizujeme data položky objednávky aktuálními daty
-									item.menuVersionData = versionData;
-									item.currentVariantData = currentVariants;
-									console.log(`Aktualizována položka objednávky s aktuálními daty menu`);
-								}
-							}
-						}
-					} catch (error) {
-						console.error(`Chyba při načítání aktuální verze menu ${menuId}:`, error);
-					}
-				}
-			}
-		}
+		// Používáme pouze původní data z objednávky - žádné načítání aktuální verze
 
 		// Načtení předchozí a následující objednávky pro navigaci
 		let prevOrderId = null;

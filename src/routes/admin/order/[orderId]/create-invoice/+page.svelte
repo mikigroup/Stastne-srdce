@@ -40,8 +40,6 @@
 			menuDate = item.variant_id.menu_id.date;
 		} else if (item.variant_id?.menu_version_id?.date) {
 			menuDate = item.variant_id.menu_version_id.date;
-		} else if (item.menuVersionData?.date) {
-			menuDate = item.menuVersionData.date;
 		}
 		
 		// Získání čísla varianty

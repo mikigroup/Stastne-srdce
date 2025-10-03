@@ -591,14 +591,17 @@
                     <div class="border border-gray-200 rounded-lg overflow-hidden">
                       <div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
                         <div class="font-medium">
-                          {#if item.currentVariantData}
-                            {item.currentVariantData.description}
-                          {:else}
-                            {item.variant?.description || 'Produkt'}
-                          {/if}
+                          {item.variant?.description || 'Produkt'}
                         </div>
                         <div class="text-sm text-gray-500">
                           {item.quantity}x
+                        </div>
+                      </div>
+                      
+                      <!-- Datum menu -->
+                      <div class="px-3 py-2 bg-blue-50 border-b border-gray-200">
+                        <div class="text-sm text-blue-700 font-medium">
+                          📅 Datum menu: {item.variant?.menu_version_id?.date || item.variant?.menu?.date || 'N/A'}
                         </div>
                       </div>
 
@@ -610,12 +613,7 @@
                             </svg>
                           </div>
                           <div class="font-medium">
-                            Polévka: 
-                            {#if item.menuVersionData}
-                              {item.menuVersionData.soup || 'N/A'}
-                            {:else}
-                              {item.variant?.menu?.soup || 'N/A'}
-                            {/if}
+                            Polévka: {item.variant?.menu_version_id?.soup || item.variant?.menu?.soup || 'N/A'}
                           </div>
                         </div>
 
@@ -625,12 +623,7 @@
                               <div class="col-span-2">
                                 <div class="text-sm text-gray-500">Varianta</div>
                                 <div>
-                                  {item.variant?.variant_number}. 
-                                  {#if item.currentVariantData}
-                                    {item.currentVariantData.description}
-                                  {:else}
-                                    {item.variant?.description}
-                                  {/if}
+                                  {item.variant?.variant_number}. {item.variant?.description}
                                 </div>
                               </div>
                               <div>
