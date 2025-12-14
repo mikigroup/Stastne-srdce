@@ -3,6 +3,7 @@ import type { Actions } from "./$types";
 import { sendEmail } from "$lib/email";
 import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
 import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { isTemporaryEmail } from "$lib/utils/botDetection";
 import * as yup from "yup";
 
 // Yup schéma pro validaci registrace
@@ -63,6 +64,16 @@ export const actions = {
 				// Graceful degradation - pokud není nakonfigurováno, pokračovat
 			}
 
+			// Kontrola dočasného emailu
+			if (isTemporaryEmail(email)) {
+				console.warn('⚠️ [CUSTOMER SIGNUP] Temporary email detected:', email.trim());
+				return fail(400, {
+					error: true,
+					message: "Dočasné emailové adresy nejsou povoleny. Použijte prosím trvalou emailovou adresu.",
+					email
+				});
+			}
+
 			// Validace pomocí yup
 			try {
 				await signUpSchema.validate({ email, password, repassword }, { abortEarly: false });
@@ -77,8 +88,8 @@ export const actions = {
 
 				return fail(400, {
 					error: true,
-						message: "Opravte prosím chyby ve formuláři",
-						errors,
+					message: "Opravte prosím chyby ve formuláři",
+					errors,
 					email
 				});
 			}
