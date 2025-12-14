@@ -1,37 +1,18 @@
-import * as yup from 'yup';
+import { 
+    fakturoidAccountSchema,
+    fakturoidIntegrationSchema,
+    integrationsSettingsSchema,
+    type FakturoidAccount,
+    type FakturoidIntegration,
+    type IntegrationsSettings
+} from '$lib/utils/validationSchemas';
 
-// Základní schéma pro Fakturoid účet
-const FakturoidAccountSchema = yup.object({
-    name: yup.string().required("Název účtu je povinný"),
-    email: yup.string().email("Neplatný email").required(),
-    subdomain: yup.string().required("Subdoména je povinná"),
-    isActive: yup.boolean().required(),
-    connectedAt: yup.string().required()
-});
-
-// Schéma pro Fakturoid integraci
-export const FakturoidIntegrationSchema = yup.object().shape({
-    enabled: yup.boolean().required(),
-    connected: yup.boolean().required(),
-    subdomain: yup.string().optional(), // Ruční zadání subdomény
-    accounts: yup.array().of(FakturoidAccountSchema).required(),
-    defaultLanguage: yup.string().optional().default('cz'),
-    autoCreateInvoices: yup.boolean().optional().default(false),
-    invoiceDueDays: yup.number().optional().default(14),
-    defaultPaymentMethod: yup.string().optional().default('bank'),
-    sendInvoiceEmail: yup.boolean().optional().default(false),
-    invoiceNote: yup.string().optional().default('')
-});
-
-// Schéma pro celé integrations nastavení
-export const IntegrationsSettingsSchema = yup.object({
-    fakturoid: FakturoidIntegrationSchema.required()
-});
-
-// Typy pro TypeScript
-export type FakturoidAccount = yup.InferType<typeof FakturoidAccountSchema>;
-export type FakturoidIntegration = yup.InferType<typeof FakturoidIntegrationSchema>;
-export type IntegrationsSettings = yup.InferType<typeof IntegrationsSettingsSchema>;
+// Re-export schémat a typů pro zpětnou kompatibilitu
+export { 
+    fakturoidAccountSchema as FakturoidAccountSchema,
+    fakturoidIntegrationSchema as FakturoidIntegrationSchema,
+    integrationsSettingsSchema as IntegrationsSettingsSchema
+};
 
 /**
  * Validuje integrations nastavení
@@ -41,21 +22,16 @@ export function validateIntegrationsSettings(data: unknown): {
     data?: IntegrationsSettings; 
     error?: string;
 } {
-    try {
-        const result = IntegrationsSettingsSchema.validateSync(data, { abortEarly: false });
-        return { success: true, data: result };
-    } catch (e) {
-        if (e instanceof yup.ValidationError) {
-            return { 
-                success: false, 
-                error: e.errors.join(', ')
-            };
-        }
-        return { 
-            success: false, 
-            error: e instanceof Error ? e.message : 'Neznámá chyba validace'
-        };
+    const result = integrationsSettingsSchema.safeParse(data);
+    
+    if (result.success) {
+        return { success: true, data: result.data };
     }
+    
+    return { 
+        success: false, 
+        error: result.error.errors.map(e => e.message).join(', ')
+    };
 }
 
 import { getDefaultSettings } from '$lib/constants/defaultSettings';

@@ -4,28 +4,7 @@ import { sendEmail } from "$lib/email";
 import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
 import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
 import { isTemporaryEmail } from "$lib/utils/botDetection";
-import * as yup from "yup";
-
-// Yup schéma pro validaci registrace
-const signUpSchema = yup.object({
-	email: yup
-		.string()
-		.trim()
-		.email("Zadejte platný email")
-		.required("Email je povinný"),
-	password: yup
-		.string()
-		.trim()
-		.min(8, "Heslo musí mít alespoň 8 znaků")
-		.matches(/[A-Z]/, "Heslo musí obsahovat alespoň jedno velké písmeno")
-		.matches(/[0-9]/, "Heslo musí obsahovat alespoň jedno číslo")
-		.required("Heslo je povinné"),
-	repassword: yup
-		.string()
-		.trim()
-		.oneOf([yup.ref("password")], "Hesla se neshodují")
-		.required("Potvrzení hesla je povinné")
-});
+import { signUpSchema } from "$lib/utils/validationSchemas";
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
@@ -74,17 +53,17 @@ export const actions = {
 				});
 			}
 
-			// Validace pomocí yup
-			try {
-				await signUpSchema.validate({ email, password, repassword }, { abortEarly: false });
-			} catch (validationError) {
-				if (validationError instanceof yup.ValidationError) {
-					const errors = validationError.inner.reduce((acc, error) => {
-						if (error.path) {
-							acc[error.path] = error.message;
-						}
-						return acc;
-					}, {} as Record<string, string>);
+			// Validace pomocí Zod
+			const validationResult = signUpSchema.safeParse({ email, password, repassword });
+			
+			if (!validationResult.success) {
+				const errors = validationResult.error.errors.reduce((acc, error) => {
+					const path = error.path[0];
+					if (path) {
+						acc[path] = error.message;
+					}
+					return acc;
+				}, {} as Record<string, string>);
 
 				return fail(400, {
 					error: true,
@@ -92,7 +71,6 @@ export const actions = {
 					errors,
 					email
 				});
-			}
 			}
 
 			console.log('🔧 [CUSTOMER SIGNUP] Attempting to create user in Supabase:', email.trim());
