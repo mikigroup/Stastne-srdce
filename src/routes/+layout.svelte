@@ -38,29 +38,38 @@
 	// Kontrola nedokončené registrace
 	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
 
+	let isAdminRoute = false;
+	
 	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((event) => {
+		// Inicializace Speed Insights
+		injectSpeedInsights();
+		
+		// Nastavení admin route
+		isAdminRoute = $page.url.pathname.startsWith("/admin");
+		
+		// Auth state change listener
+		const authStateChange = supabase.auth.onAuthStateChange((event) => {
 			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
 				invalidate("supabase:auth");
 			}
 		});
-		return () => data.subscription.unsubscribe();
+		
+		// Cleanup funkce
+		return () => {
+			try {
+				if (authStateChange?.data?.subscription) {
+					authStateChange.data.subscription.unsubscribe();
+				}
+			} catch (error) {
+				// Ignorovat chyby při cleanup
+				console.warn('Chyba při odstraňování auth subscription:', error);
+			}
+		};
 	});
-
-	let isAdminRoute = false;
-	
-	onMount(() => {
-		isAdminRoute = $page.url.pathname.startsWith("/admin");
-	});
-	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
-	let showBanner = false;
-
-	onMount(() => {
-		const cookieConsent = cookieStore.hasConsent();
-		showBanner = !cookieConsent;
-	});
+	// Reaktivní kontrola cookie souhlasu pouze v prohlížeči
+	$: showBanner = browser && !cookieStore.hasConsent();
 
 	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;

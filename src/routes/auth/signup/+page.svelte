@@ -18,6 +18,7 @@
 	
 	export let form: FormData | null = null;
 	export let data;
+	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 

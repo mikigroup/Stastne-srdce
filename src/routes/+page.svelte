@@ -1,6 +1,7 @@
 <script lang="ts">
 
 	export let data;
+	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
 	let { texts } = data;
 	$: ({ texts  } = data);
 
