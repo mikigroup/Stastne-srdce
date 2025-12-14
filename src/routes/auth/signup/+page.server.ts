@@ -2,6 +2,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { sendEmail } from "$lib/email";
 import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
+import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
 import * as yup from "yup";
 
 // Yup schéma pro validaci registrace
@@ -32,6 +33,35 @@ export const actions = {
 			const email = formData.get("email")?.toString() || "";
 			const password = formData.get("password")?.toString() || "";
 			const repassword = formData.get("repassword")?.toString() || "";
+			const recaptchaToken = formData.get("recaptcha_token")?.toString() || "";
+
+			// Validace reCAPTCHA tokenu
+			if (recaptchaToken) {
+				const clientIP = getClientIP(request);
+				const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, clientIP, 0.5);
+				
+				if (!recaptchaResult.success) {
+					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA validation failed:', {
+						score: recaptchaResult.score,
+						error: recaptchaResult.error,
+						email: email.trim()
+					});
+					return fail(400, {
+						error: true,
+						message: "Ověření selhalo. Zkuste to prosím znovu.",
+						email
+					});
+				}
+
+				console.log('✅ [CUSTOMER SIGNUP] reCAPTCHA validation passed:', {
+					score: recaptchaResult.score,
+					email: email.trim()
+				});
+			} else {
+				console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA token missing');
+				// Pokud není token, ale reCAPTCHA je nakonfigurováno, blokovat
+				// Graceful degradation - pokud není nakonfigurováno, pokračovat
+			}
 
 			// Validace pomocí yup
 			try {

@@ -2,6 +2,7 @@ import { redirect, fail } from "@sveltejs/kit";
 import type { Actions, ActionFailure } from "@sveltejs/kit";
 import { sendEmail } from "$lib/email";
 import { createAdminSignupEmailTemplate } from "$lib/emailTemplates/adminSignupTemplate";
+import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
 
 type ActionData = {
 	message: {
@@ -23,6 +24,37 @@ export const actions: Actions = {
 		const email = formData.get("email") as string;
 		const password = formData.get("password") as string;
 		const confirmpassword = formData.get("confirmpassword") as string;
+		const recaptchaToken = formData.get("recaptcha_token")?.toString() || "";
+
+		// Validace reCAPTCHA tokenu
+		if (recaptchaToken) {
+			const clientIP = getClientIP(request);
+			const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, clientIP, 0.5);
+			
+			if (!recaptchaResult.success) {
+				console.warn('⚠️ [ADMIN SIGNUP] reCAPTCHA validation failed:', {
+					score: recaptchaResult.score,
+					error: recaptchaResult.error,
+					email: email
+				});
+				return fail(400, {
+					message: {
+						success: false,
+						display: "Ověření selhalo. Zkuste to prosím znovu."
+					},
+					email
+				});
+			}
+
+			console.log('✅ [ADMIN SIGNUP] reCAPTCHA validation passed:', {
+				score: recaptchaResult.score,
+				email: email
+			});
+		} else {
+			console.warn('⚠️ [ADMIN SIGNUP] reCAPTCHA token missing');
+			// Pokud není token, ale reCAPTCHA je nakonfigurováno, blokovat
+			// Graceful degradation - pokud není nakonfigurováno, pokračovat
+		}
 
 		if (password !== confirmpassword) {
 			return fail(400, {

@@ -16,6 +16,7 @@
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 	import { ROUTES } from "$lib/constants/routes";
+	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 
 	export let data: {
 		session: Session | null;
@@ -170,6 +171,15 @@
 	<script
 		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
 		type="module"></script>
+	
+	<!-- Google reCAPTCHA v3 - globálně pro celou aplikaci (načítá se jen jednou) -->
+	{#if browser && PUBLIC_RECAPTCHA_SITE_KEY}
+		<script
+			src="https://www.google.com/recaptcha/api.js?render={PUBLIC_RECAPTCHA_SITE_KEY}"
+			async
+			defer
+		></script>
+	{/if}
 	
 	<!-- Custom Head Scripts -->
 	{#if seoSettings?.customHeadScripts}

@@ -2,6 +2,9 @@
 	import type { ActionData } from "./$types";
 	import { enhance } from "$app/forms";
 	import AuthCard from "$lib/component/AuthCard.svelte";
+	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
+	import { browser } from "$app/environment";
+	import { onMount } from "svelte";
 	
 	type FormData = {
 		error?: boolean;
@@ -20,6 +23,38 @@
 
 	let loading = false;
 	let agreedToTerms = false;
+	let recaptchaReady = false;
+
+	// Inicializace reCAPTCHA po mount
+	onMount(() => {
+		if (browser && PUBLIC_RECAPTCHA_SITE_KEY) {
+			// Zkontrolovat, jestli už není script načtený
+			if ((window as any).grecaptcha) {
+				// Script už je načtený, počkat na ready
+				(window as any).grecaptcha.ready(() => {
+					recaptchaReady = true;
+				});
+			} else {
+				// Počkat na načtení scriptu z <svelte:head>
+				const checkGrecaptcha = setInterval(() => {
+					if ((window as any).grecaptcha) {
+						clearInterval(checkGrecaptcha);
+						(window as any).grecaptcha.ready(() => {
+							recaptchaReady = true;
+						});
+					}
+				}, 100);
+
+				// Timeout po 5 sekundách
+				setTimeout(() => {
+					clearInterval(checkGrecaptcha);
+					if ((window as any).grecaptcha) {
+						recaptchaReady = true;
+					}
+				}, 5000);
+			}
+		}
+	});
 
 	// Real-time validace
 	let emailError = "";
@@ -57,18 +92,90 @@
 		repasswordError = form.errors.repassword || "";
 	}
 
+	// Funkce pro získání reCAPTCHA tokenu
+	async function getRecaptchaToken(): Promise<string | null> {
+		if (!browser || !PUBLIC_RECAPTCHA_SITE_KEY) {
+			console.warn('⚠️ [RECAPTCHA] reCAPTCHA není nakonfigurováno');
+			return null;
+		}
+
+		try {
+			// Počkat na ready stav
+			if (!recaptchaReady) {
+				await new Promise<void>((resolve) => {
+					const checkReady = setInterval(() => {
+						if (recaptchaReady) {
+							clearInterval(checkReady);
+							resolve();
+						}
+					}, 50);
+
+					// Timeout po 3 sekundách
+					setTimeout(() => {
+						clearInterval(checkReady);
+						resolve();
+					}, 3000);
+				});
+			}
+
+			const grecaptcha = (window as any).grecaptcha;
+			if (!grecaptcha) {
+				console.error('❌ [RECAPTCHA] grecaptcha není dostupné');
+				return null;
+			}
+
+			// Použít grecaptcha.ready() callback - vždy, i když už je ready
+			return new Promise<string | null>((resolve) => {
+				grecaptcha.ready(() => {
+					grecaptcha.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: 'signup' })
+						.then((token: string) => {
+							resolve(token);
+						})
+						.catch((error: any) => {
+							console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+							resolve(null);
+						});
+				});
+			});
+		} catch (error) {
+			console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+			return null;
+		}
+	}
+
 	function handleSubmit() {
 		if (!agreedToTerms) return; // zabrání odeslání, pokud není souhlas
 
 		loading = true;
-		return async ({ result, update }: { result: any; update: any }) => {
-			console.log('Form result:', result);
-
-			if (result.type === 'success' || result.type === 'failure') {
+		return async ({ cancel, formData }: { cancel: () => void; formData: FormData }) => {
+			// Získat reCAPTCHA token
+			const recaptchaToken = await getRecaptchaToken();
+			
+			if (!recaptchaToken && PUBLIC_RECAPTCHA_SITE_KEY) {
+				// Pokud je reCAPTCHA nakonfigurováno, ale token se nepodařilo získat, zrušit odeslání
+				console.error('❌ [RECAPTCHA] Nepodařilo se získat token');
 				loading = false;
+				cancel();
+				// Zobrazit chybu uživateli
+				alert('Chyba při ověřování. Zkuste to prosím znovu.');
+				return;
 			}
 
-			await update();
+			// Přidat token do FormData
+			if (recaptchaToken) {
+				formData.append('recaptcha_token', recaptchaToken);
+			}
+
+			// Pokračovat s odesláním formuláře
+			return async ({ result, update }: { result: any; update: any }) => {
+				console.log('Form result:', result);
+
+				if (result.type === 'success' || result.type === 'failure') {
+					loading = false;
+				}
+
+				await update();
+			};
 		};
 	}
 
@@ -207,6 +314,9 @@
 				<p class="mt-1 text-xs text-red-600">{repasswordError}</p>
 			{/if}
 		</div>
+
+		<!-- reCAPTCHA token (hidden) -->
+		<input type="hidden" name="recaptcha_token" value="" />
 
 		<!-- Terms agreement -->
 		<div class="space-y-2">
