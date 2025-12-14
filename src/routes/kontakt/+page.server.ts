@@ -4,6 +4,8 @@ import nodemailer from "nodemailer";
 import * as yup from "yup";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { getSetting } from "$lib/services/siteSettingsService";
+import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { sanitizeEmailText, sanitizeEmailAddress, sanitizePhone } from "$lib/utils/emailSanitization";
 
 export const prerender = false;
 
@@ -84,30 +86,72 @@ export const actions: Actions = {
 			email: formData.get("email"),
 			tel: formData.get("tel"),
 			name: formData.get("name"),
-			content: formData.get("content")
+			content: formData.get("content"),
+			recaptchaToken: formData.get("recaptcha_token")?.toString() || ""
 		};
 
 		console.log('📧 Kontakt - Odesílání formuláře:', {
-			email: formValues.email,
-			tel: formValues.tel,
-			name: formValues.name,
+			email: formValues.email ? String(formValues.email).substring(0, 20) + '...' : 'prázdné',
+			tel: formValues.tel ? String(formValues.tel).substring(0, 10) + '...' : 'prázdné',
+			name: formValues.name ? String(formValues.name).substring(0, 20) + '...' : 'prázdné',
 			content: formValues.content ? `${String(formValues.content).substring(0, 50)}...` : 'prázdné'
 		});
+
+		// Validace reCAPTCHA tokenu
+		if (formValues.recaptchaToken) {
+			const clientIP = getClientIP(request);
+			const recaptchaResult = await verifyRecaptchaToken(formValues.recaptchaToken, clientIP, 0.5);
+			
+			if (!recaptchaResult.success) {
+				console.warn('⚠️ [KONTAKT] reCAPTCHA validation failed:', {
+					score: recaptchaResult.score,
+					error: recaptchaResult.error
+				});
+				return fail(400, {
+					errors: {},
+					status: {
+						success: false,
+						display: "Ověření selhalo. Zkuste to prosím znovu."
+					},
+					email: formValues.email,
+					tel: formValues.tel,
+					name: formValues.name,
+					content: formValues.content
+				});
+			}
+
+			console.log('✅ [KONTAKT] reCAPTCHA validation passed:', {
+				score: recaptchaResult.score
+			});
+		} else {
+			console.warn('⚠️ [KONTAKT] reCAPTCHA token missing');
+			// Graceful degradation - pokud není nakonfigurováno, pokračovat
+		}
 
 		try {
 			await contactSchema.validate(formValues, { abortEarly: false });
 			console.log('✅ Kontakt - Validace prošla úspěšně');
 
+			// Sanitizace hodnot před vložením do emailu
+			const sanitizedName = sanitizeEmailText(formValues.name);
+			const sanitizedEmail = sanitizeEmailAddress(formValues.email);
+			const sanitizedTel = sanitizePhone(formValues.tel);
+			const sanitizedContent = sanitizeEmailText(formValues.content);
+
 			const options = {
 				from: "info@stastnesrdce.cz",
 				to: "info@stastnesrdce.cz",
 				subject: "Šťastné srdce - Formulář",
-				text: `Dobrý den,\n
-								byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.\n
-								Kontaktní osoba: ${formValues.name}
-								Email: ${formValues.email}
-								Telefon: ${formValues.tel}\n
-								Obsah zprávy:\n${formValues.content}`
+				text: `Dobrý den,
+
+byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.
+
+Kontaktní osoba: ${sanitizedName}
+Email: ${sanitizedEmail}
+Telefon: ${sanitizedTel}
+
+Obsah zprávy:
+${sanitizedContent}`
 			};
 
 			console.log('📧 Kontakt - Odesílám email...');

@@ -11,6 +11,9 @@
 		Clock,
 		Globe
 	} from "lucide-svelte";
+	import { PUBLIC_RECAPTCHA_SITE_KEY, PUBLIC_GOOGLE_MAPS_API_KEY } from "$env/static/public";
+	import { browser } from "$app/environment";
+	import { onMount } from "svelte";
 
 	export let data: any;
 	export let form: any;
@@ -22,13 +25,122 @@
 	$: contact = settings?.contact || {};
 	$: business = settings?.business || {};
 	
-	
 	// Title pro mapu z nastavení
 	$: mapTitle = business?.companyName && contact?.address ? 
 		`${business.companyName} - ${contact.address}` : 
 		'';
 
-	// SvelteKit form actions - žádný další kód není potřeba
+	// reCAPTCHA state
+	let recaptchaReady = false;
+
+	// Inicializace reCAPTCHA po mount
+	onMount(() => {
+		if (browser && PUBLIC_RECAPTCHA_SITE_KEY) {
+			// Zkontrolovat, jestli už není script načtený
+			if ((window as any).grecaptcha) {
+				// Script už je načtený, počkat na ready
+				(window as any).grecaptcha.ready(() => {
+					recaptchaReady = true;
+				});
+			} else {
+				// Počkat na načtení scriptu z <svelte:head>
+				const checkGrecaptcha = setInterval(() => {
+					if ((window as any).grecaptcha) {
+						clearInterval(checkGrecaptcha);
+						(window as any).grecaptcha.ready(() => {
+							recaptchaReady = true;
+						});
+					}
+				}, 100);
+
+				// Timeout po 5 sekundách
+				setTimeout(() => {
+					clearInterval(checkGrecaptcha);
+					if ((window as any).grecaptcha) {
+						recaptchaReady = true;
+					}
+				}, 5000);
+			}
+		}
+	});
+
+	// Funkce pro získání reCAPTCHA tokenu
+	async function getRecaptchaToken(): Promise<string | null> {
+		if (!browser || !PUBLIC_RECAPTCHA_SITE_KEY) {
+			console.warn('⚠️ [RECAPTCHA] reCAPTCHA není nakonfigurováno');
+			return null;
+		}
+
+		try {
+			// Počkat na ready stav
+			if (!recaptchaReady) {
+				await new Promise<void>((resolve) => {
+					const checkReady = setInterval(() => {
+						if (recaptchaReady) {
+							clearInterval(checkReady);
+							resolve();
+						}
+					}, 50);
+
+					// Timeout po 3 sekundách
+					setTimeout(() => {
+						clearInterval(checkReady);
+						resolve();
+					}, 3000);
+				});
+			}
+
+			const grecaptcha = (window as any).grecaptcha;
+			if (!grecaptcha) {
+				console.error('❌ [RECAPTCHA] grecaptcha není dostupné');
+				return null;
+			}
+
+			// Použít grecaptcha.ready() callback - vždy, i když už je ready
+			return new Promise<string | null>((resolve) => {
+				grecaptcha.ready(() => {
+					grecaptcha.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact_form' })
+						.then((token: string) => {
+							resolve(token);
+						})
+						.catch((error: any) => {
+							console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+							resolve(null);
+						});
+				});
+			});
+		} catch (error) {
+			console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+			return null;
+		}
+	}
+
+	// Enhanced form submit handler s reCAPTCHA
+	function handleSubmit() {
+		return async ({ cancel, formData }: { cancel: () => void; formData: FormData }) => {
+			// Získat reCAPTCHA token
+			const recaptchaToken = await getRecaptchaToken();
+			
+			if (!recaptchaToken && PUBLIC_RECAPTCHA_SITE_KEY) {
+				// Pokud je reCAPTCHA nakonfigurováno, ale token se nepodařilo získat, zrušit odeslání
+				console.error('❌ [RECAPTCHA] Nepodařilo se získat token');
+				cancel();
+				// Zobrazit chybu uživateli
+				alert('Chyba při ověřování. Zkuste to prosím znovu.');
+				return;
+			}
+
+			// Přidat token do FormData
+			if (recaptchaToken) {
+				formData.append('recaptcha_token', recaptchaToken);
+			}
+
+			// Pokračovat s odesláním formuláře
+			return async ({ result, update }: { result: any; update: any }) => {
+				await update();
+			};
+		};
+	}
 </script>
 
 <svelte:head>
@@ -133,10 +245,10 @@
 
 					<!-- Mapa -->
 					<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
-						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng}
+						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng && PUBLIC_GOOGLE_MAPS_API_KEY}
 							<iframe
 								class="w-full h-full"
-								src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
+								src="https://www.google.com/maps/embed/v1/place?key={PUBLIC_GOOGLE_MAPS_API_KEY}&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
 								loading="lazy"
 								referrerpolicy="no-referrer-when-downgrade"
 								title={mapTitle} />
@@ -157,7 +269,7 @@
 					<form
 						method="POST"
 						action="?/sendForm"
-						use:enhance
+						use:enhance={handleSubmit}
 						class="space-y-4">
 						<!-- Email -->
 						<div class="relative">
