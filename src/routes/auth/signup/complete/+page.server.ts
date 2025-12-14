@@ -2,6 +2,21 @@ import { redirect, fail } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
 import { ROUTES } from "$lib/constants/routes";
 import { getTenantId } from "$lib/utils/tenantUtils";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database.types';
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
+
+// Admin Supabase klient pro načtení emailu z auth.users
+const adminSupabase = createClient<Database>(
+	PRIVATE_SBUrl,
+	PRIVATE_ServiceKey,
+	{
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false
+		}
+	}
+);
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -63,6 +78,48 @@ export const actions: Actions = {
 		try {
 			const formData = await request.formData();
 
+			// Získat email - pokud není v session, načíst z auth.users přes Admin API
+			let emailToUse = session.user.email;
+
+			console.log('📧 [SIGNUP COMPLETE] Email check:', {
+				sessionEmail: session.user.email,
+				userId: session.user.id
+			});
+
+			// Pokud email není v session, načíst ho z auth.users
+			if (!emailToUse) {
+				console.warn('⚠️ [SIGNUP COMPLETE] Email missing in session, fetching from auth.users');
+
+				try {
+					const { data: authUser, error: authError } = await adminSupabase.auth.admin.getUserById(session.user.id);
+
+					if (authError) {
+						console.error('❌ [SIGNUP COMPLETE] Error fetching user from auth:', authError);
+						throw authError;
+					}
+
+					if (authUser?.user?.email) {
+						emailToUse = authUser.user.email;
+						console.log('✅ [SIGNUP COMPLETE] Email loaded from auth.users:', emailToUse);
+					} else {
+						console.error('❌ [SIGNUP COMPLETE] No email found in auth.users for user:', session.user.id);
+					}
+				} catch (adminError) {
+					console.error('❌ [SIGNUP COMPLETE] Admin API error:', adminError);
+				}
+			}
+
+			// Pokud stále nemáme email, vrátit chybu
+			if (!emailToUse) {
+				console.error('❌ [SIGNUP COMPLETE] No email available from any source!');
+				return fail(400, {
+					message: {
+						success: false,
+						display: "Chyba: Email nebyl nalezen. Prosím zkuste se odhlásit a znovu přihlásit, nebo kontaktujte podporu."
+					}
+				});
+			}
+
 			// Data z formuláře (bez statusu)
 			const profileData = {
 				id: session.user.id,
@@ -81,7 +138,7 @@ export const actions: Actions = {
 				delivery_method: formData.get("delivery_method") as string,
 				payment_method: formData.get("payment_method") as string,
 				user_role: "customer",
-				email: session.user.email,
+				email: emailToUse,
 				updated_at: new Date().toISOString()
 			};
 
