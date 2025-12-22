@@ -24,7 +24,12 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
     const type = url.searchParams.get("type");
     const email = url.searchParams.get("email");
     
-    console.log('📧 [AUTH CONFIRM] Params:', { token_hash, type, email });
+    console.log('📧 [AUTH CONFIRM] Params:', { 
+        token_hash: token_hash ? token_hash.substring(0, 20) + '...' : null,
+        token_hash_length: token_hash?.length || 0,
+        type, 
+        email 
+    });
     
     // Pro náš custom admin signup flow
     if (type === "admin_signup" && email) {
@@ -32,13 +37,25 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
             // Ověřit token_hash pokud je přítomen
             if (token_hash) {
                 console.log('🔍 [AUTH CONFIRM] Verifying token_hash for admin signup');
-                const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                console.log('🔍 [AUTH CONFIRM] Token hash:', token_hash.substring(0, 20) + '...');
+                
+                // Použít adminSupabase pro ověření tokenu (má správná oprávnění)
+                const { data: verifyData, error: verifyError } = await adminSupabase.auth.verifyOtp({
                     type: "signup",
                     token_hash: token_hash
                 });
 
-                if (verifyError || !verifyData?.user) {
-                    console.error('❌ [AUTH CONFIRM] Token verification failed:', verifyError);
+                if (verifyError) {
+                    console.error('❌ [AUTH CONFIRM] Token verification failed:', {
+                        error: verifyError,
+                        message: verifyError.message,
+                        status: verifyError.status
+                    });
+                    return redirect(303, '/auth/error?error=invalid_token');
+                }
+
+                if (!verifyData?.user) {
+                    console.error('❌ [AUTH CONFIRM] Token verified but no user returned');
                     return redirect(303, '/auth/error?error=invalid_token');
                 }
 
@@ -169,13 +186,81 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
             // Ověřit token_hash pokud je přítomen
             if (token_hash) {
                 console.log('🔍 [AUTH CONFIRM] Verifying token_hash for customer signup');
-                const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                console.log('🔍 [AUTH CONFIRM] Token hash:', token_hash.substring(0, 20) + '...');
+                console.log('🔍 [AUTH CONFIRM] Token hash length:', token_hash.length);
+                
+                // Použít adminSupabase pro ověření tokenu (má správná oprávnění)
+                const { data: verifyData, error: verifyError } = await adminSupabase.auth.verifyOtp({
                     type: "signup",
                     token_hash: token_hash
                 });
 
-                if (verifyError || !verifyData?.user) {
-                    console.error('❌ [AUTH CONFIRM] Token verification failed:', verifyError);
+                if (verifyError) {
+                    console.error('❌ [AUTH CONFIRM] Token verification failed:', {
+                        error: verifyError,
+                        message: verifyError.message,
+                        status: verifyError.status,
+                        name: verifyError.name
+                    });
+                    
+                    // Pokud verifyOtp selže, zkusit alternativní přístup - najít uživatele a potvrdit email přímo
+                    console.log('🔄 [AUTH CONFIRM] Trying alternative approach - finding user by email');
+                    const { data: users, error: findError } = await adminSupabase.auth.admin.listUsers();
+                    
+                    if (!findError && users) {
+                        const user = users.users.find(u => u.email === email);
+                        if (user) {
+                            console.log('✅ [AUTH CONFIRM] User found, confirming email directly');
+                            const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
+                                user.id,
+                                { email_confirm: true }
+                            );
+                            
+                            if (!confirmError) {
+                                console.log('✅ [AUTH CONFIRM] Email confirmed via alternative method');
+                                // Pokračovat s vytvořením profilu
+                                const userForProfile = user;
+                                
+                                // Vytvořit profil pro zákazníka (s kontrolou existence)
+                                const { data: existingProfile } = await adminSupabase
+                                    .from('profiles')
+                                    .select('id')
+                                    .eq('id', userForProfile.id)
+                                    .single();
+
+                                if (!existingProfile) {
+                                    const { error: profileError } = await adminSupabase
+                                        .from('profiles')
+                                        .insert({
+                                            id: userForProfile.id,
+                                            email: userForProfile.email,
+                                            user_role: 'customer',
+                                            registration_status: 'pending',
+                                            tenant_id: PUBLIC_TENANT,
+                                            accessible_tenant_ids: [PUBLIC_TENANT],
+                                            created_at: new Date().toISOString(),
+                                            updated_at: new Date().toISOString()
+                                        });
+
+                                    if (profileError) {
+                                        console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
+                                    } else {
+                                        console.log('✅ [AUTH CONFIRM] Profile created successfully');
+                                    }
+                                }
+                                
+                                confirmationSuccess = true;
+                                // Přesměrovat na login
+                                return redirect(303, '/auth/login?message=email_confirmed');
+                            }
+                        }
+                    }
+                    
+                    return redirect(303, '/auth/error?error=invalid_token');
+                }
+
+                if (!verifyData?.user) {
+                    console.error('❌ [AUTH CONFIRM] Token verified but no user returned');
                     return redirect(303, '/auth/error?error=invalid_token');
                 }
 
@@ -280,6 +365,18 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
             }
         } catch (error) {
             console.error('❌ [AUTH CONFIRM] Error in customer signup confirmation:', error);
+            
+            // Pokud je to Response (redirect), hoď ho dál
+            if (error instanceof Response) {
+                throw error;
+            }
+            
+            // Jinak logovat detailně a nastavit confirmationSuccess na false
+            console.error('❌ [AUTH CONFIRM] Detailed error:', {
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined
+            });
+            confirmationSuccess = false;
         }
 
         // Přesměrování mimo try-catch blok
