@@ -8,6 +8,7 @@ import { signUpSchema } from "$lib/utils/validationSchemas";
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
+import { PUBLIC_RECAPTCHA_SITE_KEY } from '$env/static/public';
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
@@ -16,15 +17,38 @@ export const actions = {
 			const email = formData.get("email")?.toString() || "";
 			const password = formData.get("password")?.toString() || "";
 			const repassword = formData.get("repassword")?.toString() || "";
-			const recaptchaToken = formData.get("recaptcha_token")?.toString() || "";
+			
+			// Debug: zkontrolovat všechna pole v FormData
+			const allFormDataKeys = Array.from(formData.keys());
+			console.log('🔍 [CUSTOMER SIGNUP] FormData keys:', allFormDataKeys);
+			
+			// reCAPTCHA token může být pod 'g-recaptcha-response' (standardní) nebo 'recaptcha_token' (fallback)
+			const recaptchaToken = formData.get("g-recaptcha-response")?.toString() || 
+			                        formData.get("recaptcha_token")?.toString() || "";
+			
+			console.log('🔍 [CUSTOMER SIGNUP] reCAPTCHA token found:', {
+				hasToken: !!recaptchaToken,
+				tokenLength: recaptchaToken?.length || 0,
+				tokenPreview: recaptchaToken ? recaptchaToken.substring(0, 20) + '...' : 'none'
+			});
 
-			// Validace reCAPTCHA tokenu
-			if (recaptchaToken) {
+			// KONTROLA: Pokud je reCAPTCHA nakonfigurováno, token je POVINNÝ
+			if (PUBLIC_RECAPTCHA_SITE_KEY) {
+				if (!recaptchaToken) {
+					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA token missing - blocking registration');
+					return fail(400, {
+						error: true,
+						message: "Ověření selhalo. Zkuste to prosím znovu.",
+						email
+					});
+				}
+
+				// Validace reCAPTCHA tokenu
 				const clientIP = getClientIP(request);
 				const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, clientIP, 0.5);
 				
 				if (!recaptchaResult.success) {
-					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA validation failed:', {
+					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA validation failed - blocking registration:', {
 						score: recaptchaResult.score,
 						error: recaptchaResult.error,
 						email: email.trim()
@@ -40,10 +64,6 @@ export const actions = {
 					score: recaptchaResult.score,
 					email: email.trim()
 				});
-			} else {
-				console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA token missing');
-				// Pokud není token, ale reCAPTCHA je nakonfigurováno, blokovat
-				// Graceful degradation - pokud není nakonfigurováno, pokračovat
 			}
 
 			// Kontrola dočasného emailu
@@ -133,14 +153,51 @@ export const actions = {
 			);
 
 			// Generovat Supabase token pomocí generateLink
+			// POZOR: Pokud uživatel už existuje, použít type: "magiclink" místo "signup"
 			console.log('🔧 [CUSTOMER SIGNUP] Generating confirmation token for:', email.trim());
-			const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
+			
+			// Zkusit nejdřív type: "signup" (pro nové uživatele)
+			let linkData = null;
+			let linkError = null;
+			
+			const { data: signupLinkData, error: signupLinkError } = await adminSupabase.auth.admin.generateLink({
 				type: "signup",
 				email: email.trim()
 			});
 
+			if (signupLinkError) {
+				// Pokud selže kvůli existujícímu uživateli, zkusit magiclink
+				if (signupLinkError.message?.includes('already') || signupLinkError.code === 'email_exists') {
+					console.log('ℹ️ [CUSTOMER SIGNUP] User already exists, using magiclink type');
+					const { data: magicLinkData, error: magicLinkError } = await adminSupabase.auth.admin.generateLink({
+						type: "magiclink",
+						email: email.trim(),
+						options: {
+							redirectTo: `${new URL(request.url).origin}/auth/confirm`
+						}
+					});
+					
+					linkData = magicLinkData;
+					linkError = magicLinkError;
+				} else {
+					linkData = signupLinkData;
+					linkError = signupLinkError;
+				}
+			} else {
+				linkData = signupLinkData;
+				linkError = signupLinkError;
+			}
+
 			if (linkError || !linkData?.properties?.action_link) {
 				console.error('❌ [CUSTOMER SIGNUP] Error generating confirmation link:', linkError);
+				// Pokud selže generování tokenu, smazat uživatele (rollback)
+				try {
+					await adminSupabase.auth.admin.deleteUser(userData.user.id);
+					console.log('🔄 [CUSTOMER SIGNUP] Rolled back user creation due to token generation failure');
+				} catch (deleteError) {
+					console.error('❌ [CUSTOMER SIGNUP] Failed to rollback user creation:', deleteError);
+				}
+				
 				return fail(500, {
 					error: true,
 					message: "Chyba při generování potvrzovacího odkazu",
