@@ -253,7 +253,7 @@ export const actions: Actions = {
 			const tenantId = getTenantId(locals);
 
 			if (existingProfile) {
-				// Profil existuje - použít UPDATE (zachová email pokud už existuje)
+				// Profil existuje - použít UPDATE
 				const updateData: any = {
 					first_name: profileData.first_name,
 					last_name: profileData.last_name,
@@ -272,12 +272,19 @@ export const actions: Actions = {
 					updated_at: new Date().toISOString()
 				};
 
-				// Email aktualizovat jen pokud není v existujícím profilu nebo je null
-				if (!existingProfile.email || existingProfile.email.trim() === '') {
-					updateData.email = emailToUse;
-					console.log('📧 [SIGNUP COMPLETE] Updating email in existing profile:', emailToUse);
+				// Email vždy aktualizovat, pokud je k dispozici a existující email je null nebo prázdný
+				// Pokud existující email existuje, zachovat ho (může být jiný než v auth.users)
+				if (emailToUse && emailToUse.trim() !== '') {
+					if (!existingProfile.email || existingProfile.email.trim() === '') {
+						// Pokud v profilu není email, přidat ho
+						updateData.email = emailToUse;
+						console.log('📧 [SIGNUP COMPLETE] Adding email to existing profile:', emailToUse);
+					} else {
+						// Pokud v profilu už email je, zachovat ho (může být jiný než v auth.users)
+						console.log('📧 [SIGNUP COMPLETE] Preserving existing email in profile:', existingProfile.email);
+					}
 				} else {
-					console.log('📧 [SIGNUP COMPLETE] Preserving existing email in profile:', existingProfile.email);
+					console.warn('⚠️ [SIGNUP COMPLETE] Email not available for update, keeping existing:', existingProfile.email);
 				}
 
 				const result = await supabase

@@ -29,66 +29,124 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
     // Pro náš custom admin signup flow
     if (type === "admin_signup" && email) {
         try {
-            // Potvrdit uživatele v Supabase pomocí Admin API
-            const { data: users, error: findError } = await adminSupabase.auth.admin.listUsers();
-            if (findError) {
-                console.error('❌ [AUTH CONFIRM] Error finding user:', findError);
-                throw findError;
-            }
+            // Ověřit token_hash pokud je přítomen
+            if (token_hash) {
+                console.log('🔍 [AUTH CONFIRM] Verifying token_hash for admin signup');
+                const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                    type: "signup",
+                    token_hash: token_hash
+                });
 
-            const user = users.users.find(u => u.email === email);
-            if (!user) {
-                console.error('❌ [AUTH CONFIRM] User not found:', email);
-                throw new Error('User not found');
-            }
-
-            // Potvrdit email uživatele
-            const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
-                user.id,
-                { email_confirm: true }
-            );
-
-            if (confirmError) {
-                console.error('❌ [AUTH CONFIRM] Error confirming email:', confirmError);
-                throw confirmError;
-            }
-
-            console.log('✅ [AUTH CONFIRM] Email confirmed successfully for:', email);
-
-            // Vytvořit profil pro admin uživatele (s kontrolou existence)
-            const { data: existingProfile } = await adminSupabase
-                .from('profiles')
-                .select('id')
-                .eq('id', user.id)
-                .single();
-
-            if (!existingProfile) {
-                const { error: profileError } = await adminSupabase
-                    .from('profiles')
-                    .insert({
-                        id: user.id,
-                        email: user.email,
-                        user_role: 'admin',
-                        registration_status: 'completed',
-                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro admin
-                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-
-                if (profileError) {
-                    console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
-                    // Pokračovat i když profil selže - uživatel je potvrzen
-                } else {
-                    console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                if (verifyError || !verifyData?.user) {
+                    console.error('❌ [AUTH CONFIRM] Token verification failed:', verifyError);
+                    return redirect(303, '/auth/error?error=invalid_token');
                 }
-            } else {
-                console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
-            }
 
-            // Přesměrovat na úspěšnou stránku
-            console.log('✅ [AUTH CONFIRM] Redirecting to admin signin page');
-            return redirect(303, '/admin/signin?message=email_confirmed');
+                console.log('✅ [AUTH CONFIRM] Token verified successfully for:', email);
+                
+                // Po úspěšném ověření tokenu už je email potvrzen v Supabase
+                // Pokračujeme s vytvořením profilu
+                const user = verifyData.user;
+
+                // Vytvořit profil pro admin uživatele (s kontrolou existence)
+                const { data: existingProfile } = await adminSupabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!existingProfile) {
+                    const { error: profileError } = await adminSupabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            user_role: 'admin',
+                            registration_status: 'completed',
+                            tenant_id: PUBLIC_TENANT, // Výchozí tenant pro admin
+                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (profileError) {
+                        console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
+                        // Pokračovat i když profil selže - uživatel je potvrzen
+                    } else {
+                        console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                    }
+                } else {
+                    console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
+                }
+
+                // Přesměrovat na úspěšnou stránku
+                console.log('✅ [AUTH CONFIRM] Redirecting to admin signin page');
+                return redirect(303, '/admin/signin?message=email_confirmed');
+            } else {
+                // Fallback: pokud není token_hash, použít současný flow (pro zpětnou kompatibilitu)
+                console.warn('⚠️ [AUTH CONFIRM] No token_hash provided, using legacy flow');
+                
+                // Potvrdit uživatele v Supabase pomocí Admin API
+                const { data: users, error: findError } = await adminSupabase.auth.admin.listUsers();
+                if (findError) {
+                    console.error('❌ [AUTH CONFIRM] Error finding user:', findError);
+                    throw findError;
+                }
+
+                const user = users.users.find(u => u.email === email);
+                if (!user) {
+                    console.error('❌ [AUTH CONFIRM] User not found:', email);
+                    throw new Error('User not found');
+                }
+
+                // Potvrdit email uživatele
+                const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
+                    user.id,
+                    { email_confirm: true }
+                );
+
+                if (confirmError) {
+                    console.error('❌ [AUTH CONFIRM] Error confirming email:', confirmError);
+                    throw confirmError;
+                }
+
+                console.log('✅ [AUTH CONFIRM] Email confirmed successfully for:', email);
+
+                // Vytvořit profil pro admin uživatele (s kontrolou existence)
+                const { data: existingProfile } = await adminSupabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!existingProfile) {
+                    const { error: profileError } = await adminSupabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            user_role: 'admin',
+                            registration_status: 'completed',
+                            tenant_id: PUBLIC_TENANT, // Výchozí tenant pro admin
+                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (profileError) {
+                        console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
+                        // Pokračovat i když profil selže - uživatel je potvrzen
+                    } else {
+                        console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                    }
+                } else {
+                    console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
+                }
+
+                // Přesměrovat na úspěšnou stránku
+                console.log('✅ [AUTH CONFIRM] Redirecting to admin signin page');
+                return redirect(303, '/admin/signin?message=email_confirmed');
+            }
 
         } catch (error) {
             console.error('❌ [AUTH CONFIRM] Error in admin signup confirmation:', error);
@@ -108,64 +166,118 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
         let confirmationSuccess = false;
         
         try {
-            // Potvrdit uživatele v Supabase pomocí Admin API
-            const { data: users, error: findError } = await adminSupabase.auth.admin.listUsers();
-            if (findError) {
-                console.error('❌ [AUTH CONFIRM] Error finding user:', findError);
-                throw findError;
-            }
+            // Ověřit token_hash pokud je přítomen
+            if (token_hash) {
+                console.log('🔍 [AUTH CONFIRM] Verifying token_hash for customer signup');
+                const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                    type: "signup",
+                    token_hash: token_hash
+                });
 
-            const user = users.users.find(u => u.email === email);
-            if (!user) {
-                console.error('❌ [AUTH CONFIRM] User not found:', email);
-                throw new Error('User not found');
-            }
-
-            // Potvrdit email uživatele
-            const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
-                user.id,
-                { email_confirm: true }
-            );
-
-            if (confirmError) {
-                console.error('❌ [AUTH CONFIRM] Error confirming email:', confirmError);
-                throw confirmError;
-            }
-
-            console.log('✅ [AUTH CONFIRM] Email confirmed successfully for:', email);
-
-            // Vytvořit profil pro zákazníka (s kontrolou existence)
-            const { data: existingProfile } = await adminSupabase
-                .from('profiles')
-                .select('id')
-                .eq('id', user.id)
-                .single();
-
-            if (!existingProfile) {
-                const { error: profileError } = await adminSupabase
-                    .from('profiles')
-                    .insert({
-                        id: user.id,
-                        email: user.email,
-                        user_role: 'customer',
-                        registration_status: 'pending',
-                        tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
-                        accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-
-                if (profileError) {
-                    console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
-                    // Pokračovat i když profil selže - uživatel je potvrzen
-                } else {
-                    console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                if (verifyError || !verifyData?.user) {
+                    console.error('❌ [AUTH CONFIRM] Token verification failed:', verifyError);
+                    return redirect(303, '/auth/error?error=invalid_token');
                 }
-            } else {
-                console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
-            }
 
-            confirmationSuccess = true;
+                console.log('✅ [AUTH CONFIRM] Token verified successfully for:', email);
+                
+                // Po úspěšném ověření tokenu už je email potvrzen v Supabase
+                // Pokračujeme s vytvořením profilu
+                const user = verifyData.user;
+                
+                // Vytvořit profil pro zákazníka (s kontrolou existence)
+                const { data: existingProfile } = await adminSupabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!existingProfile) {
+                    const { error: profileError } = await adminSupabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            user_role: 'customer',
+                            registration_status: 'pending',
+                            tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
+                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (profileError) {
+                        console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
+                        // Pokračovat i když profil selže - uživatel je potvrzen
+                    } else {
+                        console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                    }
+                } else {
+                    console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
+                }
+
+                confirmationSuccess = true;
+            } else {
+                // Fallback: pokud není token_hash, použít současný flow (pro zpětnou kompatibilitu)
+                console.warn('⚠️ [AUTH CONFIRM] No token_hash provided, using legacy flow');
+                
+                // Potvrdit uživatele v Supabase pomocí Admin API
+                const { data: users, error: findError } = await adminSupabase.auth.admin.listUsers();
+                if (findError) {
+                    console.error('❌ [AUTH CONFIRM] Error finding user:', findError);
+                    throw findError;
+                }
+
+                const user = users.users.find(u => u.email === email);
+                if (!user) {
+                    console.error('❌ [AUTH CONFIRM] User not found:', email);
+                    throw new Error('User not found');
+                }
+
+                // Potvrdit email uživatele
+                const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
+                    user.id,
+                    { email_confirm: true }
+                );
+
+                if (confirmError) {
+                    console.error('❌ [AUTH CONFIRM] Error confirming email:', confirmError);
+                    throw confirmError;
+                }
+
+                    // Vytvořit profil pro zákazníka (s kontrolou existence)
+                const { data: existingProfile } = await adminSupabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!existingProfile) {
+                    const { error: profileError } = await adminSupabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            email: user.email,
+                            user_role: 'customer',
+                            registration_status: 'pending',
+                            tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
+                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (profileError) {
+                        console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
+                        // Pokračovat i když profil selže - uživatel je potvrzen
+                    } else {
+                        console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
+                    }
+                } else {
+                    console.log('ℹ️ [AUTH CONFIRM] Profile already exists for:', email);
+                }
+
+                confirmationSuccess = true;
+            }
         } catch (error) {
             console.error('❌ [AUTH CONFIRM] Error in customer signup confirmation:', error);
         }

@@ -190,6 +190,12 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString()
 			};
 
+			// Přidat email do profileData, pokud je k dispozici
+			// Email se nepřidává do formuláře, ale vždy by měl být v session
+			if (session.user.email && session.user.email.trim() !== '') {
+				(profileData as any).email = session.user.email;
+			}
+
 			// Validate profile data
 			const validationResult = validateProfileForInvoicing({
 				...profileData,

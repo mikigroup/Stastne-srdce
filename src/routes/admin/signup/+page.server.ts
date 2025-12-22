@@ -3,6 +3,9 @@ import type { Actions, ActionFailure } from "@sveltejs/kit";
 import { sendEmail } from "$lib/email";
 import { createAdminSignupEmailTemplate } from "$lib/emailTemplates/adminSignupTemplate";
 import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database.types';
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 
 type ActionData = {
 	message: {
@@ -103,11 +106,59 @@ export const actions: Actions = {
 				});
 			}
 
-			// Vytvořit confirmation link pro vlastní email šablonu
+			// Vytvořit admin Supabase klient pro generování tokenu
+			const adminSupabase = createClient<Database>(
+				PRIVATE_SBUrl,
+				PRIVATE_ServiceKey,
+				{
+					auth: {
+						autoRefreshToken: false,
+						persistSession: false
+					}
+				}
+			);
+
+			// Generovat Supabase token pomocí generateLink
+			console.log('🔧 [ADMIN SIGNUP] Generating confirmation token for:', email);
+			const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
+				type: "signup",
+				email: email
+			});
+
+			if (linkError || !linkData?.properties?.action_link) {
+				console.error('❌ [ADMIN SIGNUP] Error generating confirmation link:', linkError);
+				return fail(500, {
+					message: {
+						success: false,
+						display: "Chyba při generování potvrzovacího odkazu"
+					},
+					email
+				});
+			}
+
+			// Extrahovat token_hash z linku
+			const originalLink = linkData.properties.action_link;
+			const urlParams = new URL(originalLink).searchParams;
+			const token_hash = urlParams.get('token_hash') || urlParams.get('token');
+
+			if (!token_hash) {
+				console.error('❌ [ADMIN SIGNUP] Token not found in generated link');
+				return fail(500, {
+					message: {
+						success: false,
+						display: "Chyba při generování potvrzovacího odkazu"
+					},
+					email
+				});
+			}
+
+			console.log('✅ [ADMIN SIGNUP] Token generated successfully');
+
+			// Vytvořit confirmation link s token_hash pro vlastní email šablonu
 			const baseUrl = new URL(request.url).origin;
-			const confirmationLink = `${baseUrl}/auth/confirm?type=admin_signup&email=${encodeURIComponent(email)}`;
+			const confirmationLink = `${baseUrl}/auth/confirm?type=admin_signup&email=${encodeURIComponent(email)}&token_hash=${token_hash}`;
 			
-			console.log('🔗 [ADMIN SIGNUP] Generated confirmation link:', confirmationLink);
+			console.log('🔗 [ADMIN SIGNUP] Generated confirmation link with token:', confirmationLink.substring(0, 100) + '...');
 
 			// Odeslat vlastní email s šablonou
 			const emailHtml = createAdminSignupEmailTemplate(confirmationLink, email);

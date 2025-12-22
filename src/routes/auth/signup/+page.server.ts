@@ -5,6 +5,9 @@ import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerS
 import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
 import { isTemporaryEmail } from "$lib/utils/botDetection";
 import { signUpSchema } from "$lib/utils/validationSchemas";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database.types';
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
@@ -117,11 +120,55 @@ export const actions = {
 
 			console.log('✅ [CUSTOMER SIGNUP] User created successfully in Supabase:', userData.user.id);
 
-			// Vytvořit confirmation link pro vlastní email šablonu
+			// Vytvořit admin Supabase klient pro generování tokenu
+			const adminSupabase = createClient<Database>(
+				PRIVATE_SBUrl,
+				PRIVATE_ServiceKey,
+				{
+					auth: {
+						autoRefreshToken: false,
+						persistSession: false
+					}
+				}
+			);
+
+			// Generovat Supabase token pomocí generateLink
+			console.log('🔧 [CUSTOMER SIGNUP] Generating confirmation token for:', email.trim());
+			const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
+				type: "signup",
+				email: email.trim()
+			});
+
+			if (linkError || !linkData?.properties?.action_link) {
+				console.error('❌ [CUSTOMER SIGNUP] Error generating confirmation link:', linkError);
+				return fail(500, {
+					error: true,
+					message: "Chyba při generování potvrzovacího odkazu",
+					email
+				});
+			}
+
+			// Extrahovat token_hash z linku
+			const originalLink = linkData.properties.action_link;
+			const urlParams = new URL(originalLink).searchParams;
+			const token_hash = urlParams.get('token_hash') || urlParams.get('token');
+
+			if (!token_hash) {
+				console.error('❌ [CUSTOMER SIGNUP] Token not found in generated link');
+				return fail(500, {
+					error: true,
+					message: "Chyba při generování potvrzovacího odkazu",
+					email
+				});
+			}
+
+			console.log('✅ [CUSTOMER SIGNUP] Token generated successfully');
+
+			// Vytvořit confirmation link s token_hash pro vlastní email šablonu
 			const baseUrl = new URL(request.url).origin;
-			const confirmationLink = `${baseUrl}/auth/confirm?type=customer_signup&email=${encodeURIComponent(email.trim())}`;
+			const confirmationLink = `${baseUrl}/auth/confirm?type=customer_signup&email=${encodeURIComponent(email.trim())}&token_hash=${token_hash}`;
 			
-			console.log('🔗 [CUSTOMER SIGNUP] Generated confirmation link:', confirmationLink);
+			console.log('🔗 [CUSTOMER SIGNUP] Generated confirmation link with token:', confirmationLink.substring(0, 100) + '...');
 
 			console.log('📧 [CUSTOMER SIGNUP] Attempting to send email to:', email.trim());
 			
