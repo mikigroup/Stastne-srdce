@@ -1,27 +1,6 @@
 <script lang="ts">
-	import { Line } from "svelte-chartjs";
-	import {
-		Chart,
-		Title,
-		Tooltip,
-		LineElement,
-		LinearScale,
-		PointElement,
-		CategoryScale
-	} from "chart.js";
 	import { goto } from "$app/navigation";
-	import { ROUTES } from "$lib/stores/store";
-	import { page } from "$app/stores";
 	import { formatCurrency, formatDateTimeToCzechShort } from "$lib/utils/formatting";
-
-	Chart.register(
-		Title,
-		Tooltip,
-		LineElement,
-		LinearScale,
-		PointElement,
-		CategoryScale
-	);
 
 	export let data;
 

@@ -94,15 +94,12 @@
 		console.log("Customer phone:", customer_telephone);
 	}
 
-	// Získáme seznam stavů objednávek ze site_settings
+	// Získáme seznam stavů objednávek - používáme pouze 4 základní stavy
 	$: {
-		const settingsStates = orderSettings?.orderStates?.map((state: any) => state.name) || [];
-		const allPossibleStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
+		// Používáme pouze 4 základní stavy, které se skutečně používají
+		orderStates = ['Nová', 'Expedovaná', 'Fakturovaná', 'Stornovaná'];
 		
-		// Kombinujeme stavy z nastavení s všemi možnými stavy (bez duplikátů)
-		orderStates = [...new Set([...settingsStates, ...allPossibleStates])];
-		
-		console.log('Debug - orderStates:', orderStates);
+		console.log('Debug - orderStates (fixed 4 states):', orderStates);
 		console.log('Debug - orderSettings:', orderSettings);
 	}
 
@@ -600,15 +597,21 @@
 			
 			order.order_items.forEach((item: any, index: number) => {
 				console.log(`Item ${index + 1}:`);
-				console.log(`  - variant_id exists:`, !!item.variant_id);
+				console.log(`  - variant exists:`, !!item.variant);
 				
-				if (item.variant_id) {
-					console.log(`  - variant_id:`, item.variant_id);
-					console.log(`  - menu_id exists:`, !!item.variant_id.menu_id);
+				if (item.variant) {
+					console.log(`  - variant:`, item.variant);
+					console.log(`  - menu exists:`, !!item.variant.menu);
+					console.log(`  - menu_version_id exists:`, !!item.variant.menu_version_id);
 					
-					if (item.variant_id.menu_id) {
-						console.log(`  - menu_id:`, item.variant_id.menu_id);
-						console.log(`  - date exists:`, !!item.variant_id.menu_id.date);
+					if (item.variant.menu) {
+						console.log(`  - menu:`, item.variant.menu);
+						console.log(`  - menu date exists:`, !!item.variant.menu.date);
+					}
+					
+					if (item.variant.menu_version_id) {
+						console.log(`  - menu_version_id:`, item.variant.menu_version_id);
+						console.log(`  - version date exists:`, !!item.variant.menu_version_id.date);
 					}
 				}
 			});
@@ -984,34 +987,31 @@
 								<tr class="hover:bg-gray-50">
 									<td class="px-6 py-4 whitespace-nowrap">
 										<span class="inline-flex items-center px-3.5 py-1.5 rounded-full text-md font-medium bg-blue-100 text-blue-800">
-											{item.variant_id.variant_number}
+											{item.variant?.variant_number || 'N/A'}
 										</span>
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-										{#if item.menuVersionData}
-											{formatDateToCzechShort(item.menuVersionData.date)}
-										{:else if item.variant_id?.menu_id?.date}
-											{formatDateToCzechShort(item.variant_id.menu_id.date)}
-										{:else if item.variant_id?.menu_version_id?.date}
-											{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
+										{#if item.variant?.menu_version_id?.date}
+											{formatDateToCzechShort(item.variant.menu_version_id.date)}
+										{:else if item.variant?.menu?.date}
+											{formatDateToCzechShort(item.variant.menu.date)}
 										{:else}
 											N/A
 										{/if}
 									</td>
 									<td class="px-6 py-4">
-										<div class="text-sm font-medium text-gray-900">{item.variant_id.description}</div>
-										{#if item.menuVersionData}
-											<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
-										{/if}
+										<div class="text-sm font-medium text-gray-900">
+											{item.variant?.description || 'N/A'}
+										</div>
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
 										{item.quantity}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-										{formatPrice(item.price)}
+										{formatPrice(item.price || 0)}
 									</td>
 									<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-										{formatPrice(item.quantity * item.price)}
+										{formatPrice((item.quantity || 0) * (item.price || 0))}
 									</td>
 								</tr>
 							{/each}
@@ -1036,15 +1036,13 @@
 					<div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
 						<div class="flex justify-between items-start mb-3">
 							<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-								Varianta {item.variant_id.variant_number}
+								Varianta {item.variant?.variant_number || 'N/A'}
 							</span>
 							<span class="text-sm font-medium text-gray-600">
-								{#if item.menuVersionData}
-									{formatDateToCzechShort(item.menuVersionData.date)}
-								{:else if item.variant_id?.menu_id?.date}
-									{formatDateToCzechShort(item.variant_id.menu_id.date)}
-								{:else if item.variant_id?.menu_version_id?.date}
-									{formatDateToCzechShort(item.variant_id.menu_version_id.date)}
+								{#if item.variant?.menu_version_id?.date}
+									{formatDateToCzechShort(item.variant.menu_version_id.date)}
+								{:else if item.variant?.menu?.date}
+									{formatDateToCzechShort(item.variant.menu.date)}
 								{:else}
 									N/A
 								{/if}
@@ -1052,18 +1050,17 @@
 						</div>
 
 						<div class="mb-3">
-							<div class="font-medium text-gray-900">{item.variant_id.description}</div>
-							{#if item.menuVersionData}
-								<div class="text-sm text-gray-500">Polévka: {item.menuVersionData.soup}</div>
-							{/if}
+							<div class="font-medium text-gray-900">
+								{item.variant?.description || 'N/A'}
+							</div>
 						</div>
 
 						<div class="flex justify-between items-center text-sm">
 							<div class="flex gap-4">
-								<span><span class="font-medium">Množství:</span> {item.quantity}</span>
-								<span><span class="font-medium">Cena/ks:</span> {formatPrice(item.price)}</span>
+								<span><span class="font-medium">Množství:</span> {item.quantity || 0}</span>
+								<span><span class="font-medium">Cena/ks:</span> {formatPrice(item.price || 0)}</span>
 							</div>
-							<div class="font-medium">{formatPrice(item.quantity * item.price)}</div>
+							<div class="font-medium">{formatPrice((item.quantity || 0) * (item.price || 0))}</div>
 						</div>
 					</div>
 				{/each}

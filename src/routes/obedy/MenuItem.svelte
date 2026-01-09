@@ -3,6 +3,7 @@
 	import { page } from "$app/stores";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
+	import { ROUTES } from "$lib/constants/routes";
 
 	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
@@ -127,7 +128,7 @@
 						{/if}
 					</div>
 					{#if !$page.data.session}
-						<a href="/auth/login" class="flex justify-end pt-2">
+						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2">
 							<div
 								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
 								<div class="text-base">Přihlaš se</div>

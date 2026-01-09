@@ -279,18 +279,33 @@ export function formatNumber(number: number): string {
 
 /**
  * Formátuje název položky objednávky pro Fakturoid
+ * Upraveno pro použití aktuálních dat menu místo zastaralých
  */
 export function formatOrderItemName(item: any): string {
-	// Zkusíme získat datum z různých možných míst ve struktuře
+	// Priorita: aktuální data > zastaralá data
 	let menuDate = null;
+	let variantDescription = '';
 	
-	// Priorita: menu_id > menu_version_id > jiné možnosti
-	if (item.variant_id?.menu_id?.date) {
-		menuDate = item.variant_id.menu_id.date;
-	} else if (item.variant_id?.menu_version_id?.date) {
-		menuDate = item.variant_id.menu_version_id.date;
-	} else if (item.menuVersionData?.date) {
+	// 1. Priorita: aktuální data z menuVersionData a currentVariantData
+	if (item.menuVersionData?.date) {
 		menuDate = item.menuVersionData.date;
+	}
+	
+	if (item.currentVariantData?.description) {
+		variantDescription = item.currentVariantData.description;
+	}
+	
+	// 2. Fallback: zastaralá data z variant_id
+	if (!menuDate) {
+		if (item.variant_id?.menu_id?.date) {
+			menuDate = item.variant_id.menu_id.date;
+		} else if (item.variant_id?.menu_version_id?.date) {
+			menuDate = item.variant_id.menu_version_id.date;
+		}
+	}
+	
+	if (!variantDescription) {
+		variantDescription = item.variant_id?.description || item.variant?.description || '';
 	}
 	
 	// Získání čísla varianty
@@ -313,7 +328,7 @@ export function formatOrderItemName(item: any): string {
 		}
 	}
 	
-	// Sestavení názvu
+	// Sestavení názvu - použijeme aktuální popis pokud je dostupný
 	let itemName = '';
 	
 	if (formattedDate) {
@@ -324,6 +339,11 @@ export function formatOrderItemName(item: any): string {
 		itemName += `Menu ${variantNumber}`;
 	} else {
 		itemName += 'Menu';
+	}
+	
+	// Přidáme aktuální popis varianty pokud je dostupný
+	if (variantDescription) {
+		itemName += ` - ${variantDescription}`;
 	}
 	
 	return itemName || 'Položka menu';

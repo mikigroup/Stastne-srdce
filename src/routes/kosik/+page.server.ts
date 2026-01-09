@@ -5,6 +5,9 @@ import { PRIVATE_seznam_key } from "$env/static/private";
 import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import type { Profile } from "$lib/types/profile";
+import { getTenantIdFromSession } from "$lib/utils/tenantUtils";
+
+export const prerender = false;
 
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
@@ -17,7 +20,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, safeGetSession } }: RequestEvent) => {
+	sendOrder: async ({ request, locals: { supabase, safeGetSession, tenantId } }: RequestEvent) => {
 		const { session, user } = await safeGetSession();
 
 		if (!session || !user) {
@@ -130,7 +133,7 @@ export const actions: Actions = {
 			}
 
 			// Create order using the stored procedure
-			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items', {
+			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
 				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
 				p_date: new Date().toISOString(),
@@ -148,6 +151,7 @@ export const actions: Actions = {
 				p_currency: "CZK",
 				p_pay_state: false,
 				p_shipping_method: "Rozvoz",
+				p_tenant_id: tenantId, // Oprava: použít tenantId z locals
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
 						variant_id: variant.id,

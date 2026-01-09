@@ -6,8 +6,9 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { enhance } from "$app/forms";
-	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
-	import { formatDateToCzech, formatDateDayMonth } from "$lib/utils/formatting";
+	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+	import { ROUTES } from "$lib/constants/routes";
+	import { formatDateDayMonth } from "$lib/utils/formatting";
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
@@ -19,10 +20,6 @@
 	let modal: Modal;
 	let isSubmitting = false;
 	let errorMessage = '';
-	let orderDetails = {
-		totalPieces: 0,
-		totalPrice: 0
-	};
 	let profileData: any = null;
 	let selectedTimeSlot: string = '';
 	let availableTimeSlots: TimeSlotAvailability[] = [];
@@ -77,6 +74,13 @@
 
 	// Celková cena včetně dopravy
 	$: totalPriceWithDelivery = totalPrice + deliveryPrice;
+
+	// Funkce pro výpočet ceny variant
+	function calculateVariantPrice(variants: any[]): number {
+		return variants.reduce((total: number, variant: any) => 
+			total + (variant.price || 0) * (variant.quantity || 0), 0
+		);
+	}
 
 	// Kontrola minimální hodnoty objednávky
 	$: minimumOrderMet = !deliverySettings?.minimumOrderValue || totalPrice >= deliverySettings.minimumOrderValue;
@@ -159,7 +163,7 @@
 					
 					// Vyčistíme stará data (maxOrders)
 					if (timeSlotSettings.timeSlots) {
-						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map(slot => ({
+						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map((slot: any) => ({
 							startTime: slot.startTime,
 							endTime: slot.endTime
 							// Odstraníme maxOrders
@@ -280,7 +284,7 @@
 						await goto(redirectUrl, { replaceState: true });
 					} else {
 						console.error('Order submission error:', result);
-						errorMessage = result.data?.message || 'Došlo k chybě při zpracování objednávky.';
+						errorMessage = result.type === 'failure' ? String(result.data?.message || 'Došlo k chybě při zpracování objednávky.') : 'Došlo k chybě při zpracování objednávky.';
 					}
 					
 					isSubmitting = false;
@@ -364,11 +368,7 @@
 									<p><strong>Cena</strong></p>
 								</div>
 								<div class="pl-2 mb-5 font-light text-center">
-									{cartItem.variants.reduce(
-										(total, variant) =>
-											total + (variant.price || 0) * (variant.quantity || 0),
-										0
-									)} Kč
+									{calculateVariantPrice(cartItem.variants)} Kč
 								</div>
 							</div>
 						{/each}
@@ -600,7 +600,7 @@
 			</h1>
 			<div class="text-center">
 				<p class="text-xl mb-4">Pro přístup ke košíku se musíte přihlásit.</p>
-									<a href="/auth/login" class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
+				<a href={ROUTES.AUTH.LOGIN} class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
 					Přihlásit se
 				</a>
 			</div>

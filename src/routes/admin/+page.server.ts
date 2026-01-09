@@ -1,4 +1,5 @@
 import type { PageServerLoad } from "./$types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	// Helper function to get last 24 hours in local time (Europe/Prague)
@@ -15,12 +16,13 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	const startDate = start.toISOString();
 	const endDate = end.toISOString();
 
-	// Fetch orders from last 24 hours
+	// Fetch orders from last 24 hours with tenant_id filter
 	const { data: orders, error: ordersError } = await supabase
 		.from("orders")
 		.select("*")
 		.gte("created_at", startDate)
 		.lte("created_at", endDate)
+		.eq("tenant_id", PUBLIC_TENANT)
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
@@ -34,12 +36,13 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		};
 	}
 
-	// Fetch customers from last 24 hours
+	// Fetch customers from last 24 hours with tenant_id filter
 	const { data: customers, error: customersError } = await supabase
 		.from("profiles")
 		.select("*")
 		.gte("created_at", startDate)
 		.lte("created_at", endDate)
+		.eq("tenant_id", PUBLIC_TENANT)
 		.order("created_at", { ascending: true });
 
 	if (customersError) {

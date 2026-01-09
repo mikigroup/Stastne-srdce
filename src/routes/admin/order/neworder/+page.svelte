@@ -2,6 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { fade, fly } from "svelte/transition";
 	import OrderItemDetail from "../OrderItemDetail.svelte";
+	import { getTenantIdFromData } from "$lib/utils/tenantUtils";
 
 	export let data;
 	let { session, supabase } = data;
@@ -45,7 +46,8 @@
 				pay_method: selectedPaymentMethod,
 				state: selectedOrderState,
 				pay_state: isPaid,
-				user_id: session?.user?.id
+				user_id: session?.user?.id,
+				tenant_id: getTenantIdFromData(data) // Přidáno tenant_id
 			};
 
 			console.log(createOrderData);

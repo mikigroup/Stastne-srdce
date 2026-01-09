@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { getSetting } from "$lib/services/siteSettingsService";
 import type { IntegrationsSettings } from "$lib/types/siteSettings";
 import { createFakturoidService, getFakturoidConfigFromSettings } from "$lib/services/fakturoidService";
+import { formatOrderItemName } from "$lib/utils/formatting";
 import type { Order } from "$lib/types/order";
 import type { Profile } from "$lib/types/profile";
 
@@ -39,6 +40,8 @@ export const load: PageServerLoad = async ({
 			)
 			.eq("id", orderId)
 			.single();
+
+		// Používáme pouze původní data z objednávky - žádné načítání aktuální verze
 
 		if (orderError) {
 			console.error("Chyba při načítání objednávky:", orderError);
@@ -151,6 +154,8 @@ export const actions: Actions = {
 				.eq("id", orderId)
 				.single();
 
+			// Používáme pouze původní data z objednávky - žádné načítání aktuální verze
+
 			if (orderError || !order) {
 				return fail(404, { success: false, message: "Objednávka nenalezena" });
 			}
@@ -229,7 +234,7 @@ export const actions: Actions = {
 				},
 				orderNumber: order.order_number,
 				items: order.order_items.map((item: any) => ({
-					name: item.variant_id.description,
+					name: formatOrderItemName(item),
 					quantity: item.quantity,
 					price: item.price,
 					vat: 21

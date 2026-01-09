@@ -3,9 +3,13 @@ import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
+import { ProfileService } from '$lib/services/profileService';
+import { getAllDeliveryMethods } from '$lib/constants/deliveryMethods';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
+
+export const prerender = false;
 
 interface OrderItem {
 	id: string;
@@ -57,27 +61,27 @@ interface ProfileData {
 }
 
 export const load: PageServerLoad = async ({
-	locals: { supabase, safeGetSession }
+	locals: { supabase, safeGetSession, tenantId }
 }) => {
 	const { session } = await safeGetSession();
 	if (!session) {
 		throw redirect(303, "/");
 	}
 
-	// Načtení profilu včetně nových polí
-	const { data: profile, error: profileError } = await supabase
-		.from("profiles")
-		.select(
+	// Načtení profilu včetně nových polí s tenant filtrací
+	const { data: profile, error: profileError } = await ProfileService.getUserProfile(
+		supabase,
+		session.user.id,
+		{
+			selectFields: `
+				*,
+				allergies,
+				allergies_description,
+				delivery_method,
+				payment_method
 			`
-     *,
-     allergies,
-     allergies_description,
-     delivery_method,
-     payment_method
-   `
-		)
-		.eq("id", session.user.id)
-		.single();
+		}
+	);
 
 	if (profileError) {
 		console.error("Error fetching profile:", profileError);
@@ -101,23 +105,30 @@ export const load: PageServerLoad = async ({
            id,
            date,
            soup
+         ),
+         menu_version_id: menu_versions (
+           id,
+           date,
+           soup
          )
        )
      )
    `
 		)
 		.eq("user_id", session.user.id)
+		.eq("tenant_id", tenantId)  // ← Přidáno
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
 		console.error("Error fetching orders:", ordersError);
 	} else if (orders) {
-		// Group order items by menu date
+		// Group order items by menu date - používáme pouze původní data z objednávky
 		orders.forEach((order: Order) => {
 			const groupedItems: GroupedItems = {};
 
 			order.order_items.forEach((item) => {
-				const date = item.variant.menu.date;
+				// Používáme datum z verze menu pokud existuje, jinak z základního menu
+				const date = item.variant.menu_version_id?.date || item.variant.menu.date;
 				if (!groupedItems[date]) {
 					groupedItems[date] = [];
 				}
@@ -129,11 +140,15 @@ export const load: PageServerLoad = async ({
 			);
 		});
 	}
+
+	// Načtení možností dopravy z databáze
+	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, true);
 	
 	return {
 		session,
 		profile,
-		orders: orders || []
+		orders: orders || [],
+		deliveryMethodOptions
 	};
 };
 
@@ -180,6 +195,12 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString()
 			};
 
+			// Přidat email do profileData, pokud je k dispozici
+			// Email se nepřidává do formuláře, ale vždy by měl být v session
+			if (session.user.email && session.user.email.trim() !== '') {
+				(profileData as any).email = session.user.email;
+			}
+
 			// Validate profile data
 			const validationResult = validateProfileForInvoicing({
 				...profileData,
@@ -196,8 +217,8 @@ export const actions: Actions = {
 				});
 			}
 
-			// Uložení do databáze (bez registration_status - nechme ho na globální službě)
-			const { error } = await supabase.from("profiles").upsert(profileData);
+			// Uložení do databáze s tenant filtrací (bez registration_status - nechme ho na globální službě)
+			const { error } = await ProfileService.upsertProfile(supabase, profileData);
 
 			if (error) {
 				console.error("Error updating profile:", error);
@@ -255,12 +276,14 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Get user profile for email personalization
-			const { data: profile, error: profileError } = await supabase
-				.from("profiles")
-				.select("first_name, last_name, email")
-				.eq("id", session.user.id)
-				.single();
+			// Get user profile for email personalization with tenant filtering
+			const { data: profile, error: profileError } = await ProfileService.getUserProfile(
+				supabase,
+				session.user.id,
+				{
+					selectFields: "first_name, last_name, email"
+				}
+			);
 
 			if (profileError || !profile) {
 				console.error("Error fetching user profile:", profileError);
@@ -287,10 +310,11 @@ export const actions: Actions = {
 				updated_at: new Date().toISOString()
 			};
 
-			const { error } = await supabase
-				.from("profiles")
-				.update(updateData)
-				.eq("id", session.user.id);
+			const { error } = await ProfileService.updateUserProfile(
+				supabase,
+				session.user.id,
+				updateData
+			);
 
 			if (error) {
 				console.error("Error requesting data deletion:", error);

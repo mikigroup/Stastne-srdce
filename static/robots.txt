@@ -11,10 +11,16 @@ Disallow: /login/
 Disallow: /signup/
 Disallow: /forgot/
 Disallow: /reset/
+
+# Blokovat thank you stránky (obsahují citlivé informace)
 Disallow: /thankyou/
 
 # Blokovat API endpointy
 Disallow: /api/
 
+# Blokovat test stránky
+Disallow: /test/
+Disallow: /test-refresh-token/
+
 # Sitemap
-Sitemap: https://stastne-srdce.cz/sitemap.xml
+Sitemap: https://www.stastnesrdce.cz/sitemap.xml

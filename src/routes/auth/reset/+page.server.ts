@@ -2,48 +2,58 @@ import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 
 export const actions: Actions = {
-	resetPass: async ({ request, locals: { supabase } }) => {
+	resetPass: async ({ request, locals: { supabase }, url }) => {
 		const formData = await request.formData();
 		const password = formData.get("password") as string;
-		const newpassword = formData.get("newpassword") as string;
+		const repassword = formData.get("repassword") as string;
+		const token = url.searchParams.get("token");
 
-		if (password !== newpassword) {
+		// Validace minimální délky hesla
+		if (password.length < 8) {
 			return fail(400, {
 				password,
+				repassword,
+				message: {
+					success: false,
+					display: "Heslo musí mít alespoň 8 znaků"
+				}
+			});
+		}
+
+		if (password !== repassword) {
+			return fail(400, {
+				password,
+				repassword,
 				message: {
 					success: false,
 					display: "Hesla nejsou stejná"
 				}
 			});
-		} else {
+		}
+
+		try {
+			// Pro reset hesla po recovery tokenu použijeme updateUser (uživatel je přihlášen)
 			const { error } = await supabase.auth.updateUser({
-				password: newpassword
+				password: password
 			});
 
 			if (error) {
-				console.error(error);
-				let errorMessage = "Nepodařilo se změnit heslo";
-				let displayMessage =
-					"Nepodařilo se změnit heslo. Zkuste to prosím znovu později.";
+				console.error('Reset password error:', error);
+				let displayMessage = "Nepodařilo se změnit heslo. Zkuste to prosím znovu později.";
 
 				if (error.status === 422) {
 					if (error.code === "same_password") {
-						errorMessage = "Nové heslo musí být odlišné od starého hesla";
-						displayMessage =
-							"Nové heslo musí být odlišné od starého hesla. Zadejte prosím jiné heslo.";
+						displayMessage = "Nové heslo musí být odlišné od starého hesla. Zadejte prosím jiné heslo.";
 					} else {
-						errorMessage = "Neplatné heslo";
-						displayMessage =
-							"Zadané heslo je neplatné. Zkontrolujte prosím své heslo a zkuste to znovu.";
+						displayMessage = "Zadané heslo je neplatné. Zkontrolujte prosím své heslo a zkuste to znovu.";
 					}
 				} else if (error.status === 400) {
-					errorMessage = "Chybný požadavek";
-					displayMessage =
-						"Došlo k chybě při odesílání požadavku. Zkontrolujte prosím zadané údaje a zkuste to znovu.";
+					displayMessage = "Došlo k chybě při odesílání požadavku. Zkontrolujte prosím zadané údaje a zkuste to znovu.";
 				}
 
 				return fail(error.status || 500, {
 					password,
+					repassword,
 					message: {
 						success: false,
 						display: displayMessage
@@ -52,13 +62,23 @@ export const actions: Actions = {
 			} else {
 				return {
 					password: "",
-					newpassword: "",
+					repassword: "",
 					message: {
 						success: true,
 						display: "Heslo bylo úspěšně změněno."
 					}
 				};
 			}
+		} catch (error) {
+			console.error('Unexpected error during password reset:', error);
+			return fail(500, {
+				password,
+				repassword,
+				message: {
+					success: false,
+					display: "Došlo k neočekávané chybě. Zkuste to prosím znovu."
+				}
+			});
 		}
 	}
 };

@@ -2,6 +2,9 @@
 	import { page } from "$app/stores";
 	import type { ActionData, PageData } from "./$types";
 	import { enhance } from "$app/forms";
+	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
+	import { browser } from "$app/environment";
+	import { onMount } from "svelte";
 
 	export let form: ActionData;
 	export let data: PageData;
@@ -10,6 +13,122 @@
 	$: ({ supabase } = data);
 
 	let loading = false;
+	let recaptchaReady = false;
+
+	// Inicializace reCAPTCHA po mount
+	onMount(() => {
+		if (browser && PUBLIC_RECAPTCHA_SITE_KEY) {
+			// Zkontrolovat, jestli už není script načtený
+			if ((window as any).grecaptcha) {
+				// Script už je načtený, počkat na ready
+				(window as any).grecaptcha.ready(() => {
+					recaptchaReady = true;
+				});
+			} else {
+				// Počkat na načtení scriptu z <svelte:head>
+				const checkGrecaptcha = setInterval(() => {
+					if ((window as any).grecaptcha) {
+						clearInterval(checkGrecaptcha);
+						(window as any).grecaptcha.ready(() => {
+							recaptchaReady = true;
+						});
+					}
+				}, 100);
+
+				// Timeout po 5 sekundách
+				setTimeout(() => {
+					clearInterval(checkGrecaptcha);
+					if ((window as any).grecaptcha) {
+						recaptchaReady = true;
+					}
+				}, 5000);
+			}
+		}
+	});
+
+	// Funkce pro získání reCAPTCHA tokenu
+	async function getRecaptchaToken(): Promise<string | null> {
+		if (!browser || !PUBLIC_RECAPTCHA_SITE_KEY) {
+			console.warn('⚠️ [RECAPTCHA] reCAPTCHA není nakonfigurováno');
+			return null;
+		}
+
+		try {
+			// Počkat na ready stav
+			if (!recaptchaReady) {
+				await new Promise<void>((resolve) => {
+					const checkReady = setInterval(() => {
+						if (recaptchaReady) {
+							clearInterval(checkReady);
+							resolve();
+						}
+					}, 50);
+
+					// Timeout po 3 sekundách
+					setTimeout(() => {
+						clearInterval(checkReady);
+						resolve();
+					}, 3000);
+				});
+			}
+
+			const grecaptcha = (window as any).grecaptcha;
+			if (!grecaptcha) {
+				console.error('❌ [RECAPTCHA] grecaptcha není dostupné');
+				return null;
+			}
+
+			// Použít grecaptcha.ready() callback - vždy, i když už je ready
+			return new Promise<string | null>((resolve) => {
+				grecaptcha.ready(() => {
+					grecaptcha.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: 'admin_signup' })
+						.then((token: string) => {
+							resolve(token);
+						})
+						.catch((error: any) => {
+							console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+							resolve(null);
+						});
+				});
+			});
+		} catch (error) {
+			console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+			return null;
+		}
+	}
+
+	// Handler pro enhance
+	function handleSubmit() {
+		loading = true;
+		return async ({ cancel, formData }: { cancel: () => void; formData: FormData }) => {
+			// Získat reCAPTCHA token
+			const recaptchaToken = await getRecaptchaToken();
+			
+			if (!recaptchaToken && PUBLIC_RECAPTCHA_SITE_KEY) {
+				// Pokud je reCAPTCHA nakonfigurováno, ale token se nepodařilo získat, zrušit odeslání
+				console.error('❌ [RECAPTCHA] Nepodařilo se získat token');
+				loading = false;
+				cancel();
+				// Zobrazit chybu uživateli
+				alert('Chyba při ověřování. Zkuste to prosím znovu.');
+				return;
+			}
+
+			// Přidat token do FormData
+			if (recaptchaToken) {
+				formData.append('recaptcha_token', recaptchaToken);
+			}
+
+			// Pokračovat s odesláním formuláře
+			return async ({ result, update }: { result: any; update: any }) => {
+				if (result.type === 'success' || result.type === 'failure') {
+					loading = false;
+				}
+
+				await update();
+			};
+		};
+	}
 
 	async function signInWithGoogle() {
 		loading = true;
@@ -38,7 +157,7 @@
 <section class="flex justify-center py-20">
 	<div
 		class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8">
-		<form method="POST" action="?/signUp" use:enhance>
+		<form method="POST" action="?/signUp" use:enhance={handleSubmit}>
 			{#if $page.data.session}
 				<div class="flex w-full text-xl text-center">
 					<p>Vítej uživateli</p>
@@ -101,6 +220,8 @@
 						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
 					<p class="mt-1 text-xs text-gray-500">*musí se shodovat</p>
 				</div>
+				<!-- reCAPTCHA token (hidden) -->
+				<input type="hidden" name="recaptcha_token" value="" />
 				<div class="flex items-start mt-5">
 					<div class="flex items-center h-5">
 						<input

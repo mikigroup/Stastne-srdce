@@ -1,6 +1,7 @@
 <script lang="ts">
 
 	export let data;
+	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
 	let { texts } = data;
 	$: ({ texts  } = data);
 
@@ -14,7 +15,7 @@
 	<meta
 		name="description"
 		content="Šťastné srdce nabízí zdravé stravování a rozvoz jídla v Mikulovicích a Jeseníku. Dietologické poradenství od Kamily Kučerové pro vaše zdraví a spokojenost." />
-		<link rel="canonical" href="https://www.malyleo.cz/" />
+		<link rel="canonical" href="https://www.stastnesrdce.cz/" />
 </svelte:head>
 
 

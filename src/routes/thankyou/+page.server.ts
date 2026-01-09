@@ -2,7 +2,9 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 
-export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
+export const prerender = false;
+
+export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId } }) => {
     const orderNumber = url.searchParams.get('order');
     
     if (!orderNumber) {
@@ -23,6 +25,7 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
             )
         `)
         .eq('order_number', orderNumber)
+        .eq('tenant_id', tenantId)  // ← Přidáno
         .single();
 
     if (orderError) {
@@ -33,6 +36,8 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
     if (!order) {
         throw error(404, 'Objednávka nenalezena');
     }
+
+    // Používáme pouze původní data z objednávky - žádné načítání aktuální verze
 
     // Validate customer profile data
     const validationResult = validateProfileForInvoicing({

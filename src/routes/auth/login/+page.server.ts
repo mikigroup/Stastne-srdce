@@ -1,9 +1,10 @@
 import { fail, redirect } from "@sveltejs/kit";
-import type { Actions } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from '$env/static/private';
 import { sendAccountReactivationEmail } from '$lib/services/gdprEmailService';
+import { ROUTES } from "$lib/constants/routes";
 
 /**
  * Helper function to create admin supabase client that bypasses RLS
@@ -20,6 +21,14 @@ function createAdminSupabaseClient() {
 		}
 	);
 }
+
+export const load: PageServerLoad = async ({ url }) => {
+	const message = url.searchParams.get("message");
+	
+	return {
+		message
+	};
+};
 
 export const actions: Actions = {
 	handleLogin: async ({ request, locals: { supabase } }) => {
@@ -121,7 +130,7 @@ export const actions: Actions = {
 					// Pokud je registrace nedokončená, přesměrovat na complete stránku
 					if (profile.registration_status !== 'completed') {
 						console.log('📝 [LOGIN] Registration not completed, redirecting to complete page');
-						throw redirect(303, "/auth/signup/complete");
+						throw redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
 					}
 				}
 			} catch (redirectError) {
@@ -132,7 +141,7 @@ export const actions: Actions = {
 				console.error('❌ [LOGIN] Error checking registration status:', redirectError);
 			}
 
-			throw redirect(303, "/obedy");
+			throw redirect(303, ROUTES.MAIN.OBEDY);
 		}
 
 		return fail(500, {

@@ -44,24 +44,24 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   contact: {
-    email: '',
-    phone: '',
+    email: 'info@stastnesrdce.cz',
+    phone: '+420 123 456 789',
     phone1: '',
     phone2: '',
-    address: '',
+    address: 'Potoční 16, 790 84 Mikulovice',
     mapCoordinates: { 
       lat: 50.299513, 
       lng: 17.324304 
     },
     showOpeningHours: true,
     openingHours: {
-      monday: '',
-      tuesday: '',
-      wednesday: '',
-      thursday: '',
-      friday: '',
-      saturday: '',
-      sunday: ''
+      monday: '8:00 - 16:00',
+      tuesday: '8:00 - 16:00',
+      wednesday: '8:00 - 16:00',
+      thursday: '8:00 - 16:00',
+      friday: '8:00 - 16:00',
+      saturday: '9:00 - 12:00',
+      sunday: 'Zavřeno'
     }
   },
 
@@ -87,14 +87,14 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   },
 
   business: {
-    companyName: '',
-    street: '',
-    streetNumber: '',
-    zipCode: '',
-    city: '',
-    ico: '',
-    dic: '',
-    bankAccount: '',
+    companyName: 'Šťastné srdce',
+    street: 'Potoční',
+    streetNumber: '16',
+    zipCode: '790 84',
+    city: 'Mikulovice',
+    ico: '12345678',
+    dic: 'CZ12345678',
+    bankAccount: '123456789/0100',
     // Including fields from current DB that aren't in other defaults
     paymentMethods: ['Hotově', 'Převodem'],
     deliveryOptions: ['Osobní odběr', 'Rozvoz']
@@ -145,15 +145,16 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     enabled: true,
     orderStates: [
       { name: 'Nová', color: '#0284c7' },
-      { name: 'Přijatá', color: '#059669' },
-      { name: 'Připravuje se', color: '#d97706' },
-      { name: 'Připraveno', color: '#7c3aed' },
       { name: 'Expedovaná', color: '#eab308' },
-      { name: 'Doručena', color: '#16a34a' },
-      { name: 'Fakturovaná', color: '#10b981' },
-      { name: 'Zaplacena', color: '#059669' },
-      { name: 'Stornovaná', color: '#dc2626' },
-      { name: 'Dokončena', color: '#16a34a' }
+      { name: 'Fakturovaná', color: '#16a34a' },
+      { name: 'Stornovaná', color: '#dc2626' }
+      // Zakomentované stavy - nepoužívají se:
+      // { name: 'Přijatá', color: '#059669' },
+      // { name: 'Připravuje se', color: '#d97706' },
+      // { name: 'Připraveno', color: '#7c3aed' },
+      // { name: 'Doručena', color: '#16a34a' },
+      // { name: 'Zaplacena', color: '#059669' },
+      // { name: 'Dokončena', color: '#16a34a' }
     ],
     notificationEmail: 'admin@stastnesrdce.cz'
   },

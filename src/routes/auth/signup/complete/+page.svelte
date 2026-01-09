@@ -2,8 +2,8 @@
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
-	import { validateProfileForInvoicing, getProfileValidationMessage } from '$lib/utils/profileValidation';
-	import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
+
+	import { ROUTES } from "$lib/constants/routes";
 
 	export let data: PageData;
 	export let form: {
@@ -42,10 +42,14 @@
 	let allergiesDescription = form?.allergies_description ?? data.profile?.allergies_description ?? "";
 	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
 	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
-	let profileValidationMessage = '';
 
-	// Get delivery method options with descriptions for registration (only 3 main options)
-	const deliveryMethodOptions = getRegistrationDeliveryMethods(true);
+	// Delivery method options jsou načteny z databáze v +page.server.ts
+	// Fallback na výchozí hodnoty, pokud nejsou k dispozici
+	$: deliveryMethodOptions = (data as any).deliveryMethodOptions || [
+		{ value: 'own', label: 'Vlastní nosič' },
+		{ value: 'reBox', label: 'REkrabička' },
+		{ value: 'menuBox', label: 'Menu Box' }
+	];
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -53,9 +57,12 @@
 
 	function handleSubmit() {
 		loading = true;
-		return async ({ result }: { result: { type: string } }) => {
-			if (result.type === 'success') {
-				await goto('/profile');
+		return async ({ result }: { result: any }) => {
+			console.log('Form result:', result);
+			
+			// Zjednodušená kontrola - pokud není failure, považujeme za úspěch
+			if (result.type !== 'failure') {
+				await goto(ROUTES.MAIN.PROFILE);
 			}
 			loading = false;
 		};
@@ -63,21 +70,7 @@
 
 	const { generalSettings } = data;
 
-	$: {
-		const validationResult = validateProfileForInvoicing({
-			first_name,
-			last_name,
-			street,
-			street_number,
-			city,
-			zip_code,
-			email: data.session?.user?.email,
-			company,
-			ico,
-			dic
-		});
-		profileValidationMessage = getProfileValidationMessage(validationResult);
-	}
+
 </script>
 
 <svelte:head>
@@ -104,7 +97,7 @@
 					
 					<div class="space-y-3">
 						<a 
-							href="/login" 
+							href={ROUTES.AUTH.LOGIN} 
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105"
 						>
 							Přihlásit se
@@ -117,13 +110,6 @@
 				</div>
 			{:else}
 				<!-- Zobrazení pro přihlášené uživatele -->
-				{#if profileValidationMessage}
-					<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-						<p class="text-yellow-800">
-							<span class="font-medium">Upozornění:</span> {profileValidationMessage}
-						</p>
-					</div>
-				{/if}
 
 				<form method="POST" action="?/complete" use:enhance={handleSubmit} class="space-y-4">
 				<!-- Osobní údaje -->
@@ -154,8 +140,7 @@
 						/>
 					</div>
 				</div>
-
-				<!-- Dodací adresa -->
+				
 				<div class="space-y-4">
 					<h3 class="text-lg font-medium">Dodací adresa</h3>
 
@@ -219,8 +204,7 @@
 						/>
 					</div>
 				</div>
-
-				<!-- Alergie -->
+			
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Alergie <span class="text-red-500">*</span></h3>
 					<div class="flex gap-4">
@@ -266,8 +250,7 @@
 						</div>
 					{/if}
 				</div>
-
-				<!-- Způsob dodání -->
+				
 				<div class="space-y-4">
 					<h3 class="text-lg font-medium">Způsob dodání</h3>
 					<div class="flex flex-col gap-2">
@@ -286,8 +269,7 @@
 						{/each}
 					</div>
 				</div>
-
-				<!-- Způsob platby -->
+				
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Způsob platby</h3>
 					<div class="flex flex-col gap-2">
@@ -310,8 +292,7 @@
 						{/each}
 					</div>
 				</div>
-
-				<!-- Submit button -->
+				
 				<div class="flex w-full mt-8">
 					<button
 						type="submit"

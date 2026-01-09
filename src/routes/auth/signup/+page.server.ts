@@ -1,28 +1,14 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { sendEmail } from "$lib/email";
-import * as yup from "yup";
-
-// Yup schéma pro validaci registrace
-const signUpSchema = yup.object({
-	email: yup
-		.string()
-		.trim()
-		.email("Zadejte platný email")
-		.required("Email je povinný"),
-	password: yup
-		.string()
-		.trim()
-		.min(8, "Heslo musí mít alespoň 8 znaků")
-		.matches(/[A-Z]/, "Heslo musí obsahovat alespoň jedno velké písmeno")
-		.matches(/[0-9]/, "Heslo musí obsahovat alespoň jedno číslo")
-		.required("Heslo je povinné"),
-	repassword: yup
-		.string()
-		.trim()
-		.oneOf([yup.ref("password")], "Hesla se neshodují")
-		.required("Potvrzení hesla je povinné")
-});
+import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
+import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { isTemporaryEmail } from "$lib/utils/botDetection";
+import { signUpSchema } from "$lib/utils/validationSchemas";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database.types';
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
+import { PUBLIC_RECAPTCHA_SITE_KEY } from '$env/static/public';
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
@@ -31,38 +17,108 @@ export const actions = {
 			const email = formData.get("email")?.toString() || "";
 			const password = formData.get("password")?.toString() || "";
 			const repassword = formData.get("repassword")?.toString() || "";
+			
+			// Debug: zkontrolovat všechna pole v FormData
+			const allFormDataKeys = Array.from(formData.keys());
+			console.log('🔍 [CUSTOMER SIGNUP] FormData keys:', allFormDataKeys);
+			
+			// reCAPTCHA token může být pod 'g-recaptcha-response' (standardní) nebo 'recaptcha_token' (fallback)
+			const recaptchaToken = formData.get("g-recaptcha-response")?.toString() || 
+			                        formData.get("recaptcha_token")?.toString() || "";
+			
+			console.log('🔍 [CUSTOMER SIGNUP] reCAPTCHA token found:', {
+				hasToken: !!recaptchaToken,
+				tokenLength: recaptchaToken?.length || 0,
+				tokenPreview: recaptchaToken ? recaptchaToken.substring(0, 20) + '...' : 'none'
+			});
 
-			// Validace pomocí yup
-			try {
-				await signUpSchema.validate({ email, password, repassword }, { abortEarly: false });
-			} catch (validationError) {
-				if (validationError instanceof yup.ValidationError) {
-					const errors = validationError.inner.reduce((acc, error) => {
-						if (error.path) {
-							acc[error.path] = error.message;
-						}
-						return acc;
-					}, {} as Record<string, string>);
+			// KONTROLA: Pokud je reCAPTCHA nakonfigurováno, token je POVINNÝ
+			if (PUBLIC_RECAPTCHA_SITE_KEY) {
+				if (!recaptchaToken) {
+					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA token missing - blocking registration');
+					return fail(400, {
+						error: true,
+						message: "Ověření selhalo. Zkuste to prosím znovu.",
+						email
+					});
+				}
 
+				// Validace reCAPTCHA tokenu
+				const clientIP = getClientIP(request);
+				const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, clientIP, 0.5);
+				
+				if (!recaptchaResult.success) {
+					console.warn('⚠️ [CUSTOMER SIGNUP] reCAPTCHA validation failed - blocking registration:', {
+						score: recaptchaResult.score,
+						error: recaptchaResult.error,
+						email: email.trim()
+					});
+					return fail(400, {
+						error: true,
+						message: "Ověření selhalo. Zkuste to prosím znovu.",
+						email
+					});
+				}
+
+				console.log('✅ [CUSTOMER SIGNUP] reCAPTCHA validation passed:', {
+					score: recaptchaResult.score,
+					email: email.trim()
+				});
+			}
+
+			// Kontrola dočasného emailu
+			if (isTemporaryEmail(email)) {
+				console.warn('⚠️ [CUSTOMER SIGNUP] Temporary email detected:', email.trim());
 				return fail(400, {
 					error: true,
-						message: "Opravte prosím chyby ve formuláři",
-						errors,
+					message: "Dočasné emailové adresy nejsou povoleny. Použijte prosím trvalou emailovou adresu.",
 					email
 				});
 			}
+
+			// Validace pomocí Zod
+			const validationResult = signUpSchema.safeParse({ email, password, repassword });
+			
+			if (!validationResult.success) {
+				const errors = validationResult.error.errors.reduce((acc, error) => {
+					const path = error.path[0];
+					if (path) {
+						acc[path] = error.message;
+					}
+					return acc;
+				}, {} as Record<string, string>);
+
+				return fail(400, {
+					error: true,
+					message: "Opravte prosím chyby ve formuláři",
+					errors,
+					email
+				});
 			}
 
-			// Supabase registrace s očištěnými daty
+			console.log('🔧 [CUSTOMER SIGNUP] Attempting to create user in Supabase:', email.trim());
+			
+			// Vytvořit uživatele v Supabase Auth (BEZ emailRedirectTo - nepošle Supabase email)
 			const { data: userData, error } = await supabase.auth.signUp({
 				email: email.trim(),
 				password: password.trim(),
 				options: {
-					emailRedirectTo: `${new URL(request.url).origin}/auth/callback`
+					// NEZADÁVÁME emailRedirectTo - Supabase nepošle email
+					data: {
+						user_type: "customer"
+					}
 				}
 			});
 
+			console.log('📊 [CUSTOMER SIGNUP] Supabase signUp result:', { 
+				success: !error, 
+				error: error?.message,
+				userId: userData?.user?.id,
+				emailConfirmed: userData?.user?.email_confirmed_at
+			});
+
 			if (error) {
+				console.error('❌ [CUSTOMER SIGNUP] Supabase signUp failed:', error);
 				return fail(400, {
 					error: true,
 					message:
@@ -73,30 +129,121 @@ export const actions = {
 				});
 			}
 
-			// Odeslání follow-up emailu pro dokončení registrace
-			// ZAKOMENTOVÁNO: Supabase automaticky posílá potvrzovací email
-			// await sendEmail({
-			// 	to: email.trim(),
-			// 	subject: "Dokončete svou registraci",
-			// 	html: `
-			// 		<h1>Vítejte v našem e-shopu!</h1>
-			// 		<p>Děkujeme za registraci. Pro plné využití všech funkcí je potřeba dokončit registraci.</p>
-			// 		<p>Klikněte na tlačítko níže pro dokončení registrace:</p>
-			// 		<a href="${new URL(request.url).origin}/signup/complete" style="
-			// 			display: inline-block;
-			// 			padding: 12px 24px;
-			// 			background-color: #4CAF50;
-			// 			color: white;
-			// 			text-decoration: none;
-			// 			border-radius: 4px;
-			// 			margin: 20px 0;
-			// 		">
-			// 			Dokončit registraci
-			// 		</a>
-			// 		<p>Pokud tlačítko nefunguje, zkopírujte tento odkaz do prohlížeče:</p>
-			// 		<p>${new URL(request.url).origin}/signup/complete</p>
-			// 	`
-			// });
+			if (!userData?.user) {
+				console.error('❌ [CUSTOMER SIGNUP] No user data returned from Supabase');
+				return fail(400, {
+					error: true,
+					message: "Chyba při vytváření uživatele",
+					email
+				});
+			}
+
+			console.log('✅ [CUSTOMER SIGNUP] User created successfully in Supabase:', userData.user.id);
+
+			// Vytvořit admin Supabase klient pro generování tokenu
+			const adminSupabase = createClient<Database>(
+				PRIVATE_SBUrl,
+				PRIVATE_ServiceKey,
+				{
+					auth: {
+						autoRefreshToken: false,
+						persistSession: false
+					}
+				}
+			);
+
+			// Generovat Supabase token pomocí generateLink
+			// POZOR: Pokud uživatel už existuje, použít type: "magiclink" místo "signup"
+			console.log('🔧 [CUSTOMER SIGNUP] Generating confirmation token for:', email.trim());
+			
+			// Zkusit nejdřív type: "signup" (pro nové uživatele)
+			let linkData = null;
+			let linkError = null;
+			
+			const { data: signupLinkData, error: signupLinkError } = await adminSupabase.auth.admin.generateLink({
+				type: "signup",
+				email: email.trim()
+			});
+
+			if (signupLinkError) {
+				// Pokud selže kvůli existujícímu uživateli, zkusit magiclink
+				if (signupLinkError.message?.includes('already') || signupLinkError.code === 'email_exists') {
+					console.log('ℹ️ [CUSTOMER SIGNUP] User already exists, using magiclink type');
+					const { data: magicLinkData, error: magicLinkError } = await adminSupabase.auth.admin.generateLink({
+						type: "magiclink",
+						email: email.trim(),
+						options: {
+							redirectTo: `${new URL(request.url).origin}/auth/confirm`
+						}
+					});
+					
+					linkData = magicLinkData;
+					linkError = magicLinkError;
+				} else {
+					linkData = signupLinkData;
+					linkError = signupLinkError;
+				}
+			} else {
+				linkData = signupLinkData;
+				linkError = signupLinkError;
+			}
+
+			if (linkError || !linkData?.properties?.action_link) {
+				console.error('❌ [CUSTOMER SIGNUP] Error generating confirmation link:', linkError);
+				// Pokud selže generování tokenu, smazat uživatele (rollback)
+				try {
+					await adminSupabase.auth.admin.deleteUser(userData.user.id);
+					console.log('🔄 [CUSTOMER SIGNUP] Rolled back user creation due to token generation failure');
+				} catch (deleteError) {
+					console.error('❌ [CUSTOMER SIGNUP] Failed to rollback user creation:', deleteError);
+				}
+				
+				return fail(500, {
+					error: true,
+					message: "Chyba při generování potvrzovacího odkazu",
+					email
+				});
+			}
+
+			// Extrahovat token_hash z linku
+			const originalLink = linkData.properties.action_link;
+			const urlParams = new URL(originalLink).searchParams;
+			const token_hash = urlParams.get('token_hash') || urlParams.get('token');
+
+			if (!token_hash) {
+				console.error('❌ [CUSTOMER SIGNUP] Token not found in generated link');
+				return fail(500, {
+					error: true,
+					message: "Chyba při generování potvrzovacího odkazu",
+					email
+				});
+			}
+
+			console.log('✅ [CUSTOMER SIGNUP] Token generated successfully');
+
+			// Vytvořit confirmation link s token_hash pro vlastní email šablonu
+			const baseUrl = new URL(request.url).origin;
+			const confirmationLink = `${baseUrl}/auth/confirm?type=customer_signup&email=${encodeURIComponent(email.trim())}&token_hash=${token_hash}`;
+			
+			console.log('🔗 [CUSTOMER SIGNUP] Generated confirmation link with token:', confirmationLink.substring(0, 100) + '...');
+
+			console.log('📧 [CUSTOMER SIGNUP] Attempting to send email to:', email.trim());
+			
+			// Odeslat vlastní email s šablonou
+			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink, email.trim());
+			
+			try {
+				await sendEmail({
+					to: email.trim(),
+					subject: "Šťastné srdce - Potvrďte svou registraci",
+					html: emailHtml
+				});
+
+				console.log('✅ [CUSTOMER SIGNUP] Custom email sent successfully to:', email.trim());
+			} catch (emailError) {
+				console.error('❌ [CUSTOMER SIGNUP] Email sending failed:', emailError);
+				throw emailError;
+			}
 
 			// Úspěšná registrace
 			return {

@@ -15,6 +15,8 @@
 	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { GeneralSettings } from '$lib/constants/defaultSettings';
+	import { ROUTES } from "$lib/constants/routes";
+	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 
 	export let data: {
 		session: Session | null;
@@ -34,31 +36,40 @@
 	$: ({ supabase, session, user, profile } = data);
 
 	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith('/auth/signup/complete');
-
-	onMount(() => {
-		const { data } = supabase.auth.onAuthStateChange((event) => {
-			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-				invalidate("supabase:auth");
-			}
-		});
-		return () => data.subscription.unsubscribe();
-	});
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
 
 	let isAdminRoute = false;
 	
 	onMount(() => {
+		// Inicializace Speed Insights
+		injectSpeedInsights();
+		
+		// Nastavení admin route
 		isAdminRoute = $page.url.pathname.startsWith("/admin");
+		
+		// Auth state change listener
+		const authStateChange = supabase.auth.onAuthStateChange((event) => {
+			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+				invalidate("supabase:auth");
+			}
+		});
+		
+		// Cleanup funkce
+		return () => {
+			try {
+				if (authStateChange?.data?.subscription) {
+					authStateChange.data.subscription.unsubscribe();
+				}
+			} catch (error) {
+				// Ignorovat chyby při cleanup
+				console.warn('Chyba při odstraňování auth subscription:', error);
+			}
+		};
 	});
-	injectSpeedInsights();
 
 	const cookieName = 'stastne_srdce_cookies';
-	let showBanner = false;
-
-	onMount(() => {
-		const cookieConsent = cookieStore.hasConsent();
-		showBanner = !cookieConsent;
-	});
+	// Reaktivní kontrola cookie souhlasu pouze v prohlížeči
+	$: showBanner = browser && !cookieStore.hasConsent();
 
 	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;
@@ -86,6 +97,14 @@
 		<title>{seoSettings.metaTitle} - {generalSettings?.shopName}</title>
 	{:else if generalSettings?.shopName}
 		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
+	{/if}
+	
+	<!-- Canonical URL pro všechny stránky -->
+	<link rel="canonical" href="https://www.stastnesrdce.cz{$page.url.pathname}" />
+	
+	<!-- Robots meta tagy pro problematické stránky -->
+	{#if $page.url.pathname.startsWith('/admin') || $page.url.pathname.startsWith('/auth')}
+		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 	
 	{#if seoSettings?.metaDescription}
@@ -162,6 +181,15 @@
 		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
 		type="module"></script>
 	
+	<!-- Google reCAPTCHA v3 - globálně pro celou aplikaci (načítá se jen jednou) -->
+	{#if browser && PUBLIC_RECAPTCHA_SITE_KEY}
+		<script
+			src="https://www.google.com/recaptcha/api.js?render={PUBLIC_RECAPTCHA_SITE_KEY}"
+			async
+			defer
+		></script>
+	{/if}
+	
 	<!-- Custom Head Scripts -->
 	{#if seoSettings?.customHeadScripts}
 		{@html seoSettings.customHeadScripts}
@@ -229,7 +257,7 @@
 			<div class="ml-3">
 				<p class="text-sm text-yellow-700">
 					Pro plné využití všech funkcí je potřeba dokončit registraci.
-					<a href="/auth/signup/complete" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+					<a href={ROUTES.AUTH.SIGNUP_COMPLETE} class="font-medium underline text-yellow-700 hover:text-yellow-600">
 						Dokončit registraci
 					</a>
 				</p>
@@ -239,7 +267,6 @@
 {/if}
 
 <GDPR
-	cookieName="stastne_srdce_cookies"
 	visible={showBanner}
 	showEditIcon={true}
 	on:show={() => {}}

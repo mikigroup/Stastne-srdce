@@ -1,4 +1,5 @@
 import type { PageServerLoad } from "./$types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -12,6 +13,7 @@ export const load: PageServerLoad = async ({
 	let query = supabase
 		.from("profiles")
 		.select("*", { count: "exact" })
+		.eq("tenant_id", PUBLIC_TENANT)
 		.order("created_at", { ascending: false });
 
 	if (searchQuery) {
@@ -47,6 +49,7 @@ export const load: PageServerLoad = async ({
 		.from("profiles")
 		.select("table_settings_customers")
 		.eq("id", session?.user?.id)
+		.eq("tenant_id", PUBLIC_TENANT)
 		.single();
 
 	if (profileError) {

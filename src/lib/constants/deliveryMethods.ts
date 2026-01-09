@@ -1,62 +1,146 @@
 /**
  * CENTRALIZED DELIVERY METHODS
- * Single source of truth for all delivery method values and labels across the application
- * Based on actual database values from profiles table
+ * Načítá možnosti dopravy z databáze (site_settings.delivery.shippingMethods)
+ * Fallback na výchozí hodnoty, pokud DB není dostupná
  */
 
-export const DELIVERY_METHODS = {
-  OWN: 'own',           // 33.33% - Vlastní nosič
-  REBOX: 'reBox',       // 33.33% - REkrabička  
-  DELIVERY: 'delivery', // 28.40% - Doručení
-  MENUBOX: 'menuBox',   // 3.70% - Menu Box
-  PERSONAL: 'personal'  // 1.23% - Osobní odběr
-} as const;
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database.types';
 
-export const DELIVERY_METHOD_LABELS = {
-  [DELIVERY_METHODS.OWN]: 'Vlastní nosič',
-  [DELIVERY_METHODS.REBOX]: 'REkrabička',
-  [DELIVERY_METHODS.DELIVERY]: 'Doručení',
-  [DELIVERY_METHODS.MENUBOX]: 'Menu Box',
-  [DELIVERY_METHODS.PERSONAL]: 'Osobní odběr'
-} as const;
+// Mapování názvů z DB na kódy (pro zpětnou kompatibilitu)
+const NAME_TO_CODE_MAP: Record<string, string> = {
+  'Vlastní nosič': 'own',
+  'REkrabička': 'reBox',
+  'Doručení': 'delivery',
+  'Menu Box': 'menuBox',
+  'Osobní odběr': 'personal'
+};
 
-export const DELIVERY_METHOD_DESCRIPTIONS = {
-  [DELIVERY_METHODS.OWN]: 'Vlastní nosič',
-  [DELIVERY_METHODS.REBOX]: 'REkrabička (záloha 160 Kč za set/80 Kč za jednu)',
-  [DELIVERY_METHODS.DELIVERY]: 'Doručení',
-  [DELIVERY_METHODS.MENUBOX]: 'Menu Box (12 Kč/kus)',
-  [DELIVERY_METHODS.PERSONAL]: 'Osobní odběr'
-} as const;
+// Opačné mapování (kódy na názvy)
+const CODE_TO_NAME_MAP: Record<string, string> = {
+  'own': 'Vlastní nosič',
+  'reBox': 'REkrabička',
+  'delivery': 'Doručení',
+  'menuBox': 'Menu Box',
+  'personal': 'Osobní odběr'
+};
 
-// Helper functions
-export function getDeliveryMethodLabel(value: string): string {
-  return DELIVERY_METHOD_LABELS[value as keyof typeof DELIVERY_METHOD_LABELS] || value;
+// Výchozí možnosti (fallback)
+const DEFAULT_DELIVERY_METHODS = [
+  { value: 'own', label: 'Vlastní nosič' },
+  { value: 'reBox', label: 'REkrabička' },
+  { value: 'delivery', label: 'Doručení' },
+  { value: 'menuBox', label: 'Menu Box' },
+  { value: 'personal', label: 'Osobní odběr' }
+];
+
+const DEFAULT_REGISTRATION_METHODS = [
+  { value: 'own', label: 'Vlastní nosič' },
+  { value: 'reBox', label: 'REkrabička' },
+  { value: 'menuBox', label: 'Menu Box' }
+];
+
+/**
+ * Načte nastavení dopravy z databáze
+ */
+async function loadDeliverySettingsFromDB(supabase: SupabaseClient<Database>) {
+  try {
+    const { data: deliveryData, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'delivery')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !deliveryData?.value) {
+      return null;
+    }
+
+    const settings = typeof deliveryData.value === 'string' 
+      ? JSON.parse(deliveryData.value) 
+      : deliveryData.value;
+
+    return settings;
+  } catch (error) {
+    console.error('Error loading delivery settings from DB:', error);
+    return null;
+  }
 }
 
-export function getDeliveryMethodDescription(value: string): string {
-  return DELIVERY_METHOD_DESCRIPTIONS[value as keyof typeof DELIVERY_METHOD_DESCRIPTIONS] || value;
+/**
+ * Převede shippingMethods z DB na formát pro UI
+ */
+function convertShippingMethodsToOptions(
+  shippingMethods: Array<{ name: string; price?: number; enabled?: boolean }> | undefined,
+  useNamesAsValues = false
+): Array<{ value: string; label: string }> {
+  if (!shippingMethods || !Array.isArray(shippingMethods)) {
+    return [];
+  }
+
+  return shippingMethods
+    .filter(method => method.enabled !== false) // Filtrujeme pouze povolené metody
+    .map(method => {
+      const name = method.name || '';
+      // Pokud useNamesAsValues je true, použijeme název jako hodnotu, jinak mapujeme na kód
+      const value = useNamesAsValues ? name : (NAME_TO_CODE_MAP[name] || name.toLowerCase().replace(/\s+/g, ''));
+      return {
+        value,
+        label: name
+      };
+    });
 }
 
-// Get delivery methods for REGISTRATION (only 3 main options)
-export function getRegistrationDeliveryMethods(withDescriptions = false) {
-  const registrationMethods = [
-    DELIVERY_METHODS.OWN,
-    DELIVERY_METHODS.REBOX, 
-    DELIVERY_METHODS.MENUBOX
-  ];
-  
-  return registrationMethods.map(value => ({
-    value,
-    label: withDescriptions ? DELIVERY_METHOD_DESCRIPTIONS[value] : DELIVERY_METHOD_LABELS[value]
-  }));
+/**
+ * Načte možnosti dopravy z databáze pro registraci (pouze hlavní možnosti)
+ */
+export async function getRegistrationDeliveryMethods(
+  supabase: SupabaseClient<Database> | null,
+  withDescriptions = false
+): Promise<Array<{ value: string; label: string }>> {
+  if (!supabase) {
+    return DEFAULT_REGISTRATION_METHODS;
+  }
+
+  const settings = await loadDeliverySettingsFromDB(supabase);
+  const shippingMethods = settings?.shippingMethods;
+
+  if (shippingMethods && Array.isArray(shippingMethods) && shippingMethods.length > 0) {
+    // Použijeme první 3 metody z DB, nebo všechny pokud je jich méně
+    const methods = convertShippingMethodsToOptions(shippingMethods.slice(0, 3), false);
+    if (methods.length > 0) {
+      return methods;
+    }
+  }
+
+  // Fallback na výchozí hodnoty
+  return DEFAULT_REGISTRATION_METHODS;
 }
 
-// Get ALL delivery methods for existing users/admin (all 5 options)
-export function getAllDeliveryMethods(withDescriptions = false, includeEmpty = false) {
-  const options = Object.entries(DELIVERY_METHOD_LABELS).map(([value, label]) => ({
-    value,
-    label: withDescriptions ? DELIVERY_METHOD_DESCRIPTIONS[value as keyof typeof DELIVERY_METHOD_DESCRIPTIONS] : label
-  }));
+/**
+ * Načte všechny možnosti dopravy z databáze
+ */
+export async function getAllDeliveryMethods(
+  supabase: SupabaseClient<Database> | null,
+  withDescriptions = false,
+  includeEmpty = false
+): Promise<Array<{ value: string; label: string }>> {
+  let options: Array<{ value: string; label: string }> = [];
+
+  if (supabase) {
+    const settings = await loadDeliverySettingsFromDB(supabase);
+    const shippingMethods = settings?.shippingMethods;
+
+    if (shippingMethods && Array.isArray(shippingMethods) && shippingMethods.length > 0) {
+      options = convertShippingMethodsToOptions(shippingMethods, false);
+    }
+  }
+
+  // Fallback na výchozí hodnoty, pokud DB nevrátila žádné možnosti
+  if (options.length === 0) {
+    options = DEFAULT_DELIVERY_METHODS;
+  }
 
   if (includeEmpty) {
     return [
@@ -68,9 +152,32 @@ export function getAllDeliveryMethods(withDescriptions = false, includeEmpty = f
   return options;
 }
 
-// Legacy function for backward compatibility
-export function getDeliveryMethodOptions(withDescriptions = false) {
-  return getAllDeliveryMethods(withDescriptions);
+// Helper functions pro zpětnou kompatibilitu
+export function getDeliveryMethodLabel(value: string): string {
+  // Zkusíme najít v mapování kódů
+  if (CODE_TO_NAME_MAP[value]) {
+    return CODE_TO_NAME_MAP[value];
+  }
+  // Pokud to není kód, předpokládáme, že je to už název
+  return value;
 }
 
-export type DeliveryMethodValue = typeof DELIVERY_METHODS[keyof typeof DELIVERY_METHODS]; 
+export function getDeliveryMethodDescription(value: string): string {
+  const label = getDeliveryMethodLabel(value);
+  // Můžeme přidat další popisky podle potřeby
+  if (value === 'reBox') {
+    return `${label} (záloha 160 Kč za set/80 Kč za jednu)`;
+  }
+  if (value === 'menuBox') {
+    return `${label} (12 Kč/kus)`;
+  }
+  return label;
+}
+
+// Legacy function for backward compatibility
+export function getDeliveryMethodOptions(withDescriptions = false) {
+  // Tato funkce už není použita, ale zachováváme ji pro kompatibilitu
+  return DEFAULT_DELIVERY_METHODS;
+}
+
+export type DeliveryMethodValue = string; 

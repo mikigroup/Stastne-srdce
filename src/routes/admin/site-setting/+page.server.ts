@@ -1,7 +1,9 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { getSetting, saveSetting, serializeSettingValue } from "$lib/services/siteSettingsService";
+import { serializeSettingValue } from "$lib/services/siteSettingsService";
+import { getAllSettings } from "$lib/services/siteSettingsService";
 import type { Database } from "$lib/types/database.types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 type SiteSettingsRow = Database['public']['Tables']['site_settings']['Row'];
 
@@ -12,8 +14,8 @@ interface SettingRecord {
 	updated_at?: string;
 	updated_by?: string;
 	user_id?: string;
+	tenant_id?: string;
 }
-
 
 // Cache pro sdílení dat mezi requesty
 const settingsCache = new Map<string, { data: any, timestamp: number }>();
@@ -40,32 +42,24 @@ export const load: PageServerLoad = async ({
 	// Načteme parent data
 	const parentData = await parent();
 	
-			// Zkontrolujeme cache
-		const cacheKey = "all_settings";
-		const cached = settingsCache.get(cacheKey);
-		const now = Date.now();
-		
-		let settings: SiteSettingsRow[];
-		if (cached && (now - cached.timestamp) < CACHE_DURATION) {
-			// Použijeme cache
-			settings = cached.data;
-			console.log("Using cached settings");
-		} else {
-			// Načteme všechna nastavení z databáze		
-			const { data, error } = await supabase
-				.from("site_settings")
-				.select("*");
-
-			if (error) {
-				console.error("Chyba při načítání nastavení:", error);
-				settings = [];
-			} else {
-				settings = data || [];
-				// Uložíme do cache
-				settingsCache.set(cacheKey, { data: settings, timestamp: now });
-			}
-		}
+	// Zkontrolujeme cache
+	const cacheKey = "all_settings";
+	const cached = settingsCache.get(cacheKey);
+	const now = Date.now();
 	
+	let settings: SiteSettingsRow[];
+	if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+		// Použijeme cache
+		settings = cached.data;
+		console.log("Using cached settings");
+	} else {
+		// Načteme všechna nastavení z databáze pomocí nové funkce
+		settings = await getAllSettings(supabase);
+		
+		// Uložíme do cache
+		settingsCache.set(cacheKey, { data: settings, timestamp: now });
+	}
+
 	// Logujeme specificky integrations nastavení
 	const integrationsItem = settings.find((item: SiteSettingsRow) => item.key === "integrations");
 	if (integrationsItem) {
@@ -97,31 +91,38 @@ export const actions: Actions = {
 		try {
 			const settings = JSON.parse(settingsJson);
 
-		// Připravíme data pro batch upsert
-		const settingsData = Object.entries(settings).map(([key, value]) => ({
-			key,
-			value: serializeSettingValue(value),
-			updated_at: new Date().toISOString(),
-			updated_by: session.user.id,
-			user_id: session.user.id
-		}));
+			// Použijeme PUBLIC_TENANT z environment proměnné
+			if (!PUBLIC_TENANT) {
+				console.error("PUBLIC_TENANT not found in environment");
+				return fail(500, { error: "Nepodařilo se najít tenant ID" });
+			}
 
-		// Provedeme jeden batch upsert
-		const { error } = await supabase
-			.from("site_settings")
-			.upsert(settingsData, {
-				onConflict: "key"
-			});
+			// Připravíme data pro batch upsert s tenant_id
+			const settingsData = Object.entries(settings).map(([key, value]) => ({
+				key,
+				value: serializeSettingValue(value),
+				updated_at: new Date().toISOString(),
+				updated_by: session.user.id,
+				user_id: session.user.id,
+				tenant_id: PUBLIC_TENANT
+			}));
 
-		if (error) {
-			console.error("Chyba při ukládání nastavení:", error);
-			return fail(500, { error: "Nepodařilo se uložit nastavení" });
-		}
+			// Provedeme jeden batch upsert
+			const { error } = await supabase
+				.from("site_settings")
+				.upsert(settingsData, {
+					onConflict: "key,tenant_id"
+				});
 
-		// Vyčistíme cache pro aktualizovaná nastavení
-		settingsCache.clear();
+			if (error) {
+				console.error("Chyba při ukládání nastavení:", error);
+				return fail(500, { error: "Nepodařilo se uložit nastavení" });
+			}
 
-		return { success: true };
+			// Vyčistíme cache pro aktualizovaná nastavení
+			settingsCache.clear();
+
+			return { success: true };
 		} catch (error) {
 			console.error("Chyba při zpracování nastavení:", error);
 			return fail(400, { error: "Neplatný formát nastavení" });
@@ -266,6 +267,7 @@ export const actions: Actions = {
 			.from("site_settings")
 			.select("*")
 			.eq("key", key)
+			.eq("tenant_id", PUBLIC_TENANT)
 			.maybeSingle();
 
 		if (error) {
@@ -287,10 +289,11 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Načteme všechny unikátní stavy z objednávek
+			// Načteme všechny unikátní stavy z objednávek s tenant_id filtrací
 			const { data: orderStates, error } = await supabase
 				.from("orders")
 				.select("state")
+				.eq("tenant_id", PUBLIC_TENANT)
 				.not("state", "is", null)
 				.not("state", "eq", "");
 
@@ -305,15 +308,16 @@ export const actions: Actions = {
 			// Výchozí barvy pro stavy
 			const defaultColors: Record<string, string> = {
 				'Nová': '#0284c7',
-				'Přijatá': '#059669', 
-				'Připravuje se': '#d97706',
-				'Připraveno': '#7c3aed',
 				'Expedovaná': '#eab308',
-				'Doručena': '#16a34a',
-				'Fakturovaná': '#10b981',
-				'Zaplacena': '#059669',
-				'Stornovaná': '#dc2626',
-				'Dokončena': '#16a34a'
+				'Fakturovaná': '#16a34a',
+				'Stornovaná': '#dc2626'
+				// Zakomentované stavy - nepoužívají se:
+				// 'Přijatá': '#059669', 
+				// 'Připravuje se': '#d97706',
+				// 'Připraveno': '#7c3aed',
+				// 'Doručena': '#16a34a',
+				// 'Zaplacena': '#059669',
+				// 'Dokončena': '#16a34a'
 			};
 
 			// Vytvoříme objekty stavů s barvami
@@ -399,9 +403,10 @@ export const actions: Actions = {
 					value: serializeSettingValue(updatedAppearance),
 					updated_at: new Date().toISOString(),
 					updated_by: session.user.id,
-					user_id: session.user.id
+					user_id: session.user.id,
+					tenant_id: PUBLIC_TENANT
 				}, {
-					onConflict: 'key'
+					onConflict: 'key,tenant_id'
 				});
 
 			if (updateError) {

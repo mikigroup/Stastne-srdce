@@ -3,6 +3,7 @@
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
+	import { ROUTES } from "$lib/constants/routes";
 	
 	type FormData = {
 		message?: {
@@ -31,7 +32,7 @@
 	title="Zapomenuté heslo"
 	subtitle="Zadejte svůj email a my vám pošleme odkaz pro obnovení hesla"
 >
-	<form method="POST" action="?/handleForgotPassword" class="space-y-6">
+	<form method="POST" action="?/resetRequest" class="space-y-6">
 		<!-- Email input -->
 		<div class="flex flex-col">
 			<div class="relative flex">
@@ -60,7 +61,7 @@
 
 		<!-- Back to login link -->
 		<div class="text-center">
-			<a href="/auth/login" class="text-sm text-gray-500 hover:text-gray-700 underline">
+			<a href={ROUTES.AUTH.LOGIN} class="text-sm text-gray-500 hover:text-gray-700 underline">
 				Zpět na přihlášení
 			</a>
 		</div>

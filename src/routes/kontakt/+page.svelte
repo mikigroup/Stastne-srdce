@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { ActionData } from "./$types";
-	import type { FormData } from "$lib/types/form";
+	import { enhance } from '$app/forms';
 	import {
 		Mail,
 		User,
@@ -12,9 +11,12 @@
 		Clock,
 		Globe
 	} from "lucide-svelte";
+	import { PUBLIC_RECAPTCHA_SITE_KEY, PUBLIC_GOOGLE_MAPS_API_KEY } from "$env/static/public";
+	import { browser } from "$app/environment";
+	import { onMount } from "svelte";
 
-	export let form: FormData;
-	export let data;
+	export let data: any;
+	export let form: any;
 
 	let { session, supabase, settings } = data;
 	$: ({ session, supabase, settings } = data);
@@ -23,63 +25,127 @@
 	$: contact = settings?.contact || {};
 	$: business = settings?.business || {};
 	
-	// Debug výpis pro kontrolu dat
-	$: console.log('🔍 Kontakt - Svelte data:', {
-		contact: contact,
-		showOpeningHours: contact?.showOpeningHours,
-		openingHours: contact?.openingHours,
-		shouldShow: contact?.showOpeningHours && contact?.openingHours
-	});
-	
 	// Title pro mapu z nastavení
 	$: mapTitle = business?.companyName && contact?.address ? 
 		`${business.companyName} - ${contact.address}` : 
 		'';
 
-	const key = "6LcNpg4qAAAAAPfGa_aQYUsxGK-fNgxQRVklEdnW";
-	const State = {
-		idle: "idle",
-		requesting: "requesting",
-		success: "success"
-	};
+	// reCAPTCHA state
+	let recaptchaReady = false;
 
-	let token = "";
-	let state = State.idle;
-	let isSubmitting = false;
-	let focused = "";
-
-	function doRecaptcha(e: any) {
-		state = State.requesting;
-		isSubmitting = true;
-
-		(window as any).grecaptcha.ready(function () {
-			(window as any).grecaptcha
-				.execute(key, { action: "submit" })
-				.then(function (t: any) {
-					state = State.success;
-					token = t;
-
-					const form = e.target;
-					const tokenInput = document.createElement("input");
-					tokenInput.type = "hidden";
-					tokenInput.name = "g-recaptcha-response";
-					tokenInput.value = token;
-					form.appendChild(tokenInput);
-
-					form.submit();
-				})
-				.catch(() => {
-					state = State.idle;
-					isSubmitting = false;
+	// Inicializace reCAPTCHA po mount
+	onMount(() => {
+		if (browser && PUBLIC_RECAPTCHA_SITE_KEY) {
+			// Zkontrolovat, jestli už není script načtený
+			if ((window as any).grecaptcha) {
+				// Script už je načtený, počkat na ready
+				(window as any).grecaptcha.ready(() => {
+					recaptchaReady = true;
 				});
-		});
+			} else {
+				// Počkat na načtení scriptu z <svelte:head>
+				const checkGrecaptcha = setInterval(() => {
+					if ((window as any).grecaptcha) {
+						clearInterval(checkGrecaptcha);
+						(window as any).grecaptcha.ready(() => {
+							recaptchaReady = true;
+						});
+					}
+				}, 100);
+
+				// Timeout po 5 sekundách
+				setTimeout(() => {
+					clearInterval(checkGrecaptcha);
+					if ((window as any).grecaptcha) {
+						recaptchaReady = true;
+					}
+				}, 5000);
+			}
+		}
+	});
+
+	// Funkce pro získání reCAPTCHA tokenu
+	async function getRecaptchaToken(): Promise<string | null> {
+		if (!browser || !PUBLIC_RECAPTCHA_SITE_KEY) {
+			console.warn('⚠️ [RECAPTCHA] reCAPTCHA není nakonfigurováno');
+			return null;
+		}
+
+		try {
+			// Počkat na ready stav
+			if (!recaptchaReady) {
+				await new Promise<void>((resolve) => {
+					const checkReady = setInterval(() => {
+						if (recaptchaReady) {
+							clearInterval(checkReady);
+							resolve();
+						}
+					}, 50);
+
+					// Timeout po 3 sekundách
+					setTimeout(() => {
+						clearInterval(checkReady);
+						resolve();
+					}, 3000);
+				});
+			}
+
+			const grecaptcha = (window as any).grecaptcha;
+			if (!grecaptcha) {
+				console.error('❌ [RECAPTCHA] grecaptcha není dostupné');
+				return null;
+			}
+
+			// Použít grecaptcha.ready() callback - vždy, i když už je ready
+			return new Promise<string | null>((resolve) => {
+				grecaptcha.ready(() => {
+					grecaptcha.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact_form' })
+						.then((token: string) => {
+							resolve(token);
+						})
+						.catch((error: any) => {
+							console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+							resolve(null);
+						});
+				});
+			});
+		} catch (error) {
+			console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+			return null;
+		}
+	}
+
+	// Enhanced form submit handler s reCAPTCHA
+	function handleSubmit() {
+		return async ({ cancel, formData }: { cancel: () => void; formData: FormData }) => {
+			// Získat reCAPTCHA token
+			const recaptchaToken = await getRecaptchaToken();
+			
+			if (!recaptchaToken && PUBLIC_RECAPTCHA_SITE_KEY) {
+				// Pokud je reCAPTCHA nakonfigurováno, ale token se nepodařilo získat, zrušit odeslání
+				console.error('❌ [RECAPTCHA] Nepodařilo se získat token');
+				cancel();
+				// Zobrazit chybu uživateli
+				alert('Chyba při ověřování. Zkuste to prosím znovu.');
+				return;
+			}
+
+			// Přidat token do FormData
+			if (recaptchaToken) {
+				formData.append('recaptcha_token', recaptchaToken);
+			}
+
+			// Pokračovat s odesláním formuláře
+			return async ({ result, update }: { result: any; update: any }) => {
+				await update();
+			};
+		};
 	}
 </script>
 
 <svelte:head>
 	<title>Šťastné srdce - Kontakt</title>
 	<meta name="description" content="Kontaktujte nás - Šťastné srdce" />
-	<script src="https://www.google.com/recaptcha/api.js?render={key}"></script>
 </svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
@@ -105,39 +171,48 @@
 							<div class="flex items-center gap-3">
 								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<p class="text-gray-600">
-									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}`}
+									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}` || 'Adresa není k dispozici'}
 								</p>
 							</div>
 							<div class="flex items-center gap-3">
 								<Globe class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
-									<p class="text-gray-600">IČO: {business?.ico}</p>
-									<p class="text-gray-600">DIČ: {business?.dic}</p>
+									<p class="text-gray-600">IČO: {business?.ico || 'Není k dispozici'}</p>
+									<p class="text-gray-600">DIČ: {business?.dic || 'Není k dispozici'}</p>
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<div>
-									<p class="text-gray-600">
-										<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
-											{contact.phone}
-										</a>
-									</p>
-									<p class="text-gray-600">
-										<a href="tel:{contact?.phone1 }" class="hover:text-green-700 hover:underline">
-											{contact?.phone1 }
-										</a>
-									</p>
-									<p class="text-gray-600">
-										<a href="tel:{contact?.phone2}" class="hover:text-green-700 hover:underline">
-											{contact?.phone2}
-										</a>
-									</p>
+									{#if contact?.phone}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
+												{contact.phone}
+											</a>
+										</p>
+									{/if}
+									{#if contact?.phone1}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone1}" class="hover:text-green-700 hover:underline">
+												{contact.phone1}
+											</a>
+										</p>
+									{/if}
+									{#if contact?.phone2}
+										<p class="text-gray-600">
+											<a href="tel:{contact.phone2}" class="hover:text-green-700 hover:underline">
+												{contact.phone2}
+											</a>
+										</p>
+									{/if}
+									{#if !contact?.phone && !contact?.phone1 && !contact?.phone2}
+										<p class="text-gray-600">Telefon není k dispozici</p>
+									{/if}
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
 								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<p class="text-gray-600">{contact?.email}</p>
+								<p class="text-gray-600">{contact?.email || 'Email není k dispozici'}</p>
 							</div>					
 							
 							<!-- Otevírací doba -->
@@ -170,10 +245,10 @@
 
 					<!-- Mapa -->
 					<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
-						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng}
+						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng && PUBLIC_GOOGLE_MAPS_API_KEY}
 							<iframe
 								class="w-full h-full"
-								src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
+								src="https://www.google.com/maps/embed/v1/place?key={PUBLIC_GOOGLE_MAPS_API_KEY}&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
 								loading="lazy"
 								referrerpolicy="no-referrer-when-downgrade"
 								title={mapTitle} />
@@ -194,7 +269,7 @@
 					<form
 						method="POST"
 						action="?/sendForm"
-						on:submit|preventDefault={doRecaptcha}
+						use:enhance={handleSubmit}
 						class="space-y-4">
 						<!-- Email -->
 						<div class="relative">
@@ -214,7 +289,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.email}
 									placeholder="vas@email.cz"
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.email}
 								<p class="mt-1 text-sm text-red-600">
@@ -241,7 +316,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.name}
 									placeholder="Jan Novák"
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.name}
 								<p class="mt-1 text-sm text-red-600">
@@ -267,8 +342,8 @@
 									id="tel"
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.tel}
-									placeholder="+420 123 456 789"
-									disabled={isSubmitting} />
+									placeholder="+420777456789"
+									/>
 							</div>
 							{#if form?.errors?.tel}
 								<p class="mt-1 text-sm text-red-600">
@@ -295,7 +370,7 @@
 									class="w-full pl-10 pr-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
 									class:border-red-500={form?.errors?.content}
 									placeholder="Vaše zpráva..."
-									disabled={isSubmitting} />
+									/>
 							</div>
 							{#if form?.errors?.content}
 								<p class="mt-1 text-sm text-red-600">
@@ -307,17 +382,8 @@
 						<!-- Submit Button -->
 						<button
 							type="submit"
-							disabled={isSubmitting}
 							class="w-full px-4 py-2 text-base font-semibold text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed">
-							{#if isSubmitting}
-								<span class="flex items-center justify-center gap-2">
-									<div class="w-5 h-5 border-t-2 border-white rounded-full animate-spin">
-									</div>
-									Odesílám...
-								</span>
-							{:else}
-								Odeslat zprávu
-							{/if}
+							Odeslat zprávu
 						</button>
 
 						<!-- Status Message -->

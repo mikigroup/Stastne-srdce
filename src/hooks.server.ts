@@ -2,8 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
+import { ROUTES } from "$lib/constants/routes";
 
 // Admin client pro obejití RLS politik
 const adminSupabase = createServerClient(
@@ -36,10 +37,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 			 * Safe to set `httpOnly: false` since we're only using cookies to store the session.
 			 */
 			set: (key, value, options) => {
-				event.cookies.set(key, value, { ...options, httpOnly: false });
+				event.cookies.set(key, value, { ...options, httpOnly: false, path: '/' });
 			},
 			remove: (key, options) => {
-				event.cookies.delete(key, { ...options, httpOnly: false });
+				event.cookies.delete(key, { ...options, httpOnly: false, path: '/' });
 			}
 		}
 	});
@@ -72,11 +73,42 @@ const supabase: Handle = async ({ event, resolve }) => {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id, accessible_tenant_ids')
 					.eq('id', user.id)
 					.single();
 
-				if (!profileError && profile) {
+				if (profileError && profileError.code === 'PGRST116') {
+					// Uživatel nemá vytvořený profil - přesměrovat na dokončení registrace
+					console.log('ℹ️ [AUTH] User profile not found, redirecting to registration completion:', user.id);
+					// Necháme uživatele pokračovat - bude přesměrován na dokončení registrace
+				} else if (profileError) {
+					// Jiná chyba při načítání profilu
+					console.error('❌ [AUTH] Error fetching user profile:', profileError);
+					// Pokračovat v normálním flow i při chybě
+				} else if (!profileError && profile) {
+					// 🔧 NOVÁ LOGIKA: Ověřit přístup k aktuálnímu tenantovi pouze pokud má profil
+					const hasAccessToTenant = profile.accessible_tenant_ids?.includes(PUBLIC_TENANT) || profile.tenant_id === PUBLIC_TENANT;
+					
+					if (!hasAccessToTenant) {
+						console.log('❌ [AUTH] User does not have access to current tenant:', {
+							userId: user.id,
+							currentTenant: PUBLIC_TENANT,
+							userTenantId: profile.tenant_id,
+							accessibleTenants: profile.accessible_tenant_ids
+						});
+						
+						// Odhlásit uživatele - nemá přístup k tomuto tenantovi
+						await event.locals.supabase.auth.signOut();
+						return { session: null, user: null };
+					}
+					
+					console.log('✅ [AUTH] User has access to current tenant:', {
+						userId: user.id,
+						currentTenant: PUBLIC_TENANT,
+						userTenantId: profile.tenant_id,
+						accessibleTenants: profile.accessible_tenant_ids
+					});
+					
 					const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';
 					const isDeletionRequested = profile.data_deletion_requested === true || String(profile.data_deletion_requested) === 'true';
 
@@ -134,6 +166,44 @@ const supabase: Handle = async ({ event, resolve }) => {
 		return { session, user };
 	};
 
+	// 🔧 NOVÁ LOGIKA: Nastavit tenant context podle PUBLIC_TENANT
+	try {
+		// Nastavit tenant context na hlavní client (důležité pro menu!)
+		await event.locals.supabase.rpc('set_tenant_context', { 
+			tenant_id: PUBLIC_TENANT 
+		});
+		
+		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
+		await adminSupabase.rpc('set_tenant_context', { 
+			tenant_id: PUBLIC_TENANT 
+		});
+		
+		// Uložit tenant info do locals
+		event.locals.tenantId = PUBLIC_TENANT;
+		
+		// Získat tenant data pro locals
+		const { data: tenant } = await event.locals.supabase
+			.from('tenants')
+			.select('*')
+			.eq('id', PUBLIC_TENANT)
+			.single();
+		
+		event.locals.tenant = tenant;
+		
+		console.log('✅ [TENANT] Tenant context set for PUBLIC_TENANT:', PUBLIC_TENANT);
+		
+	} catch (error) {
+		console.error('❌ [TENANT] Error setting tenant context:', error);
+		// Fallback na default tenant při chybě
+		try {
+			await event.locals.supabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
+			await adminSupabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
+			event.locals.tenantId = PUBLIC_TENANT;
+		} catch (fallbackError) {
+			console.error('Error in fallback tenant context:', fallbackError);
+		}
+	}
+
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {
 			/**
@@ -154,17 +224,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;
-
-	// Admin section logic
-	if (event.url.pathname.startsWith("/admin")) {
-		if (!event.locals.session && event.url.pathname !== "/admin/signin") {
-			throw redirect(303, "/admin/signin");
-		}
-
-		if (event.locals.session && event.url.pathname === "/admin/signin") {
-			throw redirect(303, "/admin");
-		}
-	}
 
 	return resolve(event);
 };

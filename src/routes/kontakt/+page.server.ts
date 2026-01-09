@@ -1,31 +1,13 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import nodemailer from "nodemailer";
-import * as yup from "yup";
-import type { FormData } from "$lib/types/form";
 import { PRIVATE_seznam_key } from "$env/static/private";
-import { getDefaultSettings } from "$lib/constants/defaultSettings";
+import { getSetting } from "$lib/services/siteSettingsService";
+import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { sanitizeEmailText, sanitizeEmailAddress, sanitizePhone } from "$lib/utils/emailSanitization";
+import { contactFormSchema } from "$lib/utils/validationSchemas";
 
-// Definice schématu pro validaci formuláře
-const contactSchema = yup.object({
-	email: yup
-		.string()
-		.email("Neplatný formát emailu")
-		.required("Email je povinný"),
-	tel: yup
-		.string()
-		.matches(
-			/^(\+420)?\s*\d{3}\s*\d{3}\s*\d{3}$/,
-			"Neplatný formát telefonu (např. +420 123 456 789)"
-		)
-		.required("Telefon je povinný"),
-	name: yup
-		.string()
-		.min(2, "Jméno musí mít alespoň 2 znaky")
-		.required("Jméno je povinné"),
-	content: yup.string().min(10).required(),
-	"g-recaptcha-response": yup.string().required("ReCaptcha je povinná")
-});
+export const prerender = false;
 
 // Konfigurace nodemailer transporteru
 const transporter = nodemailer.createTransport({
@@ -41,69 +23,23 @@ const transporter = nodemailer.createTransport({
 // Načítání dat z site_settings
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
-		// Načtení dat z tabulky site_settings
-		const { data: contactSettings, error: contactError } = await supabase
-			.from("site_settings")
-			.select("value")
-			.eq("key", "contact")
-			.single();
+		// Načtení dat pomocí centralizované služby s tenant_id
+		// Nyní se používá PUBLIC_TENANT automaticky
+		
+		const [contactSettings, businessSettings] = await Promise.allSettled([
+			getSetting(supabase, 'contact'),
+			getSetting(supabase, 'business')
+		]);
 
-		const { data: businessSettings, error: businessError } = await supabase
-			.from("site_settings")
-			.select("value")
-			.eq("key", "business")
-			.single();
+		// Zpracování výsledků - pouze z databáze, bez fallbacku
+		const contact = contactSettings.status === 'fulfilled' && contactSettings.value 
+			? contactSettings.value 
+			: null;
+		
+		const business = businessSettings.status === 'fulfilled' && businessSettings.value 
+			? businessSettings.value 
+			: null;
 
-		if (contactError) {
-			console.error("Chyba při načítání kontaktních údajů:", contactError);
-		}
-
-		if (businessError) {
-			console.error("Chyba při načítání obchodních údajů:", businessError);
-		}
-
-		// Parsování JSON dat
-		let contact = null;
-		let business = null;
-
-		try {
-			if (contactSettings?.value) {
-				contact =
-					typeof contactSettings.value === "string"
-						? JSON.parse(contactSettings.value)
-						: contactSettings.value;
-			} else {
-				// Použijeme výchozí nastavení pokud nejsou data v databázi
-				contact = getDefaultSettings('contact');
-			}
-		} catch (e) {
-			console.error("Chyba při parsování kontaktních údajů:", e);
-			// Použijeme výchozí nastavení při chybě
-			contact = getDefaultSettings('contact');
-		}
-
-		try {
-			if (businessSettings?.value) {
-				business =
-					typeof businessSettings.value === "string"
-						? JSON.parse(businessSettings.value)
-						: businessSettings.value;
-			} else {
-				// Použijeme výchozí nastavení pokud nejsou data v databázi
-				business = getDefaultSettings('business');
-			}
-		} catch (e) {
-			console.error("Chyba při parsování obchodních údajů:", e);
-			// Použijeme výchozí nastavení při chybě
-			business = getDefaultSettings('business');
-		}
-
-		// Debug výpis pro kontrolu dat
-		console.log('🔍 Kontakt - Načtená data:', {
-			contact: contact,
-			showOpeningHours: contact?.showOpeningHours,
-			openingHours: contact?.openingHours
-		});
 
 		return {
 			settings: {
@@ -112,7 +48,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 			}
 		};
 	} catch (error) {
-		console.error("Nepředvídaná chyba při načítání nastavení:", error);
+		console.error("Chyba při načítání nastavení:", error);
+
 		return {
 			settings: {
 				contact: null,
@@ -129,58 +66,114 @@ export const actions: Actions = {
 			email: formData.get("email"),
 			tel: formData.get("tel"),
 			name: formData.get("name"),
-			message: formData.get("message"),
-			"g-recaptcha-response": formData.get("g-recaptcha-response")
+			content: formData.get("content"),
+			recaptchaToken: formData.get("recaptcha_token")?.toString() || ""
 		};
 
+		console.log('📧 Kontakt - Odesílání formuláře:', {
+			email: formValues.email ? String(formValues.email).substring(0, 20) + '...' : 'prázdné',
+			tel: formValues.tel ? String(formValues.tel).substring(0, 10) + '...' : 'prázdné',
+			name: formValues.name ? String(formValues.name).substring(0, 20) + '...' : 'prázdné',
+			content: formValues.content ? `${String(formValues.content).substring(0, 50)}...` : 'prázdné'
+		});
+
+		// Validace reCAPTCHA tokenu
+		if (formValues.recaptchaToken) {
+			const clientIP = getClientIP(request);
+			const recaptchaResult = await verifyRecaptchaToken(formValues.recaptchaToken, clientIP, 0.5);
+			
+			if (!recaptchaResult.success) {
+				console.warn('⚠️ [KONTAKT] reCAPTCHA validation failed:', {
+					score: recaptchaResult.score,
+					error: recaptchaResult.error
+				});
+				return fail(400, {
+					errors: {},
+					status: {
+						success: false,
+						display: "Ověření selhalo. Zkuste to prosím znovu."
+					},
+					email: formValues.email,
+					tel: formValues.tel,
+					name: formValues.name,
+					content: formValues.content
+				});
+			}
+
+			console.log('✅ [KONTAKT] reCAPTCHA validation passed:', {
+				score: recaptchaResult.score
+			});
+		} else {
+			console.warn('⚠️ [KONTAKT] reCAPTCHA token missing');
+			// Graceful degradation - pokud není nakonfigurováno, pokračovat
+		}
+
+		// Validace pomocí Zod
+		const validationResult = contactFormSchema.safeParse(formValues);
+		
+		if (!validationResult.success) {
+			console.log('❌ Kontakt - Chyba validace:', validationResult.error.errors);
+			const errors = validationResult.error.errors.reduce(
+				(acc, err) => ({
+					...acc,
+					[err.path[0] || ""]: err.message
+				}),
+				{} as Record<string, string>
+			);
+
+			console.log('❌ Kontakt - Chybové zprávy:', errors);
+
+			return fail(400, {
+				errors,
+				status: {
+					success: false,
+					display: "Prosím opravte chyby ve formuláři"
+				},
+				email: formValues.email,
+				tel: formValues.tel,
+				name: formValues.name,
+				content: formValues.content
+			});
+		}
+
+		console.log('✅ Kontakt - Validace prošla úspěšně');
+
 		try {
-			await contactSchema.validate(formValues, { abortEarly: false });
+			// Sanitizace hodnot před vložením do emailu
+			const sanitizedName = sanitizeEmailText(validationResult.data.name);
+			const sanitizedEmail = sanitizeEmailAddress(validationResult.data.email);
+			const sanitizedTel = sanitizePhone(validationResult.data.tel);
+			const sanitizedContent = sanitizeEmailText(validationResult.data.content);
 
 			const options = {
 				from: "info@stastnesrdce.cz",
 				to: "info@stastnesrdce.cz",
 				subject: "Šťastné srdce - Formulář",
-				text: `Dobrý den,\n
-								byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.\n
-								Kontaktní osoba: ${formValues.name}
-								Email: ${formValues.email}
-								Telefon: ${formValues.tel}\n
-								Obsah zprávy:\n${formValues.message}`
+				text: `Dobrý den,
+
+byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.
+
+Kontaktní osoba: ${sanitizedName}
+Email: ${sanitizedEmail}
+Telefon: ${sanitizedTel}
+
+Obsah zprávy:
+${sanitizedContent}`
 			};
 
+			console.log('📧 Kontakt - Odesílám email...');
 			await transporter.sendMail(options);
+			console.log('✅ Kontakt - Email úspěšně odeslán');
 
 			return {
 				success: true,
-				message: { success: true, display: "Zpráva byla úspěšně odeslána" }
+				status: { success: true, display: "Zpráva byla úspěšně odeslána" }
 			};
 		} catch (error) {
-			if (error instanceof yup.ValidationError) {
-				const errors = error.inner.reduce(
-					(acc, err) => ({
-						...acc,
-						[err.path || ""]: err.message
-					}),
-					{} as Record<string, string>
-				);
-
-				return fail(400, {
-					errors,
-					status: {
-						success: false,
-						display: "Prosím opravte chyby ve formuláři"
-					},
-					email: formValues.email,
-					tel: formValues.tel,
-					name: formValues.name,
-					content: formValues.message
-				});
-			}
-
 			console.error("Chyba při odesílání e-mailu:", error);
 
 			return fail(500, {
-				message: { success: false, display: "Chyba při odesílání e-mailu" }
+				status: { success: false, display: "Chyba při odesílání e-mailu" }
 			});
 		}
 	}

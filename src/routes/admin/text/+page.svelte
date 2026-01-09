@@ -41,6 +41,7 @@
 			result: () => {
 				// Uložení aktuální pozice kurzoru
 				const selection = window.getSelection();
+				if (!selection) return;
 				const range = selection.getRangeAt(0);
 
 				// Vytvoření pre a code elementů
@@ -49,7 +50,7 @@
 
 				// Získání vybraného textu nebo vložení prázdného řádku pro kód
 				let content = '';
-				if (selection.toString().length > 0) {
+				if (selection && selection.toString().length > 0) {
 					content = selection.toString();
 				} else {
 					content = 'Sem vložte kód';
@@ -204,8 +205,8 @@
 				// Obnovit stránku pro načtení aktuálních dat
 				setTimeout(() => window.location.reload(), 1000);
 			} else {
-				console.error("Chyba při ukládání:", result.error);
-				alert("Chyba při ukládání: " + (result.error?.message || "Neznámá chyba"));
+				console.error("Chyba při ukládání:", result);
+				alert("Chyba při ukládání: " + (result.type === 'error' ? result.error?.message || "Neznámá chyba" : "Neznámá chyba"));
 			}
 		};
 	};

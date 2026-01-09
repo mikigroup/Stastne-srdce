@@ -1,5 +1,6 @@
 import type { PageServerLoad } from "./$types";
 import { getOrderSettings } from "$lib/services/eshopSettingsService";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, session },
@@ -11,7 +12,7 @@ export const load: PageServerLoad = async ({
 	const searchQuery = url.searchParams.get("search") || "";
 	const dateQuery = url.searchParams.get("date") || "";
 
-	let query = supabase.from("orders").select("*", { count: "exact" });
+	let query = supabase.from("orders").select("*", { count: "exact" }).eq("tenant_id", PUBLIC_TENANT);
 
 	// Aplikujeme vyhledávání podle textu
 	if (searchQuery) {
@@ -70,6 +71,7 @@ export const load: PageServerLoad = async ({
 		.from("profiles")
 		.select("table_settings_orders")
 		.eq("id", session?.user.id)
+		.eq("tenant_id", PUBLIC_TENANT)
 		.single();
 
 	if (profileError) {

@@ -10,6 +10,8 @@ export async function getOrderSettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'orders')
+            .order('updated_at', { ascending: false })
+            .limit(1)
             .single();
         
         if (error) {
@@ -37,6 +39,8 @@ export async function getZakazkySettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'eshop')
+            .order('updated_at', { ascending: false })
+            .limit(1)
             .single();
         
         if (error) {
@@ -64,6 +68,8 @@ export async function getDopravaSettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'doprava')
+            .order('updated_at', { ascending: false })
+            .limit(1)
             .single();
         
         if (error) {

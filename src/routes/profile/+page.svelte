@@ -3,7 +3,6 @@
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import type { Database } from '$lib/types/database.types';
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
-	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	type Order = Database['public']['Tables']['orders']['Row'] & {
@@ -27,6 +26,7 @@
 	export let form;
 	let { session, supabase, profile, orders, generalSettings } = data;
 	$: ({ session, supabase, profile, orders, generalSettings } = data);
+	$: deliveryMethodOptions = (data as any).deliveryMethodOptions;
 
 	let visible: boolean = true;
 	let expandedOrders: { [key: string]: boolean } = {};
@@ -69,8 +69,9 @@
 
 	let profileValidationMessage = '';
 
-	// Get all delivery method options for profile (including empty option)
-	const deliveryMethodOptions = getAllDeliveryMethods(false, true);
+	// Delivery method options jsou načteny z databáze v +page.server.ts
+	// Fallback na prázdné pole, pokud nejsou k dispozici
+	$: deliveryMethodOptionsList = deliveryMethodOptions || [{ value: '', label: 'Vyberte způsob dodání' }];
 
 	let fieldErrors: { [key: string]: string } = {};
 
@@ -277,7 +278,7 @@
                     id="delivery_method"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                   >
-                    {#each deliveryMethodOptions as option}
+                    {#each deliveryMethodOptionsList as option}
                       <option value={option.value}>{option.label}</option>
                     {/each}
                   </select>
@@ -562,7 +563,7 @@
                   {order.order_number}
                 </div>
                 <div class="gap-4 flex">
-                  <span class="font-semibold">{formatDateToCzech(order.created_at)}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
+                  <span class="font-semibold">{order.created_at ? formatDateToCzech(order.created_at) : 'N/A'}</span> <span class="text-sm text-gray-500"> {order.total_price} {order.currency}</span>
                 </div>
               </div>
 
@@ -587,12 +588,21 @@
                 </div>                
 
                 <div class="space-y-4">
-                  {#each order.grouped_items as group}
+                  {#each order.order_items as item}
                     <div class="border border-gray-200 rounded-lg overflow-hidden">
                       <div class="bg-gray-50 border-b border-gray-200 p-3 flex justify-between items-center">
-                        <div class="font-medium">Menu ze dne: {formatDateToCzech(group.date)}</div>
+                        <div class="font-medium">
+                          {item.variant?.description || 'Produkt'}
+                        </div>
                         <div class="text-sm text-gray-500">
-                          {calculateTotalItems(group.items)} položek
+                          {item.quantity}x
+                        </div>
+                      </div>
+                      
+                      <!-- Datum menu -->
+                      <div class="px-3 py-2 bg-blue-50 border-b border-gray-200">
+                        <div class="text-sm text-blue-700 font-medium">
+                          📅 Datum menu: {item.variant?.menu_version_id?.date || item.variant?.menu?.date || 'N/A'}
                         </div>
                       </div>
 
@@ -603,28 +613,30 @@
                               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0V5z" clip-rule="evenodd" />
                             </svg>
                           </div>
-                          <div class="font-medium">Polévka: {group.items[0].variant.menu.soup}</div>
+                          <div class="font-medium">
+                            Polévka: {item.variant?.menu_version_id?.soup || item.variant?.menu?.soup || 'N/A'}
+                          </div>
                         </div>
 
                         <div class="space-y-3">
-                          {#each group.items as item}
-                            <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
-                              <div class="grid md:grid-cols-4 gap-2">
-                                <div class="col-span-2">
-                                  <div class="text-sm text-gray-500">Varianta</div>
-                                  <div>{item.variant.variant_number}. {item.variant.description}</div>
-                                </div>
+                          <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                            <div class="grid md:grid-cols-4 gap-2">
+                              <div class="col-span-2">
+                                <div class="text-sm text-gray-500">Varianta</div>
                                 <div>
-                                  <div class="text-sm text-gray-500">Cena</div>
-                                  <div class="font-medium">{item.price} Kč</div>
-                                </div>
-                                <div>
-                                  <div class="text-sm text-gray-500">Množství</div>
-                                  <div class="font-medium">{item.quantity} ks</div>
+                                  {item.variant?.variant_number}. {item.variant?.description}
                                 </div>
                               </div>
+                              <div>
+                                <div class="text-sm text-gray-500">Cena</div>
+                                <div class="font-medium">{item.price} Kč</div>
+                              </div>
+                              <div>
+                                <div class="text-sm text-gray-500">Množství</div>
+                                <div class="font-medium">{item.quantity} ks</div>
+                              </div>
                             </div>
-                          {/each}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -702,8 +714,8 @@
                       Žádost o smazání dat je aktivní
                     </h4>
                     <p class="text-sm text-blue-800 mb-2">
-                      <strong>Podáno:</strong> {new Date(data.profile.data_deletion_date).toLocaleDateString('cs-CZ')}<br>
-                      <strong>Smazání:</strong> {new Date(data.profile.data_deletion_scheduled).toLocaleDateString('cs-CZ')}
+                      <strong>Podáno:</strong> {data.profile.data_deletion_date ? new Date(data.profile.data_deletion_date).toLocaleDateString('cs-CZ') : 'N/A'}<br>
+                      <strong>Smazání:</strong> {data.profile.data_deletion_scheduled ? new Date(data.profile.data_deletion_scheduled).toLocaleDateString('cs-CZ') : 'N/A'}
                     </p>
                     <div class="bg-blue-100 rounded p-3 text-xs text-blue-700">
                       <p class="font-medium mb-1">💡 Možnost návratu:</p>

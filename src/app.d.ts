@@ -33,6 +33,8 @@ declare global {
 				product_id: string;
 				quantity: number;
 			}>;
+			tenant?: any; // Tenant info
+			tenantId?: string; // Current tenant ID
 		}
 
 		interface Window {

@@ -66,7 +66,7 @@
 				<span class="label-text">Umožnit objednávky na další den do určeného času</span>
 			</label>
 			<span class="text-xs text-gray-500 mt-1">
-				Po zapnutí se menu pro další den zobrazuje do nastaveného času, pak se uzavře
+				Po zapnutí se menu pro další den zobrazuje do nastaveného času, pak se uzavře a zobrazuje se menu pro pozítří
 			</span>
 		</div>
 
@@ -87,9 +87,14 @@
 					Do tohoto času lze objednat jídlo na další den
 				</p>
 			</div>
-			<span class="text-xs text-gray-500 mt-1">
-				Například: 17:00 = objednávky na zítřek se uzavřou v 17:00 dnešního dne
-			</span>
+			<div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+				<h4 class="font-medium text-blue-800 mb-2">📋 Jak to funguje:</h4>
+				<ul class="text-xs text-blue-700 space-y-1">
+					<li>• <strong>Před {$editableSettings.products.nextDayMenuTime}:</strong> Zobrazuje se menu pro zítřek (lze objednat)</li>
+					<li>• <strong>Po {$editableSettings.products.nextDayMenuTime}:</strong> Zobrazuje se menu pro pozítří (objednávky na zítřek uzavřeny)</li>
+					<li>• <strong>Příklad:</strong> Nastaveno na 17:00 = objednávky na zítřek se uzavřou v 17:00 dnešního dne</li>
+				</ul>
+			</div>
 			</div>
 		{/if}
 	</div>
