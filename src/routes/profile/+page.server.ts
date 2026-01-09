@@ -4,6 +4,7 @@ import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
 import { ProfileService } from '$lib/services/profileService';
+import { getAllDeliveryMethods } from '$lib/constants/deliveryMethods';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
@@ -139,11 +140,15 @@ export const load: PageServerLoad = async ({
 			);
 		});
 	}
+
+	// Načtení možností dopravy z databáze
+	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, true);
 	
 	return {
 		session,
 		profile,
-		orders: orders || []
+		orders: orders || [],
+		deliveryMethodOptions
 	};
 };
 

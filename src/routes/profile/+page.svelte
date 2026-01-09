@@ -3,7 +3,6 @@
 	import type { SubmitFunction } from "@sveltejs/kit";
 	import type { Database } from '$lib/types/database.types';
 	import { validateProfileForInvoicing, getProfileValidationMessage } from "$lib/utils/profileValidation";
-	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
 	import { formatDateToCzech } from "$lib/utils/formatting";
 
 	type Order = Database['public']['Tables']['orders']['Row'] & {
@@ -27,6 +26,7 @@
 	export let form;
 	let { session, supabase, profile, orders, generalSettings } = data;
 	$: ({ session, supabase, profile, orders, generalSettings } = data);
+	$: deliveryMethodOptions = (data as any).deliveryMethodOptions;
 
 	let visible: boolean = true;
 	let expandedOrders: { [key: string]: boolean } = {};
@@ -69,8 +69,9 @@
 
 	let profileValidationMessage = '';
 
-	// Get all delivery method options for profile (including empty option)
-	const deliveryMethodOptions = getAllDeliveryMethods(false, true);
+	// Delivery method options jsou načteny z databáze v +page.server.ts
+	// Fallback na prázdné pole, pokud nejsou k dispozici
+	$: deliveryMethodOptionsList = deliveryMethodOptions || [{ value: '', label: 'Vyberte způsob dodání' }];
 
 	let fieldErrors: { [key: string]: string } = {};
 
@@ -277,7 +278,7 @@
                     id="delivery_method"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                   >
-                    {#each deliveryMethodOptions as option}
+                    {#each deliveryMethodOptionsList as option}
                       <option value={option.value}>{option.label}</option>
                     {/each}
                   </select>

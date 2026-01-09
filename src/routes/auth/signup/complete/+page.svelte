@@ -3,7 +3,6 @@
 	import type { PageData } from "./$types";
 	import { goto } from "$app/navigation";
 
-	import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 	import { ROUTES } from "$lib/constants/routes";
 
 	export let data: PageData;
@@ -44,9 +43,13 @@
 	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
 	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
 
-
-	// Get delivery method options with descriptions for registration (only 3 main options)
-	const deliveryMethodOptions = getRegistrationDeliveryMethods(true);
+	// Delivery method options jsou načteny z databáze v +page.server.ts
+	// Fallback na výchozí hodnoty, pokud nejsou k dispozici
+	$: deliveryMethodOptions = (data as any).deliveryMethodOptions || [
+		{ value: 'own', label: 'Vlastní nosič' },
+		{ value: 'reBox', label: 'REkrabička' },
+		{ value: 'menuBox', label: 'Menu Box' }
+	];
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -137,8 +140,7 @@
 						/>
 					</div>
 				</div>
-
-				<!-- Dodací adresa -->
+				
 				<div class="space-y-4">
 					<h3 class="text-lg font-medium">Dodací adresa</h3>
 
@@ -202,8 +204,7 @@
 						/>
 					</div>
 				</div>
-
-				<!-- Alergie -->
+			
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Alergie <span class="text-red-500">*</span></h3>
 					<div class="flex gap-4">
@@ -249,8 +250,7 @@
 						</div>
 					{/if}
 				</div>
-
-				<!-- Způsob dodání -->
+				
 				<div class="space-y-4">
 					<h3 class="text-lg font-medium">Způsob dodání</h3>
 					<div class="flex flex-col gap-2">
@@ -269,8 +269,7 @@
 						{/each}
 					</div>
 				</div>
-
-				<!-- Způsob platby -->
+				
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Způsob platby</h3>
 					<div class="flex flex-col gap-2">
@@ -293,8 +292,7 @@
 						{/each}
 					</div>
 				</div>
-
-				<!-- Submit button -->
+				
 				<div class="flex w-full mt-8">
 					<button
 						type="submit"

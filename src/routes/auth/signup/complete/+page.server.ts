@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { detectBotRegistration, isTemporaryEmail } from "$lib/utils/botDetection";
+import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 
 // Admin Supabase klient pro načtení emailu z auth.users
 const adminSupabase = createClient<Database>(
@@ -49,11 +50,16 @@ export const load: PageServerLoad = async ({
 			throw redirect(303, ROUTES.MAIN.HOME);
 		}
 
-		return { profile };
+		// Načtení možností dopravy z databáze
+		const deliveryMethodOptions = await getRegistrationDeliveryMethods(supabase, true);
+
+		return { profile, deliveryMethodOptions };
 	}
 
 	// Pokud nemá session ale má success parametr, vrátíme prázdný profil
-	return { profile: null };
+	// I tak načteme možnosti dopravy pro případ, že se uživatel přihlásí
+	const deliveryMethodOptions = await getRegistrationDeliveryMethods(supabase, true);
+	return { profile: null, deliveryMethodOptions };
 };
 
 export const actions: Actions = {
