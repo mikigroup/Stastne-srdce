@@ -72,9 +72,10 @@ async function loadDeliverySettingsFromDB(supabase: SupabaseClient<Database>) {
  * Převede shippingMethods z DB na formát pro UI
  */
 function convertShippingMethodsToOptions(
-  shippingMethods: Array<{ name: string; price?: number; enabled?: boolean }> | undefined,
-  useNamesAsValues = false
-): Array<{ value: string; label: string }> {
+  shippingMethods: Array<{ name: string; description?: string; price?: number; enabled?: boolean }> | undefined,
+  useNamesAsValues = false,
+  withDescriptions = false
+): Array<{ value: string; label: string; price?: number }> {
   if (!shippingMethods || !Array.isArray(shippingMethods)) {
     return [];
   }
@@ -83,11 +84,29 @@ function convertShippingMethodsToOptions(
     .filter(method => method.enabled !== false) // Filtrujeme pouze povolené metody
     .map(method => {
       const name = method.name || '';
+      const price = method.price ?? 0;
       // Pokud useNamesAsValues je true, použijeme název jako hodnotu, jinak mapujeme na kód
       const value = useNamesAsValues ? name : (NAME_TO_CODE_MAP[name] || name.toLowerCase().replace(/\s+/g, ''));
+      
+      // Pokud jsou požadovány popisky a existuje description v DB, použijeme ho
+      // Jinak použijeme jen název
+      let label = name;
+      if (withDescriptions && method.description) {
+        label = method.description;
+      } else if (withDescriptions && !method.description) {
+        // Pokud není description v DB, použijeme jen název (bez hardcoded popisků)
+        label = name;
+      }
+      
+      // Přidáme cenu do labelu, pokud je větší než 0
+      if (price > 0) {
+        label = `${label} (${price} Kč)`;
+      }
+      
       return {
         value,
-        label: name
+        label,
+        price
       };
     });
 }
@@ -98,8 +117,9 @@ function convertShippingMethodsToOptions(
 export async function getRegistrationDeliveryMethods(
   supabase: SupabaseClient<Database> | null,
   withDescriptions = false
-): Promise<Array<{ value: string; label: string }>> {
+): Promise<Array<{ value: string; label: string; price?: number }>> {
   if (!supabase) {
+    // Bez DB vracíme jen základní názvy (bez popisků)
     return DEFAULT_REGISTRATION_METHODS;
   }
 
@@ -108,13 +128,13 @@ export async function getRegistrationDeliveryMethods(
 
   if (shippingMethods && Array.isArray(shippingMethods) && shippingMethods.length > 0) {
     // Použijeme první 3 metody z DB, nebo všechny pokud je jich méně
-    const methods = convertShippingMethodsToOptions(shippingMethods.slice(0, 3), false);
+    const methods = convertShippingMethodsToOptions(shippingMethods.slice(0, 3), false, withDescriptions);
     if (methods.length > 0) {
       return methods;
     }
   }
 
-  // Fallback na výchozí hodnoty
+  // Fallback na výchozí hodnoty (bez popisků)
   return DEFAULT_REGISTRATION_METHODS;
 }
 
@@ -125,7 +145,7 @@ export async function getAllDeliveryMethods(
   supabase: SupabaseClient<Database> | null,
   withDescriptions = false,
   includeEmpty = false
-): Promise<Array<{ value: string; label: string }>> {
+): Promise<Array<{ value: string; label: string; price?: number }>> {
   let options: Array<{ value: string; label: string }> = [];
 
   if (supabase) {
@@ -133,7 +153,7 @@ export async function getAllDeliveryMethods(
     const shippingMethods = settings?.shippingMethods;
 
     if (shippingMethods && Array.isArray(shippingMethods) && shippingMethods.length > 0) {
-      options = convertShippingMethodsToOptions(shippingMethods, false);
+      options = convertShippingMethodsToOptions(shippingMethods, false, withDescriptions);
     }
   }
 
@@ -144,7 +164,7 @@ export async function getAllDeliveryMethods(
 
   if (includeEmpty) {
     return [
-      { value: '', label: 'Vyberte způsob dodání' },
+      { value: '', label: 'Vyberte způsob dodání', price: undefined },
       ...options
     ];
   }
@@ -163,15 +183,9 @@ export function getDeliveryMethodLabel(value: string): string {
 }
 
 export function getDeliveryMethodDescription(value: string): string {
-  const label = getDeliveryMethodLabel(value);
-  // Můžeme přidat další popisky podle potřeby
-  if (value === 'reBox') {
-    return `${label} (záloha 160 Kč za set/80 Kč za jednu)`;
-  }
-  if (value === 'menuBox') {
-    return `${label} (12 Kč/kus)`;
-  }
-  return label;
+  // Tato funkce už nepoužívá hardcoded popisky
+  // Popisky se načítají z databáze přes convertShippingMethodsToOptions
+  return getDeliveryMethodLabel(value);
 }
 
 // Legacy function for backward compatibility

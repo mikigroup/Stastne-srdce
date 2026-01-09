@@ -27,6 +27,7 @@
 	let { session, supabase, profile, orders, generalSettings } = data;
 	$: ({ session, supabase, profile, orders, generalSettings } = data);
 	$: deliveryMethodOptions = (data as any).deliveryMethodOptions;
+	$: paymentMethodOptions = (data as any).paymentMethodOptions;
 
 	let visible: boolean = true;
 	let expandedOrders: { [key: string]: boolean } = {};
@@ -72,6 +73,10 @@
 	// Delivery method options jsou načteny z databáze v +page.server.ts
 	// Fallback na prázdné pole, pokud nejsou k dispozici
 	$: deliveryMethodOptionsList = deliveryMethodOptions || [{ value: '', label: 'Vyberte způsob dodání' }];
+	
+	// Payment method options jsou načteny z databáze v +page.server.ts
+	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB
+	$: paymentMethodOptionsList = paymentMethodOptions || [];
 
 	let fieldErrors: { [key: string]: string } = {};
 
@@ -300,9 +305,9 @@
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                   >
                     <option value="">Vyberte způsob platby</option>
-                    <option value="bankNoInvoice">Bankovní převod bez faktury</option>
-                    <option value="bankWithInvoice">Bankovní převod s fakturou</option>
-                    <option value="cash">Hotově</option>
+                    {#each paymentMethodOptionsList as option}
+                      <option value={option.value}>{option.label}</option>
+                    {/each}
                   </select>
                   {#if fieldErrors.payment_method}
                     <p class="mt-1 text-sm text-red-600">{fieldErrors.payment_method}</p>

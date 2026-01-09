@@ -50,6 +50,10 @@
 		{ value: 'reBox', label: 'REkrabička' },
 		{ value: 'menuBox', label: 'Menu Box' }
 	];
+	
+	// Payment method options jsou načteny z databáze v +page.server.ts
+	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB
+	$: paymentMethodOptions = (data as any).paymentMethodOptions || [];
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -273,21 +277,17 @@
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Způsob platby</h3>
 					<div class="flex flex-col gap-2">
-						{#each [
-							['cash', 'Hotově'],
-							['bankNoInvoice', 'Na účet bez faktury'],
-							['bankWithInvoice', 'Na účet s fakturou']
-						] as [value, label]}
+						{#each paymentMethodOptions as option}
 							<label class="flex items-center">
 								<input
 									type="radio"
 									name="payment_method"
-									value={value}
-									checked={paymentMethod === value}
+									value={option.value}
+									bind:group={paymentMethod}
 									class="mr-2"
 									required
 								/>
-								{label}
+								{option.label}
 							</label>
 						{/each}
 					</div>

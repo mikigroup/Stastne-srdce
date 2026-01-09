@@ -7,6 +7,7 @@ import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { detectBotRegistration, isTemporaryEmail } from "$lib/utils/botDetection";
 import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
+import { getPaymentMethods } from '$lib/constants/paymentMethods';
 
 // Admin Supabase klient pro načtení emailu z auth.users
 const adminSupabase = createClient<Database>(
@@ -52,14 +53,18 @@ export const load: PageServerLoad = async ({
 
 		// Načtení možností dopravy z databáze
 		const deliveryMethodOptions = await getRegistrationDeliveryMethods(supabase, true);
+		
+		// Načtení možností platby z databáze
+		const paymentMethodOptions = await getPaymentMethods(supabase);
 
-		return { profile, deliveryMethodOptions };
+		return { profile, deliveryMethodOptions, paymentMethodOptions };
 	}
 
 	// Pokud nemá session ale má success parametr, vrátíme prázdný profil
-	// I tak načteme možnosti dopravy pro případ, že se uživatel přihlásí
+	// I tak načteme možnosti dopravy a platby pro případ, že se uživatel přihlásí
 	const deliveryMethodOptions = await getRegistrationDeliveryMethods(supabase, true);
-	return { profile: null, deliveryMethodOptions };
+	const paymentMethodOptions = await getPaymentMethods(supabase);
+	return { profile: null, deliveryMethodOptions, paymentMethodOptions };
 };
 
 export const actions: Actions = {

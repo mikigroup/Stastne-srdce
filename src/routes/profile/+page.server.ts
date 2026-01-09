@@ -5,6 +5,7 @@ import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStat
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
 import { ProfileService } from '$lib/services/profileService';
 import { getAllDeliveryMethods } from '$lib/constants/deliveryMethods';
+import { getPaymentMethods } from '$lib/constants/paymentMethods';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import type { Session, User } from '@supabase/supabase-js';
@@ -144,11 +145,15 @@ export const load: PageServerLoad = async ({
 	// Načtení možností dopravy z databáze
 	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, true);
 	
+	// Načtení možností platby z databáze
+	const paymentMethodOptions = await getPaymentMethods(supabase);
+	
 	return {
 		session,
 		profile,
 		orders: orders || [],
-		deliveryMethodOptions
+		deliveryMethodOptions,
+		paymentMethodOptions
 	};
 };
 
