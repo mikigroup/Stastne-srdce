@@ -123,7 +123,7 @@ export const actions: Actions = {
 				.eq("id", user.id)
 				.single();
 
-			if (customerError) {
+			if (customerError || !customer) {
 				console.error("Chyba při načítání dat zákazníka:", customerError);
 				return {
 					success: false,
@@ -133,6 +133,7 @@ export const actions: Actions = {
 			}
 
 			// Create order using the stored procedure
+			// Použijeme delivery_method z profilu uživatele (kód, např. "own", "reBox")
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
 				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
@@ -150,7 +151,8 @@ export const actions: Actions = {
 				p_total_price: totalPrice,
 				p_currency: "CZK",
 				p_pay_state: false,
-				p_shipping_method: "Rozvoz",
+				// Použijeme delivery_method z profilu, fallback na "own"
+				p_shipping_method: String(customer.delivery_method?.trim() || "own"),
 				p_tenant_id: tenantId, // Oprava: použít tenantId z locals
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
