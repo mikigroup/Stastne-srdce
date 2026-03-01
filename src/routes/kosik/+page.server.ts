@@ -1,11 +1,8 @@
-import { error, redirect } from "@sveltejs/kit";
 import type { Actions, RequestEvent } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
-import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+import { PUBLIC_TENANT } from "$env/static/public";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
-import type { Profile } from "$lib/types/profile";
-import { getTenantIdFromSession } from "$lib/utils/tenantUtils";
 
 export const prerender = false;
 
@@ -153,7 +150,7 @@ export const actions: Actions = {
 				p_pay_state: false,
 				// Použijeme delivery_method z profilu, fallback na "own"
 				p_shipping_method: String(customer.delivery_method?.trim() || "own"),
-				p_tenant_id: tenantId, // Oprava: použít tenantId z locals
+				p_tenant_id: tenantId ?? PUBLIC_TENANT,
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
 						variant_id: variant.id,
