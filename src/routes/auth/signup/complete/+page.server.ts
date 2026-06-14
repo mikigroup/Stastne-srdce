@@ -8,6 +8,7 @@ import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { detectBotRegistration, isTemporaryEmail } from "$lib/utils/botDetection";
 import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 import { getPaymentMethods } from '$lib/constants/paymentMethods';
+import { ProfileService } from '$lib/services/profileService';
 
 // Admin Supabase klient pro načtení emailu z auth.users
 const adminSupabase = createClient<Database>(
@@ -329,6 +330,22 @@ export const actions: Actions = {
 					},
 					data: profileData
 				});
+			}
+
+			// Zajistit členství v tenant_members (zdroj pravdy pro RLS zákazníka).
+			// Nutné přes admin klient – nový zákazník si vlastní 'customer' řádek
+			// přes RLS politiku tenant_members_self_insert vložit nemůže.
+			try {
+				const { error: membershipError } = await ProfileService.ensureCustomerMembership(
+					adminSupabase,
+					session.user.id,
+					tenantId
+				);
+				if (membershipError) {
+					console.error("⚠️ [SIGNUP COMPLETE] Chyba při vytváření tenant_members:", membershipError);
+				}
+			} catch (membershipError) {
+				console.error("⚠️ [SIGNUP COMPLETE] Neočekávaná chyba u tenant_members:", membershipError);
 			}
 
 			// Načíst aktualizovaný profil pro vrácení
