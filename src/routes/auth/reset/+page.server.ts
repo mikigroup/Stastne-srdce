@@ -57,12 +57,27 @@ export const actions: Actions = {
 			const { error: updateError } = await supabase.auth.updateUser({ password });
 
 			if (updateError) {
+				// Supabase vrací pro shodu se stávajícím heslem kód "same_password"
+				// (HTTP 422). Starší verze nemusí kód mít, proto fallback na text.
+				const isSamePassword =
+					updateError.code === "same_password" ||
+					updateError.message?.toLowerCase().includes("should be different") ||
+					updateError.message?.toLowerCase().includes("same");
+
+				// Slabé / příliš krátké heslo dle politiky projektu
+				const isWeakPassword =
+					updateError.code === "weak_password" ||
+					updateError.message?.toLowerCase().includes("weak");
+
 				let displayMessage =
 					"Nepodařilo se změnit heslo. Zkuste to prosím znovu později.";
 
-				if (updateError.message?.toLowerCase().includes("same")) {
+				if (isSamePassword) {
 					displayMessage =
-						"Nové heslo musí být odlišné od starého hesla. Zadejte prosím jiné heslo.";
+						"Nové heslo se shoduje s vaším stávajícím heslem. Z bezpečnostních důvodů zadejte prosím heslo, které jste dosud nepoužívali.";
+				} else if (isWeakPassword) {
+					displayMessage =
+						"Heslo je příliš slabé. Použijte prosím delší heslo a kombinaci malých a velkých písmen, číslic a symbolů.";
 				}
 
 				return fail(400, {
