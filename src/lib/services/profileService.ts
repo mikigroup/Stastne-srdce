@@ -21,6 +21,19 @@ export class ProfileService {
 		);
 	}
 
+	/** Zajistí staff členství v tenant_members (admin signup, provisioning). */
+	static async ensureStaffMembership(
+		supabase: SupabaseClient<Database>,
+		userId: string,
+		tenantId: string = PUBLIC_TENANT,
+		role: 'owner' | 'admin' | 'manager' | 'staff' = 'owner'
+	) {
+		return await (supabase as SupabaseClient).from('tenant_members').upsert(
+			{ user_id: userId, tenant_id: tenantId, role, deleted_at: null },
+			{ onConflict: 'user_id,tenant_id' }
+		);
+	}
+
 	/**
 	 * Získat profil uživatele s tenant filtrací
 	 */
@@ -41,7 +54,6 @@ export class ProfileService {
 			.eq('id', userId);
 
 		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
-		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
 			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}
@@ -69,7 +81,6 @@ export class ProfileService {
 			.eq('email', email);
 
 		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
-		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
 			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}
@@ -94,7 +105,6 @@ export class ProfileService {
 			.eq('id', userId);
 
 		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
-		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
 			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}

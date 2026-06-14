@@ -6,6 +6,7 @@ import {
 	ensurePendingCustomerProfile,
 	signupConfirmAdminClient as adminSupabase
 } from '$lib/services/signupConfirmService';
+import { ProfileService } from '$lib/services/profileService';
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get('token_hash');
@@ -39,13 +40,14 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 						user_role: 'admin',
 						registration_status: 'completed',
 						tenant_id: PUBLIC_TENANT,
-						accessible_tenant_ids: [PUBLIC_TENANT],
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString()
 					});
 
 					if (profileError) {
 						console.error('[AUTH CONFIRM] Error creating admin profile:', profileError);
+					} else {
+						await ProfileService.ensureStaffMembership(adminSupabase, user.id, PUBLIC_TENANT, 'owner');
 					}
 				}
 
@@ -77,10 +79,10 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 					user_role: 'admin',
 					registration_status: 'completed',
 					tenant_id: PUBLIC_TENANT,
-					accessible_tenant_ids: [PUBLIC_TENANT],
 					created_at: new Date().toISOString(),
 					updated_at: new Date().toISOString()
 				});
+				await ProfileService.ensureStaffMembership(adminSupabase, user.id, PUBLIC_TENANT, 'owner');
 			}
 
 			return redirect(303, '/admin/signin?message=email_confirmed');

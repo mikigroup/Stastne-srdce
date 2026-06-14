@@ -65,7 +65,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id, accessible_tenant_ids')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id')
 					.eq('id', user.id)
 					.single();
 
@@ -78,10 +78,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 					console.error('❌ [AUTH] Error fetching user profile:', profileError);
 					// Pokračovat v normálním flow i při chybě
 				} else if (!profileError && profile) {
-					// 🔧 Ověření přístupu k aktuálnímu tenantovi.
-					// Zdroj pravdy po migraci (červen 2026) je tabulka tenant_members.
-					// Profile.tenant_id je „domovský" tenant, accessible_tenant_ids je legacy.
-					// Kontrolujeme všechny tři, aby přihlášení nezničila jen prázdná legacy data.
+					// Zdroj pravdy je tabulka tenant_members; profile.tenant_id je domovský tenant.
 					let isActiveMember = false;
 					const { data: membership, error: membershipError } = await adminSupabase
 						.from('tenant_members')
@@ -99,19 +96,16 @@ const supabase: Handle = async ({ event, resolve }) => {
 						isActiveMember = !!membership;
 					}
 
-					const accessibleTenantIds = profile.accessible_tenant_ids ?? [];
 					const hasAccessToTenant =
 						isActiveMember ||
-						profile.tenant_id === PUBLIC_TENANT ||
-						accessibleTenantIds.includes(PUBLIC_TENANT);
+						profile.tenant_id === PUBLIC_TENANT;
 
 					if (!hasAccessToTenant) {
 						console.log('❌ [AUTH] User does not have access to current tenant:', {
 							userId: user.id,
 							currentTenant: PUBLIC_TENANT,
 							userTenantId: profile.tenant_id,
-							isActiveMember,
-							accessibleTenantIds
+							isActiveMember
 						});
 						
 						// Odhlásit uživatele - nemá přístup k tomuto tenantovi
