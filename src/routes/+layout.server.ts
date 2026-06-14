@@ -22,8 +22,11 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 		// Kontrola dokončené registrace pomocí globální služby (bez auto-update pro performance)
 		const registrationStatus = await getRegistrationStatus(supabase, user.id, user.email);
 		
-		// Pokud registrace není dokončena a uživatel není na stránce dokončení registrace
-		if (!registrationStatus.isComplete && url.pathname !== ROUTES.AUTH.SIGNUP_COMPLETE && !url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE + '/')) {
+		// Pokud registrace není dokončena a uživatel není na auth stránce.
+		// Auth flow (reset hesla, dokončení registrace, ...) nesmí být přerušen
+		// tímto redirectem – při recovery má uživatel platnou session a musí
+		// se dostat na /auth/reset, ne být odkloněn na /auth/signup/complete.
+		if (!registrationStatus.isComplete && !url.pathname.startsWith("/auth")) {
 			// Pokud je status 'pending' a profil neexistuje, znamená to, že uživatel čeká na potvrzení emailu
 			// Nepřesměrovávat na /complete, ale nechat uživatele na aktuální stránce
 			if (registrationStatus.actualStatus === 'pending' && registrationStatus.validationResult.missingFields.includes('Profil nenalezen - dokončete registraci')) {
