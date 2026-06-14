@@ -1,4 +1,4 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { fail, isRedirect, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
 import { ROUTES } from "$lib/constants/routes";
@@ -94,6 +94,9 @@ export const actions: Actions = {
 
 			throw redirect(303, `${ROUTES.AUTH.LOGIN}?message=password_reset`);
 		} catch (error) {
+			if (isRedirect(error)) {
+				throw error;
+			}
 			console.error("[RESET] Unexpected error:", error);
 			return fail(500, {
 				password,

@@ -30,7 +30,17 @@
 	title="Obnovení hesla"
 	subtitle="Zadejte nové heslo pro váš účet"
 >
-	<form method="POST" action="?/resetPass" use:enhance class="space-y-6">
+	<form
+		method="POST"
+		action="?/resetPass"
+		use:enhance={() => {
+			return async ({ update }) => {
+				// Neinvalidovat celý layout – po chybném pokusu by se ztratila session
+				await update({ invalidateAll: false });
+			};
+		}}
+		class="space-y-6"
+	>
 		<!-- Password input -->
 		<div class="flex flex-col">
 			<div class="relative flex">

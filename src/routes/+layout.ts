@@ -30,40 +30,7 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		PUBLIC_SUPABASE_URL,
 		PUBLIC_SUPABASE_ANON_KEY,
 		{
-			global: { fetch },
-			cookies: {
-				getAll() {
-					return document.cookie
-						.split(";")
-						.map((cookie) => cookie.trim())
-						.filter(Boolean)
-						.map((cookie) => {
-							const separatorIndex = cookie.indexOf("=");
-							const name = cookie.slice(0, separatorIndex);
-							const value = cookie.slice(separatorIndex + 1);
-							return { name, value };
-						})
-						.filter(
-							({ name, value }) =>
-								name &&
-								!(
-									name.includes("auth-token") &&
-									typeof value === "string" &&
-									value.startsWith('{"access_token"')
-								)
-						);
-				},
-				setAll(cookiesToSet) {
-					cookiesToSet.forEach(({ name, value, options }) => {
-						document.cookie = `${name}=${value}; path=${options?.path ?? "/"}; max-age=${options?.maxAge ?? 31536000}; SameSite=Lax${options?.secure ? "; Secure" : ""}`;
-					});
-				}
-			},
-			auth: {
-				persistSession: true,
-				autoRefreshToken: true,
-				detectSessionInUrl: true
-			}
+			global: { fetch }
 		}
 	);
 
