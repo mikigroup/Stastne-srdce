@@ -75,9 +75,7 @@
 	// Pokud uložená (výchozí) hodnota profilu není mezi aktivními možnostmi,
 	// přidáme ji, aby šla v selektu zobrazit a vybrat.
 	$: deliveryMethodOptionsList = (() => {
-		const base = deliveryMethodOptions
-			? [...deliveryMethodOptions]
-			: [{ value: "", label: "Vyberte způsob dodání" }];
+		const base = deliveryMethodOptions ? [...deliveryMethodOptions] : [];
 		if (deliveryMethod && !base.some((o) => o.value === deliveryMethod)) {
 			base.push({ value: deliveryMethod, label: deliveryMethod });
 		}
@@ -96,12 +94,13 @@
 	})();
 
 	// Svelte select nemusí předvybrat hodnotu, pokud se volby načtou až po mountu.
+	// Kontrolujeme proti serverové prop (deliveryMethodOptions), aby nevznikla
+	// cyklická závislost s deliveryMethodOptionsList (ta čte deliveryMethod).
 	let deliveryMethodSynced = false;
 	$: if (
 		!deliveryMethodSynced &&
-		deliveryMethodOptions?.length &&
 		profile?.delivery_method &&
-		deliveryMethodOptionsList.some((o) => o.value === profile.delivery_method)
+		deliveryMethodOptions?.some((o: { value: string }) => o.value === profile.delivery_method)
 	) {
 		deliveryMethod = profile.delivery_method;
 		deliveryMethodSynced = true;
@@ -110,9 +109,8 @@
 	let paymentMethodSynced = false;
 	$: if (
 		!paymentMethodSynced &&
-		paymentMethodOptions?.length &&
 		profile?.payment_method &&
-		paymentMethodOptionsList.some((o) => o.value === profile.payment_method)
+		paymentMethodOptions?.some((o: { value: string }) => o.value === profile.payment_method)
 	) {
 		paymentMethod = profile.payment_method;
 		paymentMethodSynced = true;
@@ -344,7 +342,6 @@
                     id="payment_method"
                     class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                   >
-                    <option value="">Vyberte způsob platby</option>
                     {#each paymentMethodOptionsList as option}
                       <option value={option.value}>{option.label}</option>
                     {/each}

@@ -43,16 +43,10 @@
 	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
 	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
 
-	// Delivery method options jsou načteny z databáze v +page.server.ts
-	// Fallback na výchozí hodnoty, pokud nejsou k dispozici
-	$: deliveryMethodOptions = (data as any).deliveryMethodOptions || [
-		{ value: 'own', label: 'Vlastní nosič' },
-		{ value: 'reBox', label: 'REkrabička' },
-		{ value: 'menuBox', label: 'Menu Box' }
-	];
-	
-	// Payment method options jsou načteny z databáze v +page.server.ts
-	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB
+	// Delivery i payment options jsou načteny z databáze v +page.server.ts
+	// (site_settings je zdroj pravdy). Žádný hardcode fallback – při chybějících
+	// datech radši nezobrazíme žádnou volbu, než abychom nabízeli neaktuální metody.
+	$: deliveryMethodOptions = (data as any).deliveryMethodOptions || [];
 	$: paymentMethodOptions = (data as any).paymentMethodOptions || [];
 
 	function toggleAllergies(value: string) {

@@ -142,8 +142,8 @@ export const load: PageServerLoad = async ({
 		});
 	}
 
-	// Načtení možností dopravy z databáze
-	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, true);
+	// Načtení možností dopravy z databáze (bez prázdné "Vyberte..." volby)
+	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, false);
 	
 	// Načtení možností platby z databáze
 	const paymentMethodOptions = await getPaymentMethods(supabase);
