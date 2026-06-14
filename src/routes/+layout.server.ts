@@ -10,11 +10,12 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 	const { session, user } = await safeGetSession();
 
 	// Načteme společná nastavení pro všechny stránky
-	const [generalSettings, appearanceSettings, contactSettings, socialSettings] = await Promise.all([
+	const [generalSettings, appearanceSettings, contactSettings, socialSettings, seoSettings] = await Promise.all([
 		getSetting(supabase, 'general').then(data => data || getDefaultSettings('general')),
 		getSetting(supabase, 'appearance').then(data => data || getDefaultSettings('appearance')),
 		getSetting(supabase, 'contact').then(data => data || getDefaultSettings('contact')),
-		getSetting(supabase, 'social').then(data => data || getDefaultSettings('social'))
+		getSetting(supabase, 'social').then(data => data || getDefaultSettings('social')),
+		getSetting(supabase, 'seo').then(data => data || getDefaultSettings('seo'))
 	]);
 
 	if (session && user) {
@@ -49,7 +50,8 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 			generalSettings,
 			appearanceSettings,
 			contactSettings,
-			socialSettings
+			socialSettings,
+			seoSettings
 		};
 	}
 
@@ -60,6 +62,7 @@ export const load: LayoutServerLoad = async ({ url, locals: { safeGetSession, su
 		generalSettings,
 		appearanceSettings,
 		contactSettings,
-		socialSettings
+		socialSettings,
+		seoSettings
 	};
 };

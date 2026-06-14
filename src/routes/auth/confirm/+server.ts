@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { PUBLIC_TENANT } from '$env/static/public';
+import { ProfileService } from '$lib/services/profileService';
 
 // Admin Supabase klient pro potvrzení uživatele
 const adminSupabase = createClient<Database>(
@@ -237,7 +238,6 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                                             user_role: 'customer',
                                             registration_status: 'pending',
                                             tenant_id: PUBLIC_TENANT,
-                                            accessible_tenant_ids: [PUBLIC_TENANT],
                                             created_at: new Date().toISOString(),
                                             updated_at: new Date().toISOString()
                                         });
@@ -245,6 +245,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                                     if (profileError) {
                                         console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
                                     } else {
+                                        await ProfileService.ensureCustomerMembership(adminSupabase, userForProfile.id);
                                         console.log('✅ [AUTH CONFIRM] Profile created successfully');
                                     }
                                 }
@@ -286,7 +287,6 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                             user_role: 'customer',
                             registration_status: 'pending',
                             tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
-                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         });
@@ -295,6 +295,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
                         // Pokračovat i když profil selže - uživatel je potvrzen
                     } else {
+                        await ProfileService.ensureCustomerMembership(adminSupabase, user.id);
                         console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
                     }
                 } else {
@@ -346,7 +347,6 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                             user_role: 'customer',
                             registration_status: 'pending',
                             tenant_id: PUBLIC_TENANT, // Výchozí tenant pro customer
-                            accessible_tenant_ids: [PUBLIC_TENANT], // Přístup k výchozímu tenantovi
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         });
@@ -355,6 +355,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
                         console.error('❌ [AUTH CONFIRM] Error creating profile:', profileError);
                         // Pokračovat i když profil selže - uživatel je potvrzen
                     } else {
+                        await ProfileService.ensureCustomerMembership(adminSupabase, user.id);
                         console.log('✅ [AUTH CONFIRM] Profile created successfully for:', email);
                     }
                 } else {

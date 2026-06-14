@@ -73,7 +73,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id, accessible_tenant_ids')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id')
 					.eq('id', user.id)
 					.single();
 
@@ -87,14 +87,13 @@ const supabase: Handle = async ({ event, resolve }) => {
 					// Pokračovat v normálním flow i při chybě
 				} else if (!profileError && profile) {
 					// 🔧 NOVÁ LOGIKA: Ověřit přístup k aktuálnímu tenantovi pouze pokud má profil
-					const hasAccessToTenant = profile.accessible_tenant_ids?.includes(PUBLIC_TENANT) || profile.tenant_id === PUBLIC_TENANT;
+					const hasAccessToTenant = profile.tenant_id === PUBLIC_TENANT;
 					
 					if (!hasAccessToTenant) {
 						console.log('❌ [AUTH] User does not have access to current tenant:', {
 							userId: user.id,
 							currentTenant: PUBLIC_TENANT,
-							userTenantId: profile.tenant_id,
-							accessibleTenants: profile.accessible_tenant_ids
+							userTenantId: profile.tenant_id
 						});
 						
 						// Odhlásit uživatele - nemá přístup k tomuto tenantovi
@@ -105,8 +104,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 					console.log('✅ [AUTH] User has access to current tenant:', {
 						userId: user.id,
 						currentTenant: PUBLIC_TENANT,
-						userTenantId: profile.tenant_id,
-						accessibleTenants: profile.accessible_tenant_ids
+						userTenantId: profile.tenant_id
 					});
 					
 					const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';

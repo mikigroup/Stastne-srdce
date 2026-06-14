@@ -26,15 +26,18 @@ export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId }
         `)
         .eq('order_number', orderNumber)
         .eq('tenant_id', tenantId)  // ← Přidáno
-        .single();
+        .maybeSingle();
 
     if (orderError) {
         console.error('Error fetching order:', orderError);
         throw error(500, 'Chyba při načítání objednávky');
     }
 
+    // Prázdný výsledek = objednávka neexistuje, nebo k ní přihlášený zákazník
+    // ztratil přístup přes RLS (pozastavený tenant / zrušené členství v tenant_members).
+    // Viz MALYLEO_DB_HANDOFF.md, kap. 4 a riziko č. 6.
     if (!order) {
-        throw error(404, 'Objednávka nenalezena');
+        throw error(404, 'Objednávku se nepodařilo zobrazit. Pokud jste ji právě vytvořili a problém přetrvává, kontaktujte nás prosím na info@stastnesrdce.cz.');
     }
 
     // Používáme pouze původní data z objednávky - žádné načítání aktuální verze

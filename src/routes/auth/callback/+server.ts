@@ -26,9 +26,19 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		return redirect(303, redirectTo);
 	}
 
+	// Recovery: token ověříme až při odeslání formuláře na /auth/reset (verify + updateUser v jednom requestu).
+	// Důvod: verifyOtp v callbacku spotřebuje token, ale session cookie se na produkci často neuloží
+	// mezi redirectem a POST formuláře → AuthSessionMissingError při updateUser.
+	if (type === "recovery") {
+		redirectTo.pathname = "/auth/reset";
+		redirectTo.searchParams.set("token", token_hash);
+		redirectTo.searchParams.delete("next");
+		console.log('🔄 [AUTH CALLBACK] Recovery → redirect na /auth/reset s tokenem');
+		return redirect(303, redirectTo);
+	}
+
 	console.log('🔄 [AUTH CALLBACK] Calling verifyOtp with:', { type, token_hash: token_hash.substring(0, 10) + '...' });
 	
-	// Pro všechny typy použijeme verifyOtp (včetně recovery)
 	const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
 
 	console.log('📊 [AUTH CALLBACK] verifyOtp result:', { 
@@ -53,9 +63,6 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	if (type === "signup") {
 		redirectTo.pathname = ROUTES.AUTH.SIGNUP_COMPLETE;
 		redirectTo.searchParams.append("success", "signup");
-	} else if (type === "recovery") {
-		redirectTo.pathname = "/auth/reset";
-		redirectTo.searchParams.append("token", token_hash);
 	} else {
 		console.error('❌ [AUTH CALLBACK] Invalid type:', type);
 		redirectTo.pathname = ROUTES.AUTH.ERROR;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
@@ -53,7 +54,7 @@
 			<p>Jste přihlášeni.</p>
 		</div>
 	{:else}
-		<form method="POST" action="?/handleLogin" class="space-y-6">
+		<form method="POST" action="?/handleLogin" use:enhance class="space-y-6">
 			<!-- Email input -->
 			<div class="flex flex-col">
 				<div class="relative flex">

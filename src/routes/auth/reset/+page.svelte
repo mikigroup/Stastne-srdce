@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
@@ -16,14 +17,8 @@
 	
 	export let form: FormData | null = null;
 	export let data;
-	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
-
-	let loading = false;
-
-	const { generalSettings } = data;
-	
-	// Uživatel je přihlášen po exchangeCodeForSession
+	let { generalSettings, token } = data;
+	$: ({ generalSettings, token } = data);
 </script>
 
 <svelte:head>
@@ -35,7 +30,8 @@
 	title="Obnovení hesla"
 	subtitle="Zadejte nové heslo pro váš účet"
 >
-	<form method="POST" action="?/resetPass" class="space-y-6">
+	<form method="POST" action="?/resetPass" use:enhance class="space-y-6">
+		<input type="hidden" name="token" value={token} />
 		<!-- Password input -->
 		<div class="flex flex-col">
 			<div class="relative flex">

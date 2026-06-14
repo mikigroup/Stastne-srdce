@@ -9,6 +9,18 @@ export interface ProfileQueryOptions {
 }
 
 export class ProfileService {
+	/** Zajistí řádek v tenant_members pro zákazníka (zdroj pravdy pro RLS). */
+	static async ensureCustomerMembership(
+		supabase: SupabaseClient<Database>,
+		userId: string,
+		tenantId: string = PUBLIC_TENANT
+	) {
+		return await (supabase as SupabaseClient).from('tenant_members').upsert(
+			{ user_id: userId, tenant_id: tenantId, role: 'customer' },
+			{ onConflict: 'user_id,tenant_id' }
+		);
+	}
+
 	/**
 	 * Získat profil uživatele s tenant filtrací
 	 */
@@ -28,9 +40,10 @@ export class ProfileService {
 			.select(selectFields)
 			.eq('id', userId);
 
-		// Přidat tenant filtrace pokud je potřeba
+		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
+		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
-			query = query.contains('accessible_tenant_ids', [PUBLIC_TENANT]);
+			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}
 
 		return await query.single();
@@ -55,9 +68,10 @@ export class ProfileService {
 			.select(selectFields)
 			.eq('email', email);
 
-		// Přidat tenant filtrace pokud je potřeba
+		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
+		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
-			query = query.contains('accessible_tenant_ids', [PUBLIC_TENANT]);
+			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}
 
 		return await query.single();
@@ -79,9 +93,10 @@ export class ProfileService {
 			.update(profileData)
 			.eq('id', userId);
 
-		// Přidat tenant filtrace pokud je potřeba
+		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).
+		// accessible_tenant_ids je legacy — u zákazníků po migraci 13.6. je prázdné pole.
 		if (includeTenantFilter) {
-			query = query.contains('accessible_tenant_ids', [PUBLIC_TENANT]);
+			query = query.eq('tenant_id', PUBLIC_TENANT);
 		}
 
 		return await query.select();
@@ -205,15 +220,20 @@ export class ProfileService {
 		// Automaticky přidat tenant nastavení
 		const profileWithTenant = {
 			...profileData,
-			tenant_id: PUBLIC_TENANT,
-			accessible_tenant_ids: [PUBLIC_TENANT]
+			tenant_id: PUBLIC_TENANT
 		};
 
-		return await supabase
+		const { data: profile, error } = await supabase
 			.from('profiles')
 			.insert(profileWithTenant)
 			.select()
 			.single();
+
+		if (error) return { data: profile, error };
+
+		await ProfileService.ensureCustomerMembership(supabase, profileData.id, PUBLIC_TENANT);
+
+		return { data: profile, error: null };
 	}
 
 	/**
@@ -226,14 +246,19 @@ export class ProfileService {
 		// Automaticky přidat tenant nastavení pokud není specifikováno
 		const profileWithTenant = {
 			...profileData,
-			tenant_id: profileData.tenant_id || PUBLIC_TENANT,
-			accessible_tenant_ids: profileData.accessible_tenant_ids || [PUBLIC_TENANT]
+			tenant_id: profileData.tenant_id || PUBLIC_TENANT
 		};
 
-		return await supabase
+		const { data: profile, error } = await supabase
 			.from('profiles')
 			.upsert(profileWithTenant)
 			.select()
 			.single();
+
+		if (error) return { data: profile, error };
+
+		await ProfileService.ensureCustomerMembership(supabase, profileData.id, profileWithTenant.tenant_id);
+
+		return { data: profile, error: null };
 	}
 }

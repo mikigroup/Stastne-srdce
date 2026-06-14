@@ -1,25 +1,19 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/types/database.types';
-import { PRIVATE_SBUrl, PRIVATE_SBKey } from '$env/static/private';
 import { sendAccountReactivationEmail } from '$lib/services/gdprEmailService';
 import { ROUTES } from "$lib/constants/routes";
 
-/**
- * Helper function to create admin supabase client that bypasses RLS
- */
-function createAdminSupabaseClient() {
-	return createClient<Database>(
-		PRIVATE_SBUrl,
-		PRIVATE_SBKey,
-		{
-			auth: {
-				autoRefreshToken: false,
-				persistSession: false
-			}
-		}
-	);
+const INVALID_CREDENTIALS_MESSAGE =
+	"Neplatné přihlašovací údaje. Zkontrolujte prosím e-mail a heslo.";
+
+function getLoginErrorMessage(error: { message?: string; code?: string }): string {
+	if (error.code === "email_not_confirmed") {
+		return "E-mail ještě nebyl potvrzen. Zkontrolujte prosím doručenou poštu a klikněte na odkaz v e-mailu.";
+	}
+	if (error.code === "invalid_credentials") {
+		return INVALID_CREDENTIALS_MESSAGE;
+	}
+	return error.message || "Nepodařilo se přihlásit. Zkuste to prosím znovu.";
 }
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -33,23 +27,32 @@ export const load: PageServerLoad = async ({ url }) => {
 export const actions: Actions = {
 	handleLogin: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
-		const email = formData.get("email") as string;
-		const password = formData.get("password") as string;
+		const email = (formData.get("email") as string)?.trim().toLowerCase();
+		const password = (formData.get("password") as string)?.trim();
 
-		// 🔧 KROK 1: Nejdříve normální login
+		if (!email || !password) {
+			return fail(400, {
+				message: {
+					success: false,
+					display: "Vyplňte prosím e-mail i heslo."
+				},
+				email
+			});
+		}
+
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,
 			password
 		});
 
 		if (error) {
-			console.error(error);
+			console.error("[LOGIN] Auth error:", { code: error.code, message: error.message, email });
 			return fail(400, {
 				message: {
 					success: false,
-					display:
-						"Neplatné přihlašovací údaje. Zkontrolujte prosím e-mail a heslo."
-				}
+					display: getLoginErrorMessage(error)
+				},
+				email
 			});
 		}
 
