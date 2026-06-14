@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { PUBLIC_RECAPTCHA_SITE_KEY } from '$env/static/public';
+import { ROUTES } from "$lib/constants/routes";
 
 export const actions = {
 	signUp: async ({ request, locals: { supabase } }) => {
@@ -135,7 +136,7 @@ export const actions = {
 						type: "magiclink",
 						email: email.trim(),
 						options: {
-							redirectTo: `${new URL(request.url).origin}/auth/confirm`
+							redirectTo: `${new URL(request.url).origin}${ROUTES.AUTH.CALLBACK}`
 						}
 					});
 					
@@ -176,7 +177,7 @@ export const actions = {
 			}
 
 			const baseUrl = new URL(request.url).origin;
-			const confirmationLink = `${baseUrl}/auth/confirm?type=customer_signup&email=${encodeURIComponent(email.trim())}&token_hash=${token_hash}`;
+			const confirmationLink = `${baseUrl}/auth/callback?token_hash=${encodeURIComponent(token_hash)}&type=signup&next=${encodeURIComponent(ROUTES.AUTH.SIGNUP_COMPLETE)}`;
 
 			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink, email.trim());
 			

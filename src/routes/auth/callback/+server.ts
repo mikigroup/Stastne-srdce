@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { ROUTES } from "$lib/constants/routes";
+import { ensurePendingCustomerProfile } from "$lib/services/signupConfirmService";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get("token_hash");
@@ -20,13 +21,28 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 		return redirect(303, redirectTo);
 	}
 
-	const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+	const { data: verifyData, error } = await supabase.auth.verifyOtp({ type, token_hash });
 
 	if (error) {
-		redirectTo.pathname = ROUTES.AUTH.ERROR;
-		redirectTo.searchParams.set("error", error.message);
-		redirectTo.searchParams.set("error_code", error.status?.toString() || "unknown");
-		return redirect(303, redirectTo);
+		// Token mohl být již spotřebován (např. emailový skener), ale uživatel je potvrzený
+		if (type === "signup") {
+			const { data: { user } } = await supabase.auth.getUser();
+			if (user?.email_confirmed_at) {
+				await ensurePendingCustomerProfile(user);
+			} else {
+				redirectTo.pathname = ROUTES.AUTH.ERROR;
+				redirectTo.searchParams.set("error", error.message);
+				redirectTo.searchParams.set("error_code", error.status?.toString() || "unknown");
+				return redirect(303, redirectTo);
+			}
+		} else {
+			redirectTo.pathname = ROUTES.AUTH.ERROR;
+			redirectTo.searchParams.set("error", error.message);
+			redirectTo.searchParams.set("error_code", error.status?.toString() || "unknown");
+			return redirect(303, redirectTo);
+		}
+	} else if (type === "signup" && verifyData.user) {
+		await ensurePendingCustomerProfile(verifyData.user);
 	}
 
 	if (type === "signup") {
