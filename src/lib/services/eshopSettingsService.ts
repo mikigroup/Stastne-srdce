@@ -1,5 +1,6 @@
 import type { TypedSupabaseClient } from "$lib/supabase";
 import { getDefaultSettings } from '$lib/constants/defaultSettings';
+import { PUBLIC_TENANT } from '$env/static/public';
 
 /**
  * Načte nastavení objednávek z databáze (nový anglický název)
@@ -10,8 +11,7 @@ export async function getOrderSettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'orders')
-            .order('updated_at', { ascending: false })
-            .limit(1)
+            .eq('tenant_id', PUBLIC_TENANT)
             .single();
         
         if (error) {
@@ -39,8 +39,7 @@ export async function getZakazkySettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'eshop')
-            .order('updated_at', { ascending: false })
-            .limit(1)
+            .eq('tenant_id', PUBLIC_TENANT)
             .single();
         
         if (error) {
@@ -68,8 +67,7 @@ export async function getDopravaSettings(supabase: TypedSupabaseClient) {
             .from('site_settings')
             .select('value')
             .eq('key', 'doprava')
-            .order('updated_at', { ascending: false })
-            .limit(1)
+            .eq('tenant_id', PUBLIC_TENANT)
             .single();
         
         if (error) {

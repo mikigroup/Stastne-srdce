@@ -11,6 +11,7 @@
 	import { formatDateDayMonth } from "$lib/utils/formatting";
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
+	import { PUBLIC_TENANT } from "$env/static/public";
 
 	export let data;
 	export let form: Actions;
@@ -122,6 +123,7 @@
 				.from('site_settings')
 				.select('value')
 				.eq('key', 'delivery')
+				.eq('tenant_id', PUBLIC_TENANT)
 				.single();
 
 			if (deliveryData?.value) {
@@ -143,6 +145,7 @@
 				.from('site_settings')
 				.select('value')
 				.eq('key', 'products')
+				.eq('tenant_id', PUBLIC_TENANT)
 				.single();
 
 			console.log('🔍 Debug - productsSettings:', productsSettings);

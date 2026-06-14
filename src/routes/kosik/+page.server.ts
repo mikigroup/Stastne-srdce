@@ -80,6 +80,7 @@ export const actions: Actions = {
 				.from('site_settings')
 				.select('value')
 				.eq('key', 'delivery')
+				.eq('tenant_id', tenantId ?? PUBLIC_TENANT)
 				.single();
 
 			let deliverySettings = null;
