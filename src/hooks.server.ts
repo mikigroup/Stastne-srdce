@@ -65,7 +65,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id')
+					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id, accessible_tenant_ids')
 					.eq('id', user.id)
 					.single();
 
@@ -78,14 +78,40 @@ const supabase: Handle = async ({ event, resolve }) => {
 					console.error('❌ [AUTH] Error fetching user profile:', profileError);
 					// Pokračovat v normálním flow i při chybě
 				} else if (!profileError && profile) {
-					// 🔧 NOVÁ LOGIKA: Ověřit přístup k aktuálnímu tenantovi pouze pokud má profil
-					const hasAccessToTenant = profile.tenant_id === PUBLIC_TENANT;
-					
+					// 🔧 Ověření přístupu k aktuálnímu tenantovi.
+					// Zdroj pravdy po migraci (červen 2026) je tabulka tenant_members.
+					// Profile.tenant_id je „domovský" tenant, accessible_tenant_ids je legacy.
+					// Kontrolujeme všechny tři, aby přihlášení nezničila jen prázdná legacy data.
+					let isActiveMember = false;
+					const { data: membership, error: membershipError } = await adminSupabase
+						.from('tenant_members')
+						.select('tenant_id')
+						.eq('user_id', user.id)
+						.eq('tenant_id', PUBLIC_TENANT)
+						.is('deleted_at', null)
+						.maybeSingle();
+
+					if (membershipError) {
+						console.error('❌ [AUTH] Error fetching tenant membership:', membershipError);
+						// Při chybě dotazu na členství raději nevyhazovat uživatele ven
+						isActiveMember = true;
+					} else {
+						isActiveMember = !!membership;
+					}
+
+					const accessibleTenantIds = profile.accessible_tenant_ids ?? [];
+					const hasAccessToTenant =
+						isActiveMember ||
+						profile.tenant_id === PUBLIC_TENANT ||
+						accessibleTenantIds.includes(PUBLIC_TENANT);
+
 					if (!hasAccessToTenant) {
 						console.log('❌ [AUTH] User does not have access to current tenant:', {
 							userId: user.id,
 							currentTenant: PUBLIC_TENANT,
-							userTenantId: profile.tenant_id
+							userTenantId: profile.tenant_id,
+							isActiveMember,
+							accessibleTenantIds
 						});
 						
 						// Odhlásit uživatele - nemá přístup k tomuto tenantovi
@@ -96,7 +122,8 @@ const supabase: Handle = async ({ event, resolve }) => {
 					console.log('✅ [AUTH] User has access to current tenant:', {
 						userId: user.id,
 						currentTenant: PUBLIC_TENANT,
-						userTenantId: profile.tenant_id
+						userTenantId: profile.tenant_id,
+						isActiveMember
 					});
 					
 					const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';
