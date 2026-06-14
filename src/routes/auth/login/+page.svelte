@@ -114,6 +114,12 @@
 				</div>
 			{/if}
 
+			{#if message === "password_reset"}
+				<div class="w-full p-3 border border-green-200 rounded-lg bg-green-50">
+					<p class="text-green-700 text-sm">✅ Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.</p>
+				</div>
+			{/if}
+
 			<!-- Error message -->
 			{#if form?.message?.display}
 				<div class="w-full p-3 border border-red-200 rounded-lg bg-red-50">

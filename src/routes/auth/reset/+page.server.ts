@@ -1,13 +1,14 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
+import { ROUTES } from "$lib/constants/routes";
 
 export const load: PageServerLoad = async ({ cookies, locals: { safeGetSession } }) => {
 	clearCorruptedSupabaseCookies(cookies);
 
 	const { session } = await safeGetSession();
 	if (!session) {
-		throw redirect(303, "/auth/forgot?error=missing_session");
+		throw redirect(303, `${ROUTES.AUTH.FORGOT}?error=missing_session`);
 	}
 
 	return {};
@@ -76,14 +77,7 @@ export const actions: Actions = {
 
 			await supabase.auth.signOut();
 
-			return {
-				password: "",
-				repassword: "",
-				message: {
-					success: true,
-					display: "Heslo bylo úspěšně změněno. Nyní se můžete přihlásit."
-				}
-			};
+			throw redirect(303, `${ROUTES.AUTH.LOGIN}?message=password_reset`);
 		} catch (error) {
 			console.error("[RESET] Unexpected error:", error);
 			return fail(500, {
