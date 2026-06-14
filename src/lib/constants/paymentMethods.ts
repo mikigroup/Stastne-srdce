@@ -1,126 +1,81 @@
 /**
- * CENTRALIZED PAYMENT METHODS
- * Načítá možnosti platby z databáze (site_settings.business.paymentMethods)
- * Fallback na výchozí hodnoty, pokud DB není dostupná
+ * Způsoby platby – načítání z site_settings.payment.paymentMethods.
+ * Každá metoda má stabilní `code` uložený v DB (žádné hardcoded mapování).
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '$lib/types/database.types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "$lib/types/database.types";
+import { PUBLIC_TENANT } from "$env/static/public";
 
-// Mapování názvů z DB na kódy (pro zpětnou kompatibilitu)
-const NAME_TO_CODE_MAP: Record<string, string> = {
-  'Hotově': 'cash',
-  'Hotovost': 'cash',
-  'Převodem': 'bankNoInvoice',
-  'Na účet bez faktury': 'bankNoInvoice',
-  'Bankovní převod bez faktury': 'bankNoInvoice',
-  'Na účet s fakturou': 'bankWithInvoice',
-  'Bankovní převod s fakturou': 'bankWithInvoice',
-  'Faktura': 'bankWithInvoice',
-  'Kartou': 'card'
-};
+type PaymentOption = { value: string; label: string };
 
-// Opačné mapování (kódy na názvy)
-const CODE_TO_NAME_MAP: Record<string, string> = {
-  'cash': 'Hotově',
-  'bankNoInvoice': 'Na účet bez faktury',
-  'bankWithInvoice': 'Na účet s fakturou',
-  'card': 'Kartou'
-};
-
-// Výchozí možnosti (fallback) - pouze pokud DB není dostupná
-// Pokud DB není dostupná, vrátíme prázdné pole (ne hardcoded hodnoty)
-const DEFAULT_PAYMENT_METHODS: Array<{ value: string; label: string }> = [];
-
-/**
- * Načte nastavení business z databáze
- */
-async function loadBusinessSettingsFromDB(supabase: SupabaseClient<Database>) {
-  try {
-    const { data: businessData, error } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'business')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error || !businessData?.value) {
-      return null;
-    }
-
-    const settings = typeof businessData.value === 'string' 
-      ? JSON.parse(businessData.value) 
-      : businessData.value;
-
-    return settings;
-  } catch (error) {
-    console.error('Error loading business settings from DB:', error);
-    return null;
-  }
+function slugifyCode(name: string): string {
+	return name
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
 }
 
-/**
- * Převede paymentMethods z DB na formát pro UI
- */
+async function loadPaymentSettingsFromDB(supabase: SupabaseClient<Database>) {
+	try {
+		const { data: paymentData, error } = await supabase
+			.from("site_settings")
+			.select("value")
+			.eq("key", "payment")
+			.eq("tenant_id", PUBLIC_TENANT)
+			.single();
+
+		if (error || !paymentData?.value) {
+			return null;
+		}
+
+		return typeof paymentData.value === "string"
+			? JSON.parse(paymentData.value)
+			: paymentData.value;
+	} catch (error) {
+		console.error("Error loading payment settings from DB:", error);
+		return null;
+	}
+}
+
 function convertPaymentMethodsToOptions(
-  paymentMethods: string[] | undefined
-): Array<{ value: string; label: string }> {
-  if (!paymentMethods || !Array.isArray(paymentMethods)) {
-    return [];
-  }
+	paymentMethods: Array<{
+		name?: string;
+		code?: string;
+		enabled?: boolean;
+	}> | undefined
+): PaymentOption[] {
+	if (!paymentMethods || !Array.isArray(paymentMethods)) {
+		return [];
+	}
 
-  return paymentMethods
-    .map(name => {
-      const trimmedName = (name || '').trim();
-      if (!trimmedName) return null;
-      
-      // Mapujeme název na kód, pokud existuje v mapování
-      const code = NAME_TO_CODE_MAP[trimmedName] || trimmedName.toLowerCase().replace(/\s+/g, '');
-      // Použijeme původní název jako label
-      const label = trimmedName;
-      
-      return {
-        value: code,
-        label: label
-      };
-    })
-    .filter((option): option is { value: string; label: string } => option !== null);
+	return paymentMethods
+		.filter((method) => method.enabled !== false)
+		.map((method) => {
+			const name = (method.name || "").trim();
+			const code = (method.code || "").trim() || slugifyCode(name) || name;
+			return { value: code, label: name || code };
+		})
+		.filter((option) => option.value);
 }
 
-/**
- * Načte možnosti platby z databáze
- */
+/** Aktivní způsoby platby ze settings. */
 export async function getPaymentMethods(
-  supabase: SupabaseClient<Database> | null
-): Promise<Array<{ value: string; label: string }>> {
-  let options: Array<{ value: string; label: string }> = [];
+	supabase: SupabaseClient<Database> | null
+): Promise<PaymentOption[]> {
+	if (!supabase) {
+		return [];
+	}
 
-  if (supabase) {
-    const settings = await loadBusinessSettingsFromDB(supabase);
-    const paymentMethods = settings?.paymentMethods;
-
-    if (paymentMethods && Array.isArray(paymentMethods) && paymentMethods.length > 0) {
-      options = convertPaymentMethodsToOptions(paymentMethods);
-    }
-  }
-
-  // Fallback na výchozí hodnoty, pokud DB nevrátila žádné možnosti
-  if (options.length === 0) {
-    options = DEFAULT_PAYMENT_METHODS;
-  }
-
-  return options;
+	const settings = await loadPaymentSettingsFromDB(supabase);
+	return convertPaymentMethodsToOptions(settings?.paymentMethods);
 }
 
-// Helper functions pro zpětnou kompatibilitu
 export function getPaymentMethodLabel(value: string): string {
-  // Zkusíme najít v mapování kódů
-  if (CODE_TO_NAME_MAP[value]) {
-    return CODE_TO_NAME_MAP[value];
-  }
-  // Pokud to není kód, předpokládáme, že je to už název
-  return value;
+	return value;
 }
 
 export type PaymentMethodValue = string;
