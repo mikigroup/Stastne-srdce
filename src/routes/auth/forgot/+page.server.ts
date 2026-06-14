@@ -1,21 +1,18 @@
-import { error, fail, redirect } from "@sveltejs/kit";
+import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { createClient } from "@supabase/supabase-js";
-import { PRIVATE_seznam_key } from "$env/static/private"
-
-
-// Konfigurace Supabase Admin klienta pro přístup k administrativním funkcím
-const supabaseAdmin = createClient(
-	"https://orgshebezwfizhmlmeum.supabase.co",
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yZ3NoZWJlendmaXpobWxtZXVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY1ODYwMzM2MywiZXhwIjoxOTc0MTc5MzYzfQ.EyvC4bM8tO3JtdTBm5AEYXdOQQxn7v6_uKkqxu9xoDk"
-);
-
+import { PRIVATE_seznam_key, PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
 import nodemailer from "nodemailer";
 
-// Funkce pro odesílání vlastních e-mailů
+const supabaseAdmin = createClient(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
+	auth: {
+		autoRefreshToken: false,
+		persistSession: false
+	}
+});
+
 async function sendCustomEmail(to: string, subject: string, body: string) {
 	try {
-		// Konfigurace transporteru pro odesílání e-mailů
 		const transporter = nodemailer.createTransport({
 			host: "smtp.seznam.cz",
 			port: 465,
@@ -26,17 +23,13 @@ async function sendCustomEmail(to: string, subject: string, body: string) {
 			}
 		});
 
-		// Nastavení e-mailu
-		const mailOptions = {
+		await transporter.sendMail({
 			from: "info@stastnesrdce.cz",
-			to: to,
-			subject: subject,
+			to,
+			subject,
 			html: body
-		};
+		});
 
-		// Odeslání e-mailu
-		await transporter.sendMail(mailOptions);
-		console.log("E-mail odeslán na adresu:", to);
 		return true;
 	} catch (err) {
 		console.error("Chyba při odesílání e-mailu:", err);
@@ -45,7 +38,7 @@ async function sendCustomEmail(to: string, subject: string, body: string) {
 }
 
 export const actions: Actions = {
-	resetRequest: async ({ request, url, locals: { supabase } }) => {
+	resetRequest: async ({ request, url }) => {
 		const formData = await request.formData();
 		const email = (formData.get("email") as string).toLowerCase().trim();
 
@@ -59,20 +52,14 @@ export const actions: Actions = {
 			});
 		}
 
-		console.log(`Ověřuji existenci emailu: ${email}`);
-
 		try {
-			// Nejprve zkontrolujeme, zda je email v tabulce profiles pomocí admin klienta
 			const { data: profileData, error: profileError } = await supabaseAdmin
 				.from("profiles")
 				.select("id, email")
 				.eq("email", email)
 				.single();
 
-			console.log("Výsledek hledání v profiles:", profileData, profileError);
-
 			if (profileError || !profileData) {
-				// Email nebyl nalezen
 				return fail(400, {
 					message: {
 						success: false,
@@ -82,10 +69,9 @@ export const actions: Actions = {
 				});
 			}
 
-			// Email existuje, použijeme admin API pro generování recovery linku
 			const { data, error } = await supabaseAdmin.auth.admin.generateLink({
 				type: "recovery",
-				email: email
+				email
 			});
 
 			if (error) {
@@ -99,16 +85,12 @@ export const actions: Actions = {
 				});
 			}
 
-			// Získáme resetovací odkaz z odpovědi
 			const originalLink = data.properties.action_link;
-			
-			// Extrahujeme token_hash z původního odkazu
 			const urlParams = new URL(originalLink).searchParams;
-			const token_hash = urlParams.get('token_hash') || urlParams.get('token'); // Zkusíme oba názvy
-			const type = 'recovery';
-			
+			const token_hash = urlParams.get("token_hash") || urlParams.get("token");
+
 			if (!token_hash) {
-				console.error('❌ [FORGOT] Token not found in URL:', originalLink);
+				console.error("[FORGOT] Token not found in URL:", originalLink);
 				return fail(500, {
 					message: {
 						success: false,
@@ -117,11 +99,9 @@ export const actions: Actions = {
 					email
 				});
 			}
-			
-			// Vytvoříme vlastní odkaz, který půjde přímo na naši callback stránku
-			const resetLink = `${url.origin}/auth/callback?token_hash=${token_hash}&type=${type}`;
 
-			// Vytvoříme vlastní šablonu e-mailu
+			const resetLink = `${url.origin}/auth/callback?token_hash=${token_hash}&type=recovery&next=/auth/reset`;
+
 			const emailBody = `
 				<p>Dobrý den,</p>
 				<p>obdrželi jsme žádost o resetování hesla k Vašemu účtu na stránce stastnesrdce.cz.
@@ -141,7 +121,6 @@ export const actions: Actions = {
 				<p>S pozdravem,<br>Tým Šťastné srdce</p>
 			`;
 
-			// Odešleme vlastní e-mail
 			const emailSent = await sendCustomEmail(
 				email,
 				"Reset hesla pro Šťastné srdce",
@@ -158,7 +137,6 @@ export const actions: Actions = {
 				});
 			}
 
-			// E-mail pro reset hesla byl úspěšně odeslán
 			return {
 				message: {
 					success: true,
@@ -178,132 +156,3 @@ export const actions: Actions = {
 		}
 	}
 };
-
-/*export const actions: Actions = {
-	resetRequest: async ({ request, locals: { supabase } }) => {
-		const formData = await request.formData();
-		const email = formData.get("email") as string;
-
-		const { data: customer, error: customerError } = await supabase
-			.from("profiles")
-			.select("id")
-			.eq("email", email)
-			.single();
-
-		if (customerError && customerError.code !== "PGRST116") {
-			console.error(customerError);
-			return fail(400, {
-				message: {
-					success: false,
-					display: "Vyskytla se chyba při získávání informací o zákazníkovi."
-				}
-			});
-		}
-
-		let emailOptions = {};
-
-		if (customer) {
-			emailOptions = {
-				emailSubject: "Reset hesla pro zákazníka",
-				emailBody: `
-          <p>Dobrý den,</br>
-          obdrželi jsme žádost o resetování hesla k Vašemu účtu na stránce stastnesrdce.cz.
-          Pokud jste o změnu hesla skutečně požádal(a), klikněte prosím na tlačítko níže.
-          Pokud jste o změnu hesla nežádal(a), ignorujte prosím tento e-mail. Vaše stávající heslo zůstane aktivní.</p>
-          </br>
-          <p>Při vytváření nového hesla mějte prosím na paměti následující doporučení:
-          heslo by mělo mít alespoň 8 znaků, použijte kombinaci malých a velkých písmen, číslic a symbolů,
-          nepoužívejte snadno odhadnutelná hesla jako "12345678" nebo "heslo".</p>
-          </br>
-          <p><a href="{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
-          </br>
-          <p>Pokud máte jakékoliv dotazy nebo potřebujete další pomoc, neváhejte se na nás obrátit.</p>
-          </br>
-          <p>S pozdravem,</br>
-          Šťastné srdce</p>
-        `
-			};
-		} else {
-			const { data: profile, error: profileError } = await supabase
-				.from("profiles")
-				.select("id")
-				.eq("email", email)
-				.single();
-
-			if (profileError && profileError.code !== "PGRST116") {
-				console.error(profileError);
-				return fail(400, {
-					message: {
-						success: false,
-						display: "Vyskytla se chyba při získávání informací o profilu."
-					}
-				});
-			}
-
-			if (profile) {
-				emailOptions = {
-					emailSubject: "Reset hesla pro profil",
-					emailBody: `
-            <p>Dobrý den,</br>
-            obdrželi jsme žádost o resetování hesla k Vašemu účtu na stránce stastnesrdce.cz.
-            Pokud jste o změnu hesla skutečně požádal(a), klikněte prosím na tlačítko níže.
-            Pokud jste o změnu hesla nežádal(a), ignorujte prosím tento e-mail. Vaše stávající heslo zůstane aktivní.</p>
-            </br>
-            <p>Při vytváření nového hesla mějte prosím na paměti následující doporučení:
-            heslo by mělo mít alespoň 8 znaků, použijte kombinaci malých a velkých písmen, číslic a symbolů,
-            nepoužívejte snadno odhadnutelná hesla jako "12345678" nebo "heslo".</p>
-            </br>
-            <p><a href="{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery">Resetovat heslo</a></p>
-            </br>
-            <p>Pokud máte jakékoliv dotazy nebo potřebujete další pomoc, neváhejte se na nás obrátit.</p>
-            </br>
-            <p>S pozdravem,</br>
-            Šťastné srdce</p>
-          `
-				};
-			}
-		}
-
-		if (Object.keys(emailOptions).length === 0) {
-			return fail(400, {
-				message: {
-					success: false,
-					display: "E-mail není registrován."
-				}
-			});
-		}
-
-		const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-			type: "recovery",
-			email: email,
-			options: {
-				redirectTo: emailOptions.redirectTo
-			}
-		});
-
-		if (error) {
-			console.error(error);
-			return fail(400, {
-				message: {
-					success: false,
-					display: "Vyskytla se chyba při generování odkazu pro reset hesla."
-				}
-			});
-		}
-
-		const resetLink = data.properties.action_link;
-		const emailBody = emailOptions.emailBody.replace(
-			"{{ .RedirectTo }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery",
-			resetLink
-		);
-
-		await sendCustomEmail(email, emailOptions.emailSubject, emailBody);
-
-		return {
-			message: {
-				success: true,
-				display: "Do emailové schránky jsme ti poslali instrukce."
-			}
-		};
-	}
-};*/

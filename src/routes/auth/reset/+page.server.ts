@@ -1,41 +1,34 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { createClient } from "@supabase/supabase-js";
 import type { Actions, PageServerLoad } from "./$types";
-import type { Database } from "$lib/types/database.types";
-import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
+import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
 
-const adminSupabase = createClient<Database>(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
-	auth: {
-		autoRefreshToken: false,
-		persistSession: false
-	}
-});
+export const load: PageServerLoad = async ({ cookies, locals: { safeGetSession } }) => {
+	clearCorruptedSupabaseCookies(cookies);
 
-export const load: PageServerLoad = async ({ url }) => {
-	const token = url.searchParams.get("token");
-	if (!token) {
-		throw redirect(303, "/auth/forgot?error=missing_token");
+	const { session } = await safeGetSession();
+	if (!session) {
+		throw redirect(303, "/auth/forgot?error=missing_session");
 	}
-	return { token };
+
+	return {};
 };
 
 export const actions: Actions = {
-	resetPass: async ({ request, locals: { supabase }, url }) => {
-		const formData = await request.formData();
-		const password = (formData.get("password") as string)?.trim();
-		const repassword = (formData.get("repassword") as string)?.trim();
-		const token =
-			(formData.get("token") as string) || url.searchParams.get("token");
-
-		if (!token) {
+	resetPass: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) {
 			return fail(400, {
 				message: {
 					success: false,
 					display:
-						"Odkaz pro obnovení hesla je neplatný. Požádejte prosím o nový na stránce Zapomenuté heslo."
+						"Odkaz pro obnovení hesla vypršel nebo byl již použit. Požádejte prosím o nový."
 				}
 			});
 		}
+
+		const formData = await request.formData();
+		const password = (formData.get("password") as string)?.trim();
+		const repassword = (formData.get("repassword") as string)?.trim();
 
 		if (!password || password.length < 8) {
 			return fail(400, {
@@ -60,38 +53,9 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Zrušit případnou neplatnou session z cookies (jinak se verifyOtp přeskočí)
-			await supabase.auth.signOut();
-
-			const { data: verifyData, error: verifyError } =
-				await supabase.auth.verifyOtp({
-					type: "recovery",
-					token_hash: token
-				});
-
-			if (verifyError || !verifyData.user) {
-				console.error("[RESET] verifyOtp failed:", verifyError);
-				return fail(400, {
-					password,
-					repassword,
-					message: {
-						success: false,
-						display:
-							"Odkaz pro obnovení hesla vypršel nebo byl již použit. Požádejte prosím o nový."
-					}
-				});
-			}
-
-			console.log("[RESET] verifyOtp OK, updating password via admin for:", verifyData.user.id);
-
-			// Admin API nevyžaduje session v cookies — spolehlivé na Vercelu
-			const { error: updateError } = await adminSupabase.auth.admin.updateUserById(
-				verifyData.user.id,
-				{ password }
-			);
+			const { error: updateError } = await supabase.auth.updateUser({ password });
 
 			if (updateError) {
-				console.error("[RESET] admin.updateUserById failed:", updateError);
 				let displayMessage =
 					"Nepodařilo se změnit heslo. Zkuste to prosím znovu později.";
 

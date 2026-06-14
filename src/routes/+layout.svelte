@@ -20,7 +20,7 @@
 
 	export let data: {
 		session: Session | null;
-		supabase: SupabaseClient;
+		supabase: SupabaseClient | null;
 		user: User | null;
 		settings: {
 			general: any;

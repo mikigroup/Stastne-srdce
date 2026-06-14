@@ -1,9 +1,7 @@
 import {
 	createBrowserClient,
-	isBrowser,
-	parse
+	isBrowser
 } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import type { LayoutLoad } from "./$types";
 import { getSetting } from '$lib/services/siteSettingsService';
@@ -11,17 +9,12 @@ import { getSetting } from '$lib/services/siteSettingsService';
 export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	depends("supabase:auth");
 
-	// Na serveru: lehký anon klient bez cookies (session řeší +layout.server.ts)
+	// Na serveru: žádný Supabase klient (session řeší +layout.server.ts přes hooks)
 	if (!isBrowser()) {
-		const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-			global: { fetch },
-			auth: { persistSession: false, autoRefreshToken: false }
-		});
-
 		return {
 			session: data.session,
 			user: data.user,
-			supabase,
+			supabase: null,
 			settings: {
 				general: data.generalSettings,
 				contact: data.contactSettings,
@@ -39,9 +32,31 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		{
 			global: { fetch },
 			cookies: {
-				get(key) {
-					const cookie = parse(document.cookie);
-					return cookie[key];
+				getAll() {
+					return document.cookie
+						.split(";")
+						.map((cookie) => cookie.trim())
+						.filter(Boolean)
+						.map((cookie) => {
+							const separatorIndex = cookie.indexOf("=");
+							const name = cookie.slice(0, separatorIndex);
+							const value = cookie.slice(separatorIndex + 1);
+							return { name, value };
+						})
+						.filter(
+							({ name, value }) =>
+								name &&
+								!(
+									name.includes("auth-token") &&
+									typeof value === "string" &&
+									value.startsWith('{"access_token"')
+								)
+						);
+				},
+				setAll(cookiesToSet) {
+					cookiesToSet.forEach(({ name, value, options }) => {
+						document.cookie = `${name}=${value}; path=${options?.path ?? "/"}; max-age=${options?.maxAge ?? 31536000}; SameSite=Lax${options?.secure ? "; Secure" : ""}`;
+					});
 				}
 			},
 			auth: {

@@ -17,8 +17,8 @@
 	
 	export let form: FormData | null = null;
 	export let data;
-	let { generalSettings, token } = data;
-	$: ({ generalSettings, token } = data);
+	let { generalSettings } = data;
+	$: ({ generalSettings } = data);
 </script>
 
 <svelte:head>
@@ -31,7 +31,6 @@
 	subtitle="Zadejte nové heslo pro váš účet"
 >
 	<form method="POST" action="?/resetPass" use:enhance class="space-y-6">
-		<input type="hidden" name="token" value={token} />
 		<!-- Password input -->
 		<div class="flex flex-col">
 			<div class="relative flex">

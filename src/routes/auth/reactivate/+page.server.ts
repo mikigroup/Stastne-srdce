@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { createClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
-import { PRIVATE_SBKey, PRIVATE_SBUrl } from '$env/static/private';
+import { PRIVATE_ServiceKey, PRIVATE_SBUrl } from '$env/static/private';
 
 /**
  * Helper function to create admin supabase client that bypasses RLS
@@ -13,7 +13,7 @@ import { PRIVATE_SBKey, PRIVATE_SBUrl } from '$env/static/private';
 function createAdminSupabaseClient(): SupabaseClient<Database> {
 	return createClient<Database>(
 		PRIVATE_SBUrl,
-		PRIVATE_SBKey,
+		PRIVATE_ServiceKey,
 		{
 			auth: {
 				autoRefreshToken: false,

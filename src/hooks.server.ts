@@ -3,44 +3,32 @@ import { type Handle, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
-import { PRIVATE_SBUrl, PRIVATE_SBKey } from "$env/static/private";
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
 import { ROUTES } from "$lib/constants/routes";
+import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
 
 // Admin client pro obejití RLS politik
 const adminSupabase = createServerClient(
 	PRIVATE_SBUrl,
-	PRIVATE_SBKey,
+	PRIVATE_ServiceKey,
 	{
 		cookies: {
-			get: () => '',
-			set: () => {},
-			remove: () => {}
+			getAll: () => [],
+			setAll: () => {}
 		}
 	}
 )
 
 const supabase: Handle = async ({ event, resolve }) => {
-	/**
-	 * Creates a Supabase client specific to this request.
-	 *
-	 * Unlike `supabase` from `$lib/supabase.ts`, this client is
-	 * safe to use throughout the request since it reads fresh
-	 * cookies for each request and its configuration is not shared
-	 * between requests.
-	 */
+	clearCorruptedSupabaseCookies(event.cookies);
+
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
 		cookies: {
-			get: (key) => event.cookies.get(key),
-			/**
-			 * SvelteKit's cookies.set defaults to `httpOnly: true`, `secure: true`, and `sameSite: 'lax'`.
-			 * This is good for security, but we need to set `httpOnly: false` for the Supabase client to be able to read the cookies.
-			 * Safe to set `httpOnly: false` since we're only using cookies to store the session.
-			 */
-			set: (key, value, options) => {
-				event.cookies.set(key, value, { ...options, httpOnly: false, path: '/' });
-			},
-			remove: (key, options) => {
-				event.cookies.delete(key, { ...options, httpOnly: false, path: '/' });
+			getAll: () => event.cookies.getAll(),
+			setAll: (cookiesToSet) => {
+				cookiesToSet.forEach(({ name, value, options }) => {
+					event.cookies.set(name, value, { ...options, httpOnly: false, path: "/" });
+				});
 			}
 		}
 	});
