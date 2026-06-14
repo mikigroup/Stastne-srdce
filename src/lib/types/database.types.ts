@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      _migration_fix_customer_owner_log: {
+        Row: {
+          fixed_at: string
+          old_role: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          fixed_at?: string
+          old_role: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          fixed_at?: string
+          old_role?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       allergens: {
         Row: {
           created_at: string | null
@@ -244,6 +265,57 @@ export type Database = {
           },
         ]
       }
+      menu_soups: {
+        Row: {
+          created_at: string | null
+          id: string
+          menu_id: string
+          menu_version_id: string | null
+          name: string
+          price: number | null
+          soup_number: string
+          updated_at: string | null
+          vegetarian: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          menu_id: string
+          menu_version_id?: string | null
+          name: string
+          price?: number | null
+          soup_number: string
+          updated_at?: string | null
+          vegetarian?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          menu_id?: string
+          menu_version_id?: string | null
+          name?: string
+          price?: number | null
+          soup_number?: string
+          updated_at?: string | null
+          vegetarian?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_soups_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_soups_menu_version_id_fkey"
+            columns: ["menu_version_id"]
+            isOneToOne: false
+            referencedRelation: "menu_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_variants: {
         Row: {
           created_at: string | null
@@ -456,6 +528,7 @@ export type Database = {
           customer_telephone: string | null
           customer_zip_code: string | null
           date: string | null
+          deleted: boolean
           delivery_city: string | null
           delivery_first_name: string | null
           delivery_last_name: string | null
@@ -489,6 +562,7 @@ export type Database = {
           customer_telephone?: string | null
           customer_zip_code?: string | null
           date?: string | null
+          deleted?: boolean
           delivery_city?: string | null
           delivery_first_name?: string | null
           delivery_last_name?: string | null
@@ -522,6 +596,7 @@ export type Database = {
           customer_telephone?: string | null
           customer_zip_code?: string | null
           date?: string | null
+          deleted?: boolean
           delivery_city?: string | null
           delivery_first_name?: string | null
           delivery_last_name?: string | null
@@ -555,7 +630,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          accessible_tenant_ids: string[] | null
           account_suspended: boolean | null
           allergies: boolean | null
           allergies_description: string | null
@@ -597,7 +671,6 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
-          accessible_tenant_ids?: string[] | null
           account_suspended?: boolean | null
           allergies?: boolean | null
           allergies_description?: string | null
@@ -639,7 +712,6 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
-          accessible_tenant_ids?: string[] | null
           account_suspended?: boolean | null
           allergies?: boolean | null
           allergies_description?: string | null
@@ -690,6 +762,39 @@ export type Database = {
           },
         ]
       }
+      signup_tokens: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          purpose: string
+          tenant_slug: string | null
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          purpose: string
+          tenant_slug?: string | null
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          purpose?: string
+          tenant_slug?: string | null
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
@@ -724,6 +829,116 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_settings_backup_20260614: {
+        Row: {
+          created_at: string | null
+          id: number | null
+          key: string | null
+          tenant_id: string | null
+          updated_at: string | null
+          updated_by: string | null
+          user_id: string | null
+          value: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number | null
+          key?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+          value?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number | null
+          key?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+          value?: Json | null
+        }
+        Relationships: []
+      }
+      soup_allergens: {
+        Row: {
+          allergen_id: number
+          created_at: string | null
+          soup_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          allergen_id: number
+          created_at?: string | null
+          soup_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          allergen_id?: number
+          created_at?: string | null
+          soup_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soup_allergens_allergen_id_fkey"
+            columns: ["allergen_id"]
+            isOneToOne: false
+            referencedRelation: "allergens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "soup_allergens_soup_id_fkey"
+            columns: ["soup_id"]
+            isOneToOne: false
+            referencedRelation: "menu_soups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_members: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          permissions: Json | null
+          role: string
+          tenant_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          permissions?: Json | null
+          role: string
+          tenant_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          permissions?: Json | null
+          role?: string
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_members_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -885,14 +1100,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_timestamp_columns_and_triggers: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_customer_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      add_timestamp_columns_and_triggers: { Args: never; Returns: undefined }
+      app_admin_tenant_ids: { Args: never; Returns: string[] }
+      app_current_user_tenants: { Args: never; Returns: string[] }
+      app_customer_tenant_ids: { Args: never; Returns: string[] }
+      app_is_platform_super_admin: { Args: never; Returns: boolean }
+      cleanup_expired_customer_data: { Args: never; Returns: undefined }
       create_menu_version: {
         Args: {
           p_active: boolean
@@ -1017,51 +1230,63 @@ export type Database = {
           user_id: string
         }[]
       }
-      delete_menu: {
-        Args: { p_menu_id: string } | { p_menu_id: string; p_tenant_id: string }
+      delete_menu:
+        | { Args: { p_menu_id: string }; Returns: undefined }
+        | {
+            Args: { p_menu_id: string; p_tenant_id: string }
+            Returns: undefined
+          }
+      generate_order_number: { Args: never; Returns: string }
+      generate_order_number1: { Args: { p_tenant_id: string }; Returns: string }
+      get_current_menu_version: { Args: { p_menu_id: string }; Returns: string }
+      get_current_tenant_id: { Args: never; Returns: string }
+      get_dashboard_stats: {
+        Args: { p_from: string; p_tenant_id: string; p_to: string }
+        Returns: {
+          customers_count: number
+          orders_count: number
+          orders_total: number
+        }[]
+      }
+      get_menu_version_at_date:
+        | { Args: { p_date: string; p_menu_id: string }; Returns: string }
+        | {
+            Args: { p_date: string; p_menu_id: string; p_tenant_id: string }
+            Returns: string
+          }
+      process_scheduled_data_deletions: { Args: never; Returns: undefined }
+      purge_soft_deleted_tenant_members: {
+        Args: { p_retention_days?: number }
+        Returns: number
+      }
+      save_menu_version_content: {
+        Args: {
+          p_menu_allergens?: number[]
+          p_menu_id: string
+          p_soups?: Json
+          p_tenant_id: string
+          p_variants: Json
+          p_version: Json
+        }
+        Returns: string
+      }
+      set_tenant_context: { Args: { tenant_id: string }; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      soft_delete_menu:
+        | { Args: { p_menu_id: string }; Returns: undefined }
+        | {
+            Args: { p_menu_id: string; p_tenant_id: string }
+            Returns: undefined
+          }
+      unaccent: { Args: { "": string }; Returns: string }
+      update_order_items: {
+        Args: {
+          p_items: Database["public"]["CompositeTypes"]["order_item_input_v2"][]
+          p_order_id: string
+          p_tenant_id: string
+        }
         Returns: undefined
-      }
-      generate_order_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_order_number1: {
-        Args: { p_tenant_id: string }
-        Returns: string
-      }
-      get_current_menu_version: {
-        Args: { p_menu_id: string }
-        Returns: string
-      }
-      get_current_tenant_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_menu_version_at_date: {
-        Args:
-          | { p_date: string; p_menu_id: string }
-          | { p_date: string; p_menu_id: string; p_tenant_id: string }
-        Returns: string
-      }
-      process_scheduled_data_deletions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      set_tenant_context: {
-        Args: { tenant_id: string }
-        Returns: undefined
-      }
-      soft_delete_menu: {
-        Args: { p_menu_id: string } | { p_menu_id: string; p_tenant_id: string }
-        Returns: undefined
-      }
-      unaccent: {
-        Args: { "": string }
-        Returns: string
-      }
-      unaccent_init: {
-        Args: { "": unknown }
-        Returns: unknown
       }
     }
     Enums: {
@@ -1069,6 +1294,12 @@ export type Database = {
     }
     CompositeTypes: {
       order_item_input: {
+        variant_id: string | null
+        price: number | null
+        quantity: number | null
+      }
+      order_item_input_v2: {
+        id: string | null
         variant_id: string | null
         price: number | null
         quantity: number | null
