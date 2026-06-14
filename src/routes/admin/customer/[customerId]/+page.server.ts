@@ -1,5 +1,7 @@
 import type { PageServerLoad } from "./$types";
 import { calculateCustomerLoyalty, getLoyaltySettings } from "$lib/services/loyaltyService";
+import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
+import { getPaymentMethods } from "$lib/constants/paymentMethods";
 
 export const load: PageServerLoad = async ({
 	locals: { supabase, safeGetSession },
@@ -193,7 +195,9 @@ export const load: PageServerLoad = async ({
 		loyaltyInfo,
 		previousCustomer,
 		nextCustomer,
-		session
+		session,
+		deliveryMethodOptions: await getAllDeliveryMethods(supabase),
+		paymentMethodOptions: await getPaymentMethods(supabase)
 	};
 };
 

@@ -5,7 +5,24 @@
 	import FakturoidButton from "./FakturoidButton.svelte";
 	import { onMount } from 'svelte';
 	import AdminPageLayout from "$lib/component/AdminPageLayout.svelte";
-	import { getAllDeliveryMethods, getDeliveryMethodLabel } from '$lib/constants/deliveryMethods';
+
+	function methodSettingsToOptions(
+		methods: any[] | undefined,
+		currentValue?: string | null
+	): Array<{ value: string; label: string }> {
+		if (!Array.isArray(methods)) return [];
+		const options = methods
+			.filter((m) => m?.enabled !== false)
+			.map((m) => ({
+				value: String(m.code || m.name || "").trim(),
+				label: String(m.name || m.code || "").trim()
+			}))
+			.filter((o) => o.value);
+		if (currentValue && !options.some((o) => o.value === currentValue)) {
+			options.push({ value: currentValue, label: currentValue });
+		}
+		return options;
+	}
 
 	export let data;
 	console.log("====== ORDER PAGE CLIENT INIT ======");
@@ -222,15 +239,17 @@
 		? orderSettings.currencies 
 		: ['CZK', 'EUR'];
 
-	// Získáme seznam způsobů doručení - používáme všechny centralizované hodnoty
-	$: shippingMethods = getAllDeliveryMethods().map(option => option.value);
-
-	// Získáme seznam platebních metod - pokud jsou to objekty, extrahujeme názvy, jinak použijeme přímo
-	$: paymentMethods = Array.isArray(orderSettings?.paymentMethods) 
-		? (typeof orderSettings.paymentMethods[0] === 'string' 
-			? orderSettings.paymentMethods 
-			: orderSettings.paymentMethods.map((method: any) => method.name || method))
-		: ['Hotově', 'Kartou', 'Převodem'];
+	// Způsoby doručení a platby ze site_settings (orderSettings z serveru)
+	$: shippingMethodOptions = methodSettingsToOptions(
+		orderSettings?.shippingMethods,
+		order?.shipping_method
+	);
+	$: paymentMethodOptions = methodSettingsToOptions(
+		orderSettings?.paymentMethods,
+		order?.pay_method
+	);
+	$: shippingMethods = shippingMethodOptions.map((o) => o.value);
+	$: paymentMethods = paymentMethodOptions.map((o) => o.value);
 
 	// Vypočítáme celkovou cenu
 	$: totalPrice = order?.order_items?.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0) || 0;
@@ -799,8 +818,8 @@
 								<select
 									bind:value={selectedPaymentMethod}
 									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-									{#each paymentMethods as method}
-										<option value={method}>{method}</option>
+									{#each paymentMethodOptions as option}
+										<option value={option.value}>{option.label}</option>
 									{/each}
 								</select>
 							{:else}
@@ -846,8 +865,8 @@
 								<select
 									bind:value={selectedShippingMethod}
 									class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-									{#each shippingMethods as method}
-										<option value={method}>{getDeliveryMethodLabel(method)}</option>
+									{#each shippingMethodOptions as option}
+										<option value={option.value}>{option.label}</option>
 									{/each}
 								</select>
 							{:else}

@@ -11,7 +11,8 @@
 		getRegistrationStatusMessage, 
 		getRegistrationStatusStyles
 	} from "$lib/services/registrationStatusService";
-	import { getAllDeliveryMethods } from "$lib/constants/deliveryMethods";
+
+	type MethodOption = { value: string; label: string };
 
 	// Definice typů pro data zákazníka
 	type Customer = Database["public"]["Tables"]["profiles"]["Row"];
@@ -28,6 +29,8 @@
 			} | null;
 		};
 		customer?: Customer | null;
+		deliveryMethodOptions?: MethodOption[];
+		paymentMethodOptions?: MethodOption[];
 	}
 
 	// Definice typů pro chyby při ukládání
@@ -39,7 +42,9 @@
 
 	// Props a explicitní typizace
 	export let data: ComponentProps["data"];
-	export let customer: ComponentProps["customer"] = null; // If null, we're creating a new customer
+	export let customer: ComponentProps["customer"] = null;
+	export let deliveryMethodOptions: MethodOption[] = [];
+	export let paymentMethodOptions: MethodOption[] = [];
 
 	let { session } = data;
 	$: ({ session } = data);
@@ -92,8 +97,22 @@
 		payment_method = customer.payment_method || "";
 	}
 
-	// Get all delivery method options for admin (all 5 values)
-	const deliveryMethodOptions = getAllDeliveryMethods();
+	// Volby dopravy/platby předané ze serveru (site_settings)
+	$: deliveryOptionsList = (() => {
+		const base = [...deliveryMethodOptions];
+		if (delivery_method && !base.some((o) => o.value === delivery_method)) {
+			base.push({ value: delivery_method, label: delivery_method });
+		}
+		return base;
+	})();
+
+	$: paymentOptionsList = (() => {
+		const base = [...paymentMethodOptions];
+		if (payment_method && !base.some((o) => o.value === payment_method)) {
+			base.push({ value: payment_method, label: payment_method });
+		}
+		return base;
+	})();
 
 	// Definice typu pro customerData
 	type CustomerData = {
@@ -440,7 +459,7 @@
 			<div class="space-y-4">
 				<h4 class="font-medium text-gray-900">Způsob dodání</h4>
 				<div class="space-y-2">
-					{#each deliveryMethodOptions as option}
+					{#each deliveryOptionsList as option}
 						<label class="flex items-center">
 							<input
 								type="radio"
@@ -459,33 +478,17 @@
 				<div>
 					<h4 class="font-medium text-gray-900 mb-3">Způsob platby</h4>
 					<div class="space-y-2">
-						<label class="flex items-center">
-							<input
-								type="radio"
-								name="paymentMethod"
-								value="cash"
-								bind:group={payment_method}
-								class="mr-2" />
-							<span class="text-sm">Hotově</span>
-						</label>
-						<label class="flex items-center">
-							<input
-								type="radio"
-								name="paymentMethod"
-								value="bankNoInvoice"
-								bind:group={payment_method}
-								class="mr-2" />
-							<span class="text-sm">Na účet bez faktury</span>
-						</label>
-						<label class="flex items-center">
-							<input
-								type="radio"
-								name="paymentMethod"
-								value="bankWithInvoice"
-								bind:group={payment_method}
-								class="mr-2" />
-							<span class="text-sm">Na účet s fakturou</span>
-						</label>
+						{#each paymentOptionsList as option}
+							<label class="flex items-center">
+								<input
+									type="radio"
+									name="paymentMethod"
+									value={option.value}
+									bind:group={payment_method}
+									class="mr-2" />
+								<span class="text-sm">{option.label}</span>
+							</label>
+						{/each}
 					</div>
 				</div>
 

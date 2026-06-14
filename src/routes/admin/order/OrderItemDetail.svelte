@@ -4,13 +4,13 @@
 	export let date = "";
 	export let isValidDate = true;
 	export let selectedPaymentMethod = "";
-	export let paymentMethods = ["Hotovost", "Faktura"];
+	export let paymentMethodOptions: Array<{ value: string; label: string }> = [];
 	export let selectedOrderState = "";
 	export let orderStates: Array<{name: string, color: string}> = [];
 	export let selectedCurrency = "";
 	export let currencies: Array<{code: string, name: string, symbol: string}> = [];
 	export let selectedShippingMethod = "";
-	export let shippingMethods: Array<{name: string, price: number}> = [];
+	export let shippingMethodOptions: Array<{ value: string; label: string }> = [];
 	export let isPaid = false;
 
 	// Fakturační údaje
@@ -152,8 +152,8 @@
 						<select
 							bind:value={selectedPaymentMethod}
 							class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							{#each paymentMethods as method}
-								<option value={method}>{method}</option>
+							{#each paymentMethodOptions as option}
+								<option value={option.value}>{option.label}</option>
 							{/each}
 						</select>
 					</div>
@@ -190,8 +190,8 @@
 						<select
 							bind:value={selectedShippingMethod}
 							class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
-							{#each shippingMethods as method}
-								<option value={method}>{method}</option>
+							{#each shippingMethodOptions as option}
+								<option value={option.value}>{option.label}</option>
 							{/each}
 						</select>
 					</div>

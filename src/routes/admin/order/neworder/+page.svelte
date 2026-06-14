@@ -5,8 +5,8 @@
 	import { getTenantIdFromData } from "$lib/utils/tenantUtils";
 
 	export let data;
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
+	let { session, supabase, deliveryMethodOptions, paymentMethodOptions } = data;
+	$: ({ session, supabase, deliveryMethodOptions, paymentMethodOptions } = data);
 
 	let loading = false;
 	let date = "";
@@ -14,13 +14,11 @@
 	let currency = "";
 	let formattedDate = "";
 	let selectedPaymentMethod = "";
-	let paymentMethodOptions = ["Hotově", "Online", "Dobírka"];
 	let selectedOrderState = "";
 	let orderStateOptions = ["Nová", "Expedovaná", "Fakturovaná", "Stornovaná"];
 	let selectedCurrency = "";
 	let currencyOptions = ["CZK", "EUR", "USD"];
 	let selectedShippingMethod = "";
-	let shippingMethodOptions = ["Osobní odběr", "Kurýr", "Česká pošta"];
 	let isPaid = false;
 
 	let isValidDate = true;
@@ -108,7 +106,10 @@
 						{selectedOrderState}
 						{selectedCurrency}
 						{selectedShippingMethod}
-						{isPaid} />
+						{isPaid}
+						paymentMethodOptions={paymentMethodOptions ?? []}
+						shippingMethodOptions={deliveryMethodOptions ?? []}
+					/>
 				</div>
 			</div>
 		</div>

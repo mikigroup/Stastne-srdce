@@ -17,7 +17,8 @@
 	$: loyaltyInfo = data.loyaltyInfo;
 	$: session = data.session;
 	$: previousCustomer = data.previousCustomer;
-	$: nextCustomer = data.nextCustomer;
+	$: deliveryMethodOptions = data.deliveryMethodOptions ?? [];
+	$: paymentMethodOptions = data.paymentMethodOptions ?? [];
 
 
 
@@ -134,7 +135,14 @@
 
 
 
-	<CustomerDetail bind:this={customerDetailComponent} bind:loading data={{ supabase, session }} {customer} />
+	<CustomerDetail
+		bind:this={customerDetailComponent}
+		bind:loading
+		data={{ supabase, session }}
+		{customer}
+		{deliveryMethodOptions}
+		{paymentMethodOptions}
+	/>
 
 	<!-- Statistiky zákazníka -->
 	<div class="mt-8 bg-white rounded-lg p-6 border border-gray-200">

@@ -150,25 +150,25 @@ export const load: PageServerLoad = async ({
 			}
 		}
 		
-		// Načteme platební metody z business nastavení
-		const { data: businessData, error: businessError } = await supabase
+		// Načteme platební metody z payment nastavení
+		const { data: paymentData, error: paymentError } = await supabase
 			.from('site_settings')
 			.select('value')
-			.eq('key', 'business')
+			.eq('key', 'payment')
 			.eq('tenant_id', resolvedTenantId)
 			.single();
 		
-		let paymentMethods = ['Hotově', 'Kartou', 'Převodem'];
-		if (!businessError && businessData?.value) {
+		let paymentMethods: any[] = [];
+		if (!paymentError && paymentData?.value) {
 			try {
-				const businessSettings = typeof businessData.value === 'string' 
-					? JSON.parse(businessData.value) 
-					: businessData.value;
-				if (businessSettings?.paymentMethods) {
-					paymentMethods = businessSettings.paymentMethods;
+				const paymentSettings = typeof paymentData.value === 'string' 
+					? JSON.parse(paymentData.value) 
+					: paymentData.value;
+				if (Array.isArray(paymentSettings?.paymentMethods)) {
+					paymentMethods = paymentSettings.paymentMethods;
 				}
 			} catch (e) {
-				console.error('Error parsing business settings:', e);
+				console.error('Error parsing payment settings:', e);
 			}
 		}
 
