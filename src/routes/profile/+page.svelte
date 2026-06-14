@@ -71,12 +71,52 @@
 	let profileValidationMessage = '';
 
 	// Delivery method options jsou načteny z databáze v +page.server.ts
-	// Fallback na prázdné pole, pokud nejsou k dispozici
-	$: deliveryMethodOptionsList = deliveryMethodOptions || [{ value: '', label: 'Vyberte způsob dodání' }];
-	
+	// Fallback na prázdné pole, pokud nejsou k dispozici.
+	// Pokud uložená (výchozí) hodnota profilu není mezi aktivními možnostmi,
+	// přidáme ji, aby šla v selektu zobrazit a vybrat.
+	$: deliveryMethodOptionsList = (() => {
+		const base = deliveryMethodOptions
+			? [...deliveryMethodOptions]
+			: [{ value: "", label: "Vyberte způsob dodání" }];
+		if (deliveryMethod && !base.some((o) => o.value === deliveryMethod)) {
+			base.push({ value: deliveryMethod, label: deliveryMethod });
+		}
+		return base;
+	})();
+
 	// Payment method options jsou načteny z databáze v +page.server.ts
-	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB
-	$: paymentMethodOptionsList = paymentMethodOptions || [];
+	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB.
+	// Stejně jako u dopravy doplníme uloženou (výchozí) hodnotu, pokud chybí.
+	$: paymentMethodOptionsList = (() => {
+		const base = paymentMethodOptions ? [...paymentMethodOptions] : [];
+		if (paymentMethod && !base.some((o) => o.value === paymentMethod)) {
+			base.push({ value: paymentMethod, label: paymentMethod });
+		}
+		return base;
+	})();
+
+	// Svelte select nemusí předvybrat hodnotu, pokud se volby načtou až po mountu.
+	let deliveryMethodSynced = false;
+	$: if (
+		!deliveryMethodSynced &&
+		deliveryMethodOptions?.length &&
+		profile?.delivery_method &&
+		deliveryMethodOptionsList.some((o) => o.value === profile.delivery_method)
+	) {
+		deliveryMethod = profile.delivery_method;
+		deliveryMethodSynced = true;
+	}
+
+	let paymentMethodSynced = false;
+	$: if (
+		!paymentMethodSynced &&
+		paymentMethodOptions?.length &&
+		profile?.payment_method &&
+		paymentMethodOptionsList.some((o) => o.value === profile.payment_method)
+	) {
+		paymentMethod = profile.payment_method;
+		paymentMethodSynced = true;
+	}
 
 	let fieldErrors: { [key: string]: string } = {};
 

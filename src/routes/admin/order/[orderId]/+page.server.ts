@@ -1,6 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { getOrderSettings, getDefaultDeliverySettings } from "$lib/services/eshopSettingsService";
+import { PUBLIC_TENANT } from "$env/static/public";
 
 // Definujeme typovou strukturu pro business nastavení
 interface BusinessSettings {
@@ -11,7 +12,7 @@ interface BusinessSettings {
 
 export const load: PageServerLoad = async ({
 	params,
-	locals: { supabase, safeGetSession }
+	locals: { supabase, safeGetSession, tenantId }
 }) => {
 	console.log("====== ORDER PAGE SERVER LOAD START ======");
 	console.log("Params:", params);
@@ -106,13 +107,14 @@ export const load: PageServerLoad = async ({
 		// Načteme nastavení objednávek
 		const orderSettings = await getOrderSettings(supabase);
 		
+		const resolvedTenantId = tenantId ?? PUBLIC_TENANT;
+
 		// Načteme nastavení dopravy
 		const { data: deliveryData, error: deliveryError } = await supabase
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'delivery')
-			.order('updated_at', { ascending: false })
-			.limit(1)
+			.eq('tenant_id', resolvedTenantId)
 			.single();
 		
 		let deliverySettings = getDefaultDeliverySettings();
@@ -131,8 +133,7 @@ export const load: PageServerLoad = async ({
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'general')
-			.order('updated_at', { ascending: false })
-			.limit(1)
+			.eq('tenant_id', resolvedTenantId)
 			.single();
 		
 		let currencies = ['CZK', 'EUR'];
@@ -154,8 +155,7 @@ export const load: PageServerLoad = async ({
 			.from('site_settings')
 			.select('value')
 			.eq('key', 'business')
-			.order('updated_at', { ascending: false })
-			.limit(1)
+			.eq('tenant_id', resolvedTenantId)
 			.single();
 		
 		let paymentMethods = ['Hotově', 'Kartou', 'Převodem'];
