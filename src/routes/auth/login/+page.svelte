@@ -26,6 +26,7 @@
 	let loading = false;
 
 	async function signInWithGoogle() {
+		if (!supabase) return;
 		const { data, error } = await supabase.auth.signInWithOAuth({
 			provider: "google",
 			options: {
@@ -54,7 +55,18 @@
 			<p>Jste přihlášeni.</p>
 		</div>
 	{:else}
-		<form method="POST" action="?/handleLogin" use:enhance class="space-y-6">
+		<form
+			method="POST"
+			action="?/handleLogin"
+			use:enhance={() => {
+				loading = true;
+				return async ({ update }) => {
+					await update();
+					loading = false;
+				};
+			}}
+			class="space-y-6"
+		>
 			<!-- Email input -->
 			<div class="flex flex-col">
 				<div class="relative flex">
@@ -103,20 +115,31 @@
 			<!-- Submit button -->
 			<button
 				type="submit"
-				class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105">
-				Přihlásit se
+				disabled={loading}
+				class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+				{#if loading}
+					<span class="inline-flex items-center justify-center">
+						<svg class="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						Provádí se...
+					</span>
+				{:else}
+					Přihlásit se
+				{/if}
 			</button>
 
 			<!-- Success message from URL -->
 			{#if message === "email_confirmed"}
 				<div class="w-full p-3 border border-green-200 rounded-lg bg-green-50">
-					<p class="text-green-700 text-sm">✅ Email byl úspěšně potvrzen! Nyní se můžete přihlásit.</p>
+					<p class="text-green-700 text-sm">Email byl úspěšně potvrzen! Nyní se můžete přihlásit.</p>
 				</div>
 			{/if}
 
 			{#if message === "password_reset"}
 				<div class="w-full p-3 border border-green-200 rounded-lg bg-green-50">
-					<p class="text-green-700 text-sm">✅ Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.</p>
+					<p class="text-green-700 text-sm">Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.</p>
 				</div>
 			{/if}
 
