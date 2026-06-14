@@ -48,23 +48,24 @@
 		isAdminRoute = $page.url.pathname.startsWith("/admin");
 		
 		// Auth state change listener
-		const authStateChange = supabase.auth.onAuthStateChange((event) => {
-			if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-				invalidate("supabase:auth");
-			}
-		});
-		
-		// Cleanup funkce
-		return () => {
-			try {
-				if (authStateChange?.data?.subscription) {
-					authStateChange.data.subscription.unsubscribe();
+		if (supabase) {
+			const authStateChange = supabase.auth.onAuthStateChange((event) => {
+				if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+					invalidate("supabase:auth");
 				}
-			} catch (error) {
-				// Ignorovat chyby při cleanup
-				console.warn('Chyba při odstraňování auth subscription:', error);
-			}
-		};
+			});
+
+			// Cleanup funkce
+			return () => {
+				try {
+					if (authStateChange?.data?.subscription) {
+						authStateChange.data.subscription.unsubscribe();
+					}
+				} catch (error) {
+					console.warn('Chyba při odstraňování auth subscription:', error);
+				}
+			};
+		}
 	});
 
 	const cookieName = 'stastne_srdce_cookies';

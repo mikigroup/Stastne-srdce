@@ -1,5 +1,15 @@
 import { fail, redirect } from "@sveltejs/kit";
+import { createClient } from "@supabase/supabase-js";
 import type { Actions, PageServerLoad } from "./$types";
+import type { Database } from "$lib/types/database.types";
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
+
+const adminSupabase = createClient<Database>(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
+	auth: {
+		autoRefreshToken: false,
+		persistSession: false
+	}
+});
 
 export const load: PageServerLoad = async ({ url }) => {
 	const token = url.searchParams.get("token");
@@ -8,26 +18,6 @@ export const load: PageServerLoad = async ({ url }) => {
 	}
 	return { token };
 };
-
-async function ensureRecoverySession(
-	supabase: App.Locals["supabase"],
-	token: string
-) {
-	const {
-		data: { session }
-	} = await supabase.auth.getSession();
-
-	if (session) {
-		return null;
-	}
-
-	const { error } = await supabase.auth.verifyOtp({
-		type: "recovery",
-		token_hash: token
-	});
-
-	return error;
-}
 
 export const actions: Actions = {
 	resetPass: async ({ request, locals: { supabase }, url }) => {
@@ -70,9 +60,17 @@ export const actions: Actions = {
 		}
 
 		try {
-			const verifyError = await ensureRecoverySession(supabase, token);
-			if (verifyError) {
-				console.error("Recovery verifyOtp error:", verifyError);
+			// Zrušit případnou neplatnou session z cookies (jinak se verifyOtp přeskočí)
+			await supabase.auth.signOut();
+
+			const { data: verifyData, error: verifyError } =
+				await supabase.auth.verifyOtp({
+					type: "recovery",
+					token_hash: token
+				});
+
+			if (verifyError || !verifyData.user) {
+				console.error("[RESET] verifyOtp failed:", verifyError);
 				return fail(400, {
 					password,
 					repassword,
@@ -84,30 +82,25 @@ export const actions: Actions = {
 				});
 			}
 
-			const { error } = await supabase.auth.updateUser({ password });
+			console.log("[RESET] verifyOtp OK, updating password via admin for:", verifyData.user.id);
 
-			if (error) {
-				console.error("Reset password error:", error);
+			// Admin API nevyžaduje session v cookies — spolehlivé na Vercelu
+			const { error: updateError } = await adminSupabase.auth.admin.updateUserById(
+				verifyData.user.id,
+				{ password }
+			);
+
+			if (updateError) {
+				console.error("[RESET] admin.updateUserById failed:", updateError);
 				let displayMessage =
 					"Nepodařilo se změnit heslo. Zkuste to prosím znovu později.";
 
-				if (error.name === "AuthSessionMissingError") {
+				if (updateError.message?.toLowerCase().includes("same")) {
 					displayMessage =
-						"Platnost odkazu vypršela. Požádejte prosím o nový e-mail pro obnovení hesla.";
-				} else if (error.status === 422) {
-					if (error.code === "same_password") {
-						displayMessage =
-							"Nové heslo musí být odlišné od starého hesla. Zadejte prosím jiné heslo.";
-					} else {
-						displayMessage =
-							"Zadané heslo je neplatné. Zkontrolujte prosím své heslo a zkuste to znovu.";
-					}
-				} else if (error.status === 400) {
-					displayMessage =
-						"Došlo k chybě při odesílání požadavku. Zkontrolujte prosím zadané údaje a zkuste to znovu.";
+						"Nové heslo musí být odlišné od starého hesla. Zadejte prosím jiné heslo.";
 				}
 
-				return fail(error.status || 500, {
+				return fail(400, {
 					password,
 					repassword,
 					message: {
@@ -128,7 +121,7 @@ export const actions: Actions = {
 				}
 			};
 		} catch (error) {
-			console.error("Unexpected error during password reset:", error);
+			console.error("[RESET] Unexpected error:", error);
 			return fail(500, {
 				password,
 				repassword,
