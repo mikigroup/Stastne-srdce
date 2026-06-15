@@ -86,6 +86,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 						.eq('user_id', user.id)
 						.eq('tenant_id', PUBLIC_TENANT)
 						.is('deleted_at', null)
+						.limit(1)
 						.maybeSingle();
 
 					if (membershipError) {

@@ -17,7 +17,7 @@ export class ProfileService {
 	) {
 		return await (supabase as SupabaseClient).from('tenant_members').upsert(
 			{ user_id: userId, tenant_id: tenantId, role: 'customer' },
-			{ onConflict: 'user_id,tenant_id' }
+			{ onConflict: 'user_id,tenant_id,role' }
 		);
 	}
 
@@ -30,7 +30,7 @@ export class ProfileService {
 	) {
 		return await (supabase as SupabaseClient).from('tenant_members').upsert(
 			{ user_id: userId, tenant_id: tenantId, role, deleted_at: null },
-			{ onConflict: 'user_id,tenant_id' }
+			{ onConflict: 'user_id,tenant_id,role' }
 		);
 	}
 
