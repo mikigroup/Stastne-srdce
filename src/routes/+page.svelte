@@ -110,22 +110,27 @@
 							Info koutek
 						</h2>
 					</div>
-					<!-- Grid container for texts -->
+					<!-- Grid: sloupce odpovídají výběru left / center / right v Malém Leovi -->
 					<div
-						class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
-						{#if texts && texts.length > 0}
-							{#each texts.filter(text => (text.title || text.text)) as text}
-								<div class="w-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
-									{#if text.title}
-										<h3
-											class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
-											{text.title}
-										</h3>
-										<hr class="mx-5" />
-									{/if}
-									{#if text.text}
-										<div class="p-5 mb-5 text-gray-600 text-md">
-											{@html text.text}
+						class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+						{#if texts && texts.some((text) => text && (text.title || text.text))}
+							{#each texts as text, index (text?.position ?? index)}
+								{@const hasContent = !!(text && (text.title || text.text))}
+								<div class="w-full min-h-0 {hasContent ? '' : 'hidden md:block'}">
+									{#if hasContent}
+										<div class="h-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
+											{#if text.title}
+												<h3
+													class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
+													{text.title}
+												</h3>
+												<hr class="mx-5" />
+											{/if}
+											{#if text.text}
+												<div class="p-5 mb-5 text-gray-600 text-md">
+													{@html text.text}
+												</div>
+											{/if}
 										</div>
 									{/if}
 								</div>
