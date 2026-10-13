@@ -377,11 +377,6 @@ export function getDefaultSettings<K extends keyof SiteSettings>(
   return UNIFIED_DEFAULT_SETTINGS[section];
 }
 
-// Helper function to get all default settings
-export function getAllDefaultSettings(): SiteSettings {
-  return UNIFIED_DEFAULT_SETTINGS;
-}
-
 // Helper function to convert to init script format
 export function getDefaultSettingsForInit() {
   return Object.entries(UNIFIED_DEFAULT_SETTINGS).map(([key, value]) => ({

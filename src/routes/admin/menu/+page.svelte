@@ -17,7 +17,7 @@
 	import { navigating } from "$app/stores";
 	import { fade, fly } from "svelte/transition";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
+	import { formatDateToCzechShort } from "$lib/utils/formatting";
 
 	export let data;
 

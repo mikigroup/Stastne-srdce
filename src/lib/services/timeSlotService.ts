@@ -41,48 +41,8 @@ export async function getAvailableTimeSlots(
 }
 
 /**
- * Zkontroluje, zda je časový slot dostupný
- */
-export function isTimeSlotAvailable(
-	slot: TimeSlot,
-	availableSlots: TimeSlotAvailability[]
-): boolean {
-	const availability = availableSlots.find(
-		av => av.slot.startTime === slot.startTime && av.slot.endTime === slot.endTime
-	);
-	return availability?.isAvailable || false;
-}
-
-/**
  * Formátuje časový slot pro zobrazení
  */
 export function formatTimeSlot(slot: TimeSlot): string {
 	return `${slot.startTime} - ${slot.endTime}`;
-}
-
-/**
- * Získá nejbližší dostupný časový slot
- */
-export function getNextAvailableSlot(availableSlots: TimeSlotAvailability[]): TimeSlotAvailability | null {
-	const now = new Date();
-	const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-
-	return availableSlots.find(slot => 
-		slot.isAvailable && slot.slot.startTime > currentTime
-	) || availableSlots.find(slot => slot.isAvailable) || null;
-}
-
-/**
- * Validuje časový slot
- */
-export function validateTimeSlot(slot: TimeSlot): { valid: boolean; error?: string } {
-	if (!slot.startTime || !slot.endTime) {
-		return { valid: false, error: 'Čas začátku a konce je povinný' };
-	}
-
-	if (slot.startTime >= slot.endTime) {
-		return { valid: false, error: 'Čas konce musí být po čase začátku' };
-	}
-
-	return { valid: true };
 } 

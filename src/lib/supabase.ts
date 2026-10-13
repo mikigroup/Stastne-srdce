@@ -31,13 +31,5 @@ export const supabase = createClient<Database & { public: FakturoidTables }>(
             persistSession: true
         }
     }
-);
-
-// Export funkce pro kontrolu proměnných za běhu (ne při buildu)
-export function ensureEnvironmentVariables() {
-    const { url, key } = getSupabaseCredentials();
-    if (!url || !key) {
-        throw new Error('Missing Supabase environment variables');
-    }
-} 
+); 
 

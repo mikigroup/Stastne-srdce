@@ -323,28 +323,6 @@ test.describe("Administrace", () => {
  * Testy pro ověření, že jednotlivé komponenty správně spolupracují
  *!/
 test.describe("Integrace komponent", () => {
-	test("DateRangeSelector funguje správně", async ({ page }) => {
-		// Přihlášení jako admin
-		await page.goto("/admin/signin");
-		await page.fill('input[name="email"]', "admin@example.com");
-		await page.fill('input[name="password"]', "AdminPassword123");
-		await page.click('button[type="submit"]');
-		await page.waitForURL("/admin*");
-
-		// Přejdeme na dashboard, kde je použitý DateRangeSelector
-		await page.goto("/admin");
-
-		// Interakce s komponentou DateRangeSelector
-		await page.click(".dropdown-hover button");
-		await expect(page.locator("ul.dropdown-content")).toBeVisible();
-
-		// Výběr jiného období
-		await page.click('a:has-text("Tento týden")');
-
-		// Ověření změny období
-		await expect(page.locator("text=Statistiky za období")).toBeVisible();
-	});
-
 	test("GDPR banner funguje správně", async ({ page }) => {
 		// Nastavíme cookies tak, aby se zobrazil GDPR banner
 		await page.context().clearCookies();

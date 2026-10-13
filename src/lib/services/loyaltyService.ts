@@ -1,5 +1,5 @@
 import type { TypedSupabaseClient } from "$lib/supabase";
-import { getSetting, saveSetting } from "./siteSettingsService";
+import { getSetting } from "./siteSettingsService";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
 
 export interface LoyaltyTier {
@@ -166,31 +166,6 @@ export async function deleteLoyaltyTier(supabase: TypedSupabaseClient, tierId: n
 }
 
 /**
- * Uloží nastavení věrnostního systému
- */
-export async function saveLoyaltySettings(
-  supabase: TypedSupabaseClient, 
-  loyaltySettings: Partial<LoyaltySettings>, 
-  userId: string
-): Promise<boolean> {
-  try {
-    const currentSettings = await getSetting(supabase, 'customer') || getDefaultSettings('customer');
-    const updatedSettings = {
-      ...currentSettings,
-      loyalty: {
-        ...currentSettings.loyalty,
-        ...loyaltySettings
-      }
-    };
-    
-    return await saveSetting(supabase, 'customer', updatedSettings, userId);
-  } catch (error) {
-    console.error('Error saving loyalty settings:', error);
-    return false;
-  }
-}
-
-/**
  * Vypočítá věrnostní data zákazníka
  */
 export async function calculateCustomerLoyalty(
@@ -274,50 +249,4 @@ function determineLoyaltyTier(orderCount: number, tiers: LoyaltyTier[]): string 
   
   // Fallback na první úroveň
   return tiers[0]?.name || 'NEW';
-}
-
-/**
- * Získá informace o úrovni věrnosti
- */
-export function getLoyaltyTierInfo(tierName: string, tiers: LoyaltyTier[]): LoyaltyTier | null {
-  return tiers.find(tier => tier.name === tierName) || null;
-}
-
-/**
- * Vypočítá body za objednávku
- */
-export function calculateOrderPoints(
-  orderAmount: number, 
-  customerTier: string, 
-  loyaltySettings: LoyaltySettings
-): number {
-  const basePoints = Math.floor(orderAmount * loyaltySettings.pointsPerCzk);
-  const tierInfo = getLoyaltyTierInfo(customerTier, loyaltySettings.tiers);
-  
-  if (!tierInfo) {
-    return basePoints;
-  }
-
-  const bonusMultiplier = 1 + (tierInfo.bonus / 100);
-  const totalPoints = Math.floor(basePoints * bonusMultiplier);
-  
-  // Omezení maximálního počtu bodů
-  return Math.min(totalPoints, loyaltySettings.maxPointsPerOrder);
-}
-
-/**
- * Vypočítá slevu podle úrovně věrnosti
- */
-export function calculateLoyaltyDiscount(
-  orderAmount: number, 
-  customerTier: string, 
-  loyaltySettings: LoyaltySettings
-): number {
-  const tierInfo = getLoyaltyTierInfo(customerTier, loyaltySettings.tiers);
-  
-  if (!tierInfo) {
-    return 0;
-  }
-
-  return Math.floor(orderAmount * (tierInfo.discount / 100));
 } 

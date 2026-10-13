@@ -38,38 +38,5 @@ export const ROUTES = {
 		SITE_SETTINGS: '/admin/site-setting',
 		TEXT_EDITOR: '/admin/text',
 		LOYALTY: '/admin/settings/loyalty'
-	},
-	
-	// API routy
-	API: {
-		FAKTUROID: {
-			CREATE_INVOICE: '/api/fakturoid/create-invoice',
-			FORCE_REFRESH: '/api/fakturoid/force-refresh',
-			HEALTH: '/api/fakturoid/health',
-			TEST_SLUG: '/api/fakturoid/test-slug',
-			TOKEN_STATUS: '/api/fakturoid/token-status',
-			VERIFY_TOKEN: '/api/fakturoid/verify-token'
-		},
-		TOKEN_MAINTENANCE: '/api/token-maintenance'
 	}
-} as const;
-
-// Helper funkce pro vytvoření URL s parametry
-export function createUrl(route: string, params?: Record<string, string>): string {
-	if (!params) return route;
-	
-	const url = new URL(route, 'http://localhost');
-	Object.entries(params).forEach(([key, value]) => {
-		url.searchParams.append(key, value);
-	});
-	
-	return url.pathname + url.search;
-}
-
-// Helper funkce pro auth callback URL
-export function createAuthCallbackUrl(type: 'signup' | 'recovery', token?: string): string {
-	const params: Record<string, string> = { success: type };
-	if (token) params.token = token;
-	
-	return createUrl(ROUTES.AUTH.SIGNUP_COMPLETE, params);
-} 
+} as const; 

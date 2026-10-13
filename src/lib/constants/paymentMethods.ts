@@ -73,9 +73,3 @@ export async function getPaymentMethods(
 	const settings = await loadPaymentSettingsFromDB(supabase);
 	return convertPaymentMethodsToOptions(settings?.paymentMethods);
 }
-
-export function getPaymentMethodLabel(value: string): string {
-	return value;
-}
-
-export type PaymentMethodValue = string;

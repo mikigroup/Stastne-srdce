@@ -13,10 +13,3 @@ export function getTenantId(locals: any): string {
 export function getTenantIdFromData(data: any): string {
     return data.tenantId || PUBLIC_TENANT;
 }
-
-/**
- * Helper funkce pro získání tenant_id z session nebo fallback na default
- */
-export function getTenantIdFromSession(session: any): string {
-    return session?.tenantId || PUBLIC_TENANT;
-}

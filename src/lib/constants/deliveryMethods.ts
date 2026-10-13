@@ -104,18 +104,3 @@ export async function getAllDeliveryMethods(
 
 	return options;
 }
-
-export function getDeliveryMethodLabel(value: string): string {
-	return value;
-}
-
-export function getDeliveryMethodDescription(value: string): string {
-	return getDeliveryMethodLabel(value);
-}
-
-/** @deprecated Používejte getAllDeliveryMethods() s Supabase klientem. */
-export function getDeliveryMethodOptions() {
-	return [] as DeliveryOption[];
-}
-
-export type DeliveryMethodValue = string;

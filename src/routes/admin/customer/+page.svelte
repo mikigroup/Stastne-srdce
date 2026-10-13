@@ -19,7 +19,7 @@
 
 	import { goto } from "$app/navigation";
 	import { ROUTES } from "$lib/stores/store";
-	import { formatDateToCzech, formatDateTimeToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
+	import { formatDateTimeToCzechShort } from "$lib/utils/formatting";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 	import { getRegistrationStatusMessage, getRegistrationStatusStyles } from "$lib/services/registrationStatusService";
 	import AdminTable from "$lib/component/AdminTable.svelte";

@@ -45,29 +45,6 @@ export function formatDateToCzechShort(date: string | Date): string {
 }
 
 /**
- * Formátuje datum a čas do českého formátu - dlouhý formát
- * @param dateTime - datum a čas jako string nebo Date objekt
- * @returns datum a čas ve formátu "1. ledna 2024 v 14:30"
- */
-export function formatDateTimeToCzech(dateTime: string | Date): string {
-	if (!dateTime) return '';
-	
-	const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
-	
-	if (isNaN(dateObj.getTime())) {
-		return '';
-	}
-	
-	return dateObj.toLocaleString('cs-CZ', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-}
-
-/**
  * Formátuje datum a čas do českého formátu (krátký)
  * @param dateTime - datum a čas jako string nebo Date objekt
  * @returns datum a čas ve formátu "1. 1. 2024 14:30"
@@ -84,29 +61,6 @@ export function formatDateTimeToCzechShort(dateTime: string | Date): string {
 	return dateObj.toLocaleString('cs-CZ', {
 		day: '2-digit',
 		month: '2-digit',  
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-}
-
-/**
- * Formátuje datum a čas do českého formátu (krátký bez úvodních nul)
- * @param dateTime - datum a čas jako string nebo Date objekt
- * @returns datum a čas ve formátu "1. 6. 2024 14:30"
- */
-export function formatDateTimeToCzechShortNoZero(dateTime: string | Date): string {
-	if (!dateTime) return '';
-	
-	const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
-	
-	if (isNaN(dateObj.getTime())) {
-		return '';
-	}
-	
-	return dateObj.toLocaleString('cs-CZ', {
-		day: 'numeric',
-		month: 'numeric',  
 		year: 'numeric',
 		hour: '2-digit',
 		minute: '2-digit'
@@ -132,61 +86,6 @@ export function formatTime(time: string | Date): string {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
-}
-
-/**
- * Formátuje datum pro Supabase (ISO formát)
- * @param inputDate - datum jako string ve formátu YYYY-MM-DD
- * @returns datum ve formátu ISO string
- */
-export function formatDateForSupabase(inputDate: string): string {
-	if (!inputDate) return '';
-	
-	const date = new Date(inputDate);
-	if (isNaN(date.getTime())) {
-		return '';
-	}
-	
-	return date.toISOString();
-}
-
-/**
- * Formátuje Date objekt do ISO formátu pro Supabase
- * @param date - Date objekt
- * @returns datum ve formátu ISO string
- */
-export function formatDateToISO(date: Date): string {
-	return date.toISOString().split('T')[0];
-}
-
-/**
- * Formátuje rozsah datumů pro zobrazení
- * @param start - počáteční datum
- * @param end - koncové datum
- * @returns formátovaný rozsah datumů
- */
-export function formatDateRange(start: Date, end: Date): string {
-	const formatOptions: Intl.DateTimeFormatOptions = {
-		day: '2-digit',
-		month: 'long',
-		year: 'numeric'
-	};
-
-	if (start.toDateString() === end.toDateString()) {
-		return start.toLocaleDateString('cs-CZ', formatOptions);
-	} else if (
-		start.getMonth() === end.getMonth() &&
-		start.getFullYear() === end.getFullYear()
-	) {
-		// Stejný měsíc a rok
-		return `${start.getDate()} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-	} else if (start.getFullYear() === end.getFullYear()) {
-		// Stejný rok
-		return `${start.toLocaleDateString('cs-CZ', {day: '2-digit', month: 'long'})} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-	} else {
-		// Různé roky
-		return `${start.toLocaleDateString('cs-CZ', formatOptions)} - ${end.toLocaleDateString('cs-CZ', formatOptions)}`;
-	}
 }
 
 /**
@@ -364,66 +263,4 @@ export function createDateTimeFormatter(
 	options: Intl.DateTimeFormatOptions = {}
 ): Intl.DateTimeFormat {
 	return new Intl.DateTimeFormat(locale, options);
-}
-
-/**
- * Ověřuje, zda je datum validní
- * @param date - datum k ověření
- * @returns true pokud je datum validní
- */
-export function isValidDate(date: any): boolean {
-	if (!date) return false;
-	
-	const dateObj = typeof date === 'string' ? new Date(date) : date;
-	return dateObj instanceof Date && !isNaN(dateObj.getTime());
-}
-
-// =============================================================================
-// KONSTANTY PRO FORMÁTOVÁNÍ
-// =============================================================================
-
-export const CZECH_DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
-	year: 'numeric',
-	month: 'long',
-	day: 'numeric'
-};
-
-export const CZECH_DATE_SHORT_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
-	day: '2-digit',
-	month: '2-digit',
-	year: 'numeric'
-};
-
-export const CZECH_DATETIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
-	year: 'numeric',
-	month: 'long',
-	day: 'numeric',
-	hour: '2-digit',
-	minute: '2-digit'
-};
-
-export const CZECH_DATETIME_SHORT_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
-	day: '2-digit',
-	month: '2-digit',
-	year: 'numeric',
-	hour: '2-digit',
-	minute: '2-digit'
-};
-
-export const CZECH_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
-	hour: '2-digit',
-	minute: '2-digit'
-};
-
-export const CZECH_CURRENCY_FORMAT_OPTIONS: Intl.NumberFormatOptions = {
-	style: 'currency',
-	currency: 'CZK'
-};
-
-// =============================================================================
-// EXPORTY PRO ZPĚTNOU KOMPATIBILITU
-// =============================================================================
-
-// Aliasy pro zpětnou kompatibilitu s existujícím kódem
-export const formatDate = formatDateToCzech;
-export const formatDateTime = formatDateTimeToCzech; 
+} 

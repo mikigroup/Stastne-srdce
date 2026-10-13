@@ -59,49 +59,6 @@ export async function createMenuVersion(
 }
 
 /**
- * Získá ID aktuální verze menu pro danou variantu.
- */
-export async function getCurrentMenuVersionForVariant(
-	supabase: SupabaseClient<Database>,
-	variantId: string
-) {
-	try {
-		// Nejprve zjistíme, ke kterému menu patří varianta
-		const { data: variant, error: variantError } = await supabase
-			.from("menu_variants")
-			.select("menu_id, menu_version_id")
-			.eq("id", variantId)
-			.single();
-
-		if (variantError) {
-			console.error("Chyba při získávání informací o variantě:", variantError);
-			return null;
-		}
-
-		// Pokud má varianta již přiřazenou verzi menu, vrátíme ji
-		if (variant.menu_version_id) {
-			return variant.menu_version_id;
-		}
-
-		// Jinak získáme aktuální verzi menu pomocí RPC funkce
-		const { data: versionId, error: versionError } = await supabase.rpc(
-			"get_current_menu_version",
-			{ p_menu_id: variant.menu_id }
-		);
-
-		if (versionError) {
-			console.error("Chyba při získávání aktuální verze menu:", versionError);
-			return null;
-		}
-
-		return versionId;
-	} catch (error) {
-		console.error("Nečekaná chyba při získávání verze menu:", error);
-		return null;
-	}
-}
-
-/**
  * Vytvoří novou variantu menu pro danou verzi menu.
  */
 export async function createMenuVariant(
