@@ -5,18 +5,14 @@
 	import AuthCard from "$lib/component/AuthCard.svelte";
 	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 	import { browser } from "$app/environment";
-	
-	type FormData = {
-		error?: boolean;
-		success?: boolean;
-		message?: string;
-		errors?: Record<string, string>;
+
+	type SignupFields = {
+		errors?: { email?: string; password?: string; repassword?: string };
 		email?: string;
-		password?: string;
 		repassword?: string;
 	};
-	
-	export let form: FormData | null = null;
+
+	export let form: ActionData = null;
 	export let data;
 	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
 	let { session, supabase } = data;
@@ -59,11 +55,13 @@
 		return "";
 	}
 
+	$: signupFields = (form ?? {}) as SignupFields;
+
 	// Reaktivní validace
-	$: if (form?.errors) {
-		emailError = form.errors.email || "";
-		passwordError = form.errors.password || "";
-		repasswordError = form.errors.repassword || "";
+	$: if (signupFields.errors) {
+		emailError = signupFields.errors.email || "";
+		passwordError = signupFields.errors.password || "";
+		repasswordError = signupFields.errors.repassword || "";
 	}
 
 	function validateSignupFields(formEl: HTMLFormElement): boolean {
@@ -140,6 +138,8 @@
 	}
 
 	async function signInWithGoogle() {
+		if (!supabase) return;
+
 		try {
 			loading = true;
 			const { error } = await supabase.auth.signInWithOAuth({
@@ -161,6 +161,8 @@
 	}
 
 	async function signInWithFacebook() {
+		if (!supabase) return;
+
 		try {
 			loading = true;
 			const { error } = await supabase.auth.signInWithOAuth({
@@ -225,7 +227,7 @@
 					</svg>
 				</span>
 				<input
-					value={form?.email ?? ""}
+					value={signupFields.email ?? ""}
 					type="email"
 					id="email"
 					name="email"
@@ -315,7 +317,7 @@
 					</svg>
 				</span>
 				<input
-					value={form?.repassword ?? ""}
+					value={signupFields.repassword ?? ""}
 					type={showRepassword ? "text" : "password"}
 					id="repassword"
 					name="repassword"
@@ -426,7 +428,7 @@
 						</svg>
 					</span>
 					<input
-						value={form?.email ?? ""}
+						value={signupFields.email ?? ""}
 						type="email"
 						id="email"
 						name="email"
@@ -516,7 +518,7 @@
 						</svg>
 					</span>
 					<input
-						value={form?.repassword ?? ""}
+						value={signupFields.repassword ?? ""}
 						type={showRepassword ? "text" : "password"}
 						id="repassword"
 						name="repassword"
