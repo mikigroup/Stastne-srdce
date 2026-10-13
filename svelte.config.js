@@ -5,9 +5,6 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const config = {
 	kit: {
 		adapter: adapter(),
-		csrf: {
-			checkOrigin: process.env.NODE_ENV === "production"
-		},
 		env: {
 			publicPrefix: 'PUBLIC_'
 		}
