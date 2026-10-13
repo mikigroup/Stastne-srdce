@@ -72,10 +72,14 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string, ten
             }
         }
         
-        const { data, error } = await query.single();
+        const { data, error } = await query.maybeSingle();
         
         if (error) {
             console.error(`Error loading setting ${key}:`, error);
+            return null;
+        }
+
+        if (!data) {
             return null;
         }
         

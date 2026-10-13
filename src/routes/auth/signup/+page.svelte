@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { ActionData } from "./$types";
+	import { browser } from "$app/environment";
 	import { enhance } from "$app/forms";
-	import recaptchaEnhance from "svelte-captcha-enhance";
 	import AuthCard from "$lib/component/AuthCard.svelte";
 	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
-	import { browser } from "$app/environment";
 
 	type SignupFields = {
 		errors?: { email?: string; password?: string; repassword?: string };
@@ -25,6 +24,7 @@
 	let passwordValue = "";
 	let repasswordValue = "";
 	let clientValidationFailed = false;
+	let recaptchaError = "";
 
 	// Real-time validace
 	let emailError = "";
@@ -80,21 +80,45 @@
 		return !emailError && !passwordError && !repasswordError;
 	}
 
-	function onSignupSubmit(event: SubmitEvent) {
-		const formEl = event.currentTarget as HTMLFormElement;
-		clientValidationFailed = !validateSignupFields(formEl);
+	function getRecaptchaToken(): Promise<string | null> {
+		if (!PUBLIC_RECAPTCHA_SITE_KEY) return Promise.resolve(null);
+
+		const grecaptcha = (window as any).grecaptcha;
+		if (!grecaptcha) return Promise.resolve(null);
+
+		return new Promise((resolve) => {
+			const timeout = setTimeout(() => resolve(null), 8000);
+			try {
+				grecaptcha.ready(() => {
+					grecaptcha
+						.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: "signup" })
+						.then((token: string) => {
+							clearTimeout(timeout);
+							resolve(token || null);
+						})
+						.catch(() => {
+							clearTimeout(timeout);
+							resolve(null);
+						});
+				});
+			} catch {
+				clearTimeout(timeout);
+				resolve(null);
+			}
+		});
 	}
 
-	// Handler pro reCAPTCHA enhance - podle dokumentace svelte-captcha-enhance
-	// Dokumentace: https://github.com/edde746/svelte-captcha-enhance
-	// Formát: submit: ({ formData }) => ({ result }) => { ... }
-	function handleRecaptchaSubmit({
+	async function handleSubmit({
+		formElement,
 		formData,
 		cancel
 	}: {
+		formElement: HTMLFormElement;
 		formData: FormData;
 		cancel: () => void;
 	}) {
+		recaptchaError = "";
+		clientValidationFailed = !validateSignupFields(formElement);
 		if (clientValidationFailed || !agreedToTerms) {
 			cancel();
 			loading = false;
@@ -102,35 +126,26 @@
 		}
 
 		loading = true;
-		
-		// Debug: zkontrolovat, jestli je token v formData
-		const token = formData.get("g-recaptcha-response");
-		console.log('🔍 [RECAPTCHA CLIENT] Token in formData:', {
-			hasToken: !!token,
-			tokenType: typeof token,
-			tokenLength: token?.toString().length || 0
-		});
 
-		return ({ result, update }: { result: any; update: any }) => {
-			if (result.type === 'success' || result.type === 'failure') {
+		if (PUBLIC_RECAPTCHA_SITE_KEY) {
+			const token = await getRecaptchaToken();
+			if (!token) {
 				loading = false;
+				cancel();
+				recaptchaError = "Ověření prohlížeče se nepodařilo. Zkuste to prosím znovu.";
+				return;
 			}
-			update();
-		};
-	}
-
-	// SvelteKit enhance pro zpracování výsledku (použije se pouze pokud není reCAPTCHA)
-	function handleSubmit({ cancel }: { cancel: () => void }) {
-		if (clientValidationFailed || !agreedToTerms) {
-			cancel();
-			loading = false;
-			return;
+			formData.set("g-recaptcha-response", token);
 		}
 
-		loading = true;
-
-		return async ({ result, update }: { result: any; update: any }) => {
-			if (result.type === 'success' || result.type === 'failure') {
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: string };
+			update: () => Promise<void>;
+		}) => {
+			if (result.type === "success" || result.type === "failure") {
 				loading = false;
 			}
 			await update();
@@ -208,15 +223,9 @@
 		<form
 			method="POST"
 			action="?/signUp"
-			use:recaptchaEnhance={{
-				type: 'recaptcha',
-				sitekey: PUBLIC_RECAPTCHA_SITE_KEY,
-				action: 'signup',
-				submit: handleRecaptchaSubmit
-			}}
+			use:enhance={handleSubmit}
 			class="space-y-6"
 			novalidate
-			on:submit={onSignupSubmit}
 		>
 			<!-- Email input -->
 		<div class="flex flex-col">
@@ -251,7 +260,7 @@
 					</svg>
 				</span>
 				<div
-					class="flex min-w-0 flex-1 flex-col border border-l-0 border-gray-300 bg-white shadow-sm focus-within:border-green-600"
+					class="flex min-w-0 flex-1 flex-col rounded-l-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 					class:border-red-500={passwordError}
 				>
 					{#if passwordError}
@@ -271,7 +280,7 @@
 							class:py-2={!passwordError}
 							class:pb-2={passwordError}
 							class:pt-0.5={passwordError}
-							placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+							placeholder="min 8 znaků, velké, číslici"
 							required
 						/>
 					{:else}
@@ -281,7 +290,7 @@
 							id="password"
 							name="password"
 							class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 py-2 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
-							placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+							placeholder="min 8 znaků, velké, číslici"
 							required
 						/>
 					{/if}
@@ -417,7 +426,6 @@
 			use:enhance={handleSubmit}
 			class="space-y-6"
 			novalidate
-			on:submit={onSignupSubmit}
 		>
 			<!-- Email input -->
 			<div class="flex flex-col">
@@ -452,7 +460,7 @@
 						</svg>
 					</span>
 					<div
-						class="flex min-w-0 flex-1 flex-col border border-l-0 border-gray-300 bg-white shadow-sm focus-within:border-green-600"
+						class="flex min-w-0 flex-1 flex-col rounded-l-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 						class:border-red-500={passwordError}
 					>
 						{#if passwordError}

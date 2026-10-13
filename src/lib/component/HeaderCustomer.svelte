@@ -46,7 +46,7 @@
 	let buttonElement;
 	$: totalPieces = $totalPiecesStore;
 
-	const { generalSettings } = data;
+	$: generalSettings = data.generalSettings ?? data.settings?.general;
 
 	// Funkce pro zavření menu
 	function closeMenu() {
@@ -86,7 +86,7 @@
 				<div class="flex items-center gap-2">
 					<h1 class="text-xl font-semibold">
 						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap">
-							{generalSettings.shopName}
+							{generalSettings?.shopName ?? "Šťastné srdce"}
 						</a>
 					</h1>
 					<img {src} alt="stastne srdce" class="shrink-0" width="22" height="22" />
