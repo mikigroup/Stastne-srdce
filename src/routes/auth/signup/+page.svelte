@@ -26,6 +26,9 @@
 	let agreedToTerms = false;
 	let showPassword = false;
 	let showRepassword = false;
+	let passwordValue = "";
+	let repasswordValue = "";
+	let clientValidationFailed = false;
 
 	// Real-time validace
 	let emailError = "";
@@ -63,12 +66,41 @@
 		repasswordError = form.errors.repassword || "";
 	}
 
+	function validateSignupFields(formEl: HTMLFormElement): boolean {
+		const email = formEl.querySelector<HTMLInputElement>("#email")?.value ?? "";
+		const password = formEl.querySelector<HTMLInputElement>("#password")?.value ?? "";
+		const repassword = formEl.querySelector<HTMLInputElement>("#repassword")?.value ?? "";
+		passwordValue = password;
+		repasswordValue = repassword;
+
+		emailError = email ? validateEmail(email) : "Zadejte platný email";
+		passwordError = password ? validatePassword(password) : "Heslo je povinné";
+		repasswordError = repassword
+			? validateRepassword(password, repassword)
+			: "Potvrzení hesla je povinné";
+
+		return !emailError && !passwordError && !repasswordError;
+	}
+
+	function onSignupSubmit(event: SubmitEvent) {
+		const formEl = event.currentTarget as HTMLFormElement;
+		clientValidationFailed = !validateSignupFields(formEl);
+	}
+
 	// Handler pro reCAPTCHA enhance - podle dokumentace svelte-captcha-enhance
 	// Dokumentace: https://github.com/edde746/svelte-captcha-enhance
 	// Formát: submit: ({ formData }) => ({ result }) => { ... }
-	function handleRecaptchaSubmit({ formData }: { formData: any }) {
-		if (!agreedToTerms) {
-			return; // zabrání odeslání, pokud není souhlas
+	function handleRecaptchaSubmit({
+		formData,
+		cancel
+	}: {
+		formData: FormData;
+		cancel: () => void;
+	}) {
+		if (clientValidationFailed || !agreedToTerms) {
+			cancel();
+			loading = false;
+			return;
 		}
 
 		loading = true;
@@ -90,9 +122,11 @@
 	}
 
 	// SvelteKit enhance pro zpracování výsledku (použije se pouze pokud není reCAPTCHA)
-	function handleSubmit() {
-		if (!agreedToTerms) {
-			return; // zabrání odeslání, pokud není souhlas
+	function handleSubmit({ cancel }: { cancel: () => void }) {
+		if (clientValidationFailed || !agreedToTerms) {
+			cancel();
+			loading = false;
+			return;
 		}
 
 		loading = true;
@@ -179,6 +213,8 @@
 				submit: handleRecaptchaSubmit
 			}}
 			class="space-y-6"
+			novalidate
+			on:submit={onSignupSubmit}
 		>
 			<!-- Email input -->
 		<div class="flex flex-col">
@@ -212,17 +248,42 @@
 						<path d="M1376 768q40 0 68 28t28 68v576q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-576q0-40 28-68t68-28h32v-320q0-185 131.5-316.5t316.5-131.5 316.5 131.5 131.5 316.5q0 26-19 45t-45 19h-64q-26 0-45-19t-19-45q0-106-75-181t-181-75-181 75-75 181v320h736z" />
 					</svg>
 				</span>
-				<input
-					value={form?.password ?? ""}
-					type={showPassword ? "text" : "password"}
-					id="password"
-					name="password"
-					class="flex-1 min-w-0 px-4 py-2 pr-10 text-base bg-white border border-gray-300 rounded-r-none shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600 border-l-0"
+				<div
+					class="flex min-w-0 flex-1 flex-col border border-l-0 border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 					class:border-red-500={passwordError}
-					placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
-					minlength="8"
-					required
-				/>
+				>
+					{#if passwordError}
+						<p id="password-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+							{passwordError}
+						</p>
+					{/if}
+					{#if passwordError || showPassword}
+						<input
+							bind:value={passwordValue}
+							type="text"
+							id="password"
+							name="password"
+							aria-invalid={passwordError ? "true" : undefined}
+							aria-describedby={passwordError ? "password-error" : undefined}
+							class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+							class:py-2={!passwordError}
+							class:pb-2={passwordError}
+							class:pt-0.5={passwordError}
+							placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+							required
+						/>
+					{:else}
+						<input
+							bind:value={passwordValue}
+							type="password"
+							id="password"
+							name="password"
+							class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 py-2 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+							placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+							required
+						/>
+					{/if}
+				</div>
 				<button
 					type="button"
 					class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
@@ -243,9 +304,6 @@
 					{/if}
 				</button>
 			</div>
-			{#if passwordError}
-				<p class="mt-1 text-xs text-red-600">{passwordError}</p>
-			{/if}
 		</div>
 
 		<!-- Password confirmation -->
@@ -356,6 +414,8 @@
 			action="?/signUp"
 			use:enhance={handleSubmit}
 			class="space-y-6"
+			novalidate
+			on:submit={onSignupSubmit}
 		>
 			<!-- Email input -->
 			<div class="flex flex-col">
@@ -389,17 +449,42 @@
 							<path d="M1376 768q40 0 68 28t28 68v576q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-576q0-40 28-68t68-28h32v-320q0-185 131.5-316.5t316.5-131.5 316.5 131.5 131.5 316.5q0 26-19 45t-45 19h-64q-26 0-45-19t-19-45q0-106-75-181t-181-75-181 75-75 181v320h736z" />
 						</svg>
 					</span>
-					<input
-						value={form?.password ?? ""}
-						type={showPassword ? "text" : "password"}
-						id="password"
-						name="password"
-						class="flex-1 min-w-0 px-4 py-2 pr-10 text-base bg-white border border-gray-300 rounded-r-none shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600 border-l-0"
+					<div
+						class="flex min-w-0 flex-1 flex-col border border-l-0 border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 						class:border-red-500={passwordError}
-						placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
-						minlength="8"
-						required
-					/>
+					>
+						{#if passwordError}
+							<p id="password-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+								{passwordError}
+							</p>
+						{/if}
+						{#if passwordError || showPassword}
+							<input
+								bind:value={passwordValue}
+								type="text"
+								id="password"
+								name="password"
+								aria-invalid={passwordError ? "true" : undefined}
+								aria-describedby={passwordError ? "password-error" : undefined}
+								class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+								class:py-2={!passwordError}
+								class:pb-2={passwordError}
+								class:pt-0.5={passwordError}
+								placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+								required
+							/>
+						{:else}
+							<input
+								bind:value={passwordValue}
+								type="password"
+								id="password"
+								name="password"
+								class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 py-2 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+								placeholder="Heslo (min 8 znaků, velké písmeno, číslo)"
+								required
+							/>
+						{/if}
+					</div>
 					<button
 						type="button"
 						class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
@@ -420,9 +505,6 @@
 						{/if}
 					</button>
 				</div>
-				{#if passwordError}
-					<p class="mt-1 text-xs text-red-600">{passwordError}</p>
-				{/if}
 			</div>
 
 			<!-- Password confirmation -->

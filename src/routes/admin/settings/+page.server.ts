@@ -59,7 +59,7 @@ export const actions: Actions = {
 		const validationResult = profileSchema.safeParse(data);
 		
 		if (!validationResult.success) {
-			const warnings = validationResult.error.errors.reduce((acc, err) => {
+			const warnings = validationResult.error.issues.reduce((acc, err) => {
 				const field = err.path[0] as string;
 				if (field) {
 					acc[field] = err.message;

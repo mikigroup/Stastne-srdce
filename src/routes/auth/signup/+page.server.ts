@@ -54,7 +54,7 @@ export const actions = {
 			const validationResult = signUpSchema.safeParse({ email, password, repassword });
 			
 			if (!validationResult.success) {
-				const errors = validationResult.error.errors.reduce((acc, error) => {
+				const errors = validationResult.error.issues.reduce((acc, error) => {
 					const path = error.path[0];
 					if (path) {
 						acc[path] = error.message;
@@ -197,6 +197,7 @@ export const actions = {
 				message: `Na emailovou adresu ${email.trim()} byla odeslána zpráva pro potvrzení registrace. Pro dokončení registrace prosím vyplňte všechna pole v profilu.`
 			};
 		} catch (error) {
+			console.error("❌ [SIGNUP] Neočekávaná chyba:", error);
 			return fail(500, {
 				error: true,
 				message: "Došlo k neočekávané chybě"

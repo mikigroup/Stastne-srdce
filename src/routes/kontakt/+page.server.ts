@@ -112,8 +112,8 @@ export const actions: Actions = {
 		const validationResult = contactFormSchema.safeParse(formValues);
 		
 		if (!validationResult.success) {
-			console.log('❌ Kontakt - Chyba validace:', validationResult.error.errors);
-			const errors = validationResult.error.errors.reduce(
+			console.log('❌ Kontakt - Chyba validace:', validationResult.error.issues);
+			const errors = validationResult.error.issues.reduce(
 				(acc, err) => ({
 					...acc,
 					[err.path[0] || ""]: err.message
