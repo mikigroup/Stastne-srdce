@@ -55,7 +55,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 			error: userError
 		} = await event.locals.supabase.auth.getUser();
 		if (userError) {
-			// JWT validation has failed
+			const status = "status" in userError ? userError.status : undefined;
+			if (status === 401 || status === 403) {
+				await event.locals.supabase.auth.signOut({ scope: "local" });
+			}
 			return { session: null, user: null };
 		}
 

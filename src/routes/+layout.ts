@@ -40,14 +40,37 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 		data: { session }
 	} = await supabase.auth.getSession();
 
+	if (!session) {
+		return {
+			session: null,
+			supabase,
+			user: null,
+			settings,
+			generalSettings: data.generalSettings
+		};
+	}
+
 	const {
-		data: { user }
+		data: { user },
+		error: userError
 	} = await supabase.auth.getUser();
 
-	const safeSession = user ? session : null;
+	if (userError || !user) {
+		const status = userError && "status" in userError ? userError.status : undefined;
+		if (status === 401 || status === 403) {
+			await supabase.auth.signOut({ scope: "local" });
+		}
+		return {
+			session: null,
+			supabase,
+			user: null,
+			settings,
+			generalSettings: data.generalSettings
+		};
+	}
 
 	return {
-		session: safeSession,
+		session,
 		supabase,
 		user,
 		settings,

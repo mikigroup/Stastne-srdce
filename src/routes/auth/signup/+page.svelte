@@ -198,8 +198,6 @@
 		}
 	}
 
-	$: console.log("form:", form);
-
 	const { generalSettings } = data;
 </script>
 

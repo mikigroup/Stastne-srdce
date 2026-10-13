@@ -1,7 +1,38 @@
+import { createClient } from "@supabase/supabase-js";
 import type { TypedSupabaseClient } from "$lib/supabase";
-import { validateIntegrationsSettings, getDefaultIntegrationsSettings } from "$lib/types/siteSettings";
+import type { Database } from "$lib/types/database.types";
+import type { FakturoidTables } from "$lib/types/fakturoid";
+import { validateIntegrationsSettings } from "$lib/types/siteSettings";
 import { getDefaultSettings } from '$lib/constants/defaultSettings';
-import { PUBLIC_TENANT } from "$env/static/public";
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL, PUBLIC_TENANT } from "$env/static/public";
+
+/** Klíče, které anon politika nečte (SMTP a Fakturoid). Ostatní jsou veřejná. */
+const RESTRICTED_SETTING_KEYS = new Set(["email", "integrations"]);
+
+let publicSettingsClient: TypedSupabaseClient | null = null;
+
+/**
+ * Čtení veřejných site_settings bez uživatelské session.
+ * Politika site_settings_anon_public_read platí jen pro roli anon.
+ * Přihlášený zákazník by jinak dostal 0 řádků a PostgREST 406.
+ */
+function getPublicSettingsClient(): TypedSupabaseClient {
+    if (!publicSettingsClient) {
+        publicSettingsClient = createClient<Database & { public: FakturoidTables }>(
+            PUBLIC_SUPABASE_URL,
+            PUBLIC_SUPABASE_ANON_KEY,
+            {
+                auth: {
+                    persistSession: false,
+                    autoRefreshToken: false,
+                    detectSessionInUrl: false,
+                    storageKey: "sb-public-settings"
+                }
+            }
+        );
+    }
+    return publicSettingsClient;
+}
 
 /**
  * Helper funkce pro serializaci hodnoty pro site_settings
@@ -56,7 +87,8 @@ async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string
  */
 export async function getSetting(supabase: TypedSupabaseClient, key: string, tenantId?: string) {
     try {
-        let query = supabase
+        const client = RESTRICTED_SETTING_KEYS.has(key) ? supabase : getPublicSettingsClient();
+        let query = client
             .from('site_settings')
             .select('value')
             .eq('key', key);
@@ -75,7 +107,9 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string, ten
         const { data, error } = await query.maybeSingle();
         
         if (error) {
-            console.error(`Error loading setting ${key}:`, error);
+            if (error.code !== "PGRST116") {
+                console.error(`Error loading setting ${key}:`, error);
+            }
             return null;
         }
 
