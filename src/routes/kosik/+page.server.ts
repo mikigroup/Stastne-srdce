@@ -3,6 +3,11 @@ import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { PUBLIC_TENANT } from "$env/static/public";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
+import {
+	checkOrderVariantCapacity,
+	loadInventorySettings,
+	shouldEnforceSalesStockLimits
+} from "$lib/services/inventorySalesLimits";
 
 export const prerender = false;
 
@@ -130,6 +135,48 @@ export const actions: Actions = {
 				};
 			}
 
+			const resolvedTenantId = tenantId ?? PUBLIC_TENANT;
+
+			// Limity skladu/kapacity: výchozí je sellWithoutStockLimit=true → žádná kontrola (jako dosud).
+			// Enforce jen když inventory.enabled && salesLimits.sellWithoutStockLimit === false.
+			const inventorySettings = await loadInventorySettings(supabase, resolvedTenantId);
+			if (shouldEnforceSalesStockLimits(inventorySettings)) {
+				const capacityItems = cartItems.flatMap((item: any) =>
+					(item.variants ?? []).map((variant: any) => ({
+						variant_id: String(variant.id ?? ""),
+						quantity: Number(variant.quantity) || 0
+					}))
+				);
+				const capacityCheck = await checkOrderVariantCapacity(
+					supabase,
+					resolvedTenantId,
+					capacityItems,
+					inventorySettings
+				);
+				if (capacityCheck.error) {
+					console.error("Kontrola kapacity selhala:", capacityCheck.error);
+					return {
+						success: false,
+						type: "failure",
+						message:
+							"Nepodařilo se ověřit dostupnost porcí. Zkuste to prosím znovu, nebo kontaktujte provozovatele."
+					};
+				}
+				if (!capacityCheck.ok) {
+					const detail = capacityCheck.violations
+						.map(
+							(v) =>
+								`zbývá ${v.remaining_qty} (požadováno ${v.requested_qty})`
+						)
+						.join("; ");
+					return {
+						success: false,
+						type: "failure",
+						message: `Objednávka překračuje dostupnou kapacitu porcí: ${detail}.`
+					};
+				}
+			}
+
 			// Create order using the stored procedure
 			// Použijeme delivery_method z profilu uživatele (kód, např. "own", "reBox")
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
@@ -151,7 +198,7 @@ export const actions: Actions = {
 				p_pay_state: false,
 				// Použijeme delivery_method z profilu, fallback na "own"
 				p_shipping_method: String(customer.delivery_method?.trim() || "own"),
-				p_tenant_id: tenantId ?? PUBLIC_TENANT,
+				p_tenant_id: resolvedTenantId,
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
 						variant_id: variant.id,

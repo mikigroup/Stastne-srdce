@@ -314,6 +314,16 @@ export const UNIFIED_DEFAULT_SETTINGS = {
   inventory: {
     enabled: false,
     lowStock: 10,
+    /** Stavy objednávek vyloučené z výpočtu zbývající kapacity (např. storno) */
+    excludedOrderStates: ['Stornovaná'],
+    /**
+     * Prodej v e-shopu vs limity skladu / nabídnuté kapacity.
+     * Vlastní menu bez vazby na sklad je samostatná cesta tvorby jídelníčku — tímto se neblokuje.
+     */
+    salesLimits: {
+      /** true = e-shop neomezuje množství podle zásoby jídel ani nabídnuté kapacity */
+      sellWithoutStockLimit: true
+    },
     stockManagement: {
       enableStockTracking: true,
       enableLowStockAlerts: true,
