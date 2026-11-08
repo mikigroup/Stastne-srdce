@@ -7,7 +7,7 @@ import { z } from "zod";
  * Schéma pro validaci emailu
  */
 export const emailSchema = z
-	.string({ required_error: "Email je povinný" })
+	.string({ error: "Email je povinný" })
 	.trim()
 	.email("Neplatný formát emailu")
 	.min(1, "Email je povinný");
@@ -16,7 +16,7 @@ export const emailSchema = z
  * Schéma pro validaci českého telefonního čísla
  */
 export const czechPhoneSchema = z
-	.string({ required_error: "Telefon je povinný" })
+	.string({ error: "Telefon je povinný" })
 	.trim()
 	.regex(
 		/^(\+420)?\s*\d{3}\s*\d{3}\s*\d{3}$/,
@@ -28,7 +28,7 @@ export const czechPhoneSchema = z
  * Schéma pro validaci jména
  */
 export const nameSchema = z
-	.string({ required_error: "Jméno je povinné" })
+	.string({ error: "Jméno je povinné" })
 	.trim()
 	.min(2, "Jméno musí mít alespoň 2 znaky")
 	.min(1, "Jméno je povinné");
@@ -37,7 +37,7 @@ export const nameSchema = z
  * Schéma pro validaci hesla
  */
 export const passwordSchema = z
-	.string({ required_error: "Heslo je povinné" })
+	.string({ error: "Heslo je povinné" })
 	.trim()
 	.min(8, "Heslo musí mít alespoň 8 znaků")
 	.regex(/[A-Z]/, "Heslo musí obsahovat alespoň jedno velké písmeno")
@@ -51,7 +51,7 @@ export const contactFormSchema = z.object({
 	tel: czechPhoneSchema,
 	name: nameSchema,
 	content: z
-		.string({ required_error: "Zpráva je povinná" })
+		.string({ error: "Zpráva je povinná" })
 		.trim()
 		.min(10, "Zpráva musí mít alespoň 10 znaků")
 		.min(1, "Zpráva je povinná"),
@@ -64,7 +64,7 @@ export const signUpSchema = z.object({
 	email: emailSchema,
 	password: passwordSchema,
 	repassword: z
-		.string({ required_error: "Potvrzení hesla je povinné" })
+		.string({ error: "Potvrzení hesla je povinné" })
 		.trim()
 		.min(1, "Potvrzení hesla je povinné"),
 }).refine((data) => data.password === data.repassword, {
@@ -77,12 +77,12 @@ export const signUpSchema = z.object({
  */
 export const profileSchema = z.object({
 	first_name: z
-		.string({ required_error: "Jméno je povinné" })
+		.string({ error: "Jméno je povinné" })
 		.trim()
 		.min(2, "Jméno musí mít alespoň 2 znaky")
 		.min(1, "Jméno je povinné"),
 	last_name: z
-		.string({ required_error: "Příjmení je povinné" })
+		.string({ error: "Příjmení je povinné" })
 		.trim()
 		.min(2, "Příjmení musí mít alespoň 2 znaky")
 		.min(1, "Příjmení je povinné"),
@@ -102,9 +102,9 @@ export const profileSchema = z.object({
  * Schéma pro Fakturoid účet
  */
 export const fakturoidAccountSchema = z.object({
-	name: z.string({ required_error: "Název účtu je povinný" }).min(1, "Název účtu je povinný"),
+	name: z.string({ error: "Název účtu je povinný" }).min(1, "Název účtu je povinný"),
 	email: emailSchema,
-	subdomain: z.string({ required_error: "Subdoména je povinná" }).min(1, "Subdoména je povinná"),
+	subdomain: z.string({ error: "Subdoména je povinná" }).min(1, "Subdoména je povinná"),
 	isActive: z.boolean(),
 	connectedAt: z.string(),
 });
