@@ -202,9 +202,6 @@ export const actions: Actions = {
 				city: profileData.city,
 				zip_code: profileData.zip_code,
 				telephone: profileData.telephone,
-				ico: profileData.ico,
-				dic: profileData.dic,
-				company: profileData.company,
 				allergies_description: profileData.allergies_description
 			});
 

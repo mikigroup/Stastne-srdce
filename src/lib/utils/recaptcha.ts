@@ -12,12 +12,14 @@ export interface RecaptchaVerificationResult {
  * @param token - reCAPTCHA token získaný z frontendu
  * @param remoteip - Volitelná IP adresa uživatele pro lepší validaci
  * @param scoreThreshold - Minimální score pro úspěšnou validaci (default: 0.5)
+ * @param expectedAction - Očekávaná akce reCAPTCHA v3. Když je uvedená, jiná akce ověření neprojde.
  * @returns Result s success, score a případnou chybou
  */
 export async function verifyRecaptchaToken(
 	token: string,
 	remoteip?: string,
-	scoreThreshold: number = 0.5
+	scoreThreshold: number = 0.5,
+	expectedAction?: string
 ): Promise<RecaptchaVerificationResult> {
 	const secretKey = env.PRIVATE_RECAPTCHA_SECRET_KEY;
 
@@ -95,6 +97,15 @@ export async function verifyRecaptchaToken(
 				success: false,
 				score: score,
 				error: `reCAPTCHA score ${score} je příliš nízký (minimum: ${scoreThreshold})`
+			};
+		}
+
+		if (expectedAction && data.action !== expectedAction) {
+			console.warn(`⚠️ [RECAPTCHA] Akce ${data.action} neodpovídá ${expectedAction}`);
+			return {
+				success: false,
+				score: score,
+				error: `reCAPTCHA akce neodpovídá očekávané akci ${expectedAction}`
 			};
 		}
 

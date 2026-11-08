@@ -29,15 +29,11 @@ export class ProfileService {
 		userId: string,
 		options: ProfileQueryOptions = {}
 	) {
-		const {
-			useAdminClient = false,
-			includeTenantFilter = true,
-			selectFields = '*'
-		} = options;
+		const { includeTenantFilter = true } = options;
 
 		let query = supabase
 			.from('profiles')
-			.select(selectFields)
+			.select('*')
 			.eq('id', userId);
 
 		// Tenant filtrace přes tenant_id (RLS profiles_self chrání přístup).

@@ -11,6 +11,10 @@ export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId }
         throw error(400, 'Číslo objednávky není k dispozici');
     }
 
+    if (!tenantId) {
+        throw error(500, 'Chybí kontext provozu');
+    }
+
     // Fetch the order with its items
     const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -53,7 +57,7 @@ export const load: PageServerLoad = async ({ url, locals: { supabase, tenantId }
         email: order.customer_email,
         telephone: order.customer_telephone,
         delivery_method: order.shipping_method,
-        payment_method: order.payment_method
+        payment_method: order.pay_method
     });
 
     return {

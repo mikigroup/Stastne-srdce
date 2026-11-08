@@ -2,6 +2,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
+import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 import { getSetting } from "$lib/services/siteSettingsService";
 import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
 import { sanitizeEmailText, sanitizeEmailAddress, sanitizePhone } from "$lib/utils/emailSanitization";
@@ -62,26 +63,45 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 export const actions: Actions = {
 	sendForm: async ({ request }) => {
 		const formData = await request.formData();
-		const formValues = {
-			email: formData.get("email"),
-			tel: formData.get("tel"),
-			name: formData.get("name"),
-			content: formData.get("content"),
-			recaptchaToken: formData.get("recaptcha_token")?.toString() || ""
+		const field = (name: string) => {
+			const value = formData.get(name);
+			return typeof value === "string" ? value : "";
 		};
+		const email = field("email");
+		const tel = field("tel");
+		const name = field("name");
+		const content = field("content");
+		const recaptchaToken = formData.get("recaptcha_token")?.toString() || "";
+		const submitted = { email, tel, name, content };
 
 		console.log('📧 Kontakt - Odesílání formuláře:', {
-			email: formValues.email ? String(formValues.email).substring(0, 20) + '...' : 'prázdné',
-			tel: formValues.tel ? String(formValues.tel).substring(0, 10) + '...' : 'prázdné',
-			name: formValues.name ? String(formValues.name).substring(0, 20) + '...' : 'prázdné',
-			content: formValues.content ? `${String(formValues.content).substring(0, 50)}...` : 'prázdné'
+			email: email ? email.substring(0, 20) + '...' : 'prázdné',
+			tel: tel ? tel.substring(0, 10) + '...' : 'prázdné',
+			name: name ? name.substring(0, 20) + '...' : 'prázdné',
+			content: content ? `${content.substring(0, 50)}...` : 'prázdné'
 		});
 
-		// Validace reCAPTCHA tokenu
-		if (formValues.recaptchaToken) {
+		if (PUBLIC_RECAPTCHA_SITE_KEY) {
+			if (!recaptchaToken) {
+				console.warn('⚠️ [KONTAKT] reCAPTCHA token missing');
+				return fail(400, {
+					errors: {},
+					status: {
+						success: false,
+						display: "Ověření selhalo. Zkuste to prosím znovu."
+					},
+					...submitted
+				});
+			}
+
 			const clientIP = getClientIP(request);
-			const recaptchaResult = await verifyRecaptchaToken(formValues.recaptchaToken, clientIP, 0.5);
-			
+			const recaptchaResult = await verifyRecaptchaToken(
+				recaptchaToken,
+				clientIP,
+				0.5,
+				"contact_form"
+			);
+
 			if (!recaptchaResult.success) {
 				console.warn('⚠️ [KONTAKT] reCAPTCHA validation failed:', {
 					score: recaptchaResult.score,
@@ -93,31 +113,26 @@ export const actions: Actions = {
 						success: false,
 						display: "Ověření selhalo. Zkuste to prosím znovu."
 					},
-					email: formValues.email,
-					tel: formValues.tel,
-					name: formValues.name,
-					content: formValues.content
+					...submitted
 				});
 			}
 
 			console.log('✅ [KONTAKT] reCAPTCHA validation passed:', {
 				score: recaptchaResult.score
 			});
-		} else {
-			console.warn('⚠️ [KONTAKT] reCAPTCHA token missing');
-			// Graceful degradation - pokud není nakonfigurováno, pokračovat
 		}
 
 		// Validace pomocí Zod
-		const validationResult = contactFormSchema.safeParse(formValues);
+		const validationResult = contactFormSchema.safeParse(submitted);
 		
 		if (!validationResult.success) {
 			console.log('❌ Kontakt - Chyba validace:', validationResult.error.issues);
 			const errors = validationResult.error.issues.reduce(
-				(acc, err) => ({
-					...acc,
-					[err.path[0] || ""]: err.message
-				}),
+				(acc, err) => {
+					const key = String(err.path[0] ?? "");
+					if (key && !acc[key]) acc[key] = err.message;
+					return acc;
+				},
 				{} as Record<string, string>
 			);
 
@@ -129,10 +144,7 @@ export const actions: Actions = {
 					success: false,
 					display: "Prosím opravte chyby ve formuláři"
 				},
-				email: formValues.email,
-				tel: formValues.tel,
-				name: formValues.name,
-				content: formValues.content
+				...submitted
 			});
 		}
 
@@ -173,7 +185,8 @@ ${sanitizedContent}`
 			console.error("Chyba při odesílání e-mailu:", error);
 
 			return fail(500, {
-				status: { success: false, display: "Chyba při odesílání e-mailu" }
+				status: { success: false, display: "Chyba při odesílání e-mailu" },
+				...submitted
 			});
 		}
 	}

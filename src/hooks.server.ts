@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { type Handle, redirect } from "@sveltejs/kit";
+import { type Handle, error, redirect } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
@@ -206,8 +206,8 @@ const supabase: Handle = async ({ event, resolve }) => {
 		
 		console.log('✅ [TENANT] Tenant context set for PUBLIC_TENANT:', PUBLIC_TENANT);
 		
-	} catch (error) {
-		console.error('❌ [TENANT] Error setting tenant context:', error);
+	} catch (tenantError) {
+		console.error('❌ [TENANT] Error setting tenant context:', tenantError);
 		// Fallback na default tenant při chybě
 		try {
 			await event.locals.supabase.rpc('set_tenant_context', { tenant_id: PUBLIC_TENANT });
@@ -215,6 +215,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 			event.locals.tenantId = PUBLIC_TENANT;
 		} catch (fallbackError) {
 			console.error('Error in fallback tenant context:', fallbackError);
+			error(500, 'Nepodařilo se nastavit kontext provozu');
 		}
 	}
 

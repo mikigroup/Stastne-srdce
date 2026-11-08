@@ -190,10 +190,11 @@ export async function calculateCustomerLoyalty(
     // Výpočet základních statistik
     const totalOrders = orders?.length || 0;
     const totalSpent = orders?.reduce((sum, order) => sum + (order.total_price || 0), 0) || 0;
-    const firstOrderDate = orders?.length ? 
-      orders.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0]?.created_at : null;
-    const lastOrderDate = orders?.length ? 
-      orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]?.created_at : null;
+    const orderTime = (value: string | null) => (value ? new Date(value).getTime() : 0);
+    const firstOrderDate = orders?.length ?
+      orders.sort((a, b) => orderTime(a.created_at) - orderTime(b.created_at))[0]?.created_at ?? null : null;
+    const lastOrderDate = orders?.length ?
+      orders.sort((a, b) => orderTime(b.created_at) - orderTime(a.created_at))[0]?.created_at ?? null : null;
 
     // Výpočet bodů
     const totalPointsEarned = Math.floor(totalSpent * loyaltySettings.pointsPerCzk);
@@ -203,8 +204,8 @@ export async function calculateCustomerLoyalty(
     const currentTier = determineLoyaltyTier(totalOrders, loyaltySettings.tiers);
 
     // Výpočet aktivity
-    const isActive = lastOrderDate ? 
-      (new Date().getTime() - new Date(lastOrderDate as string).getTime()) / (1000 * 60 * 60 * 24) < loyaltySettings.inactivityThreshold : 
+    const isActive = lastOrderDate ?
+      (new Date().getTime() - new Date(lastOrderDate).getTime()) / (1000 * 60 * 60 * 24) < loyaltySettings.inactivityThreshold :
       false;
 
     // Výpočet časových údajů

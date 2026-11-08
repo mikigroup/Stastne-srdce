@@ -1,4 +1,4 @@
-import { fail, redirect } from "@sveltejs/kit";
+import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
@@ -12,25 +12,28 @@ import type { Session, User } from '@supabase/supabase-js';
 
 export const prerender = false;
 
+interface MenuDateInfo {
+	id: string;
+	date: string | null;
+	soup: string | null;
+}
+
 interface OrderItem {
 	id: string;
-	price: number;
-	quantity: number;
+	price: number | null;
+	quantity: number | null;
 	variant: {
 		id: string;
 		variant_number: string;
 		description: string;
-		menu: {
-			id: string;
-			date: string;
-			soup: string;
-		};
-	};
+		menu: MenuDateInfo;
+		menu_version_id?: MenuDateInfo | null;
+	} | null;
 }
 
 interface Order {
 	id: string;
-	created_at: string;
+	created_at: string | null;
 	// Další vlastnosti objednávky
 	order_items: OrderItem[];
 	grouped_items?: Array<{ date: string; items: OrderItem[] }>;
@@ -72,16 +75,7 @@ export const load: PageServerLoad = async ({
 	// Načtení profilu včetně nových polí s tenant filtrací
 	const { data: profile, error: profileError } = await ProfileService.getUserProfile(
 		supabase,
-		session.user.id,
-		{
-			selectFields: `
-				*,
-				allergies,
-				allergies_description,
-				delivery_method,
-				payment_method
-			`
-		}
+		session.user.id
 	);
 
 	if (profileError) {
@@ -117,7 +111,7 @@ export const load: PageServerLoad = async ({
    `
 		)
 		.eq("user_id", session.user.id)
-		.eq("tenant_id", tenantId)  // ← Přidáno
+		.eq("tenant_id", tenantId ?? error(500, "Chybí kontext provozu"))
 		.order("created_at", { ascending: false });
 
 	if (ordersError) {
@@ -128,8 +122,10 @@ export const load: PageServerLoad = async ({
 			const groupedItems: GroupedItems = {};
 
 			order.order_items.forEach((item) => {
+				if (!item.variant) return;
 				// Používáme datum z verze menu pokud existuje, jinak z základního menu
 				const date = item.variant.menu_version_id?.date || item.variant.menu.date;
+				if (!date) return;
 				if (!groupedItems[date]) {
 					groupedItems[date] = [];
 				}
@@ -284,10 +280,7 @@ export const actions: Actions = {
 			// Get user profile for email personalization with tenant filtering
 			const { data: profile, error: profileError } = await ProfileService.getUserProfile(
 				supabase,
-				session.user.id,
-				{
-					selectFields: "first_name, last_name, email"
-				}
+				session.user.id
 			);
 
 			if (profileError || !profile) {

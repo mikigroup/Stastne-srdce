@@ -9,20 +9,23 @@ import { z } from "zod";
 export const emailSchema = z
 	.string({ error: "Email je povinný" })
 	.trim()
-	.email("Neplatný formát emailu")
-	.min(1, "Email je povinný");
+	.min(1, { error: "Email je povinný", abort: true })
+	.max(254, { error: "Email je příliš dlouhý", abort: true })
+	.email("Neplatný formát emailu");
 
 /**
- * Schéma pro validaci českého telefonního čísla
+ * Schéma pro validaci českého telefonního čísla.
+ * Mezery a pomlčky se zahodí, předvolba 00420 se sjednotí na +420.
  */
 export const czechPhoneSchema = z
 	.string({ error: "Telefon je povinný" })
 	.trim()
-	.regex(
-		/^(\+420)?\s*\d{3}\s*\d{3}\s*\d{3}$/,
-		"Neplatný formát telefonu (např. +420123456789)"
-	)
-	.min(1, "Telefon je povinný");
+	.min(1, { error: "Telefon je povinný", abort: true })
+	.overwrite((value) => {
+		const compact = value.replace(/[\s-]/g, "").replace(/^00420/, "+420");
+		return /^[1-9]\d{8}$/.test(compact) ? `+420${compact}` : compact;
+	})
+	.regex(/^\+420[1-9]\d{8}$/, "Neplatný formát telefonu (např. +420777456789)");
 
 /**
  * Schéma pro validaci jména
@@ -30,8 +33,9 @@ export const czechPhoneSchema = z
 export const nameSchema = z
 	.string({ error: "Jméno je povinné" })
 	.trim()
+	.min(1, { error: "Jméno je povinné", abort: true })
 	.min(2, "Jméno musí mít alespoň 2 znaky")
-	.min(1, "Jméno je povinné");
+	.max(80, "Jméno je příliš dlouhé");
 
 /**
  * Schéma pro validaci hesla
@@ -52,9 +56,15 @@ export const contactFormSchema = z.object({
 	name: nameSchema,
 	content: z
 		.string({ error: "Zpráva je povinná" })
-		.trim()
-		.min(10, "Zpráva musí mít alespoň 10 znaků")
-		.min(1, "Zpráva je povinná"),
+		.overwrite((value) =>
+			value
+				.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F]/g, "")
+				.replace(/\s+/g, " ")
+				.trim()
+		)
+		.min(1, { error: "Zpráva je povinná", abort: true })
+		.min(10, { error: "Zpráva musí mít alespoň 10 znaků", abort: true })
+		.max(2000, "Zpráva může mít nejvýše 2000 znaků"),
 });
 
 /**

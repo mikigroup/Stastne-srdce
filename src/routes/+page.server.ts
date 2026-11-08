@@ -5,10 +5,16 @@ import { PUBLIC_TENANT } from "$env/static/public";
 
 const HOME_POSITIONS = ["left", "center", "right"] as const;
 
+type HomeText = {
+	position: string | null;
+	title: string | null;
+	text: string | null;
+};
+
 export const load: PageServerLoad = async ({
 	locals: { supabase }
 }) => {
-	let texts: Array<Record<string, unknown> | null> = HOME_POSITIONS.map(() => null);
+	let texts: Array<HomeText | null> = HOME_POSITIONS.map(() => null);
 
 	try {
 		const { data, error } = await supabase

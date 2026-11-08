@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from "$app/stores";
 	import { totalPiecesStore } from "$lib/stores/store";
 	import { goto } from "$app/navigation";
@@ -42,8 +42,8 @@
 
 	let menuVisible = false;
 	let loading = false;
-	let menuElement;
-	let buttonElement;
+	let menuElement: HTMLElement | undefined;
+	let buttonElement: HTMLElement | undefined;
 	$: totalPieces = $totalPiecesStore;
 
 	$: generalSettings = data.generalSettings ?? data.settings?.general;
@@ -58,12 +58,12 @@
 		{ href: "/kontakt", label: "Kontakt" }
 	];
 
-	function isCurrent(href, path) {
+	function isCurrent(href: string, path: string) {
 		if (href === "/") return path === "/";
 		return path === href || path.startsWith(`${href}/`);
 	}
 
-	function itemClass(href, path) {
+	function itemClass(href: string, path: string) {
 		return isCurrent(href, path)
 			? "border border-green-800 bg-green-800 text-white"
 			: "border border-transparent bg-slate-50 text-gray-800 hover:border-green-700 hover:bg-green-50 hover:text-green-800";
@@ -81,12 +81,14 @@
 
 	// Event listener pro kliknutí mimo menu
 	onMount(() => {
-		function handleClickOutside(event) {
-			if (menuVisible && 
-				menuElement && 
-				!menuElement.contains(event.target) && 
-				buttonElement && 
-				!buttonElement.contains(event.target)) {
+		function handleClickOutside(event: MouseEvent) {
+			const target = event.target;
+			if (menuVisible &&
+				menuElement &&
+				target instanceof Node &&
+				!menuElement.contains(target) &&
+				buttonElement &&
+				!buttonElement.contains(target)) {
 				closeMenu();
 			}
 		}

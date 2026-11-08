@@ -90,12 +90,13 @@
 		: '';
 
 	async function getProfile() {
-		if (!user?.id) return;
+		const client = supabase;
+		if (!client || !user?.id) return;
 
 		try {
 			loading = true;
 
-			const { data: customerData, error } = await supabase
+			const { data: customerData, error } = await client
 				.from("profiles")
 				.select(`
 					first_name, last_name, street, street_number, city, zip_code, 
@@ -118,8 +119,11 @@
 	}
 
 	async function loadDeliverySettings() {
+		const client = supabase;
+		if (!client) return;
+
 		try {
-			const { data: deliveryData } = await supabase
+			const { data: deliveryData } = await client
 				.from('site_settings')
 				.select('value')
 				.eq('key', 'delivery')
@@ -139,9 +143,12 @@
 	async function loadTimeSlots() {
 		console.log('🔍 Debug - loadTimeSlots called, cartItems.length:', cartItems.length);
 
+		const client = supabase;
+		if (!client) return;
+
 		try {
 			// Načtení nastavení časových slotů
-			const { data: productsSettings } = await supabase
+			const { data: productsSettings } = await client
 				.from('site_settings')
 				.select('value')
 				.eq('key', 'products')
@@ -177,7 +184,8 @@
 					console.log('🔍 Debug - firstDate:', firstDate);
 					console.log('🔍 Debug - timeSlotsEnabled:', timeSlotSettings.timeSlotsEnabled);
 					
-					availableTimeSlots = await getAvailableTimeSlots(supabase, firstDate, timeSlotSettings);
+					if (!firstDate) return;
+					availableTimeSlots = await getAvailableTimeSlots(client, firstDate, timeSlotSettings);
 					console.log('🔍 Debug - availableTimeSlots:', availableTimeSlots);
 					
 					// Nastavení výchozího slotu

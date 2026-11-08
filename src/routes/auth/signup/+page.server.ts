@@ -56,7 +56,7 @@ export const actions = {
 			if (!validationResult.success) {
 				const errors = validationResult.error.issues.reduce((acc, error) => {
 					const path = error.path[0];
-					if (path) {
+					if (typeof path === "string") {
 						acc[path] = error.message;
 					}
 					return acc;
