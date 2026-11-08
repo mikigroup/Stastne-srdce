@@ -4,7 +4,6 @@ import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
-import { ROUTES } from "$lib/constants/routes";
 import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
 
 // Admin client pro obejití RLS politik

@@ -11,7 +11,6 @@ Tento dokument popisuje implementované ochranné mechanismy proti bot registrac
 **Lokace:**
 - `src/lib/utils/recaptcha.ts` - Utility funkce pro validaci
 - `src/routes/auth/signup/+page.server.ts` - Customer signup
-- `src/routes/admin/signup/+page.server.ts` - Admin signup
 - `src/routes/+layout.svelte` - Globální načtení skriptu
 
 **Jak to funguje:**
@@ -19,7 +18,7 @@ Tento dokument popisuje implementované ochranné mechanismy proti bot registrac
 - Při odeslání formuláře se vygeneruje token
 - Server ověří token u Google API
 - Minimální skóre: 0.5 (konfigurovatelné)
-- Akce: `signup` (customer) / `admin_signup` (admin)
+- Akce: `signup` (customer)
 
 **Konfigurace:**
 - `PUBLIC_RECAPTCHA_SITE_KEY` - Veřejný klíč (frontend)

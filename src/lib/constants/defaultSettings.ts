@@ -4,8 +4,7 @@
  * 
  * Based on current DB state and consolidating differences from:
  * - +page.svelte DEFAULT_VALUES
- * - settingsService.ts DEFAULT_SETTINGS  
- * - eshopSettingsService.ts getDefault* functions
+ * - settingsService.ts DEFAULT_SETTINGS
  * - init-site-settings.js DEFAULT_SETTINGS
  */
 

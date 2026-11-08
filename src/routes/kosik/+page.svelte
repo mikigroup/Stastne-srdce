@@ -601,9 +601,12 @@
 			<h1 class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900">
 				Košík
 			</h1>
-			<div class="text-center">
-				<p class="text-xl mb-4">Pro přístup ke košíku se musíte přihlásit.</p>
-				<a href={ROUTES.AUTH.LOGIN} class="px-6 py-3 bg-green-800 text-white rounded-lg hover:bg-green-900">
+			<div class="flex flex-col items-center max-w-lg mx-auto text-center">
+				<p class="text-xl text-gray-700">Pro přístup ke košíku se musíte přihlásit.</p>
+				<a
+					href={ROUTES.AUTH.LOGIN}
+					class="inline-block px-8 py-4 mt-8 text-lg font-semibold bg-green-800 text-white rounded-lg hover:bg-green-900"
+				>
 					Přihlásit se
 				</a>
 			</div>

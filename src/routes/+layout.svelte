@@ -6,7 +6,6 @@
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
-	import HeaderAdmin from "$lib/component/HeaderAdmin.svelte";
 	import HeaderCustomer from "$lib/component/HeaderCustomer.svelte";
 	import Footer from "$lib/component/Footer.svelte";
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -38,15 +37,10 @@
 	// Kontrola nedokončené registrace
 	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
 
-	let isAdminRoute = false;
-	
 	onMount(() => {
 		// Inicializace Speed Insights
 		injectSpeedInsights();
-		
-		// Nastavení admin route
-		isAdminRoute = $page.url.pathname.startsWith("/admin");
-		
+
 		// Auth state change listener
 		if (supabase) {
 			const authStateChange = supabase.auth.onAuthStateChange((event) => {
@@ -104,7 +98,7 @@
 	<link rel="canonical" href="https://www.stastnesrdce.cz{$page.url.pathname}" />
 	
 	<!-- Robots meta tagy pro problematické stránky -->
-	{#if $page.url.pathname.startsWith('/admin') || $page.url.pathname.startsWith('/auth')}
+	{#if $page.url.pathname.startsWith('/auth')}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 	
@@ -229,23 +223,13 @@
 	{/if}
 </svelte:head>
 
-{#if !isAdminRoute}
-	<HeaderCustomer {data} />
-{:else}
-	<HeaderAdmin {data} />
-{/if}
+<HeaderCustomer {data} />
 
-{#if !isAdminRoute}
-	<div class="pt-5 mt-20" />
-{:else}
-	<div class="" />
-{/if}
+<div class="pt-5 mt-20" />
 
 <main>
 	<slot />
 </main>
-
-
 
 {#if showRegistrationBanner}
 	<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 fixed top-0 left-0 right-0 z-50">

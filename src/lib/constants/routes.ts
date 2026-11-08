@@ -26,17 +26,5 @@ export const ROUTES = {
 		PREDNASKY: '/prednasky-a-kurzy',
 		CENIK: '/cenik',
 		ALERGENY: '/alergeny'
-	},
-	
-	// Admin routy
-	ADMIN: {
-		DASHBOARD: '/admin',
-		CUSTOMERS: '/admin/customer',
-		MENU: '/admin/menu',
-		ORDERS: '/admin/order',
-		SETTINGS: '/admin/settings',
-		SITE_SETTINGS: '/admin/site-setting',
-		TEXT_EDITOR: '/admin/text',
-		LOYALTY: '/admin/settings/loyalty'
 	}
 } as const; 

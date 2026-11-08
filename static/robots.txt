@@ -2,9 +2,6 @@
 User-agent: *
 Allow: /
 
-# Blokovat admin sekci
-Disallow: /admin/
-
 # Blokovat autentizační stránky
 Disallow: /auth/
 Disallow: /login/
@@ -17,10 +14,6 @@ Disallow: /thankyou/
 
 # Blokovat API endpointy
 Disallow: /api/
-
-# Blokovat test stránky
-Disallow: /test/
-Disallow: /test-refresh-token/
 
 # Sitemap
 Sitemap: https://www.stastnesrdce.cz/sitemap.xml

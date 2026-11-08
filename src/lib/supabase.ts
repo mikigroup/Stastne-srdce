@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types/database.types';
-import type { FakturoidTables } from './types/fakturoid';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-// Rozšíření typu Database o Fakturoid tabulky
-export type TypedSupabaseClient = ReturnType<typeof createClient<Database & { public: FakturoidTables }>>;
+export type TypedSupabaseClient = ReturnType<typeof createClient<Database>>;
 
 // Vytvoření Supabase klienta pomocí veřejných proměnných
 function getSupabaseCredentials() {
@@ -22,7 +20,7 @@ function getSupabaseCredentials() {
 // Vytvoříme klienta s kontrolou proměnných
 const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseCredentials();
 
-export const supabase = createClient<Database & { public: FakturoidTables }>(
+export const supabase = createClient<Database>(
     supabaseUrl,
     supabaseAnonKey,
     {
@@ -31,5 +29,4 @@ export const supabase = createClient<Database & { public: FakturoidTables }>(
             persistSession: true
         }
     }
-); 
-
+);
