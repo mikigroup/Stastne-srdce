@@ -8,6 +8,11 @@
 	const { generalSettings } = data;
 
 	let src = "/srdce.png";
+
+	$: appeal = (texts || []).find(
+		(text) =>
+			text?.position === "center" && /pavlíkovi/i.test(text.title || "") && text.text
+	);
 </script>
 
 <svelte:head>
@@ -32,6 +37,14 @@
 						class="mt-2 text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9">
 						Vítejte na stránkách Šťastného srdce
 					</h2>
+					{#if appeal}
+						<details class="welcome-appeal">
+							<summary>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
+							<div class="welcome-appeal-body">
+								{@html appeal.text}
+							</div>
+						</details>
+					{/if}
 					<p class="py-5">
 						Náš tým odborníků <a href="/mgr-bc-kamila-forejtova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
 						<a href="/olga-bednarova" class="!underline">Olga Bednářová</a> Vám nabízí
@@ -127,7 +140,7 @@
 												<hr class="mx-5" />
 											{/if}
 											{#if text.text}
-												<div class="p-5 mb-5 text-gray-600 text-md">
+												<div class="p-5 mb-5 text-gray-600 text-md [&_img]:max-w-full [&_img]:h-auto">
 													{@html text.text}
 												</div>
 											{/if}
@@ -190,6 +203,35 @@
 </section>
 
 <style lang="postcss">
+	.welcome-appeal {
+		margin-top: 1rem;
+		border: 1px solid #fecdd3;
+		border-radius: 0.5rem;
+		background-color: #fff1f2;
+		padding: 0.25rem 0.75rem 0.35rem;
+	}
+	.welcome-appeal > summary {
+		cursor: pointer;
+		list-style: none;
+		text-align: center;
+		font-weight: 700;
+		color: #9f1239;
+		padding: 0.45rem 0;
+	}
+	.welcome-appeal > summary::-webkit-details-marker,
+	.welcome-appeal > summary::marker {
+		display: none;
+		content: none;
+	}
+	.welcome-appeal-body {
+		padding: 0.25rem 0 0.5rem;
+		color: #334155;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+	.welcome-appeal-body :global(p) {
+		margin: 0.6em 0;
+	}
 	.floating-img {
 		transform: translateY(0%);
 		/* animation: floater-y 30s infinite; */

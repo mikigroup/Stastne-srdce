@@ -45,7 +45,7 @@
 	</h1>
 	
 	<div class="max-w-4xl mx-auto">
-		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
+		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400 [&_img]:max-w-full [&_img]:h-auto">
 			{@html data.texts?.text || "Žádný text pro jídelníček není k dispozici."}
 		</div>
 
