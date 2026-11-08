@@ -65,8 +65,8 @@
 
 	function itemClass(href, path) {
 		return isCurrent(href, path)
-			? "bg-green-800 text-white"
-			: "bg-slate-50 text-gray-800 hover:bg-green-50 hover:text-green-800";
+			? "border border-green-800 bg-green-800 text-white"
+			: "border border-transparent bg-slate-50 text-gray-800 hover:border-green-700 hover:bg-green-50 hover:text-green-800";
 	}
 
 	// Funkce pro zavření menu
@@ -219,7 +219,7 @@
 					{/if}
 				</a>
 
-				<div class="mx-auto mt-2 grid w-full max-w-[21rem] grid-cols-2 gap-2">
+				<div class="mx-auto mt-5 grid w-full max-w-[21rem] grid-cols-2 gap-2">
 					{#if $page.data.session}
 						<a
 							href="/profile"
