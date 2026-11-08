@@ -78,5 +78,29 @@ h2{
 .page-footer {
 	@apply flex justify-end gap-4 pt-10 pr-5;
 }
+
+/* Plynulé rozbalení bloků z Malého Lea. Platí i pro texty uložené dřív, než se styl začal ukládat do HTML. */
+@supports (interpolate-size: allow-keywords) {
+	@media (prefers-reduced-motion: no-preference) {
+		details.leo-expandable {
+			interpolate-size: allow-keywords;
+		}
+
+		details.leo-expandable::details-content {
+			height: 0;
+			overflow: clip;
+			opacity: 0;
+			transition:
+				height 0.45s ease,
+				opacity 0.35s ease,
+				content-visibility 0.45s ease allow-discrete;
+		}
+
+		details.leo-expandable[open]::details-content {
+			height: auto;
+			opacity: 1;
+		}
+	}
+}
 /*
 #c7c7c7 #c6a28d #7ba197 #474554 #88b3ba #baa997 #75998d #aacfc2 #8685ef #2c8385 #afb1b6 #929da5 #748a90 #587877 #43655a*/
