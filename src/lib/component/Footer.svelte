@@ -8,7 +8,7 @@
     $: socialSettings = $page.data.socialSettings || {};
 </script>
 
-<footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner pt-20">
+<footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner md:pt-20">
 	<div class="max-w-7xl mx-auto px-4 py-6">
 		<div class="flex flex-col md:flex-row justify-between items-center gap-4">
 			<div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 md:pb-0">

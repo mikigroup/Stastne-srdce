@@ -13,6 +13,30 @@
 		(text) =>
 			text?.position === "center" && /pavlíkovi/i.test(text.title || "") && text.text
 	);
+
+	let appealOpen = false;
+	let appealExpanded = false;
+
+	function toggleAppeal(event: MouseEvent) {
+		event.preventDefault();
+		if (appealExpanded) {
+			appealExpanded = false;
+			return;
+		}
+		appealOpen = true;
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				appealExpanded = true;
+			});
+		});
+	}
+
+	function onAppealContentTransitionEnd(event: TransitionEvent) {
+		if (event.propertyName !== "grid-template-rows") return;
+		if (!appealExpanded) {
+			appealOpen = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -39,10 +63,16 @@
 							Vítejte na stránkách Šťastného srdce
 						</h2>
 						{#if appeal}
-							<details class="welcome-appeal">
-								<summary>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
-								<div class="welcome-appeal-body">
-									{@html appeal.text}
+							<details class="welcome-appeal" open={appealOpen}>
+								<summary on:click={toggleAppeal}>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
+								<div
+									class="welcome-appeal-content"
+									class:welcome-appeal--open={appealExpanded}
+									on:transitionend={onAppealContentTransitionEnd}
+								>
+									<div class="welcome-appeal-body">
+										{@html appeal.text}
+									</div>
 								</div>
 							</details>
 						{/if}
@@ -206,25 +236,24 @@
 <style lang="postcss">
 	.welcome-head {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.75rem 1rem;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.75rem;
 		margin-top: 0.5rem;
 	}
 	.welcome-head > h2 {
-		flex: 1 1 14rem;
 		margin: 0;
 	}
 	.welcome-appeal {
-		flex: 1 1 16rem;
 		margin: 0;
 		border: 1px solid #fecdd3;
 		border-radius: 0.5rem;
 		background-color: #fff1f2;
 		padding: 0.25rem 0.75rem 0.35rem;
+		transition: background-color 0.2s ease;
 	}
-	.welcome-appeal[open] {
-		flex-basis: 100%;
+	.welcome-appeal:hover {
+		background-color: #ffe4e6;
 	}
 	.welcome-appeal > summary {
 		cursor: pointer;
@@ -239,7 +268,17 @@
 		display: none;
 		content: none;
 	}
+	.welcome-appeal-content {
+		display: grid;
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.7s ease;
+	}
+	.welcome-appeal-content.welcome-appeal--open {
+		grid-template-rows: 1fr;
+	}
 	.welcome-appeal-body {
+		min-height: 0;
+		overflow: hidden;
 		padding: 0.25rem 0 0.5rem;
 		color: #334155;
 		font-size: 0.95rem;
