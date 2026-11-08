@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	export let version = import.meta.env.PUBLIC_VERSION || '1.1.0-dev';
+	export let version = import.meta.env.PUBLIC_VERSION || '1.2';
 
 	$: footerText = $page.data.appearanceSettings?.footerText || '';
 	$: socialSettings = $page.data.socialSettings || {};
@@ -70,7 +70,7 @@
 			<div class="flex items-center justify-center space-x-2">
 				<span class="text-gray-500 text-xs">Vytvořeno s</span>
 				<a href="https://www.malyleo.cz/" target="_blank" class="text-sm flex items-center">
-					<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo™
+					<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo
 				</a>
 				<span class="text-gray-400 text-xs">core{version}</span>
 			</div>

@@ -137,7 +137,7 @@
 					<!-- Desktop nav for guests -->
 					<div class="hidden xl:flex items-center gap-2">
 						<a href={ROUTES.AUTH.LOGIN} class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-						<a href={ROUTES.AUTH.SIGNUP} class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
+						<a href={ROUTES.AUTH.SIGNUP} class="p-2 px-6 whitespace-nowrap text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
 					</div>
 				{/if}
 
