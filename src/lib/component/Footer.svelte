@@ -10,7 +10,7 @@
 
 <footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner md:pt-20">
 	<div class="max-w-7xl mx-auto px-4 py-6">
-		<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+		<div class="flex flex-col md:flex-row justify-between items-center md:gap-4 mx-auto">
 			<div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 md:pb-0">
 				<a href="/obchodni-podminky" class="text-gray-600 hover:text-green-700 transition-colors duration-200 text-sm font-medium hover:underline text-center">
 					Obchodní podmínky
@@ -24,7 +24,7 @@
 			</div>
 
             <!-- Sociální sítě -->
-            <div class="flex justify-center gap-4 mt-4">
+            <div class="flex justify-center md:gap-4 mt-4">
                 {#if socialSettings.facebook}
                     <a href="{socialSettings.facebook}" target="_blank" rel="noopener" aria-label="Facebook" class="text-gray-500 hover:text-green-700 text-2xl">
                         <i class="fab fa-facebook"></i>
