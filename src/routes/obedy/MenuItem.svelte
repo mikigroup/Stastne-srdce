@@ -128,7 +128,7 @@
 						{/if}
 					</div>
 					{#if !$page.data.session}
-						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2">
+						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2 mt-5">
 							<div
 								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
 								<div class="text-base">Přihlaš se</div>
@@ -142,7 +142,7 @@
 							on:keydown={(e) => e.key === "Enter" && addToCart(variant)}
 							tabindex="0">
 							<div
-								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100">
+								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 mt-5">
 								<div class="">
 									{#if productsSettings?.showPrices}
 										<p class="text-base justify-end flex">{variant.price} Kč</p>

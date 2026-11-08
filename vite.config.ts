@@ -1,4 +1,4 @@
-import { sentrySvelteKit } from "@sentry/sveltekit";
+import { sentrySvelteKit } from "@sentry/sveltekit/vite";
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import * as fs from "fs";
@@ -12,32 +12,35 @@ const hasHttpsCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
 // Kontrola existence Sentry tokenu
 const hasSentryToken = process.env.PUBLIC_SENTRY_TOKEN;
 
-export default defineConfig({
-  plugins: [    
-    // Sentry plugin pouze když je dostupný auth token
-    ...(hasSentryToken ? [sentrySvelteKit({
-      sourceMapsUploadOptions: {
-        org: "stastnesrdce",
-        project: "javascript-svelte",
-        authToken: process.env.PUBLIC_SENTRY_TOKEN
-      }
-    })] : []),
-    
-    sveltekit(),
-  ],
-  server: {
-    host: hasHttpsCerts ? "mystastnesrdce.local" : "localhost",
-    port: 5173,
-    strictPort: true,
-    // HTTPS pouze pokud existují certifikáty (lokální development)
-    ...(hasHttpsCerts && {
-      https: {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-      },
-      hmr: {
-        protocol: "wss", 
-      }
-    })
-  },
+export default defineConfig(async () => {
+	const sentryPlugins = hasSentryToken
+		? await sentrySvelteKit({
+				org: "stastnesrdce",
+				project: "javascript-svelte",
+				authToken: process.env.PUBLIC_SENTRY_TOKEN
+			})
+		: [];
+
+	return {
+		plugins: [
+			// Sentry plugin pouze když je dostupný auth token
+			...sentryPlugins,
+			sveltekit()
+		],
+		server: {
+			host: hasHttpsCerts ? "mystastnesrdce.local" : "localhost",
+			port: 5173,
+			strictPort: true,
+			// HTTPS pouze pokud existují certifikáty (lokální development)
+			...(hasHttpsCerts && {
+				https: {
+					key: fs.readFileSync(keyPath),
+					cert: fs.readFileSync(certPath)
+				},
+				hmr: {
+					protocol: "wss"
+				}
+			})
+		}
+	};
 });
