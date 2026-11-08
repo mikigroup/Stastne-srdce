@@ -47,6 +47,27 @@
 	$: totalPieces = $totalPiecesStore;
 
 	$: generalSettings = data.generalSettings ?? data.settings?.general;
+	$: pathname = $page.url.pathname;
+
+	const mobileLinks = [
+		{ href: "/", label: "Úvod" },
+		{ href: "/obedy", label: "Obědy" },
+		{ href: "/poradna", label: "Poradna" },
+		{ href: "/haccp", label: "HACCP" },
+		{ href: "/prednasky-a-kurzy", label: "Přednášky a kurzy" },
+		{ href: "/kontakt", label: "Kontakt" }
+	];
+
+	function isCurrent(href, path) {
+		if (href === "/") return path === "/";
+		return path === href || path.startsWith(`${href}/`);
+	}
+
+	function itemClass(href, path) {
+		return isCurrent(href, path)
+			? "bg-green-800 text-white"
+			: "bg-slate-50 text-gray-800 hover:bg-green-50 hover:text-green-800";
+	}
 
 	// Funkce pro zavření menu
 	function closeMenu() {
@@ -143,9 +164,18 @@
 
 				<!-- Mobile menu button and cart -->
 				<div class="flex items-center xl:hidden">
-					<button bind:this={buttonElement} on:click={toggleMenu} class="p-2">
+					<button
+						bind:this={buttonElement}
+						on:click={toggleMenu}
+						class="rounded-full p-2 hover:bg-slate-50"
+						aria-expanded={menuVisible}
+						aria-label={menuVisible ? "Zavřít menu" : "Otevřít menu"}>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+							{#if menuVisible}
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							{:else}
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+							{/if}
 						</svg>
 					</button>
 					{#if totalPieces}
@@ -157,42 +187,66 @@
 
 		<!-- Mobile menu -->
 		{#if menuVisible}
-			<div bind:this={menuElement} transition:slide={{ duration: 400 }} class="mb-4 flex flex-row-reverse justify-center text-lg tracking-wide text-center bg-white xl:hidden">
-				<div class="flex flex-col space-y-4 p-4 w-full">
-					<hr />
-					<ul class="space-y-2">
+			<div
+				bind:this={menuElement}
+				transition:slide={{ duration: 280 }}
+				class="border-t border-gray-100 bg-white px-4 pb-4 pt-3 xl:hidden">
+				<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
+				<ul class="flex flex-col gap-2">
+					{#each mobileLinks as link (link.href)}
 						<li>
-							<a href="/" class="block py-1 hover:text-green-800 transition-colors duration-200">Úvod</a>
+							<a
+								href={link.href}
+								on:click={closeMenu}
+								class="flex h-full items-center justify-center rounded-2xl px-3 py-3 text-center text-base font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
+								{link.label}
+							</a>
 						</li>
-						<li>
-							<a href="/obedy" class="block py-1 hover:text-green-800 transition-colors duration-200">Obědy</a>
-						</li>
-						<li>
-							<a href="/poradna" class="block py-1 hover:text-green-800 transition-colors duration-200">Poradna</a>
-						</li>
-						<li>
-							<a href="/haccp" class="block py-1 hover:text-green-800 transition-colors duration-200">HACCP</a>
-						</li>
-						<li>
-							<a href="/prednasky-a-kurzy" class="block py-1 hover:text-green-800 transition-colors duration-200">Přednášky a kurzy</a>
-						</li>
-						<li>
-							<a href="/kontakt" class="block py-1 hover:text-green-800 transition-colors duration-200">Kontakt</a>
-						</li>
-						<li>
-							<a href="/kosik" class="block py-1 hover:text-green-800 transition-colors duration-200">Košík {#if totalPieces}({totalPieces}){/if}</a>
-						</li>
-					</ul>
+					{/each}
+				</ul>
+				</div>
 
-					<div class="flex flex-wrap justify-center gap-2 pt-2">
-						{#if $page.data.session}
-							<a href="/profile" class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
-							<button on:click={signOut} disabled={loading} class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
-						{:else}
-							<a href={ROUTES.AUTH.LOGIN} class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přihlásit</a>
-							<a href={ROUTES.AUTH.SIGNUP} class="py-2 px-4 text-sm text-center text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Přidej se</a>
-						{/if}
-					</div>
+				<a
+					href="/kosik"
+					on:click={closeMenu}
+					class="mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-2xl px-3 py-3 text-base font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
+					Košík
+					{#if totalPieces}
+						<span
+							class="inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-2 text-sm {isCurrent('/kosik', pathname) ? 'bg-white text-green-800' : 'bg-green-800 text-white'}">
+							{totalPieces}
+						</span>
+					{/if}
+				</a>
+
+				<div class="mx-auto mt-2 grid w-full max-w-[21rem] grid-cols-2 gap-2">
+					{#if $page.data.session}
+						<a
+							href="/profile"
+							on:click={closeMenu}
+							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+							Účet
+						</a>
+						<button
+							on:click={signOut}
+							disabled={loading}
+							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white disabled:opacity-50">
+							Odhlásit
+						</button>
+					{:else}
+						<a
+							href={ROUTES.AUTH.LOGIN}
+							on:click={closeMenu}
+							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+							Přihlásit
+						</a>
+						<a
+							href={ROUTES.AUTH.SIGNUP}
+							on:click={closeMenu}
+							class="rounded-2xl bg-green-800 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-green-900">
+							Přidej se
+						</a>
+					{/if}
 				</div>
 			</div>
 		{/if}
