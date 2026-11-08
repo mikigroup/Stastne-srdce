@@ -33,24 +33,25 @@
 					<!-- <div class="grid justify-center pb-5">
 					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
 					</div> -->
-					<h2
-						class="mt-2 text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9">
-						Vítejte na stránkách Šťastného srdce
-					</h2>
-					{#if appeal}
-						<details class="welcome-appeal">
-							<summary>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
-							<div class="welcome-appeal-body">
-								{@html appeal.text}
-							</div>
-						</details>
-					{/if}
+					<div class="welcome-head">
+						<h2
+							class="text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9">
+							Vítejte na stránkách Šťastného srdce
+						</h2>
+						{#if appeal}
+							<details class="welcome-appeal">
+								<summary>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
+								<div class="welcome-appeal-body">
+									{@html appeal.text}
+								</div>
+							</details>
+						{/if}
+					</div>
 					<p class="py-5">
 						Náš tým odborníků <a href="/mgr-bc-kamila-forejtova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
 						<a href="/olga-bednarova" class="!underline">Olga Bednářová</a> Vám nabízí
 					</p>
-		<ul>
-   <ul class="space-y-2">
+					<ul class="space-y-2">
   <li class="flex items-start gap-2">
     <img {src} alt="staste srdce" class="pt-1" width="22" height="22" />
     <div><a href="/obedy" class="hover:underline"><strong>kvalitní a zdravé obědy</strong></a> </div>
@@ -125,13 +126,13 @@
 					</div>
 					<!-- Grid: sloupce odpovídají výběru left / center / right v Malém Leovi -->
 					<div
-						class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+						class="grid grid-cols-1 md:grid-cols-3 items-start gap-6 mb-20">
 						{#if texts && texts.some((text) => text && (text.title || text.text))}
 							{#each texts as text, index (text?.position ?? index)}
 								{@const hasContent = !!(text && (text.title || text.text))}
 								<div class="w-full min-h-0 {hasContent ? '' : 'hidden md:block'}">
 									{#if hasContent}
-										<div class="h-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
+										<div class="h-fit w-full px-4 rounded-lg shadow-lg bg-slate-50 border border-gray-300">
 											{#if text.title}
 												<h3
 													class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
@@ -203,12 +204,27 @@
 </section>
 
 <style lang="postcss">
+	.welcome-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1rem;
+		margin-top: 0.5rem;
+	}
+	.welcome-head > h2 {
+		flex: 1 1 14rem;
+		margin: 0;
+	}
 	.welcome-appeal {
-		margin-top: 1rem;
+		flex: 1 1 16rem;
+		margin: 0;
 		border: 1px solid #fecdd3;
 		border-radius: 0.5rem;
 		background-color: #fff1f2;
 		padding: 0.25rem 0.75rem 0.35rem;
+	}
+	.welcome-appeal[open] {
+		flex-basis: 100%;
 	}
 	.welcome-appeal > summary {
 		cursor: pointer;
