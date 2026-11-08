@@ -13,8 +13,6 @@
 		Globe
 	} from "lucide-svelte";
 	import { PUBLIC_RECAPTCHA_SITE_KEY, PUBLIC_GOOGLE_MAPS_API_KEY } from "$env/static/public";
-	import { browser } from "$app/environment";
-	import { onMount } from "svelte";
 
 	export let data: any;
 	export let form: any;
@@ -31,89 +29,64 @@
 		`${business.companyName} - ${contact.address}` : 
 		'';
 
-	// reCAPTCHA state
-	let recaptchaReady = false;
 	let submitting = false;
 	let recaptchaError = "";
 
-	// Inicializace reCAPTCHA po mount
-	onMount(() => {
-		if (browser && PUBLIC_RECAPTCHA_SITE_KEY) {
-			// Zkontrolovat, jestli už není script načtený
-			if ((window as any).grecaptcha) {
-				// Script už je načtený, počkat na ready
-				(window as any).grecaptcha.ready(() => {
-					recaptchaReady = true;
-				});
-			} else {
-				// Počkat na načtení scriptu z <svelte:head>
-				const checkGrecaptcha = setInterval(() => {
-					if ((window as any).grecaptcha) {
-						clearInterval(checkGrecaptcha);
-						(window as any).grecaptcha.ready(() => {
-							recaptchaReady = true;
-						});
-					}
-				}, 100);
+	function recaptchaSrc(): string {
+		return `https://www.google.com/recaptcha/api.js?render=${PUBLIC_RECAPTCHA_SITE_KEY}`;
+	}
 
-				// Timeout po 5 sekundách
-				setTimeout(() => {
-					clearInterval(checkGrecaptcha);
-					if ((window as any).grecaptcha) {
-						recaptchaReady = true;
-					}
-				}, 5000);
-			}
+	function findRecaptchaScript(): HTMLScriptElement | null {
+		return document.querySelector(`script[src="${recaptchaSrc()}"]`);
+	}
+
+	function ensureRecaptchaScript(): Promise<void> {
+		const grecaptcha = (window as Window & { grecaptcha?: unknown }).grecaptcha;
+		if (grecaptcha) return Promise.resolve();
+
+		const existing = findRecaptchaScript();
+		const script = existing ?? document.createElement("script");
+		if (!existing) {
+			script.src = recaptchaSrc();
+			script.async = true;
+			script.defer = true;
+			document.head.appendChild(script);
 		}
-	});
 
-	// Funkce pro získání reCAPTCHA tokenu
+		const alreadyLoaded =
+			!!existing &&
+			performance.getEntriesByType("resource").some((entry) => entry.name.startsWith(recaptchaSrc()));
+		if (alreadyLoaded) return Promise.resolve();
+
+		return new Promise((resolve, reject) => {
+			script.addEventListener("load", () => resolve(), { once: true });
+			script.addEventListener("error", () => reject(new Error("reCAPTCHA script failed")), { once: true });
+		});
+	}
+
 	async function getRecaptchaToken(): Promise<string | null> {
-		if (!browser || !PUBLIC_RECAPTCHA_SITE_KEY) {
-			console.warn('⚠️ [RECAPTCHA] reCAPTCHA není nakonfigurováno');
-			return null;
-		}
+		if (!PUBLIC_RECAPTCHA_SITE_KEY) return null;
 
 		try {
-			// Počkat na ready stav
-			if (!recaptchaReady) {
-				await new Promise<void>((resolve) => {
-					const checkReady = setInterval(() => {
-						if (recaptchaReady) {
-							clearInterval(checkReady);
-							resolve();
-						}
-					}, 50);
+			await ensureRecaptchaScript();
+			const grecaptcha = (window as Window & {
+				grecaptcha?: {
+					ready: (callback: () => void) => void;
+					execute: (siteKey: string, options: { action: string }) => Promise<string>;
+				};
+			}).grecaptcha;
+			if (!grecaptcha) return null;
 
-					// Timeout po 3 sekundách
-					setTimeout(() => {
-						clearInterval(checkReady);
-						resolve();
-					}, 3000);
-				});
-			}
-
-			const grecaptcha = (window as any).grecaptcha;
-			if (!grecaptcha) {
-				console.error('❌ [RECAPTCHA] grecaptcha není dostupné');
-				return null;
-			}
-
-			// Použít grecaptcha.ready() callback - vždy, i když už je ready
-			return new Promise<string | null>((resolve) => {
+			return await new Promise((resolve) => {
 				grecaptcha.ready(() => {
-					grecaptcha.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: 'contact_form' })
-						.then((token: string) => {
-							resolve(token);
-						})
-						.catch((error: any) => {
-							console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
-							resolve(null);
-						});
+					grecaptcha
+						.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: "contact_form" })
+						.then((token) => resolve(token || null))
+						.catch(() => resolve(null));
 				});
 			});
 		} catch (error) {
-			console.error('❌ [RECAPTCHA] Chyba při získávání tokenu:', error);
+			console.error("❌ [RECAPTCHA] Chyba při získávání tokenu:", error);
 			return null;
 		}
 	}

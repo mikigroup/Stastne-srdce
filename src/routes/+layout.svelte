@@ -6,7 +6,7 @@
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
-	import HeaderCustomer from "$lib/component/HeaderCustomer.svelte";
+	import Header from "$lib/component/Header.svelte";
 	import Footer from "$lib/component/Footer.svelte";
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 	import { cookieStore } from '$lib/stores/cookieStore';
@@ -177,7 +177,7 @@
 		type="module"></script>
 	
 	<!-- Google reCAPTCHA v3 - globálně pro celou aplikaci (načítá se jen jednou) -->
-	{#if browser && PUBLIC_RECAPTCHA_SITE_KEY}
+	{#if PUBLIC_RECAPTCHA_SITE_KEY}
 		<script
 			src="https://www.google.com/recaptcha/api.js?render={PUBLIC_RECAPTCHA_SITE_KEY}"
 			async
@@ -223,7 +223,7 @@
 	{/if}
 </svelte:head>
 
-<HeaderCustomer {data} />
+<Header {data} />
 
 <div class="pt-5 mt-20" />
 
