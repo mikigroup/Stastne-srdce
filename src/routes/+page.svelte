@@ -5,7 +5,7 @@
 	}
 
 	let { data, params = {} }: Props = $props();
-	let texts = $derived(data.texts);
+	let texts = $derived((data.texts ?? []) as any[]);
 
 	const { generalSettings } = data;
 
@@ -178,7 +178,7 @@
 					<!-- Grid: sloupce odpovídají výběru left / center / right v Malém Leovi -->
 					<div
 						class="grid grid-cols-1 md:grid-cols-3 items-start gap-6 mb-20">
-						{#if texts && texts.some((text: any) => text && (text.title || text.text))}
+						{#if texts.some((text) => text && (text.title || text.text))}
 							{#each texts as text, index (text?.position ?? index)}
 								{@const hasContent = !!(text && (text.title || text.text))}
 								<div class="w-full min-h-0 {hasContent ? '' : 'hidden md:block'}">
