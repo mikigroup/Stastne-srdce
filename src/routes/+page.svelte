@@ -37,6 +37,14 @@
 			appealOpen = false;
 		}
 	}
+
+	function scrollToInfoKoutek(event: MouseEvent) {
+		const target = document.getElementById("info-koutek");
+		if (!target) return;
+		event.preventDefault();
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+	}
 </script>
 
 <svelte:head>
@@ -59,7 +67,7 @@
 					</div> -->
 					<div class="welcome-head">
 						<h2
-							class="text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9">
+							class="text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9 pb-5">
 							Vítejte na stránkách Šťastného srdce
 						</h2>
 						{#if appeal}
@@ -77,8 +85,18 @@
 							</details>
 						{/if}
 					</div>
+					<div class="welcome-news">
+						<h3>Co je nového?</h3>
+						<p>
+							Nahlédněte do našeho Info koutku, kde s vámi sdílíme novinky z naší kuchyně, fotografie, zajímavosti o surovinách, dění kolem nás i aktuální informace.
+						</p>
+						<a href="#info-koutek" class="welcome-news-link" on:click={scrollToInfoKoutek}>
+							Nahlédnout do Info koutku&nbsp;→
+						</a>
+					</div>
 					<p class="py-5">
-						Náš tým odborníků <a href="/mgr-bc-kamila-forejtova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
+						Náš tým odborníků:<br>
+						<a href="/mgr-bc-kamila-forejtova" class="!underline">Mgr. Bc. Kamila Forejtová</a>, <a href="/mgr-martin-forejt-phd" class="!underline">Mgr. Martin Forejt Ph.D.</a>,
 						<a href="/olga-bednarova" class="!underline">Olga Bednářová</a> Vám nabízí
 					</p>
 					<ul class="space-y-2">
@@ -150,7 +168,8 @@
 				<div class="max-w-screen-xl mx-auto px-4">
 					<div class="mt-20">
 						<h2
-							class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
+							id="info-koutek"
+							class="info-koutek-heading mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 lg:text-5xl">
 							Info koutek
 						</h2>
 					</div>
@@ -286,6 +305,48 @@
 	}
 	.welcome-appeal-body :global(p) {
 		margin: 0.6em 0;
+	}
+	.welcome-news {
+		margin-top: 1.25rem;
+		border: 1px solid #bbf7d0;
+		border-radius: 0.5rem;
+		background-color: #f0fdf4;
+		padding: 1rem 1rem 1.1rem;
+	}
+	.welcome-news h3 {
+		margin: 0;
+		font-size: 1.25rem;
+		font-weight: 700;
+		line-height: 1.3;
+		color: #166534;
+	}
+	.welcome-news p {
+		margin: 0.6rem 0 0.9rem;
+		color: #334155;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+	.welcome-news-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 100%;
+		padding: 0.5rem 1.15rem;
+		border: 1px solid #15803d;
+		border-radius: 1.5rem;
+		color: #166534;
+		font-weight: 700;
+		line-height: 1.35;
+		text-align: center;
+		text-decoration: none;
+		transition: background-color 0.2s ease, color 0.2s ease;
+	}
+	.welcome-news-link:hover {
+		background-color: #166534;
+		color: #fff;
+	}
+	.info-koutek-heading {
+		scroll-margin-top: 6rem;
 	}
 	.floating-img {
 		transform: translateY(0%);
