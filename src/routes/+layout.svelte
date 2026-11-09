@@ -1,7 +1,8 @@
 <script lang="ts">
 	import "./app.css";
 	import "./banner.css";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
+	import { afterNavigate } from "$app/navigation";
 	import { browser } from "$app/environment";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
@@ -34,14 +35,16 @@
 	let { supabase, session, user, profile } = data;
 	$: ({ supabase, session, user, profile } = data);
 
-	// Kontrola nedokončené registrace
-	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !$page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
+	let pathname: string = page.url.pathname;
+	afterNavigate((navigation) => {
+		if (navigation.to) pathname = navigation.to.url.pathname;
+	});
+
+	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
 
 	onMount(() => {
-		// Inicializace Speed Insights
 		injectSpeedInsights();
 
-		// Auth state change listener
 		if (supabase) {
 			const authStateChange = supabase.auth.onAuthStateChange((event) => {
 				if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
@@ -49,7 +52,6 @@
 				}
 			});
 
-			// Cleanup funkce
 			return () => {
 				try {
 					if (authStateChange?.data?.subscription) {
@@ -63,120 +65,106 @@
 	});
 
 	const cookieName = 'stastne_srdce_cookies';
-	// Reaktivní kontrola cookie souhlasu pouze v prohlížeči
 	$: showBanner = browser && !cookieStore.hasConsent();
 
-	// SEO data z nastavení
 	$: seoSettings = data.settings?.seo;
 	$: generalSettings = data.settings?.general;
 	$: appearanceSettings = data.settings?.appearance;
 </script>
 
-<!-- Globální SEO meta tagy pro celý web -->
 <svelte:head>
-	<!-- Základní meta tagy -->
 	{#if seoSettings?.metaAuthor}
 		<meta name="author" content={seoSettings.metaAuthor} />
 	{/if}
-	
+
 	{#if seoSettings?.metaCopyright}
 		<meta name="copyright" content={seoSettings.metaCopyright} />
 	{/if}
-	
+
 	{#if seoSettings?.metaRobots}
 		<meta name="robots" content={seoSettings.metaRobots} />
 	{/if}
 
-	<!-- SEO meta tagy -->
 	{#if seoSettings?.metaTitle}
 		<title>{seoSettings.metaTitle} - {generalSettings?.shopName}</title>
 	{:else if generalSettings?.shopName}
 		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
 	{/if}
-	
-	<!-- Canonical URL pro všechny stránky -->
-	<link rel="canonical" href="https://www.stastnesrdce.cz{$page.url.pathname}" />
-	
-	<!-- Robots meta tagy pro problematické stránky -->
-	{#if $page.url.pathname.startsWith('/auth')}
+
+	<link rel="canonical" href="https://www.stastnesrdce.cz{pathname}" />
+
+	{#if pathname.startsWith('/auth')}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
-	
+
 	{#if seoSettings?.metaDescription}
 		<meta name="description" content={seoSettings.metaDescription} />
 	{/if}
-	
+
 	{#if seoSettings?.metaKeywords}
 		<meta name="keywords" content={seoSettings.metaKeywords} />
 	{/if}
-	
-	<!-- Open Graph meta tagy -->
+
 	{#if seoSettings?.ogType}
 		<meta property="og:type" content={seoSettings.ogType} />
 	{/if}
-	
+
 	{#if seoSettings?.ogUrl}
 		<meta property="og:url" content={seoSettings.ogUrl} />
 	{/if}
-	
+
 	{#if seoSettings?.ogLocale}
 		<meta property="og:locale" content={seoSettings.ogLocale} />
 	{/if}
-	
+
 	{#if seoSettings?.metaTitle}
 		<meta property="og:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
 		<meta property="og:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
-	
+
 	{#if seoSettings?.metaDescription}
 		<meta property="og:description" content={seoSettings.metaDescription} />
 	{/if}
-	
+
 	{#if seoSettings?.ogImage}
 		<meta property="og:image" content={seoSettings.ogImage} />
 	{/if}
-	
-	<!-- Twitter meta tagy -->
+
 	{#if seoSettings?.twitterCard}
 		<meta name="twitter:card" content={seoSettings.twitterCard} />
 	{/if}
-	
+
 	{#if seoSettings?.metaTitle}
 		<meta name="twitter:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
 	{:else if generalSettings?.shopName}
 		<meta name="twitter:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
 	{/if}
-	
+
 	{#if seoSettings?.metaDescription}
 		<meta name="twitter:description" content={seoSettings.metaDescription} />
 	{/if}
-	
-	<!-- Favicon a ikony -->
+
 	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}
 		<link rel="icon" href={String(appearanceSettings.favicon)} sizes="any" />
 	{/if}
-	
+
 	{#if seoSettings?.appleTouchIcon}
 		<link rel="apple-touch-icon" href={seoSettings.appleTouchIcon} />
 	{/if}
-	
+
 	{#if seoSettings?.webManifest}
 		<link rel="manifest" href={seoSettings.webManifest} />
 	{/if}
-	
-	<!-- Scripts -->
-	<!-- FontAwesome - vždy zapnuté -->
+
 	<script
 		src="https://kit.fontawesome.com/e5ce1babf6.js"
 		crossorigin="anonymous"></script>
-	
-	<!-- Lottie Player - vždy zapnuté -->
+
 	<script
 		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
 		type="module"></script>
-	
-	<!-- Google reCAPTCHA v3 - globálně pro celou aplikaci (načítá se jen jednou) -->
+
 	{#if PUBLIC_RECAPTCHA_SITE_KEY}
 		<script
 			src="https://www.google.com/recaptcha/api.js?render={PUBLIC_RECAPTCHA_SITE_KEY}"
@@ -184,13 +172,11 @@
 			defer
 		></script>
 	{/if}
-	
-	<!-- Custom Head Scripts -->
+
 	{#if seoSettings?.customHeadScripts}
 		{@html seoSettings.customHeadScripts}
 	{/if}
-	
-	<!-- Google Analytics -->
+
 	{#if seoSettings?.googleAnalyticsEnabled && seoSettings?.googleAnalyticsId}
 		<script async src="https://www.googletagmanager.com/gtag/js?id={seoSettings.googleAnalyticsId}"></script>
 		<script>
@@ -200,8 +186,7 @@
 			gtag('config', '{seoSettings.googleAnalyticsId}');
 		</script>
 	{/if}
-	
-	<!-- Facebook Pixel -->
+
 	{#if seoSettings?.facebookPixelEnabled && seoSettings?.facebookPixelId}
 		<script>
 			!function(f,b,e,v,n,t,s)
@@ -216,7 +201,7 @@
 			fbq('track', 'PageView');
 		</script>
 		<noscript>
-			<img height="1" width="1" style="display:none" 
+			<img height="1" width="1" style="display:none"
 				 src="https://www.facebook.com/tr?id={seoSettings.facebookPixelId}&ev=PageView&noscript=1"
 				 alt="Facebook Pixel" />
 		</noscript>
@@ -271,11 +256,9 @@
 
 <Footer />
 
-<!-- Custom Body Scripts -->
 {#if seoSettings?.customBodyScripts}
 	{@html seoSettings.customBodyScripts}
 {/if}
 
 <style lang="postcss">
-	/* CSS selektory jsou nyní využívány v komponentách */
 </style>

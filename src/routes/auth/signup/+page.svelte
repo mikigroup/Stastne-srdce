@@ -13,7 +13,6 @@
 
 	export let form: ActionData = null;
 	export let data;
-	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
 	let { session, supabase } = data;
 	$: ({ session, supabase } = data);
 
@@ -25,13 +24,10 @@
 	let repasswordValue = "";
 	let clientValidationFailed = false;
 	let recaptchaError = "";
-
-	// Real-time validace
 	let emailError = "";
 	let passwordError = "";
 	let repasswordError = "";
 
-	// Funkce pro validaci emailu
 	function validateEmail(email: string): string {
 		if (!email) return "";
 		if (!email.includes("@")) return "Zadejte platný email";
@@ -39,7 +35,6 @@
 		return "";
 	}
 
-	// Funkce pro validaci hesla
 	function validatePassword(password: string): string {
 		if (!password) return "";
 		if (password.length < 8) return "Heslo musí mít alespoň 8 znaků";
@@ -47,8 +42,7 @@
 		if (!/[0-9]/.test(password)) return "Heslo musí obsahovat alespoň jedno číslo";
 		return "";
 	}
-
-	// Funkce pro validaci potvrzení hesla
+	
 	function validateRepassword(password: string, repassword: string): string {
 		if (!repassword) return "";
 		if (password !== repassword) return "Hesla se neshodují";
@@ -57,7 +51,6 @@
 
 	$: signupFields = (form ?? {}) as SignupFields;
 
-	// Reaktivní validace
 	$: if (signupFields.errors) {
 		emailError = signupFields.errors.email || "";
 		passwordError = signupFields.errors.password || "";
@@ -225,7 +218,6 @@
 			class="space-y-6"
 			novalidate
 		>
-			<!-- Email input -->
 		<div class="flex flex-col">
 			<div class="relative flex">
 				<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -233,23 +225,33 @@
 						<path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z" />
 					</svg>
 				</span>
-				<input
-					value={signupFields.email ?? ""}
-					type="email"
-					id="email"
-					name="email"
-					class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+				<div
+					class="flex min-w-0 flex-1 flex-col rounded-r-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 					class:border-red-500={emailError}
-					placeholder="Email"
-					required
-				/>
+				>
+					{#if emailError}
+						<p id="email-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+							{emailError}
+						</p>
+					{/if}
+					<input
+						value={signupFields.email ?? ""}
+						type="email"
+						id="email"
+						name="email"
+						aria-invalid={emailError ? "true" : undefined}
+						aria-describedby={emailError ? "email-error" : undefined}
+						class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+						class:py-2={!emailError}
+						class:pb-2={emailError}
+						class:pt-0.5={emailError}
+						placeholder="Email"
+						required
+					/>
+				</div>
 			</div>
-			{#if emailError}
-				<p class="mt-1 text-xs text-red-600">{emailError}</p>
-			{/if}
 		</div>
 
-		<!-- Password input -->
 		<div class="flex flex-col">
 			<div class="relative flex">
 				<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -315,7 +317,6 @@
 			</div>
 		</div>
 
-		<!-- Password confirmation -->
 		<div class="flex flex-col">
 			<div class="relative flex">
 				<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -323,17 +324,31 @@
 						<path d="M1376 768q40 0 68 28t28 68v576q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-576q0-40 28-68t68-28h32v-320q0-185 131.5-316.5t316.5-131.5 316.5 131.5 131.5 316.5q0 26-19 45t-45 19h-64q-26 0-45-19t-19-45q0-106-75-181t-181-75-181 75-75 181v320h736z" />
 					</svg>
 				</span>
-				<input
-					value={signupFields.repassword ?? ""}
-					type={showRepassword ? "text" : "password"}
-					id="repassword"
-					name="repassword"
-					class="flex-1 min-w-0 px-4 py-2 pr-10 text-base bg-white border border-gray-300 rounded-r-none shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600 border-l-0"
+				<div
+					class="flex min-w-0 flex-1 flex-col rounded-l-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 					class:border-red-500={repasswordError}
-					placeholder="Potvrzení hesla"
-					minlength="8"
-					required
-				/>
+				>
+					{#if repasswordError}
+						<p id="repassword-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+							{repasswordError}
+						</p>
+					{/if}
+					<input
+						value={signupFields.repassword ?? ""}
+						type={showRepassword ? "text" : "password"}
+						id="repassword"
+						name="repassword"
+						aria-invalid={repasswordError ? "true" : undefined}
+						aria-describedby={repasswordError ? "repassword-error" : undefined}
+						class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+						class:py-2={!repasswordError}
+						class:pb-2={repasswordError}
+						class:pt-0.5={repasswordError}
+						placeholder="Potvrzení hesla"
+						minlength="8"
+						required
+					/>
+				</div>
 				<button
 					type="button"
 					class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
@@ -354,13 +369,9 @@
 					{/if}
 				</button>
 			</div>
-			{#if repasswordError}
-				<p class="mt-1 text-xs text-red-600">{repasswordError}</p>
-			{/if}
 		</div>
 
 
-		<!-- Terms agreement -->
 		<div class="space-y-2">
 			<label class="flex items-center">
 				<input
@@ -374,14 +385,15 @@
 					</a>
 				</span>
 			</label>
-			{#if !agreedToTerms}
-				<p class="text-xs text-red-600 font-semibold">
-					Pro dokončení registrace je nutné souhlasit s obchodními podmínkami
-				</p>
-			{/if}
+			<p
+				class="text-xs text-red-600 font-semibold"
+				class:invisible={agreedToTerms}
+				aria-hidden={agreedToTerms}
+			>
+				Pro potvrzení registrace je nutné souhlasit s obchodními podmínkami.
+			</p>
 		</div>
 
-		<!-- Submit button -->
 		<button
 			type="submit"
 			class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -400,7 +412,6 @@
 			{/if}
 		</button>
 
-			<!-- Form messages -->
 			{#if form}
 				<div
 					class="w-full p-3 border rounded-lg"
@@ -425,7 +436,6 @@
 			class="space-y-6"
 			novalidate
 		>
-			<!-- Email input -->
 			<div class="flex flex-col">
 				<div class="relative flex">
 					<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -433,23 +443,33 @@
 							<path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z" />
 						</svg>
 					</span>
-					<input
-						value={signupFields.email ?? ""}
-						type="email"
-						id="email"
-						name="email"
-						class="w-full px-4 py-2 text-base bg-white border border-gray-300 rounded-lg shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600"
+					<div
+						class="flex min-w-0 flex-1 flex-col rounded-r-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 						class:border-red-500={emailError}
-						placeholder="Email"
-						required
-					/>
+					>
+						{#if emailError}
+							<p id="email-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+								{emailError}
+							</p>
+						{/if}
+						<input
+							value={signupFields.email ?? ""}
+							type="email"
+							id="email"
+							name="email"
+							aria-invalid={emailError ? "true" : undefined}
+							aria-describedby={emailError ? "email-error" : undefined}
+							class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+							class:py-2={!emailError}
+							class:pb-2={emailError}
+							class:pt-0.5={emailError}
+							placeholder="Email"
+							required
+						/>
+					</div>
 				</div>
-				{#if emailError}
-					<p class="mt-1 text-xs text-red-600">{emailError}</p>
-				{/if}
 			</div>
 
-			<!-- Password input -->
 			<div class="flex flex-col">
 				<div class="relative flex">
 					<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -515,7 +535,6 @@
 				</div>
 			</div>
 
-			<!-- Password confirmation -->
 			<div class="flex flex-col">
 				<div class="relative flex">
 					<span class="inline-flex items-center px-3 text-sm text-gray-500 bg-white border-t border-b border-l border-gray-300 shadow-sm rounded-l-md">
@@ -523,17 +542,31 @@
 							<path d="M1376 768q40 0 68 28t28 68v576q0 40-28 68t-68 28h-960q-40 0-68-28t-28-68v-576q0-40 28-68t68-28h32v-320q0-185 131.5-316.5t316.5-131.5 316.5 131.5 131.5 316.5q0 26-19 45t-45 19h-64q-26 0-45-19t-19-45q0-106-75-181t-181-75-181 75-75 181v320h736z" />
 						</svg>
 					</span>
-					<input
-						value={signupFields.repassword ?? ""}
-						type={showRepassword ? "text" : "password"}
-						id="repassword"
-						name="repassword"
-						class="flex-1 min-w-0 px-4 py-2 pr-10 text-base bg-white border border-gray-300 rounded-r-none shadow-sm appearance-none text-gray-700 focus:outline-none focus:border-green-600 border-l-0"
+					<div
+						class="flex min-w-0 flex-1 flex-col rounded-l-lg border border-gray-300 bg-white shadow-sm focus-within:border-green-600"
 						class:border-red-500={repasswordError}
-						placeholder="Potvrzení hesla"
-						minlength="8"
-						required
-					/>
+					>
+						{#if repasswordError}
+							<p id="repassword-error" class="px-4 pt-1 text-xs font-semibold leading-4 text-red-600">
+								{repasswordError}
+							</p>
+						{/if}
+						<input
+							value={signupFields.repassword ?? ""}
+							type={showRepassword ? "text" : "password"}
+							id="repassword"
+							name="repassword"
+							aria-invalid={repasswordError ? "true" : undefined}
+							aria-describedby={repasswordError ? "repassword-error" : undefined}
+							class="w-full min-w-0 appearance-none rounded-none border-0 bg-transparent px-4 text-base text-gray-700 shadow-none ring-0 focus:border-0 focus:outline-none focus:ring-0"
+							class:py-2={!repasswordError}
+							class:pb-2={repasswordError}
+							class:pt-0.5={repasswordError}
+							placeholder="Potvrzení hesla"
+							minlength="8"
+							required
+						/>
+					</div>
 					<button
 						type="button"
 						class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
@@ -554,13 +587,9 @@
 						{/if}
 					</button>
 				</div>
-				{#if repasswordError}
-					<p class="mt-1 text-xs text-red-600">{repasswordError}</p>
-				{/if}
 			</div>
 
 
-			<!-- Terms agreement -->
 			<div class="space-y-2">
 				<label class="flex items-center">
 					<input
@@ -574,14 +603,15 @@
 						</a>
 					</span>
 				</label>
-				{#if !agreedToTerms}
-					<p class="text-xs text-red-600 font-semibold">
-						Pro dokončení registrace je nutné souhlasit s obchodními podmínkami
-					</p>
-				{/if}
+				<p
+					class="text-xs text-red-600 font-semibold"
+					class:invisible={agreedToTerms}
+					aria-hidden={agreedToTerms}
+				>
+					Pro dokončení registrace je nutné souhlasit s obchodními podmínkami
+				</p>
 			</div>
 
-			<!-- Submit button -->
 			<button
 				type="submit"
 				class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -600,7 +630,6 @@
 				{/if}
 			</button>
 
-			<!-- Form messages -->
 			{#if form}
 				<div
 					class="w-full p-3 border rounded-lg"
