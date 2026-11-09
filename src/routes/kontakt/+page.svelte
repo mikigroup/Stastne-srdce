@@ -11,26 +11,31 @@
 		Mail as MailIcon,
 		Clock,
 		Globe
-	} from "lucide-svelte";
+	} from "@lucide/svelte";
 	import { PUBLIC_RECAPTCHA_SITE_KEY, PUBLIC_GOOGLE_MAPS_API_KEY } from "$env/static/public";
 
-	export let data: any;
-	export let form: any;
+	interface Props {
+		data: any;
+		form: any;
+	}
 
-	let { session, supabase, settings } = data;
-	$: ({ session, supabase, settings } = data);
+	let { data, form }: Props = $props();
+
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+	let settings = $derived(data.settings);
 
 	// Extrahujeme data z settings
-	$: contact = settings?.contact || {};
-	$: business = settings?.business || {};
+	let contact = $derived(settings?.contact || {});
+	let business = $derived(settings?.business || {});
 	
 	// Title pro mapu z nastavení
-	$: mapTitle = business?.companyName && contact?.address ? 
+	let mapTitle = $derived(business?.companyName && contact?.address ? 
 		`${business.companyName} - ${contact.address}` : 
-		'';
+		'');
 
-	let submitting = false;
-	let recaptchaError = "";
+	let submitting = $state(false);
+	let recaptchaError = $state("");
 
 	function recaptchaSrc(): string {
 		return `https://www.google.com/recaptcha/api.js?render=${PUBLIC_RECAPTCHA_SITE_KEY}`;

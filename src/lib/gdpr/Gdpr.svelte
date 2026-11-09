@@ -1,30 +1,49 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { cookieStore, type CookieCategory } from '../stores/cookieStore';
 
-	const dispatch = createEventDispatcher();
+    interface Props {
+        visible?: boolean;
+        showSettingsButton?: boolean;
+        showEditIcon?: boolean;
+        privacyPolicyUrl?: string;
+        headingText?: string;
+        descriptionText?: string;
+        acceptAllLabel?: string;
+        acceptSelectedLabel?: string;
+        rejectAllLabel?: string;
+        settingsLabel?: string;
+        editLabel?: string;
+        onshow?: () => void;
+        onacceptAll?: () => void;
+        onrejectAll?: () => void;
+        onacceptSelection?: () => void;
+    }
 
-	// Props
-	export let visible: boolean = true;
-	export let showSettingsButton: boolean = true;
-	export let showEditIcon: boolean = true;
-	export let privacyPolicyUrl: string = '/gdpr';
-
-	// Text labels - možná přizpůsobit podle jazyka
-	export let headingText: string = 'Souhlas s cookies';
-	export let descriptionText: string = 'Abychom poskytli co nejlepší služby, používáme technologie jako jsou cookies pro ukládání a přístup k informacím o zařízení. Souhlas s těmito technologiemi nám umožní zpracovávat údaje, jako je chování při procházení nebo unikátní ID na tomto webu.';
-	export let acceptAllLabel: string = 'Přijmout vše';
-	export let acceptSelectedLabel: string = 'Potvrdit výběr';
-	export let rejectAllLabel: string = 'Odmítnout vše';
-	export let settingsLabel: string = 'Vlastní nastavení';
-	export let editLabel: string = 'Upravit nastavení cookies';
+    let {
+        visible = true,
+        showSettingsButton = true,
+        showEditIcon = true,
+        privacyPolicyUrl = '/gdpr',
+        headingText = 'Souhlas s cookies',
+        descriptionText = 'Abychom poskytli co nejlepší služby, používáme technologie jako jsou cookies pro ukládání a přístup k informacím o zařízení. Souhlas s těmito technologiemi nám umožní zpracovávat údaje, jako je chování při procházení nebo unikátní ID na tomto webu.',
+        acceptAllLabel = 'Přijmout vše',
+        acceptSelectedLabel = 'Potvrdit výběr',
+        rejectAllLabel = 'Odmítnout vše',
+        settingsLabel = 'Vlastní nastavení',
+        editLabel = 'Upravit nastavení cookies',
+        onshow,
+        onacceptAll,
+        onrejectAll,
+        onacceptSelection
+    }: Props = $props();
 
 	// Stavy
-	let shown: boolean = false;
-	let settingsShown: boolean = false;
-	let cookieCategories: Record<string, any> = {};
+	let shown: boolean = $state(false);
+	let settingsShown: boolean = $state(false);
+	let cookieCategories: Record<string, any> = $state({});
 
 	// Pomocná funkce pro reaktivní aktualizaci
 	function updateCategoryValue(id: CookieCategory, value: boolean) {
@@ -37,7 +56,7 @@
 		cookieCategories = { ...$cookieStore };
 		shown = true;
 		settingsShown = false;
-		dispatch('show');
+		onshow?.();
 	}
 
 	function showSettings() {
@@ -56,21 +75,21 @@
 		cookieStore.saveSelection();
 		shown = false;
 		settingsShown = false;
-		dispatch('accept-selection');
+		onacceptSelection?.();
 	}
 
 	function acceptAll() {
 		cookieStore.acceptAll();
 		shown = false;
 		settingsShown = false;
-		dispatch('accept-all');
+		onacceptAll?.();
 	}
 
 	function rejectAll() {
 		cookieStore.rejectAll();
 		shown = false;
 		settingsShown = false;
-		dispatch('reject-all');
+		onrejectAll?.();
 	}
 
 	onMount(() => {
@@ -82,16 +101,18 @@
 	});
 
 	// Reaktivní aktualizace když se změní prop 'visible'
-	$: if (visible !== shown && visible) {
-		show();
-	}
+	$effect(() => {
+        if (visible !== shown && visible) {
+    		show();
+    	}
+    });
 </script>
 
 {#if showEditIcon && !shown}
 	<button
 		class="cookie-btn-toggle"
 		aria-label={editLabel}
-		on:click={() => show()}
+		onclick={() => show()}
 		transition:fade={{duration: 200}}>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -120,15 +141,15 @@
 						</p>
 					</div>
 					<div class="cookie-buttons">
-						<button class="cookie-btn cookie-btn-reject" on:click={rejectAll}>
+						<button class="cookie-btn cookie-btn-reject" onclick={rejectAll}>
 							{rejectAllLabel}
 						</button>
 						{#if showSettingsButton}
-							<button class="cookie-btn cookie-btn-settings" on:click={showSettings}>
+							<button class="cookie-btn cookie-btn-settings" onclick={showSettings}>
 								{settingsLabel}
 							</button>
 						{/if}
-						<button class="cookie-btn cookie-btn-accept" on:click={acceptAll}>
+						<button class="cookie-btn cookie-btn-accept" onclick={acceptAll}>
 							{acceptAllLabel}
 						</button>
 					</div>
@@ -138,7 +159,7 @@
 				<div class="cookie-settings">
 					<div class="cookie-header">
 						<h2>Nastavení cookies</h2>
-						<button class="cookie-btn-close" on:click={() => closeSettings(false)}>
+						<button class="cookie-btn-close" onclick={() => closeSettings(false)}>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 							</svg>
@@ -156,7 +177,7 @@
 												type="checkbox"
 												bind:checked={category.value}
 												disabled={category.required}
-												on:change={() => updateCategoryValue(category.id, category.value)}
+												onchange={() => updateCategoryValue(category.id, category.value)}
 											/>
 											<span class="cookie-slider"></span>
 										</label>
@@ -168,13 +189,13 @@
 						</div>
 					</div>
 					<div class="cookie-buttons">
-						<button class="cookie-btn cookie-btn-reject" on:click={rejectAll}>
+						<button class="cookie-btn cookie-btn-reject" onclick={rejectAll}>
 							{rejectAllLabel}
 						</button>
-						<button class="cookie-btn cookie-btn-accept-selected" on:click={acceptSelected}>
+						<button class="cookie-btn cookie-btn-accept-selected" onclick={acceptSelected}>
 							{acceptSelectedLabel}
 						</button>
-						<button class="cookie-btn cookie-btn-accept" on:click={acceptAll}>
+						<button class="cookie-btn cookie-btn-accept" onclick={acceptAll}>
 							{acceptAllLabel}
 						</button>
 					</div>

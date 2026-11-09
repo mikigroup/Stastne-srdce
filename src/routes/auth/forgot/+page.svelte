@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
@@ -14,12 +14,17 @@
 		email?: string;
 	};
 	
-	export let form: FormData | null = null;
-	export let data;
-	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
+	interface Props {
+		form?: FormData | null;
+		data: any;
+	}
 
-	let loading = false;
+	let { form = null, data }: Props = $props();
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+	let user = $derived(data.user);
+
+	let loading = $state(false);
 
 	const { generalSettings } = data;
 </script>

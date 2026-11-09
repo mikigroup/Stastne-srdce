@@ -2,7 +2,6 @@
 	import "./app.css";
 	import "./banner.css";
 	import { page } from "$app/state";
-	import { afterNavigate } from "$app/navigation";
 	import { browser } from "$app/environment";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
@@ -18,7 +17,8 @@
 	import { ROUTES } from "$lib/constants/routes";
 	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 
-	export let data: {
+	interface Props {
+		data: {
 		session: Session | null;
 		supabase: SupabaseClient | null;
 		user: User | null;
@@ -32,15 +32,16 @@
 		generalSettings: GeneralSettings | undefined;
 		profile: Profile | null;
 	};
-	let { supabase, session, user, profile } = data;
-	$: ({ supabase, session, user, profile } = data);
+		children?: import('svelte').Snippet;
+	}
 
-	let pathname: string = page.url.pathname;
-	afterNavigate((navigation) => {
-		if (navigation.to) pathname = navigation.to.url.pathname;
-	});
+	let { data, children }: Props = $props();
+	let supabase = $derived(data.supabase);
+	let session = $derived(data.session);
+	let user = $derived(data.user);
+	let profile = $derived(data.profile);
 
-	$: showRegistrationBanner = browser && session && user && profile && profile.registration_status !== "completed" && !pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE);
+	let showRegistrationBanner = $derived(browser && session && user && profile && profile.registration_status !== "completed" && !page.url.pathname.startsWith(ROUTES.AUTH.SIGNUP_COMPLETE));
 
 	onMount(() => {
 		injectSpeedInsights();
@@ -65,11 +66,12 @@
 	});
 
 	const cookieName = 'stastne_srdce_cookies';
-	$: showBanner = browser && !cookieStore.hasConsent();
+	let bannerHidden = $state(false);
+	let showBanner = $derived(browser && !bannerHidden && !cookieStore.hasConsent());
 
-	$: seoSettings = data.settings?.seo;
-	$: generalSettings = data.settings?.general;
-	$: appearanceSettings = data.settings?.appearance;
+	let seoSettings = $derived(data.settings?.seo);
+	let generalSettings = $derived(data.settings?.general);
+	let appearanceSettings = $derived(data.settings?.appearance);
 </script>
 
 <svelte:head>
@@ -91,9 +93,9 @@
 		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
 	{/if}
 
-	<link rel="canonical" href="https://www.stastnesrdce.cz{pathname}" />
+	<link rel="canonical" href="https://www.stastnesrdce.cz{page.url.pathname}" />
 
-	{#if pathname.startsWith('/auth')}
+	{#if page.url.pathname.startsWith('/auth')}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 
@@ -210,10 +212,10 @@
 
 <Header {data} />
 
-<div class="pt-5 mt-20" />
+<div class="pt-5 mt-20"></div>
 
 <main>
-	<slot />
+	{@render children?.()}
 </main>
 
 {#if showRegistrationBanner}
@@ -239,18 +241,18 @@
 <GDPR
 	visible={showBanner}
 	showEditIcon={true}
-	on:show={() => {}}
-	on:accept-all={() => {
+	onshow={() => {}}
+	onacceptAll={() => {
 		cookieStore.acceptAll();
-		showBanner = false;
+		bannerHidden = true;
 	}}
-	on:reject-all={() => {
+	onrejectAll={() => {
 		cookieStore.rejectAll();
-		showBanner = false;
+		bannerHidden = true;
 	}}
-	on:accept-selection={() => {
+	onacceptSelection={() => {
 		cookieStore.saveSelection();
-		showBanner = false;
+		bannerHidden = true;
 	}}
 />
 

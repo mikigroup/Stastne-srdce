@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  export let data;
+  import { page } from "$app/state";
+  let { data } = $props();
 
   const { generalSettings } = data;
 </script>

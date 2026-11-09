@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
@@ -15,15 +15,19 @@
 		password?: string;
 	};
 	
-	export let form: FormData | null = null;
-	export let data;
-	let { session, supabase, user } = data;
-	$: ({ session, supabase, user } = data);
-	
-	// Message z page data
-	let message = $page.data.message;
+	interface Props {
+		form?: FormData | null;
+		data: any;
+	}
 
-	let loading = false;
+	let { form = null, data }: Props = $props();
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+	let user = $derived(data.user);
+
+	let message = $derived(page.data.message);
+
+	let loading = $state(false);
 
 	async function signInWithGoogle() {
 		if (!supabase) return;
@@ -50,7 +54,7 @@
 	title="Přihlášení do účtu"
 	subtitle="Ještě nemáte účet? <a href='/auth/signup' class='underline hover:underline hover:text-black'>Přidej se</a>"
 >
-	{#if $page.data.session}
+	{#if page.data.session}
 		<div class="flex w-full text-xl">
 			<p>Jste přihlášeni.</p>
 		</div>

@@ -1,14 +1,18 @@
 <script lang="ts">
 	import { CartItemsStore, type CartItem } from "$lib/stores/store";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
 	import { ROUTES } from "$lib/constants/routes";
 
 	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
-	export let menu: Menu;
-	export let productsSettings: any = {};
+	interface Props {
+		menu: Menu;
+		productsSettings?: any;
+	}
+
+	let { menu, productsSettings = {} }: Props = $props();
 
 
 	
@@ -48,7 +52,7 @@
 	}
 
 	function addToCart(variant: (typeof menu.variants)[0]) {
-		if ($page.data.session) {
+		if (page.data.session) {
 			const cartItem: CartItem = {
 				id: menu.id,
 				date: menu.date || "",
@@ -127,7 +131,7 @@
 							</div>
 						{/if}
 					</div>
-					{#if !$page.data.session}
+					{#if !page.data.session}
 						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2 mt-5">
 							<div
 								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
@@ -138,8 +142,8 @@
 						<div
 							class="flex justify-end pt-2"
 							role="button"
-							on:click={() => addToCart(variant)}
-							on:keydown={(e) => e.key === "Enter" && addToCart(variant)}
+							onclick={() => addToCart(variant)}
+							onkeydown={(e) => e.key === "Enter" && addToCart(variant)}
 							tabindex="0">
 							<div
 								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 mt-5">

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fly } from "svelte/transition";
-	export let data;
+	let { data } = $props();
 
 	const { generalSettings } = data;
 </script>

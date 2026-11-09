@@ -1,4 +1,5 @@
 import eslintPluginSvelte from "eslint-plugin-svelte";
+import svelteParser from "svelte-eslint-parser";
 import typescriptParser from "@typescript-eslint/parser";
 import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import prettierConfig from "eslint-config-prettier";
@@ -22,7 +23,7 @@ export default [
 	{
 		files: ["**/*.svelte"],
 		languageOptions: {
-			parser: "svelte-eslint-parser",
+			parser: svelteParser,
 			parserOptions: {
 				parser: typescriptParser
 			}

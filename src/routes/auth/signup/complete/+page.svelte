@@ -5,8 +5,9 @@
 
 	import { ROUTES } from "$lib/constants/routes";
 
-	export let data: PageData;
-	export let form: {
+	interface Props {
+		data: PageData;
+		form?: {
 		first_name?: string;
 		last_name?: string;
 		street?: string;
@@ -25,29 +26,32 @@
 		company?: string;
 		ico?: string;
 		dic?: string;
-	} = {};
+	};
+	}
 
-	let loading = false;
-	let first_name = form?.first_name ?? data.profile?.first_name ?? "";
-	let last_name = form?.last_name ?? data.profile?.last_name ?? "";
-	let street = form?.street ?? data.profile?.street ?? "";
-	let street_number = form?.street_number ?? data.profile?.street_number ?? "";
-	let city = form?.city ?? data.profile?.city ?? "";
-	let zip_code = form?.zip_code ?? data.profile?.zip_code ?? "";
-	let telephone = form?.telephone ?? data.profile?.telephone ?? "";
+	let { data, form = {} }: Props = $props();
+
+	let loading = $state(false);
+	let first_name = $state(form?.first_name ?? data.profile?.first_name ?? "");
+	let last_name = $state(form?.last_name ?? data.profile?.last_name ?? "");
+	let street = $state(form?.street ?? data.profile?.street ?? "");
+	let street_number = $state(form?.street_number ?? data.profile?.street_number ?? "");
+	let city = $state(form?.city ?? data.profile?.city ?? "");
+	let zip_code = $state(form?.zip_code ?? data.profile?.zip_code ?? "");
+	let telephone = $state(form?.telephone ?? data.profile?.telephone ?? "");
 	let company = form?.company ?? data.profile?.company ?? "";
 	let ico = form?.ico ?? data.profile?.ico ?? "";
 	let dic = form?.dic ?? data.profile?.dic ?? "";
-	let allergies = form?.allergies ? "yes" : data.profile?.allergies ? "yes" : "no";
-	let allergiesDescription = form?.allergies_description ?? data.profile?.allergies_description ?? "";
-	let deliveryMethod = form?.delivery_method ?? data.profile?.delivery_method ?? "";
-	let paymentMethod = form?.payment_method ?? data.profile?.payment_method ?? "";
+	let allergies = $state(form?.allergies ? "yes" : data.profile?.allergies ? "yes" : "no");
+	let allergiesDescription = $state(form?.allergies_description ?? data.profile?.allergies_description ?? "");
+	let deliveryMethod = $state(form?.delivery_method ?? data.profile?.delivery_method ?? "");
+	let paymentMethod = $state(form?.payment_method ?? data.profile?.payment_method ?? "");
 
 	// Delivery i payment options jsou načteny z databáze v +page.server.ts
 	// (site_settings je zdroj pravdy). Žádný hardcode fallback – při chybějících
 	// datech radši nezobrazíme žádnou volbu, než abychom nabízeli neaktuální metody.
-	$: deliveryMethodOptions = (data as any).deliveryMethodOptions || [];
-	$: paymentMethodOptions = (data as any).paymentMethodOptions || [];
+	let deliveryMethodOptions = $derived((data as any).deliveryMethodOptions || []);
+	let paymentMethodOptions = $derived((data as any).paymentMethodOptions || []);
 
 	function toggleAllergies(value: string) {
 		allergies = value;
@@ -212,7 +216,7 @@
 								name="allergies"
 								value="no"
 								checked={allergies === "no"}
-								on:change={() => toggleAllergies("no")}
+								onchange={() => toggleAllergies("no")}
 								class="mr-2"
 								required
 							/>
@@ -224,7 +228,7 @@
 								name="allergies"
 								value="yes"
 								checked={allergies === "yes"}
-								on:change={() => toggleAllergies("yes")}
+								onchange={() => toggleAllergies("yes")}
 								class="mr-2"
 								required
 							/>

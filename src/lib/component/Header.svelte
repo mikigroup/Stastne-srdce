@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { totalPiecesStore } from "$lib/stores/store";
 	import { goto } from "$app/navigation";
 	import { readable } from "svelte/store";
@@ -7,9 +7,10 @@
 	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/constants/routes";
 
-	export let data;
-	let { supabase, session, user } = data;
-	$: ({ supabase, session, user } = data);
+	let { data } = $props();
+	let supabase = $derived(data.supabase);
+	let session = $derived(data.session);
+	let user = $derived(data.user);
 
 	async function signOut() {
 		try {
@@ -22,7 +23,7 @@
 	}
 
 	// Logo ze site settings, fallback na default  
-	$: src = data.settings?.appearance?.logo || "/srdce.png";
+	let src = $derived(data.settings?.appearance?.logo || "/srdce.png");
 
 	const formatter = new Intl.DateTimeFormat("en", {
 		hour12: false,
@@ -40,14 +41,14 @@
 		};
 	});
 
-	let menuVisible = false;
+	let menuVisible = $state(false);
 	let loading = false;
-	let menuElement: HTMLElement | undefined;
-	let buttonElement: HTMLElement | undefined;
-	$: totalPieces = $totalPiecesStore;
+	let menuElement: HTMLElement | undefined = $state();
+	let buttonElement: HTMLElement | undefined = $state();
+	let totalPieces = $derived($totalPiecesStore);
 
-	$: generalSettings = data.generalSettings ?? data.settings?.general;
-	$: pathname = $page.url.pathname;
+	let generalSettings = $derived(data.generalSettings ?? data.settings?.general);
+	let pathname = $derived(page.url.pathname);
 
 	const mobileLinks = [
 		{ href: "/", label: "Úvod" },
@@ -142,7 +143,7 @@
 			</div>
 			<!-- Right section -->
 			<div class="flex items-center justify-self-end gap-2">
-				{#if $page.data.session}
+				{#if page.data.session}
 					<!-- Desktop nav for logged users -->
 					<div class="hidden xl:flex items-center gap-2">
 						<a href="/kosik" class="flex items-center gap-2 p-[10px] px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">
@@ -154,7 +155,7 @@
 							<span class="text-sm">{#if totalPieces}<strong>{totalPieces}</strong>{/if}</span>
 						</a>
 						<a href="/profile" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
-						 <button on:click={signOut} disabled={loading} id="signOut" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
+						 <button onclick={signOut} disabled={loading} id="signOut" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
 					</div>
 				{:else}
 					<!-- Desktop nav for guests -->
@@ -168,7 +169,7 @@
 				<div class="flex items-center xl:hidden">
 					<button
 						bind:this={buttonElement}
-						on:click={toggleMenu}
+						onclick={toggleMenu}
 						class="rounded-full p-2 hover:bg-slate-50"
 						aria-expanded={menuVisible}
 						aria-label={menuVisible ? "Zavřít menu" : "Otevřít menu"}>
@@ -199,7 +200,7 @@
 						<li>
 							<a
 								href={link.href}
-								on:click={closeMenu}
+								onclick={closeMenu}
 								class="flex h-full items-center justify-center rounded-2xl px-3 py-3 text-center text-base font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
 								{link.label}
 							</a>
@@ -210,7 +211,7 @@
 
 				<a
 					href="/kosik"
-					on:click={closeMenu}
+					onclick={closeMenu}
 					class="mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-2xl px-3 py-3 text-base font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
 					Košík
 					{#if totalPieces}
@@ -222,15 +223,15 @@
 				</a>
 
 				<div class="mx-auto mt-5 grid w-full max-w-[21rem] grid-cols-2 gap-2">
-					{#if $page.data.session}
+					{#if page.data.session}
 						<a
 							href="/profile"
-							on:click={closeMenu}
+							onclick={closeMenu}
 							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 							Účet
 						</a>
 						<button
-							on:click={signOut}
+							onclick={signOut}
 							disabled={loading}
 							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white disabled:opacity-50">
 							Odhlásit
@@ -238,13 +239,13 @@
 					{:else}
 						<a
 							href={ROUTES.AUTH.LOGIN}
-							on:click={closeMenu}
+							onclick={closeMenu}
 							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 							Přihlásit
 						</a>
 						<a
 							href={ROUTES.AUTH.SIGNUP}
-							on:click={closeMenu}
+							onclick={closeMenu}
 							class="rounded-2xl bg-green-800 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-green-900">
 							Přidej se
 						</a>

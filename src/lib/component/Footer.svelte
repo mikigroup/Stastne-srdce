@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	export let version = import.meta.env.PUBLIC_VERSION || '1.2';
+	let { version = import.meta.env.PUBLIC_VERSION || '1.2' } = $props();
 
-	$: footerText = $page.data.appearanceSettings?.footerText || '';
-	$: socialSettings = $page.data.socialSettings || {};
-	$: hasSocial = Boolean(
+	let footerText = $derived(page.data.appearanceSettings?.footerText || '');
+	let socialSettings = $derived(page.data.socialSettings || {});
+	let hasSocial = $derived(Boolean(
 		socialSettings.facebook ||
 			socialSettings.instagram ||
 			socialSettings.twitter ||
 			socialSettings.linkedin ||
 			socialSettings.youtube
-	);
+	));
 </script>
 
 <footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner md:pt-20">

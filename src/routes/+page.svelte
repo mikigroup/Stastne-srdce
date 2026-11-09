@@ -1,21 +1,23 @@
 <script lang="ts">
+	interface Props {
+		data: any;
+		params?: Record<string, string>; // Potlačení varování o neznámé prop
+	}
 
-	export let data;
-	export let params: Record<string, string> = {}; // Potlačení varování o neznámé prop
-	let { texts } = data;
-	$: ({ texts  } = data);
+	let { data, params = {} }: Props = $props();
+	let texts = $derived(data.texts);
 
 	const { generalSettings } = data;
 
 	let src = "/srdce.png";
 
-	$: appeal = (texts || []).find(
-		(text) =>
+	let appeal = $derived((texts || []).find(
+		(text: any) =>
 			text?.position === "center" && /pavlíkovi/i.test(text.title || "") && text.text
-	);
+	));
 
-	let appealOpen = false;
-	let appealExpanded = false;
+	let appealOpen = $state(false);
+	let appealExpanded = $state(false);
 
 	function toggleAppeal(event: MouseEvent) {
 		event.preventDefault();
@@ -72,11 +74,11 @@
 						</h2>
 						{#if appeal}
 							<details class="welcome-appeal" open={appealOpen}>
-								<summary on:click={toggleAppeal}>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
+								<summary onclick={toggleAppeal}>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
 								<div
 									class="welcome-appeal-content"
 									class:welcome-appeal--open={appealExpanded}
-									on:transitionend={onAppealContentTransitionEnd}
+									ontransitionend={onAppealContentTransitionEnd}
 								>
 									<div class="welcome-appeal-body">
 										{@html appeal.text}
@@ -90,7 +92,7 @@
 						<p>
 							Nahlédněte do našeho Info koutku, kde s vámi sdílíme novinky z naší kuchyně, fotografie, zajímavosti o surovinách, dění kolem nás i aktuální informace.
 						</p>
-						<a href="#info-koutek" class="welcome-news-link" on:click={scrollToInfoKoutek}>
+						<a href="#info-koutek" class="welcome-news-link" onclick={scrollToInfoKoutek}>
 							Nahlédnout do Info koutku&nbsp;→
 						</a>
 					</div>
@@ -176,7 +178,7 @@
 					<!-- Grid: sloupce odpovídají výběru left / center / right v Malém Leovi -->
 					<div
 						class="grid grid-cols-1 md:grid-cols-3 items-start gap-6 mb-20">
-						{#if texts && texts.some((text) => text && (text.title || text.text))}
+						{#if texts && texts.some((text: any) => text && (text.title || text.text))}
 							{#each texts as text, index (text?.position ?? index)}
 								{@const hasContent = !!(text && (text.title || text.text))}
 								<div class="w-full min-h-0 {hasContent ? '' : 'hidden md:block'}">

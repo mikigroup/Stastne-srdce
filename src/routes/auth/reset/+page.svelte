@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
@@ -15,12 +15,15 @@
 		repassword?: string;
 	};
 	
-	export let form: FormData | null = null;
-	export let data;
-	let { generalSettings } = data;
-	$: ({ generalSettings } = data);
+	interface Props {
+		form?: FormData | null;
+		data: any;
+	}
 
-	let loading = false;
+	let { form = null, data }: Props = $props();
+	let generalSettings = $derived(data.generalSettings);
+
+	let loading = $state(false);
 </script>
 
 <svelte:head>

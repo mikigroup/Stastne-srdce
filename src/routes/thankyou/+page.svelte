@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { CartItemsStore } from "$lib/stores/store";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 
-	export let data;
+	let { data } = $props();
 	const { order, profileValidation } = data;
 
 	// Funkce pro formátování data

@@ -1,7 +1,17 @@
 <script lang="ts">
-	export let title: string;
-	export let subtitle: string = "";
-	export let showBorder: boolean = true;
+	interface Props {
+		title: string;
+		subtitle?: string;
+		showBorder?: boolean;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		title,
+		subtitle = "",
+		showBorder = true,
+		children
+	}: Props = $props();
 </script>
 
 <div class="bg-white rounded-lg shadow-md {showBorder ? 'border border-gray-300' : ''} p-8 min-h-[500px] flex flex-col">
@@ -17,6 +27,6 @@
 	</div>
 	
 	<div class="flex-1">
-		<slot />
+		{@render children?.()}
 	</div>
 </div> 

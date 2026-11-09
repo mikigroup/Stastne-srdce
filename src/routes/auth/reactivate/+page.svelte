@@ -5,7 +5,11 @@
 	import { onMount } from 'svelte';
 	import { ROUTES } from "$lib/constants/routes";
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	// Auto-redirect po successful reactivation
 	onMount(() => {

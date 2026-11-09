@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Actions } from "@sveltejs/kit";
 	import { CartItemsStore, totalPiecesStore, type CartItem } from "$lib/stores/store";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
@@ -13,33 +13,32 @@
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 	import { PUBLIC_TENANT } from "$env/static/public";
 
-	export let data;
-	export let form: Actions;
+	interface Props {
+		data: any;
+		form: Actions;
+	}
 
-	let { session, supabase, user } = data;
+	let { data, form }: Props = $props();
+
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+	let user = $derived(data.user);
 	let loading = false;
-	let modal: Modal;
-	let isSubmitting = false;
-	let errorMessage = '';
+	let modal: Modal | undefined = $state();
+	let isSubmitting = $state(false);
+	let errorMessage = $state('');
 	let profileData: any = null;
 	let selectedTimeSlot: string = '';
-	let availableTimeSlots: TimeSlotAvailability[] = [];
-	let timeSlotSettings: any = null;
+	let availableTimeSlots: TimeSlotAvailability[] = $state([]);
+	let timeSlotSettings: any = $state(null);
 	
 	// Nové proměnné pro dopravu
-	let deliverySettings: any = null;
-	let deliveryPrice = 0;
-	let isDeliveryFree = false;
-
-	$: ({ session, supabase, user } = data);
-
-	// Store subscriptions
-	let cartItems: any[] = [];
-	$: cartItems = $CartItemsStore;
-	$: totalPieces = $totalPiecesStore;
+	let deliverySettings: any = $state(null);
+	let cartItems = $derived($CartItemsStore);
+	let totalPieces = $derived($totalPiecesStore);
 
 	// Calculate total price
-	$: totalPrice = cartItems.reduce((sum: number, item: any) => {
+	let totalPrice = $derived(cartItems.reduce((sum: number, item: any) => {
 		if (!item?.variants?.length) return sum;
 		return (
 			sum +
@@ -49,32 +48,22 @@
 				0
 			)
 		);
-	}, 0);
+	}, 0));
 
-	// Výpočet ceny dopravy a celkové ceny
-	$: if (deliverySettings && totalPrice > 0) {
-		// Kontrola dopravy zdarma
-		isDeliveryFree = totalPrice >= (deliverySettings.freeDeliveryThreshold || 0);
-		
-		// Výpočet ceny dopravy
-		if (isDeliveryFree) {
-			deliveryPrice = 0;
-		} else {
-			// Najdeme nejlevnější dopravní metodu
-			const availableMethods = deliverySettings.shippingMethods?.filter((method: any) => method.enabled !== false) || [];
-			if (availableMethods.length > 0) {
-				deliveryPrice = Math.min(...availableMethods.map((method: any) => method.price || 0));
-			} else {
-				deliveryPrice = 0;
-			}
+	let isDeliveryFree = $derived(
+		!!(deliverySettings && totalPrice > 0 && totalPrice >= (deliverySettings.freeDeliveryThreshold || 0))
+	);
+	let deliveryPrice = $derived.by(() => {
+		if (!(deliverySettings && totalPrice > 0) || isDeliveryFree) return 0;
+		const availableMethods = deliverySettings.shippingMethods?.filter((method: any) => method.enabled !== false) || [];
+		if (availableMethods.length > 0) {
+			return Math.min(...availableMethods.map((method: any) => method.price || 0));
 		}
-	} else {
-		deliveryPrice = 0;
-		isDeliveryFree = false;
-	}
+		return 0;
+	});
 
 	// Celková cena včetně dopravy
-	$: totalPriceWithDelivery = totalPrice + deliveryPrice;
+	let totalPriceWithDelivery = $derived(totalPrice + deliveryPrice);
 
 	// Funkce pro výpočet ceny variant
 	function calculateVariantPrice(variants: any[]): number {
@@ -84,10 +73,10 @@
 	}
 
 	// Kontrola minimální hodnoty objednávky
-	$: minimumOrderMet = !deliverySettings?.minimumOrderValue || totalPrice >= deliverySettings.minimumOrderValue;
-	$: minimumOrderMessage = deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue 
+	let minimumOrderMet = $derived(!deliverySettings?.minimumOrderValue || totalPrice >= deliverySettings.minimumOrderValue);
+	let minimumOrderMessage = $derived(deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue 
 		? `Minimální hodnota objednávky je ${deliverySettings.minimumOrderValue} Kč. Chybí ${deliverySettings.minimumOrderValue - totalPrice} Kč.`
-		: '';
+		: '');
 
 	async function getProfile() {
 		const client = supabase;
@@ -255,9 +244,11 @@
 	});
 
 	// Reakce na změnu košíku - načtení časových slotů
-	$: if (cartItems.length > 0) {
-		loadTimeSlots();
-	}
+	$effect(() => {
+		if (cartItems.length > 0) {
+			loadTimeSlots();
+		}
+	});
 
 	const { generalSettings } = data;
 
@@ -270,11 +261,14 @@
 </svelte:head>
 
 <section>
-	{#if $page.data.session}
+	{#if page.data.session}
 		<form
 			method="POST"
 			action="?/sendOrder"
-			on:submit|preventDefault={handleSubmit}
+			onsubmit={(event) => {
+				event.preventDefault();
+				handleSubmit(event);
+			}}
 			use:enhance={() => {
 				return async ({ result }) => {
 					console.log('Form action result:', result);
@@ -348,8 +342,10 @@
 											</span>
 											<button
 												class="hover:animate-spin"
-												on:click|preventDefault={() =>
-													CartItemsStore.removeItem(cartItem.id, variant.id)}>
+												onclick={(event) => {
+													event.preventDefault();
+													CartItemsStore.removeItem(cartItem.id, variant.id);
+												}}>
 												X
 											</button>
 										</div>
@@ -365,7 +361,7 @@
 											max="99"
 											type="number"
 											bind:value={variant.quantity}
-											on:change={() =>
+											onchange={() =>
 												CartItemsStore.updateQuantity(
 													cartItem.id,
 													variant.id,
@@ -449,7 +445,7 @@
 													max="99"
 													type="number"
 													bind:value={variant.quantity}
-													on:change={() =>
+													onchange={() =>
 														CartItemsStore.updateQuantity(
 															cartItem.id,
 															variant.id,
@@ -473,8 +469,10 @@
 										<button
 											type="button"
 											class="hover:animate-spin"
-											on:click|preventDefault={() =>
-												CartItemsStore.removeItem(cartItem.id, variant.id)}>
+											onclick={(event) => {
+												event.preventDefault();
+												CartItemsStore.removeItem(cartItem.id, variant.id);
+											}}>
 											X
 										</button>
 									{/each}
@@ -536,7 +534,7 @@
 									name="note"
 									rows="4"
 									cols="50"
-									placeholder="poznámka k objednávce" />
+									placeholder="poznámka k objednávce"></textarea>
 							</div>
 
 							<div class="grid p-5 border-b justify-items-end">			
@@ -584,7 +582,7 @@
 									type="button"
 									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
 									disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet}
-									on:click={handleSubmit}
+									onclick={handleSubmit}
 								>
 									{#if isSubmitting}
 										<span class="inline-flex items-center">
@@ -623,11 +621,10 @@
 
 	<Modal 
 		bind:this={modal} 
-		on:close={() => {
-			// Nepotřebujeme čistit errorMessage zde, protože validační chyby se zobrazují před modálem
+		onclose={() => {
 			if (modal) modal.close();
 		}}
-		on:confirm={() => {
+		onconfirm={() => {
 			isSubmitting = true;
 			const form = document.querySelector('form');
 			if (form) {

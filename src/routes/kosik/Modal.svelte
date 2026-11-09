@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	interface Props {
+		children?: import('svelte').Snippet;
+		onclose?: () => void;
+		onconfirm?: () => void;
+	}
+
+	let { children, onclose, onconfirm }: Props = $props();
 
 	interface Dialog extends HTMLDialogElement {
 		showModal: () => void;
 		close: () => void;
 	}
 
-	let dialog: Dialog | null = null;
+	let dialog: Dialog | null = $state(null);
 
 	export function show() {
 		if (dialog) {
@@ -25,23 +30,25 @@
 <dialog
 	class="w-full max-w-2xl p-0 relative"
 	bind:this={dialog}
-	on:close={() => dispatch('close')}
-	on:click|self={() => close()}>
+	onclose={() => onclose?.()}
+	onclick={(event) => {
+		if (event.target === event.currentTarget) close();
+	}}>
 	<button
 		class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10"
 		type="button"
-		on:click={() => close()}>
+		onclick={() => close()}>
 		<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 		</svg>
 	</button>
-	<div class="p-8" on:click|stopPropagation>
-		<slot />
+	<div class="p-8" onclick={(event) => event.stopPropagation()}>
+		{@render children?.()}
 		<div class="mt-8">
 			<button
 				class="w-full px-6 py-3 text-center text-white bg-green-800 border rounded-lg shadow-md hover:bg-green-700 text-lg font-semibold"
 				type="button"
-				on:click={() => dispatch('confirm')}>
+				onclick={() => onconfirm?.()}>
 				Potvrdit
 			</button>
 		</div>

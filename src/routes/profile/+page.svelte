@@ -22,16 +22,18 @@
 		}>;
 	};
 
-	export let data;
-	export let form;
-	let { session, supabase, profile, orders, generalSettings } = data;
-	$: ({ session, supabase, profile, orders, generalSettings } = data);
-	$: deliveryMethodOptions = (data as any).deliveryMethodOptions;
-	$: paymentMethodOptions = (data as any).paymentMethodOptions;
+	let { data, form } = $props();
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+	let profile = $derived(data.profile);
+	let orders = $derived(data.orders);
+	let generalSettings = $derived(data.generalSettings);
+	let deliveryMethodOptions = $derived((data as any).deliveryMethodOptions);
+	let paymentMethodOptions = $derived((data as any).paymentMethodOptions);
 
-	let visible: boolean = true;
-	let expandedOrders: { [key: string]: boolean } = {};
-	let selectedOrderId: string | null = null;
+	let visible: boolean = $state(true);
+	let expandedOrders: { [key: string]: boolean } = $state({});
+	let selectedOrderId: string | null = $state(null);
 
 	const toggleVisible = () => {
 		visible = !visible;
@@ -50,73 +52,73 @@
 		return items.reduce((total, item) => total + (item.quantity || 0), 0);
 	}
 
-	let profileForm: HTMLFormElement;
-	let loading = false;
+	let profileForm: HTMLFormElement | undefined = $state();
+	let loading = $state(false);
 	let username: string = profile?.username ?? "";
-	let first_name: string = profile?.first_name ?? "";
-	let last_name: string = profile?.last_name ?? "";
-	let telephone: string = profile?.telephone ?? "";
-	let street: string = profile?.street ?? "";
-	let street_number: string = profile?.street_number ?? "";
-	let city: string = profile?.city ?? "";
-	let ico: string = profile?.ico ?? "";
-	let dic: string = profile?.dic ?? "";
-	let company: string = profile?.company ?? "";
-	let zip_code: string = profile?.zip_code ?? "";
-	let allergies: string = profile?.allergies ? "yes" : "no";
-	let allergiesDescription: string = profile?.allergies_description ?? "";
-	let deliveryMethod: string = profile?.delivery_method ?? "";
-	let paymentMethod: string = profile?.payment_method ?? "";
-
-	let profileValidationMessage = '';
+	let first_name: string = $state(profile?.first_name ?? "");
+	let last_name: string = $state(profile?.last_name ?? "");
+	let telephone: string = $state(profile?.telephone ?? "");
+	let street: string = $state(profile?.street ?? "");
+	let street_number: string = $state(profile?.street_number ?? "");
+	let city: string = $state(profile?.city ?? "");
+	let ico: string = $state(profile?.ico ?? "");
+	let dic: string = $state(profile?.dic ?? "");
+	let company: string = $state(profile?.company ?? "");
+	let zip_code: string = $state(profile?.zip_code ?? "");
+	let allergies: string = $state(profile?.allergies ? "yes" : "no");
+	let allergiesDescription: string = $state(profile?.allergies_description ?? "");
+	let deliveryMethod: string = $state(profile?.delivery_method ?? "");
+	let paymentMethod: string = $state(profile?.payment_method ?? "");
 
 	// Delivery method options jsou načteny z databáze v +page.server.ts
 	// Fallback na prázdné pole, pokud nejsou k dispozici.
 	// Pokud uložená (výchozí) hodnota profilu není mezi aktivními možnostmi,
 	// přidáme ji, aby šla v selektu zobrazit a vybrat.
-	$: deliveryMethodOptionsList = (() => {
+	let deliveryMethodOptionsList = $derived((() => {
 		const base = deliveryMethodOptions ? [...deliveryMethodOptions] : [];
 		if (deliveryMethod && !base.some((o) => o.value === deliveryMethod)) {
 			base.push({ value: deliveryMethod, label: deliveryMethod });
 		}
 		return base;
-	})();
+	})());
 
 	// Payment method options jsou načteny z databáze v +page.server.ts
 	// Fallback je řešen v paymentMethods.ts, zde jen použijeme data z DB.
 	// Stejně jako u dopravy doplníme uloženou (výchozí) hodnotu, pokud chybí.
-	$: paymentMethodOptionsList = (() => {
+	let paymentMethodOptionsList = $derived((() => {
 		const base = paymentMethodOptions ? [...paymentMethodOptions] : [];
 		if (paymentMethod && !base.some((o) => o.value === paymentMethod)) {
 			base.push({ value: paymentMethod, label: paymentMethod });
 		}
 		return base;
-	})();
+	})());
 
 	// Svelte select nemusí předvybrat hodnotu, pokud se volby načtou až po mountu.
 	// Kontrolujeme proti serverové prop (deliveryMethodOptions), aby nevznikla
 	// cyklická závislost s deliveryMethodOptionsList (ta čte deliveryMethod).
-	let deliveryMethodSynced = false;
-	$: if (
-		!deliveryMethodSynced &&
-		profile?.delivery_method &&
-		deliveryMethodOptions?.some((o: { value: string }) => o.value === profile.delivery_method)
-	) {
-		deliveryMethod = profile.delivery_method;
-		deliveryMethodSynced = true;
-	}
+	let deliveryMethodSynced = $state(false);
+	$effect(() => {
+		if (
+			!deliveryMethodSynced &&
+			profile?.delivery_method &&
+			deliveryMethodOptions?.some((o: { value: string }) => o.value === profile.delivery_method)
+		) {
+			deliveryMethod = profile.delivery_method;
+			deliveryMethodSynced = true;
+		}
+	});
 
-	let paymentMethodSynced = false;
-	$: if (
-		!paymentMethodSynced &&
-		profile?.payment_method &&
-		paymentMethodOptions?.some((o: { value: string }) => o.value === profile.payment_method)
-	) {
-		paymentMethod = profile.payment_method;
-		paymentMethodSynced = true;
-	}
-
-	let fieldErrors: { [key: string]: string } = {};
+	let paymentMethodSynced = $state(false);
+	$effect(() => {
+		if (
+			!paymentMethodSynced &&
+			profile?.payment_method &&
+			paymentMethodOptions?.some((o: { value: string }) => o.value === profile.payment_method)
+		) {
+			paymentMethod = profile.payment_method;
+			paymentMethodSynced = true;
+		}
+	});
 
 	function validateField(field: string, value: string | undefined): string {
 		if (!value) {
@@ -139,22 +141,22 @@
 		return '';
 	}
 
-	$: {
-		fieldErrors = {
-			first_name: validateField('first_name', first_name),
-			last_name: validateField('last_name', last_name),
-			street: validateField('street', street),
-			street_number: validateField('street_number', street_number),
-			city: validateField('city', city),
-			zip_code: validateField('zip_code', zip_code),
-			telephone: validateField('telephone', telephone),
-			delivery_method: validateField('delivery_method', deliveryMethod),
-			payment_method: validateField('payment_method', paymentMethod),
-			company: validateField('company', company),
-			ico: validateField('ico', ico),
-			dic: validateField('dic', dic)
-		};
+	let fieldErrors = $derived({
+		first_name: validateField('first_name', first_name),
+		last_name: validateField('last_name', last_name),
+		street: validateField('street', street),
+		street_number: validateField('street_number', street_number),
+		city: validateField('city', city),
+		zip_code: validateField('zip_code', zip_code),
+		telephone: validateField('telephone', telephone),
+		delivery_method: validateField('delivery_method', deliveryMethod),
+		payment_method: validateField('payment_method', paymentMethod),
+		company: validateField('company', company),
+		ico: validateField('ico', ico),
+		dic: validateField('dic', dic)
+	});
 
+	let profileValidationMessage = $derived.by(() => {
 		const validationResult = validateProfileForInvoicing({
 			first_name,
 			last_name,
@@ -172,8 +174,8 @@
 			allergies: allergies === "yes",
 			allergies_description: allergiesDescription
 		});
-		profileValidationMessage = getProfileValidationMessage(validationResult);
-	}
+		return getProfileValidationMessage(validationResult);
+	});
 
 	const handleSubmit: SubmitFunction = () => {
 		loading = true;
@@ -183,9 +185,9 @@
 	};
 
 	// Data deletion request variables
-	let deletionConfirmed = false;
-	let legalUnderstanding = false;
-	let isDataManagementExpanded = false;
+	let deletionConfirmed = $state(false);
+	let legalUnderstanding = $state(false);
+	let isDataManagementExpanded = $state(false);
 </script>
 
 <svelte:head>
@@ -598,7 +600,7 @@
             <div
               class="flex justify-between items-center p-4 cursor-pointer"
               class:bg-green-50={selectedOrderId === order.id}
-              on:click={() => toggleOrderDetails(order.id)}
+              onclick={() => toggleOrderDetails(order.id)}
             >
               <div class="flex items-center space-x-3 gap-4">
                 <div class="flex items-center justify-center font-semibold">
@@ -699,7 +701,7 @@
       <button 
         type="button"
         class="w-full p-6 flex items-center justify-between text-left hover:bg-gray-100 rounded-lg focus:outline-none"
-        on:click={() => isDataManagementExpanded = !isDataManagementExpanded}
+        onclick={() => isDataManagementExpanded = !isDataManagementExpanded}
       >
         <div class="flex items-center space-x-3">
           <div class="flex-shrink-0">

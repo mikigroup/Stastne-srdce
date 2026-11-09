@@ -1,13 +1,13 @@
 <script>
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { ROUTES } from "$lib/constants/routes";
 
 	// Získání chybových informací z URL
-	const errorCode = $page.url.searchParams.get("error_code");
-	const errorMessage = $page.url.searchParams.get("error_message") || "Ověření se nezdařilo";
-	const errorType = $page.url.searchParams.get("error_type");
+	const errorCode = page.url.searchParams.get("error_code");
+	const errorMessage = page.url.searchParams.get("error_message") || "Ověření se nezdařilo";
+	const errorType = page.url.searchParams.get("error_type");
 
-	let userFriendlyMessage = "";
+	let userFriendlyMessage = $state("");
 
 	// Poskytnutí uživatelsky přívětivých zpráv podle typu chyby
 	if (errorCode === "401") {

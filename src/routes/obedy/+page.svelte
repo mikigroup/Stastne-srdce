@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { totalPiecesStore } from "$lib/stores/store";
 	import MenuItem from "./MenuItem.svelte";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import type { Menu } from "$lib/types/menu";
 
-	export let data: {
+	interface Props {
+		data: {
 		menus: Menu[];
 		texts: any;
 		visibleDays: number;
@@ -16,18 +17,21 @@
 			failed: number;
 		};
 	};
+	}
 
-	let filterVegetarian = false;
+	let { data }: Props = $props();
+
+	let filterVegetarian = $state(false);
 
 	// Filtrování menu podle vegetariánských jídel
-	$: filteredMenus = filterVegetarian 
+	let filteredMenus = $derived(filterVegetarian 
 		? data.menus
 			.map(menu => ({
 				...menu,
 				variants: menu.variants ? menu.variants.filter(variant => variant.vegetarian) : []
 			}))
 			.filter(menu => menu.variants.length > 0)
-		: data.menus;
+		: data.menus);
 
 	function scrollToTop(event: Event) {
 		event.preventDefault();
@@ -116,12 +120,12 @@
 		<div class="flex justify-end gap-4 pt-10 pr-5">
 			<a
 				href="#menu-content"
-				on:click={scrollToTop}
+				onclick={scrollToTop}
 				class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
 				Skoč nahoru
 			</a>
 
-			{#if $totalPiecesStore > 0 && $page.data.session}
+			{#if $totalPiecesStore > 0 && page.data.session}
 				<a
 					href="/kosik"
 					class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">

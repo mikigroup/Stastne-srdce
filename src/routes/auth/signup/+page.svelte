@@ -11,22 +11,26 @@
 		repassword?: string;
 	};
 
-	export let form: ActionData = null;
-	export let data;
-	let { session, supabase } = data;
-	$: ({ session, supabase } = data);
+	interface Props {
+		form?: ActionData;
+		data: any;
+	}
 
-	let loading = false;
-	let agreedToTerms = false;
-	let showPassword = false;
-	let showRepassword = false;
-	let passwordValue = "";
+	let { form = null, data }: Props = $props();
+	let session = $derived(data.session);
+	let supabase = $derived(data.supabase);
+
+	let loading = $state(false);
+	let agreedToTerms = $state(false);
+	let showPassword = $state(false);
+	let showRepassword = $state(false);
+	let passwordValue = $state("");
 	let repasswordValue = "";
 	let clientValidationFailed = false;
 	let recaptchaError = "";
-	let emailError = "";
-	let passwordError = "";
-	let repasswordError = "";
+	let emailError = $state("");
+	let passwordError = $state("");
+	let repasswordError = $state("");
 
 	function validateEmail(email: string): string {
 		if (!email) return "";
@@ -49,13 +53,15 @@
 		return "";
 	}
 
-	$: signupFields = (form ?? {}) as SignupFields;
+	let signupFields = $derived((form ?? {}) as SignupFields);
 
-	$: if (signupFields.errors) {
-		emailError = signupFields.errors.email || "";
-		passwordError = signupFields.errors.password || "";
-		repasswordError = signupFields.errors.repassword || "";
-	}
+	$effect(() => {
+		if (signupFields.errors) {
+			emailError = signupFields.errors.email || "";
+			passwordError = signupFields.errors.password || "";
+			repasswordError = signupFields.errors.repassword || "";
+		}
+	});
 
 	function validateSignupFields(formEl: HTMLFormElement): boolean {
 		const email = formEl.querySelector<HTMLInputElement>("#email")?.value ?? "";
@@ -300,7 +306,7 @@
 					class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
 					class:border-red-500={passwordError}
 					title={showPassword ? "Skrýt heslo" : "Zobrazit heslo"}
-					on:click={() => showPassword = !showPassword}
+					onclick={() => showPassword = !showPassword}
 					tabindex="-1"
 				>
 					{#if showPassword}
@@ -354,7 +360,7 @@
 					class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
 					class:border-red-500={repasswordError}
 					title={showRepassword ? "Skrýt heslo" : "Zobrazit heslo"}
-					on:click={() => showRepassword = !showRepassword}
+					onclick={() => showRepassword = !showRepassword}
 					tabindex="-1"
 				>
 					{#if showRepassword}
@@ -518,7 +524,7 @@
 						class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
 						class:border-red-500={passwordError}
 						title={showPassword ? "Skrýt heslo" : "Zobrazit heslo"}
-						on:click={() => showPassword = !showPassword}
+						onclick={() => showPassword = !showPassword}
 						tabindex="-1"
 					>
 						{#if showPassword}
@@ -572,7 +578,7 @@
 						class="inline-flex items-center justify-center px-3 text-gray-500 bg-white border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-green-600"
 						class:border-red-500={repasswordError}
 						title={showRepassword ? "Skrýt heslo" : "Zobrazit heslo"}
-						on:click={() => showRepassword = !showRepassword}
+						onclick={() => showRepassword = !showRepassword}
 						tabindex="-1"
 					>
 						{#if showRepassword}
