@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { totalPiecesStore } from "$lib/stores/store";
-	import { goto } from "$app/navigation";
+	import { beforeNavigate, goto } from "$app/navigation";
 	import { readable } from "svelte/store";
-	import { slide } from "svelte/transition";
 	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/constants/routes";
 
@@ -43,8 +42,6 @@
 
 	let menuVisible = $state(false);
 	let loading = false;
-	let menuElement: HTMLElement | undefined = $state();
-	let buttonElement: HTMLElement | undefined = $state();
 	let totalPieces = $derived($totalPiecesStore);
 
 	let generalSettings = $derived(data.generalSettings ?? data.settings?.general);
@@ -70,34 +67,34 @@
 			: "border border-transparent bg-slate-50 text-gray-800 hover:border-green-700 hover:bg-green-50 hover:text-green-800";
 	}
 
-	// Funkce pro zavření menu
 	function closeMenu() {
 		menuVisible = false;
 	}
 
-	// Funkce pro přepnutí menu
-	function toggleMenu() {
+	function toggleMenu(event: MouseEvent) {
+		event.stopPropagation();
 		menuVisible = !menuVisible;
 	}
 
-	// Event listener pro kliknutí mimo menu
+	// Zavřít dřív, než se vykreslí nová stránka. Animace odchodu by jinak
+	// nechala panel inertní a následující klik na ikonu se občas ztratil.
+	beforeNavigate(() => {
+		menuVisible = false;
+	});
+
 	onMount(() => {
-		function handleClickOutside(event: MouseEvent) {
+		function handlePointerDown(event: PointerEvent) {
+			if (!menuVisible) return;
 			const target = event.target;
-			if (menuVisible &&
-				menuElement &&
-				target instanceof Node &&
-				!menuElement.contains(target) &&
-				buttonElement &&
-				!buttonElement.contains(target)) {
-				closeMenu();
-			}
+			if (!(target instanceof Element)) return;
+			if (target.closest("[data-menu-button], [data-mobile-menu]")) return;
+			closeMenu();
 		}
 
-		document.addEventListener('click', handleClickOutside);
+		document.addEventListener("pointerdown", handlePointerDown);
 
 		return () => {
-			document.removeEventListener('click', handleClickOutside);
+			document.removeEventListener("pointerdown", handlePointerDown);
 		};
 	});
 </script>
@@ -168,9 +165,10 @@
 				<!-- Mobile menu button and cart -->
 				<div class="flex items-center xl:hidden">
 					<button
-						bind:this={buttonElement}
+						type="button"
+						data-menu-button
 						onclick={toggleMenu}
-						class="rounded-full p-2 hover:bg-slate-50"
+						class="relative z-20 rounded-full p-2 hover:bg-slate-50"
 						aria-expanded={menuVisible}
 						aria-label={menuVisible ? "Zavřít menu" : "Otevřít menu"}>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,8 +189,7 @@
 		<!-- Mobile menu -->
 		{#if menuVisible}
 			<div
-				bind:this={menuElement}
-				transition:slide={{ duration: 280 }}
+				data-mobile-menu
 				class="border-t border-gray-100 bg-white px-4 pb-4 pt-3 xl:hidden">
 				<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
 				<ul class="flex flex-col gap-2">
