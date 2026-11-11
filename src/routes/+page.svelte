@@ -63,7 +63,7 @@
 		<div
 			class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
 				<div
-					class="px-10 py-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl border border-gray-300">
+					class="p-5 md:p-10 ml-auto bg-white rounded-md shadow-lg lg:col-start-2 lg:max-w-2xl border border-gray-300">
 					<!-- <div class="grid justify-center pb-5">
 					<dotlottie-player src="https://lottie.host/d45caad6-2a0a-4326-8860-ac9153f4c0f5/QYAGZ8Vk6g.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
 					</div> -->
@@ -192,7 +192,7 @@
 												<hr class="mx-5" />
 											{/if}
 											{#if text.text}
-												<div class="p-5 mb-5 text-gray-600 text-md [&_img]:max-w-full [&_img]:h-auto">
+												<div class="md:p-5 mb-5 text-gray-600 text-md [&_img]:max-w-full [&_img]:h-auto">
 													{@html text.text}
 												</div>
 											{/if}
