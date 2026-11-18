@@ -11,35 +11,6 @@
 
 	let src = "/srdce.png";
 
-	let appeal = $derived((texts || []).find(
-		(text: any) =>
-			text?.position === "center" && /pavlíkovi/i.test(text.title || "") && text.text
-	));
-
-	let appealOpen = $state(false);
-	let appealExpanded = $state(false);
-
-	function toggleAppeal(event: MouseEvent) {
-		event.preventDefault();
-		if (appealExpanded) {
-			appealExpanded = false;
-			return;
-		}
-		appealOpen = true;
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				appealExpanded = true;
-			});
-		});
-	}
-
-	function onAppealContentTransitionEnd(event: TransitionEvent) {
-		if (event.propertyName !== "grid-template-rows") return;
-		if (!appealExpanded) {
-			appealOpen = false;
-		}
-	}
-
 	function scrollToInfoKoutek(event: MouseEvent) {
 		const target = document.getElementById("info-koutek");
 		if (!target) return;
@@ -72,20 +43,28 @@
 							class="text-3xl font-extrabold leading-8 text-slate-700 lg:text-4xl sm:leading-9 pb-5">
 							Vítejte na stránkách Šťastného srdce
 						</h2>
-						{#if appeal}
-							<details class="welcome-appeal" open={appealOpen}>
-								<summary onclick={toggleAppeal}>❤️ Pomáháme Pavlíkovi. Každé dobré srdce se počítá.</summary>
-								<div
-									class="welcome-appeal-content"
-									class:welcome-appeal--open={appealExpanded}
-									ontransitionend={onAppealContentTransitionEnd}
-								>
-									<div class="welcome-appeal-body">
-										{@html appeal.text}
-									</div>
-								</div>
-							</details>
-						{/if}
+						<div class="welcome-appeal">
+							<p class="welcome-appeal-title">SBÍRKA PRO PAVLÍKA BYLA ÚSPĚŠNĚ UKONČENA ❤️</p>
+							<div class="welcome-appeal-body">
+								<p>Milí přátelé Šťastného srdce,</p>
+								<p>
+									s velkou radostí vám oznamujeme, že naše společná sbírka pro Pavlíka dospěla do svého cíle.
+								</p>
+								<p>
+									Díky vaší štědrosti, ochotě a laskavosti se nám podařilo vybrat krásných 51&nbsp;000&nbsp;Kč.
+								</p>
+								<p>Celou částku jsme Pavlíkovi předali 17.&nbsp;listopadu 2026.</p>
+								<p>
+									Děkujeme všem, kteří přispěli, pekli, balili sušenky, pomáhali s organizací nebo nás podpořili milým slovem.
+								</p>
+								<p>Ukázali jste nám, že když se spojí dobrá srdce, dokážou velké věci.</p>
+								<p>
+									Pavlíkovi a jeho rodině přejeme, aby jim nová pomoc přinesla co nejvíce radosti a usnadnila každodenní život.
+								</p>
+								<p class="welcome-appeal-thanks">DĚKUJEME, ŽE JSTE POMÁHALI S NÁMI.</p>
+								<p class="welcome-appeal-sign">Šťastné srdce ❤️</p>
+							</div>
+						</div>
 					</div>
 					<div class="welcome-news">
 						<h3>Co je nového?</h3>
@@ -270,43 +249,29 @@
 		border: 1px solid #fecdd3;
 		border-radius: 0.5rem;
 		background-color: #fff1f2;
-		padding: 0.25rem 0.75rem 0.35rem;
-		transition: background-color 0.2s ease;
+		padding: 0.85rem 0.9rem 0.55rem;
 	}
-	.welcome-appeal:hover {
-		background-color: #ffe4e6;
-	}
-	.welcome-appeal > summary {
-		cursor: pointer;
-		list-style: none;
+	.welcome-appeal-title {
+		margin: 0;
 		text-align: center;
 		font-weight: 700;
 		color: #9f1239;
-		padding: 0.45rem 0;
-	}
-	.welcome-appeal > summary::-webkit-details-marker,
-	.welcome-appeal > summary::marker {
-		display: none;
-		content: none;
-	}
-	.welcome-appeal-content {
-		display: grid;
-		grid-template-rows: 0fr;
-		transition: grid-template-rows 0.7s ease;
-	}
-	.welcome-appeal-content.welcome-appeal--open {
-		grid-template-rows: 1fr;
+		line-height: 1.35;
 	}
 	.welcome-appeal-body {
-		min-height: 0;
-		overflow: hidden;
-		padding: 0.25rem 0 0.5rem;
+		padding: 0.2rem 0 0.15rem;
 		color: #334155;
 		font-size: 0.95rem;
 		line-height: 1.5;
 	}
-	.welcome-appeal-body :global(p) {
+	.welcome-appeal-body p {
 		margin: 0.6em 0;
+	}
+	.welcome-appeal-thanks,
+	.welcome-appeal-sign {
+		font-weight: 700;
+		text-align: center;
+		color: #9f1239;
 	}
 	.welcome-news {
 		margin-top: 1.25rem;
