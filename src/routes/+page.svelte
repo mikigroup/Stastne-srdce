@@ -44,7 +44,7 @@
 							Vítejte na stránkách Šťastného srdce
 						</h2>
 						<div class="welcome-appeal">
-							<p class="welcome-appeal-title">SBÍRKA PRO PAVLÍKA SKONČILA, VAŠE POMOC POKRAČUJE ❤️</p>
+							<h3 class="welcome-appeal-title">SBÍRKA PRO PAVLÍKA SKONČILA, VAŠE POMOC POKRAČUJE ❤️</h3>
 							<a href="#info-koutek" class="mt-5 welcome-appeal-link" onclick={scrollToInfoKoutek}>
 								Info koutek&nbsp;→
 							</a>
@@ -243,10 +243,10 @@
 		align-self: stretch;
 		margin: 0;
 		text-align: start;
+		font-size: 1.25rem;
 		font-weight: 700;
+		line-height: 1.3;
 		color: #9f1239;
-		letter-spacing: 0.08em;
-		line-height: 1.6;
 	}
 	.welcome-appeal-link {
 		display: inline-flex;
