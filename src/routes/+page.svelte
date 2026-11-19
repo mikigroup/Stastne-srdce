@@ -44,26 +44,10 @@
 							Vítejte na stránkách Šťastného srdce
 						</h2>
 						<div class="welcome-appeal">
-							<p class="welcome-appeal-title">SBÍRKA PRO PAVLÍKA BYLA ÚSPĚŠNĚ UKONČENA ❤️</p>
-							<div class="welcome-appeal-body">
-								<p>Milí přátelé Šťastného srdce,</p>
-								<p>
-									s velkou radostí vám oznamujeme, že naše společná sbírka pro Pavlíka dospěla do svého cíle.
-								</p>
-								<p>
-									Díky vaší štědrosti, ochotě a laskavosti se nám podařilo vybrat krásných 51&nbsp;000&nbsp;Kč.
-								</p>
-								<p>Celou částku jsme Pavlíkovi předali 17.&nbsp;listopadu 2026.</p>
-								<p>
-									Děkujeme všem, kteří přispěli, pekli, balili sušenky, pomáhali s organizací nebo nás podpořili milým slovem.
-								</p>
-								<p>Ukázali jste nám, že když se spojí dobrá srdce, dokážou velké věci.</p>
-								<p>
-									Pavlíkovi a jeho rodině přejeme, aby jim nová pomoc přinesla co nejvíce radosti a usnadnila každodenní život.
-								</p>
-								<p class="welcome-appeal-thanks">DĚKUJEME, ŽE JSTE POMÁHALI S NÁMI.</p>
-								<p class="welcome-appeal-sign">Šťastné srdce ❤️</p>
-							</div>
+							<p class="welcome-appeal-title">SBÍRKA PRO PAVLÍKA SKONČILA, VAŠE POMOC POKRAČUJE ❤️</p>
+							<a href="#info-koutek" class="mt-5 welcome-appeal-link" onclick={scrollToInfoKoutek}>
+								Info koutek&nbsp;→
+							</a>
 						</div>
 					</div>
 					<div class="welcome-news">
@@ -71,7 +55,7 @@
 						<p>
 							Nahlédněte do našeho Info koutku, kde s vámi sdílíme novinky z naší kuchyně, fotografie, zajímavosti o surovinách, dění kolem nás i aktuální informace.
 						</p>
-						<a href="#info-koutek" class="welcome-news-link" onclick={scrollToInfoKoutek}>
+						<a href="#info-koutek" class="welcome-news-link mt-5" onclick={scrollToInfoKoutek}>
 							Nahlédnout do Info koutku&nbsp;→
 						</a>
 					</div>
@@ -246,32 +230,42 @@
 	}
 	.welcome-appeal {
 		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
 		border: 1px solid #fecdd3;
 		border-radius: 0.5rem;
 		background-color: #fff1f2;
-		padding: 0.85rem 0.9rem 0.55rem;
+		padding: 1rem 1rem 1.1rem;
 	}
 	.welcome-appeal-title {
+		align-self: stretch;
 		margin: 0;
-		text-align: center;
+		text-align: start;
 		font-weight: 700;
 		color: #9f1239;
+		letter-spacing: 0.08em;
+		line-height: 1.6;
+	}
+	.welcome-appeal-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 100%;
+		padding: 0.45rem 1.1rem;
+		border: 1px solid #9f1239;
+		border-radius: 1.5rem;
+		color: #9f1239;
+		font-weight: 700;
 		line-height: 1.35;
-	}
-	.welcome-appeal-body {
-		padding: 0.2rem 0 0.15rem;
-		color: #334155;
-		font-size: 0.95rem;
-		line-height: 1.5;
-	}
-	.welcome-appeal-body p {
-		margin: 0.6em 0;
-	}
-	.welcome-appeal-thanks,
-	.welcome-appeal-sign {
-		font-weight: 700;
 		text-align: center;
-		color: #9f1239;
+		text-decoration: none;
+		transition: background-color 0.2s ease, color 0.2s ease;
+	}
+	.welcome-appeal-link:hover {
+		background-color: #9f1239;
+		color: #fff;
 	}
 	.welcome-news {
 		margin-top: 1.25rem;
