@@ -27,7 +27,8 @@
 	let modal: Modal | undefined = $state();
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
-	let profileData: any = null;
+	let profileData: any = $state(null);
+	let profileLoaded = $state(false);
 	let selectedTimeSlot = $state('');
 	let availableTimeSlots: TimeSlotAvailability[] = $state([]);
 	let timeSlotSettings: any = $state(null);
@@ -50,20 +51,18 @@
 		);
 	}, 0));
 
-	let isDeliveryFree = $derived(
-		!!(deliverySettings && totalPrice > 0 && totalPrice >= (deliverySettings.freeDeliveryThreshold || 0))
-	);
-	let deliveryPrice = $derived.by(() => {
-		if (!(deliverySettings && totalPrice > 0) || isDeliveryFree) return 0;
-		const availableMethods = deliverySettings.shippingMethods?.filter((method: any) => method.enabled !== false) || [];
-		if (availableMethods.length > 0) {
-			return Math.min(...availableMethods.map((method: any) => method.price || 0));
-		}
-		return 0;
+	let deliveryMethodCode = $derived(String(profileData?.delivery_method ?? "").trim());
+	let deliveryMethodLabel = $derived.by(() => {
+		if (!deliveryMethodCode) return "";
+		const methods = Array.isArray(deliverySettings?.shippingMethods)
+			? deliverySettings.shippingMethods
+			: [];
+		const match = methods.find(
+			(method: { code?: string; name?: string }) =>
+				method?.code === deliveryMethodCode || method?.name === deliveryMethodCode
+		);
+		return String(match?.name || deliveryMethodCode);
 	});
-
-	// Celková cena včetně dopravy
-	let totalPriceWithDelivery = $derived(totalPrice + deliveryPrice);
 
 	// Funkce pro výpočet ceny variant
 	function calculateVariantPrice(variants: any[]): number {
@@ -80,7 +79,10 @@
 
 	async function getProfile() {
 		const client = supabase;
-		if (!client || !user?.id) return;
+		if (!client || !user?.id) {
+			profileLoaded = true;
+			return;
+		}
 
 		try {
 			loading = true;
@@ -104,6 +106,7 @@
 			console.error("Error fetching profile:", error);
 		} finally {
 			loading = false;
+			profileLoaded = true;
 		}
 	}
 
@@ -191,6 +194,11 @@
 
 		if (availableTimeSlots.length > 0 && !selectedTimeSlot) {
 			errorMessage = 'Vyberte čas vyzvednutí objednávky.';
+			return;
+		}
+
+		if (!deliveryMethodCode) {
+			errorMessage = 'V profilu chybí způsob dodání. Doplňte ho a objednávku odešlete znovu.';
 			return;
 		}
 
@@ -509,31 +517,22 @@
 									placeholder="poznámka k objednávce"></textarea>
 							</div>
 
-							<div class="grid p-5 border-b justify-items-end">			
-								
-								<!-- Cena dopravy -->
-								{#if deliveryPrice > 0}
+							<div class="grid p-5 border-b justify-items-end">
+								{#if deliveryMethodLabel}
 									<p class="text-right">
-										{#if isDeliveryFree}
-											<span class="text-green-600">Doprava zdarma</span>
-										{:else}
-											Doprava: <strong>{deliveryPrice} Kč</strong>
-										{/if}
+										Doprava: <strong>{deliveryMethodLabel}</strong>
+									</p>
+								{:else if profileLoaded}
+									<p class="text-right text-sm text-red-600">
+										V profilu chybí způsob dodání.
+										<a href="/profile" class="underline">Doplňte ho v profilu</a>.
 									</p>
 								{/if}
-								
-								<!-- Celková cena -->
+
 								<p class="text-right text-lg border-t pt-5">
 									Celkově: <strong>{totalPieces} ks</strong> obědů za
-									<strong>{totalPriceWithDelivery} Kč</strong>
+									<strong>{totalPrice} Kč</strong>
 								</p>
-								
-								<!-- Informace o dopravě zdarma -->
-								{#if deliverySettings?.freeDeliveryThreshold && totalPrice > 0 && totalPrice < deliverySettings.freeDeliveryThreshold}
-									<p class="text-sm text-blue-600">
-										Pro dopravu zdarma přidejte ještě {deliverySettings.freeDeliveryThreshold - totalPrice} Kč
-									</p>
-								{/if}
 								
 								<!-- Chyba minimální hodnoty -->
 								{#if !minimumOrderMet}
@@ -553,7 +552,7 @@
 								<button
 									type="button"
 									class="w-full px-4 py-2 text-base font-semibold text-center text-white transition duration-200 ease-in-out transform bg-green-800 rounded-lg shadow-md hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-									disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet}
+									disabled={isSubmitting || cartItems.length === 0 || !minimumOrderMet || !deliveryMethodCode}
 									onclick={handleSubmit}
 								>
 									{#if isSubmitting}

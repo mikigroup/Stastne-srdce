@@ -28,6 +28,9 @@
 	// Extrahujeme data z settings
 	let contact = $derived(settings?.contact || {});
 	let business = $derived(settings?.business || {});
+	let shopName = $derived(String(settings?.shopName || "").trim());
+	let pageTitle = $derived(shopName ? `${shopName} - Kontakt` : "Kontakt");
+	let pageDescription = $derived(shopName ? `Kontaktujte nás - ${shopName}` : "Kontaktujte nás");
 	
 	// Title pro mapu z nastavení
 	let mapQuery = $derived(String(contact?.address || '').trim());
@@ -128,8 +131,8 @@
 </script>
 
 <svelte:head>
-	<title>Šťastné srdce - Kontakt</title>
-	<meta name="description" content="Kontaktujte nás - Šťastné srdce" />
+	<title>{pageTitle}</title>
+	<meta name="description" content={pageDescription} />
 </svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
@@ -196,7 +199,13 @@
 							</div>
 							<div class="flex items-center gap-3">
 								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<p class="text-gray-600">{contact?.email || 'Email není k dispozici'}</p>
+								{#if contact?.email}
+									<a href="mailto:{contact.email}" class="text-gray-600 hover:text-green-700 hover:underline">
+										{contact.email}
+									</a>
+								{:else}
+									<p class="text-gray-600">Email není k dispozici</p>
+								{/if}
 							</div>					
 							
 							<!-- Otevírací doba -->

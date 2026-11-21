@@ -200,8 +200,20 @@ export const actions: Actions = {
 				}
 			}
 
-			// Create order using the stored procedure
-			// Použijeme delivery_method z profilu uživatele (kód, např. "own", "reBox")
+			const shippingMethod = String(customer.delivery_method ?? "").trim();
+			if (!shippingMethod) {
+				return {
+					success: false,
+					type: "failure",
+					message:
+						'V profilu chybí způsob dodání. Doplňte ho v <a href="/profile" class="text-blue-600 underline">profilu</a> a objednávku odešlete znovu.'
+				};
+			}
+
+			const shippingLabel = deliveryMethodLabel(shippingMethod, deliverySettings);
+
+			// Create order using the stored procedure.
+			// Uloží se přesně kód z profilu, i když už není v aktuální nabídce.
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
 				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
@@ -219,8 +231,7 @@ export const actions: Actions = {
 				p_total_price: totalPrice,
 				p_currency: "CZK",
 				p_pay_state: false,
-				// Použijeme delivery_method z profilu, fallback na "own"
-				p_shipping_method: String(customer.delivery_method?.trim() || "own"),
+				p_shipping_method: shippingMethod,
 				p_tenant_id: resolvedTenantId,
 				p_order_items: cartItems.flatMap((item: any) =>
 					item.variants.map((variant: any) => ({
@@ -260,7 +271,8 @@ export const actions: Actions = {
 					cartItems,
 					totalPrice,
 					totalPieces,
-					note
+					note,
+					shippingLabel
 				);
 			} catch (emailError) {
 				console.error("Chyba při odesílání potvrzovacího emailu:", emailError);
@@ -301,13 +313,30 @@ export const actions: Actions = {
 };
 
 // Definice funkce odesílání
+function deliveryMethodLabel(
+	code: string,
+	settings: { shippingMethods?: Array<{ code?: string; name?: string }> } | null
+): string {
+	const methods = Array.isArray(settings?.shippingMethods) ? settings.shippingMethods : [];
+	const match = methods.find((method) => method?.code === code || method?.name === code);
+	return match?.name || code;
+}
+
+function escapeHtml(value: string): string {
+	return value
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;");
+}
+
 async function sendOrderConfirmationEmail(
 	email: string,
 	orderId: string,
 	items: any[],
 	totalPrice: number,
 	totalPieces: number,
-	note: string
+	note: string,
+	shippingLabel: string
 ) {
 	const mailOptions = {
 		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
@@ -409,6 +438,7 @@ async function sendOrderConfirmationEmail(
 					.join("")}
 
         <div class="total">
+            <p><strong>Způsob dodání:</strong> ${escapeHtml(shippingLabel)}</p>
             <p><strong>Celkový počet kusů:</strong> ${totalPieces}</p>
             <p><strong>Celková cena:</strong> ${totalPrice} Kč</p>
         </div>

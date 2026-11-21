@@ -99,7 +99,7 @@
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 
-	{#if seoSettings?.metaDescription}
+	{#if seoSettings?.metaDescription && page.url.pathname !== "/kontakt"}
 		<meta name="description" content={seoSettings.metaDescription} />
 	{/if}
 

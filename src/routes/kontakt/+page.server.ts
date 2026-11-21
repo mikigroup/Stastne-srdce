@@ -11,41 +11,53 @@ import { contactFormSchema } from "$lib/utils/validationSchemas";
 export const prerender = false;
 
 // Konfigurace nodemailer transporteru
+const MAILBOX = "info@stastnesrdce.cz";
+
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
 	port: 465,
 	secure: true,
 	auth: {
-		user: "info@stastnesrdce.cz",
+		user: MAILBOX,
 		pass: PRIVATE_seznam_key
 	}
 });
 
+function fulfilledValue<T>(result: PromiseSettledResult<T>): T | null {
+	return result.status === "fulfilled" && result.value ? result.value : null;
+}
+
+async function readContactPageSettings(supabase: Parameters<typeof getSetting>[0]) {
+	const [contactSettings, businessSettings, generalSettings] = await Promise.allSettled([
+		getSetting(supabase, "contact"),
+		getSetting(supabase, "business"),
+		getSetting(supabase, "general")
+	]);
+	const general = fulfilledValue(generalSettings) as { shopName?: string } | null;
+	const shopName = String(general?.shopName || "").trim();
+	return {
+		contact: fulfilledValue(contactSettings),
+		business: fulfilledValue(businessSettings),
+		shopName
+	};
+}
+
+function recipientFromContact(contact: { email?: string } | null): string {
+	const email = sanitizeEmailAddress(contact?.email);
+	if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "";
+	return email;
+}
+
 // Načítání dat z site_settings
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	try {
-		// Načtení dat pomocí centralizované služby s tenant_id
-		// Nyní se používá PUBLIC_TENANT automaticky
-		
-		const [contactSettings, businessSettings] = await Promise.allSettled([
-			getSetting(supabase, 'contact'),
-			getSetting(supabase, 'business')
-		]);
-
-		// Zpracování výsledků - pouze z databáze, bez fallbacku
-		const contact = contactSettings.status === 'fulfilled' && contactSettings.value 
-			? contactSettings.value 
-			: null;
-		
-		const business = businessSettings.status === 'fulfilled' && businessSettings.value 
-			? businessSettings.value 
-			: null;
-
+		const { contact, business, shopName } = await readContactPageSettings(supabase);
 
 		return {
 			settings: {
 				contact,
-				business
+				business,
+				shopName
 			}
 		};
 	} catch (error) {
@@ -54,14 +66,15 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		return {
 			settings: {
 				contact: null,
-				business: null
+				business: null,
+				shopName: ""
 			}
 		};
 	}
 };
 
 export const actions: Actions = {
-	sendForm: async ({ request }) => {
+	sendForm: async ({ request, locals: { supabase } }) => {
 		const formData = await request.formData();
 		const field = (name: string) => {
 			const value = formData.get(name);
@@ -150,20 +163,38 @@ export const actions: Actions = {
 
 		console.log('✅ Kontakt - Validace prošla úspěšně');
 
+		const { contact, shopName } = await readContactPageSettings(supabase);
+		const recipient = recipientFromContact(contact as { email?: string } | null);
+		if (!recipient) {
+			return fail(400, {
+				errors: {},
+				status: {
+					success: false,
+					display: "E-mail v nastavení kontaktu není vyplněný. Zprávu teď nelze odeslat."
+				},
+				...submitted
+			});
+		}
+
 		try {
 			// Sanitizace hodnot před vložením do emailu
 			const sanitizedName = sanitizeEmailText(validationResult.data.name);
 			const sanitizedEmail = sanitizeEmailAddress(validationResult.data.email);
 			const sanitizedTel = sanitizePhone(validationResult.data.tel);
 			const sanitizedContent = sanitizeEmailText(validationResult.data.content);
+			const brand = sanitizeEmailText(shopName);
+			const subject = brand ? `${brand} - Formulář` : "Formulář";
+			const intro = brand
+				? `byla Vám poslána zpráva přes formulář ${brand}.`
+				: "byla Vám poslána zpráva přes kontaktní formulář.";
 
 			const options = {
-				from: "info@stastnesrdce.cz",
-				to: "info@stastnesrdce.cz",
-				subject: "Šťastné srdce - Formulář",
+				from: MAILBOX,
+				to: recipient,
+				subject,
 				text: `Dobrý den,
 
-byla Vám poslána zpráva přes formulář ze stránky stastnesrdce.cz.
+${intro}
 
 Kontaktní osoba: ${sanitizedName}
 Email: ${sanitizedEmail}
