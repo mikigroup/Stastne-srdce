@@ -28,7 +28,7 @@
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 	let profileData: any = null;
-	let selectedTimeSlot: string = '';
+	let selectedTimeSlot = $state('');
 	let availableTimeSlots: TimeSlotAvailability[] = $state([]);
 	let timeSlotSettings: any = $state(null);
 	
@@ -148,45 +148,26 @@
 			console.log('🔍 Debug - productsSettings.value:', productsSettings?.value);
 
 			if (productsSettings?.value) {
-				// Zkusíme parsovat JSON, pokud je to string
-				if (typeof productsSettings.value === 'string') {
-					timeSlotSettings = JSON.parse(productsSettings.value);
-				} else {
-					timeSlotSettings = productsSettings.value;
-				}
-				console.log('🔍 Debug - timeSlotSettings:', timeSlotSettings);
-				
-				// Kontrola, zda jsou časové sloty povolené
-				if (timeSlotSettings.timeSlotsEnabled) {
-					console.log('🔍 Debug - Loading time slots...');
-					
-					// Vyčistíme stará data (maxOrders)
-					if (timeSlotSettings.timeSlots) {
-						timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map((slot: any) => ({
-							startTime: slot.startTime,
-							endTime: slot.endTime
-							// Odstraníme maxOrders
-						}));
-					}
-					
-					const firstDate = cartItems[0]?.date;
-					console.log('🔍 Debug - firstDate:', firstDate);
-					console.log('🔍 Debug - timeSlotsEnabled:', timeSlotSettings.timeSlotsEnabled);
-					
-					if (!firstDate) return;
-					availableTimeSlots = await getAvailableTimeSlots(client, firstDate, timeSlotSettings);
-					console.log('🔍 Debug - availableTimeSlots:', availableTimeSlots);
-					
-					// Nastavení výchozího slotu
-					if (availableTimeSlots.length > 0) {
-						selectedTimeSlot = `${availableTimeSlots[0].slot.startTime}-${availableTimeSlots[0].slot.endTime}`;
-						console.log('🔍 Debug - selectedTimeSlot:', selectedTimeSlot);
-					}
-				}
+				timeSlotSettings = typeof productsSettings.value === 'string'
+					? JSON.parse(productsSettings.value)
+					: productsSettings.value;
 			} else {
-				// Fallback na defaultní hodnoty
-				console.log('🔍 Debug - No data from DB, using defaults');
 				timeSlotSettings = getDefaultSettings('products');
+			}
+
+			if (timeSlotSettings.timeSlots) {
+				timeSlotSettings.timeSlots = timeSlotSettings.timeSlots.map((slot: any) => ({
+					startTime: slot.startTime,
+					endTime: slot.endTime
+				}));
+			}
+
+			const firstDate = cartItems[0]?.date;
+			if (!firstDate) return;
+			availableTimeSlots = await getAvailableTimeSlots(client, firstDate, timeSlotSettings);
+
+			if (availableTimeSlots.length > 0 && !selectedTimeSlot) {
+				selectedTimeSlot = `${availableTimeSlots[0].slot.startTime}-${availableTimeSlots[0].slot.endTime}`;
 			}
 		} catch (error) {
 			console.error("Error loading time slots:", error);
@@ -205,6 +186,11 @@
 		// Validace minimální hodnoty objednávky
 		if (!minimumOrderMet) {
 			errorMessage = minimumOrderMessage;
+			return;
+		}
+
+		if (availableTimeSlots.length > 0 && !selectedTimeSlot) {
+			errorMessage = 'Vyberte čas vyzvednutí objednávky.';
 			return;
 		}
 
@@ -483,27 +469,15 @@
 				</div>
 
 				<!-- Total and checkout -->
-				{#if cartItems.length || (timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0)}
+				{#if cartItems.length}
 					<div class="mt-5 border rounded-lg border-gray-300">
-						<!-- Debug informace -->
-					<!-- 	<div class="p-4 bg-yellow-50 border-b border-yellow-200">
-							<p class="text-sm text-yellow-800">
-								🔍 Debug: timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled || 'undefined'}, 
-								availableTimeSlots.length={availableTimeSlots?.length || 0},
-								timeSlots={timeSlotSettings?.timeSlots?.length || 0} slotů,
-								timeSlotSettings.timeSlotsEnabled={timeSlotSettings?.timeSlotsEnabled}
-							</p>
-						</div> -->
-
-						<!-- Časové sloty - ZAKOMENTOVÁNO PRO VÝVOJ -->
-						<!--
-						{#if timeSlotSettings?.timeSlotsEnabled && availableTimeSlots.length > 0}
+						{#if availableTimeSlots.length > 0}
 							<div class="grid p-5 border-b">
-								<label class="block mb-2 text-sm font-medium text-gray-700">
+								<p class="block mb-2 text-sm font-medium text-gray-700">
 									Čas vyzvednutí objednávky
-								</label>
+								</p>
 								<div class="space-y-2">
-									{#each availableTimeSlots as slot}
+									{#each availableTimeSlots as slot (`${slot.slot.startTime}-${slot.slot.endTime}`)}
 										<label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
 											<input
 												type="radio"
@@ -520,10 +494,8 @@
 										</label>
 									{/each}
 								</div>
-								<input type="hidden" name="timeSlot" value={selectedTimeSlot} />
 							</div>
 						{/if}
-						-->
 
 						{#if cartItems.length}
 							<div class="grid p-5 border-b">

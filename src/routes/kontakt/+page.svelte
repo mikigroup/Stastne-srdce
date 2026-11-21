@@ -30,9 +30,18 @@
 	let business = $derived(settings?.business || {});
 	
 	// Title pro mapu z nastavení
-	let mapTitle = $derived(business?.companyName && contact?.address ? 
-		`${business.companyName} - ${contact.address}` : 
-		'');
+	let mapQuery = $derived(String(contact?.address || '').trim());
+	let mapTitle = $derived(business?.companyName && mapQuery ? 
+		`${business.companyName} - ${mapQuery}` : 
+		mapQuery);
+	let mapSrc = $derived.by(() => {
+		if (!mapQuery) return '';
+		const query = encodeURIComponent(mapQuery);
+		if (PUBLIC_GOOGLE_MAPS_API_KEY) {
+			return `https://www.google.com/maps/embed/v1/place?key=${PUBLIC_GOOGLE_MAPS_API_KEY}&q=${query}&zoom=15`;
+		}
+		return `https://maps.google.com/maps?q=${query}&z=15&output=embed`;
+	});
 
 	let submitting = $state(false);
 	let recaptchaError = $state("");
@@ -218,24 +227,16 @@
 						</div>
 					</div>
 
-					<!-- Mapa -->
-					<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
-						{#if contact?.mapCoordinates?.lat && contact?.mapCoordinates?.lng && PUBLIC_GOOGLE_MAPS_API_KEY}
+					{#if mapSrc}
+						<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
 							<iframe
 								class="w-full h-full"
-								src="https://www.google.com/maps/embed/v1/place?key={PUBLIC_GOOGLE_MAPS_API_KEY}&q={contact.mapCoordinates.lat},{contact.mapCoordinates.lng}&zoom=15"
+								src={mapSrc}
 								loading="lazy"
 								referrerpolicy="no-referrer-when-downgrade"
 								title={mapTitle}></iframe>
-						{:else}
-							<iframe
-								class="w-full h-full"
-								src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2548.593686167967!2d17.32430381590737!3d50.29951200610991!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711eb61ad640179%3A0x480cac0b0efc56ef!2sPoto%C4%8Dn%C3%AD%2016%2C%20790%2084%20Mikulovice!5e0!3m2!1sen!2scz!4v1657788959804!5m2!1sen!2scz"
-								loading="lazy"
-								referrerpolicy="no-referrer-when-downgrade"
-								title={mapTitle}></iframe>
-						{/if}
-					</div>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Pravá strana - Kontaktní formulář -->

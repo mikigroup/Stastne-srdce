@@ -95,6 +95,29 @@ export const actions: Actions = {
 					: deliveryData.value;
 			}
 
+			const { data: productsData } = await supabase
+				.from('site_settings')
+				.select('value')
+				.eq('key', 'products')
+				.eq('tenant_id', tenantId ?? PUBLIC_TENANT)
+				.single();
+
+			let productsSettings = null;
+			if (productsData?.value) {
+				productsSettings = typeof productsData.value === 'string'
+					? JSON.parse(productsData.value)
+					: productsData.value;
+			}
+
+			const definedSlots = Array.isArray(productsSettings?.timeSlots) ? productsSettings.timeSlots : [];
+			if (productsSettings?.timeSlotsEnabled && definedSlots.length > 0 && !timeSlot?.trim()) {
+				return {
+					success: false,
+					type: 'failure',
+					message: 'Vyberte čas vyzvednutí objednávky.'
+				};
+			}
+
 			// Validace minimální hodnoty objednávky
 			if (deliverySettings?.minimumOrderValue && totalPrice < deliverySettings.minimumOrderValue) {
 				return {

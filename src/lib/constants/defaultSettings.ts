@@ -48,10 +48,6 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     phone1: '',
     phone2: '',
     address: 'Potoční 16, 790 84 Mikulovice',
-    mapCoordinates: { 
-      lat: 50.299513, 
-      lng: 17.324304 
-    },
     showOpeningHours: true,
     openingHours: {
       monday: '8:00 - 16:00',

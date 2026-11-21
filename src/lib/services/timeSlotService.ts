@@ -25,7 +25,7 @@ export async function getAvailableTimeSlots(
 	date: string,
 	settings: TimeSlotSettings
 ): Promise<TimeSlotAvailability[]> {
-	if (!settings.timeSlotsEnabled || !settings.timeSlots) {
+	if (!settings.timeSlotsEnabled || !settings.timeSlots?.length) {
 		return [];
 	}
 
