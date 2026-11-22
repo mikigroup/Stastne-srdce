@@ -83,62 +83,62 @@
 	<meta name="description" content={pageDescription} />
 </svelte:head>
 
-<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
-	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
+<section class="max-w-screen-xl px-3 py-6 mx-auto mb-6 rounded-lg bg-stone-100 sm:px-4 sm:py-16 sm:mb-10">
+	<h1 class="mb-4 text-2xl font-extrabold tracking-tight text-center text-gray-900 sm:mb-8 sm:text-4xl md:text-5xl">
 		Kontaktujte nás
 	</h1>
 
 	<div class="max-w-4xl mx-auto">
-		<div class="bg-white border rounded-lg shadow-md p-8 border-gray-400">
-			<div class="grid md:grid-cols-2 gap-8">
+		<div class="bg-white border rounded-lg shadow-md p-3 border-gray-400 sm:p-8">
+			<div class="grid gap-4 md:grid-cols-2 md:gap-8">
 				<!-- Levá strana - Kontaktní informace -->
-				<div class="space-y-6">
+				<div class="min-w-0 space-y-4 sm:space-y-6">
 					<!-- Info karta -->
-					<div class="bg-gray-50 rounded-lg p-6 space-y-4 border border-gray-200">
-						<div class="flex items-center gap-3 border-b pb-4">
-							<Building2 class="w-6 h-6 text-green-700" />
-							<h2 class="text-xl font-semibold text-gray-800">
+					<div class="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200 sm:p-6 sm:space-y-4">
+						<div class="flex items-start gap-2 border-b pb-3 sm:gap-3 sm:pb-4">
+							<Building2 class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5 sm:w-6 sm:h-6" />
+							<h2 class="min-w-0 text-lg font-semibold text-gray-800 break-words sm:text-xl">
 								{business?.companyName || ''}
 							</h2>
 						</div>
 
 						<div class="space-y-3">
-							<div class="flex items-center gap-3">
-								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<p class="text-gray-600">
+							<div class="flex items-start gap-3">
+								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+								<p class="min-w-0 text-gray-600 break-words">
 									{companyAddress}
 								</p>
 							</div>
-							<div class="flex items-center gap-3">
-								<Globe class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<div>
+							<div class="flex items-start gap-3">
+								<Globe class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+								<div class="min-w-0 break-words">
 									<p class="text-gray-600">IČO: {business?.ico || 'Není k dispozici'}</p>
 									<p class="text-gray-600">DIČ: {business?.dic || 'Není k dispozici'}</p>
 									{#if business?.bankAccount}
-										<p class="text-gray-600">Účet: {business.bankAccount}</p>
+										<p class="text-gray-600 break-words">Účet: {business.bankAccount}</p>
 									{/if}
 								</div>
 							</div>
-							<div class="flex items-center gap-3">
-								<Phone class="w-5 h-5 text-green-700 flex-shrink-0" />
-								<div>
+							<div class="flex items-start gap-3">
+								<Phone class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+								<div class="min-w-0 break-words">
 									{#if contact?.phone}
 										<p class="text-gray-600">
-											<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline">
+											<a href="tel:{contact.phone}" class="hover:text-green-700 hover:underline break-words">
 												{contact.phone}
 											</a>
 										</p>
 									{/if}
 									{#if contact?.phone1}
 										<p class="text-gray-600">
-											<a href="tel:{contact.phone1}" class="hover:text-green-700 hover:underline">
+											<a href="tel:{contact.phone1}" class="hover:text-green-700 hover:underline break-words">
 												{contact.phone1}
 											</a>
 										</p>
 									{/if}
 									{#if contact?.phone2}
 										<p class="text-gray-600">
-											<a href="tel:{contact.phone2}" class="hover:text-green-700 hover:underline">
+											<a href="tel:{contact.phone2}" class="hover:text-green-700 hover:underline break-words">
 												{contact.phone2}
 											</a>
 										</p>
@@ -148,10 +148,10 @@
 									{/if}
 								</div>
 							</div>
-							<div class="flex items-center gap-3">
-								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0" />
+							<div class="flex items-start gap-3">
+								<MailIcon class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
 								{#if contact?.email}
-									<a href="mailto:{contact.email}" class="text-gray-600 hover:text-green-700 hover:underline">
+									<a href="mailto:{contact.email}" class="min-w-0 text-gray-600 break-words hover:text-green-700 hover:underline">
 										{contact.email}
 									</a>
 								{:else}
@@ -163,7 +163,7 @@
 							{#if contact?.showOpeningHours && contact?.openingHours}
 								<div class="flex items-start gap-3">
 									<Clock class="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
-									<div>
+									<div class="min-w-0">
 										<p class="text-gray-600 font-medium mb-1">Otevírací doba:</p>
 										<div class="text-sm text-gray-600 space-y-1">
 											{#each Object.entries(contact.openingHours) as [day, hours] (day)}
@@ -188,7 +188,7 @@
 					</div>
 
 					{#if mapSrc}
-						<div class="bg-gray-50 rounded-lg overflow-hidden h-64 border border-gray-200">
+						<div class="bg-gray-50 rounded-lg overflow-hidden h-44 border border-gray-200 sm:h-64">
 							<iframe
 								class="w-full h-full"
 								src={mapSrc}
@@ -200,8 +200,8 @@
 				</div>
 
 				<!-- Pravá strana - Kontaktní formulář -->
-				<div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-					<h2 class="text-xl font-semibold text-gray-800 mb-6">Napište nám</h2>
+				<div class="min-w-0 bg-gray-50 rounded-lg p-4 border border-gray-200 sm:p-6">
+					<h2 class="text-lg font-semibold text-gray-800 mb-4 sm:text-xl sm:mb-6">Napište nám</h2>
 					<form
 						method="POST"
 						action="?/sendForm"

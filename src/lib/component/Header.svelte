@@ -110,8 +110,8 @@
 <header class={["fixed top-0 left-0 w-full bg-white z-40", menuVisible && "is-menu-open"]}>
 	<nav>
 		<div class="flex items-center justify-between w-full px-4 m-2 mx-auto xl:flex xl:justify-between max-w-8xl">
-			<!-- Logo a čas -->
-			<div class="flex items-center justify-between w-full lg:w-auto lg:px-8 gap-8">
+			<!-- Logo -->
+			<div class="flex min-w-0 items-center lg:px-8">
 				<div class="flex items-center gap-2">
 					<h1 class="text-xl font-semibold">
 						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap [word-spacing:-0.12em] sm:[word-spacing:normal]">
@@ -120,9 +120,10 @@
 					</h1>
 					<img {src} alt="stastne srdce" class="shrink-0" width="22" height="22" />
 				</div>
-				<div class="mx-auto">
-					<time class="text-xs sm:text-base">{formatter.format($time)}</time>
-				</div>
+			</div>
+
+			<div class="hidden sm:flex flex-1 justify-center px-4">
+				<time class="text-base tabular-nums">{formatter.format($time)}</time>
 			</div>
 
 			<!-- Desktop menu -->
@@ -173,7 +174,15 @@
 				{/if}
 
 				<!-- Mobile menu button and cart -->
-				<div class="flex items-center xl:hidden">
+				<div class="flex shrink-0 items-center gap-2 xl:hidden">
+					{#if totalPieces}
+						<a
+							href="/kosik"
+							class="inline-flex h-11 min-w-11 items-center justify-center rounded-full font-bold text-green-800"
+							aria-label="Košík, {totalPieces}">
+							{totalPieces}
+						</a>
+					{/if}
 					<button
 						type="button"
 						data-menu-button
@@ -188,14 +197,6 @@
 							<span></span>
 						</span>
 					</button>
-					{#if totalPieces}
-						<a
-							href="/kosik"
-							class="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full font-bold text-green-800"
-							aria-label="Košík, {totalPieces}">
-							{totalPieces}
-						</a>
-					{/if}
 				</div>
 			</div>
 		</div>
