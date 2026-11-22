@@ -28,6 +28,12 @@
 	// Extrahujeme data z settings
 	let contact = $derived(settings?.contact || {});
 	let business = $derived(settings?.business || {});
+	let companyAddress = $derived.by(() => {
+		const streetLine = [business?.street, business?.streetNumber].filter(Boolean).join(" ").trim();
+		const cityLine = [business?.zipCode, business?.city].filter(Boolean).join(" ").trim();
+		const fromBusiness = [streetLine, cityLine].filter(Boolean).join(", ");
+		return fromBusiness || String(contact?.address || "").trim() || "Adresa není k dispozici";
+	});
 	let shopName = $derived(String(settings?.shopName || "").trim());
 	let pageTitle = $derived(shopName ? `${shopName} - Kontakt` : "Kontakt");
 	let pageDescription = $derived(shopName ? `Kontaktujte nás - ${shopName}` : "Kontaktujte nás");
@@ -158,7 +164,7 @@
 							<div class="flex items-center gap-3">
 								<MapPin class="w-5 h-5 text-green-700 flex-shrink-0" />
 								<p class="text-gray-600">
-									{contact?.address || `${business?.street || ''} ${business?.streetNumber || ''}, ${business?.city || ''} ${business?.zipCode || ''}` || 'Adresa není k dispozici'}
+									{companyAddress}
 								</p>
 							</div>
 							<div class="flex items-center gap-3">
@@ -166,6 +172,9 @@
 								<div>
 									<p class="text-gray-600">IČO: {business?.ico || 'Není k dispozici'}</p>
 									<p class="text-gray-600">DIČ: {business?.dic || 'Není k dispozici'}</p>
+									{#if business?.bankAccount}
+										<p class="text-gray-600">Účet: {business.bankAccount}</p>
+									{/if}
 								</div>
 							</div>
 							<div class="flex items-center gap-3">
