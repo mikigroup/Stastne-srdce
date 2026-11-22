@@ -20,6 +20,8 @@
 	let { menu, productsSettings = {}, animate = false }: Props = $props();
 	let reducedMotion = $derived(prefersReducedMotion.current);
 	let motion = $derived(animate && !reducedMotion);
+	const actionButtonClass =
+		"py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 mt-5";
 
 
 	
@@ -146,9 +148,8 @@
 						{/if}
 					</div>
 					{#if !page.data.session}
-						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2 mt-5">
-							<div
-								class="py-4 px-8 border rounded-lg shadow-md hover:bg-white hover:shadow-xl transition duration-150 ease-in-out">
+						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2">
+							<div class={actionButtonClass}>
 								{#if productsSettings?.showPrices}
 									<p class="text-base text-right">{variant.price} Kč</p>
 								{/if}
@@ -162,8 +163,7 @@
 							onclick={() => addToCart(variant)}
 							onkeydown={(e) => e.key === "Enter" && addToCart(variant)}
 							tabindex="0">
-							<div
-								class="py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 mt-5">
+							<div class={actionButtonClass}>
 								<div class="">
 									<p class="text-base justify-end flex">{variant.price} Kč</p>
 									<p class="text-sm uppercase">Do košíku</p>
