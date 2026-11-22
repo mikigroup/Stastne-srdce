@@ -277,6 +277,16 @@ export const actions: Actions = {
 		}
 
 		try {
+			const formData = await request.formData();
+			if (formData.get("deletion_confirmed") !== "yes" || formData.get("legal_understanding") !== "yes") {
+				return fail(400, {
+					message: {
+						success: false,
+						display: "Pro podání žádosti je potřeba potvrdit oba souhlasy."
+					}
+				});
+			}
+
 			// Get user profile for email personalization with tenant filtering
 			const { data: profile, error: profileError } = await ProfileService.getUserProfile(
 				supabase,
