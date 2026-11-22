@@ -3,6 +3,9 @@
 	import MenuItem from "./MenuItem.svelte";
 	import { page } from "$app/state";
 	import type { Menu } from "$lib/types/menu";
+	import type { Attachment } from "svelte/attachments";
+	import { prefersReducedMotion } from "svelte/motion";
+	import { fade, fly } from "svelte/transition";
 
 	interface Props {
 		data: {
@@ -22,6 +25,24 @@
 	let { data }: Props = $props();
 
 	let filterVegetarian = $state(false);
+	let showScrollTop = $state(false);
+	let reducedMotion = $derived(prefersReducedMotion.current);
+
+	const observeFifthMenu: Attachment = (node) => {
+		const update = () => {
+			const visible = node.getBoundingClientRect().top < window.innerHeight;
+			if (visible !== showScrollTop) showScrollTop = visible;
+		};
+		const observer = new IntersectionObserver(update);
+		observer.observe(node);
+		window.addEventListener("scroll", update, { passive: true });
+		update();
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("scroll", update);
+			showScrollTop = false;
+		};
+	};
 
 	// Filtrování menu podle vegetariánských jídel
 	let filteredMenus = $derived(filterVegetarian 
@@ -35,7 +56,9 @@
 
 	function scrollToTop(event: Event) {
 		event.preventDefault();
-		document.getElementById("menu-content")?.scrollIntoView({ behavior: "smooth" });
+		document.getElementById("menu-content")?.scrollIntoView({
+			behavior: reducedMotion ? "auto" : "smooth"
+		});
 	}
 </script>
 
@@ -59,8 +82,8 @@
 				<div class="p-3 border-b border-gray-200 bg-blue-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-blue-700">
 						<i class="fa-solid fa-clock"></i>
-						<span class="text-sm">
-							Objednávky na další den jsou možné do <strong>{data.productsSettings.nextDayMenuTime}</strong>
+						<span class="text-xs">
+							Objednávky na další den jsou možné do <strong class="text-lg leading-none">{data.productsSettings.nextDayMenuTime}</strong>
 						</span>
 					</div>
 				</div>
@@ -98,10 +121,13 @@
 				</div>
 			</div>
 
-			<div class="pb-10" id="menu-content">
+			<div class="pb-10 scroll-mt-28" id="menu-content">
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#if filteredMenus?.length > 0}
-						{#each filteredMenus as menu (menu.id)}
+						{#each filteredMenus as menu, index (menu.id)}
+							{#if index === 4}
+								<div class="h-px -mb-px w-full pointer-events-none" aria-hidden="true" {@attach observeFifthMenu}></div>
+							{/if}
 							<MenuItem {menu} productsSettings={data.productsSettings} />
 						{/each}
 					{:else if filterVegetarian}
@@ -117,20 +143,26 @@
 			</div>
 		</div>
 
-		<div class="flex justify-end gap-4 pt-10 pr-5">
-			<a
-				href="#menu-content"
-				onclick={scrollToTop}
-				class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
-				Skoč nahoru
-			</a>
-
-			{#if $totalPiecesStore > 0 && page.data.session}
+		{#if $totalPiecesStore > 0 && page.data.session}
+			<div class="flex justify-end gap-4 pt-10 pr-5">
 				<a
 					href="/kosik"
 					class="px-4 py-2 text-center text-white bg-green-800 rounded-lg shadow-md hover:bg-green-900">
 					Košík ({$totalPiecesStore})
 				</a>
-			{/if}
-		</div>
-	</section>
+			</div>
+		{/if}
+	</div>
+</section>
+
+{#if showScrollTop}
+	<button
+		type="button"
+		class="fixed bottom-6 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-green-800 text-white shadow-lg hover:bg-green-900"
+		onclick={scrollToTop}
+		aria-label="Skoč nahoru"
+		in:fly={{ x: reducedMotion ? 0 : 24, duration: reducedMotion ? 0 : 200 }}
+		out:fade={{ duration: reducedMotion ? 0 : 150 }}>
+		<i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+	</button>
+{/if}

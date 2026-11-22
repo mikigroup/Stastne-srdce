@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { version = import.meta.env.PUBLIC_VERSION || '1.5' } = $props();
+	let {
+		version = import.meta.env.PUBLIC_VERSION || '1.5',
+		onEditCookies
+	}: {
+		version?: string;
+		onEditCookies?: () => void;
+	} = $props();
 
 	let footerText = $derived(page.data.appearanceSettings?.footerText || '');
 	let socialSettings = $derived(page.data.socialSettings || {});
@@ -75,6 +81,15 @@
 				<span class="text-gray-400 text-xs">core{version}</span>
 			</div>
 			<p>Tento web používá cookies pro lepší uživatelský zážitek.</p>
+			<p>
+				<button
+					type="button"
+					class="bg-transparent p-0 text-xs font-normal text-gray-400 hover:text-gray-600 hover:underline"
+					onclick={() => onEditCookies?.()}
+				>
+					Upravit nastavení cookies.
+				</button>
+			</p>
 		</div>
 	</div>
 </footer>

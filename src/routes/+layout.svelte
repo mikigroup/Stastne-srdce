@@ -70,7 +70,17 @@
 
 	const cookieName = 'stastne_srdce_cookies';
 	let bannerHidden = $state(false);
+	let cookieSettingsRequested = $state(false);
 	let showBanner = $derived(browser && !bannerHidden && !cookieStore.hasConsent());
+
+	function openCookieSettings() {
+		cookieSettingsRequested = true;
+	}
+
+	function closeCookieSettings() {
+		bannerHidden = true;
+		cookieSettingsRequested = false;
+	}
 
 	let seoSettings = $derived(data.settings?.seo);
 	let generalSettings = $derived(data.settings?.general);
@@ -263,24 +273,24 @@
 {/if}
 
 <GDPR
-	visible={showBanner}
-	showEditIcon={true}
+	visible={showBanner || cookieSettingsRequested}
+	showEditIcon={false}
 	onshow={() => {}}
 	onacceptAll={() => {
 		cookieStore.acceptAll();
-		bannerHidden = true;
+		closeCookieSettings();
 	}}
 	onrejectAll={() => {
 		cookieStore.rejectAll();
-		bannerHidden = true;
+		closeCookieSettings();
 	}}
 	onacceptSelection={() => {
 		cookieStore.saveSelection();
-		bannerHidden = true;
+		closeCookieSettings();
 	}}
 />
 
-<Footer />
+<Footer onEditCookies={openCookieSettings} />
 
 {#if seoSettings?.customBodyScripts}
 	{@html seoSettings.customBodyScripts}

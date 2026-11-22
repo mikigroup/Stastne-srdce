@@ -33,6 +33,13 @@
 	let selectedTimeSlot = $state('');
 	let availableTimeSlots: TimeSlotAvailability[] = $state([]);
 	let timeSlotSettings: any = $state(null);
+	let removeDialog = $state<HTMLDialogElement | null>(null);
+	let removeTarget = $state<{
+		itemId: string;
+		variantId: string;
+		description: string;
+		date: string;
+	} | null>(null);
 	
 	// Nové proměnné pro dopravu
 	let deliverySettings: any = $state(null);
@@ -235,6 +242,38 @@
 		return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 	}
 
+	function cartDayLabel(date: string): { title: string; subtitle: string } {
+		const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(date ?? "");
+		const dateObj = match
+			? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+			: new Date(date);
+
+		if (Number.isNaN(dateObj.getTime())) {
+			return { title: "Den", subtitle: "" };
+		}
+
+		const weekday = dateObj.toLocaleDateString("cs-CZ", { weekday: "long" });
+		const weekdayLabel = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+		const shortDate = dateObj
+			.toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric" })
+			.replace(/\u00a0/g, " ");
+
+		const now = new Date();
+		const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		const diffDays = Math.round((dateObj.getTime() - todayStart.getTime()) / 86_400_000);
+
+		if (diffDays === 0) return { title: "Dnes", subtitle: `${weekdayLabel} ${shortDate}` };
+		if (diffDays === 1) return { title: "Zítra", subtitle: `${weekdayLabel} ${shortDate}` };
+		if (diffDays === 2) return { title: "Pozítří", subtitle: `${weekdayLabel} ${shortDate}` };
+
+		return { title: weekdayLabel, subtitle: shortDate };
+	}
+
+	function changeQuantity(itemId: string, variantId: string, quantity: number) {
+		const next = Math.min(99, Math.max(0, quantity));
+		CartItemsStore.updateQuantity(itemId, variantId, next);
+	}
+
 	onMount(async () => {
 		await Promise.all([
 			getProfile(),
@@ -323,80 +362,128 @@
 				{/if}
 
 				<!-- Mobile cart -->
-				<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
+				<div class="md:hidden">
 					{#if !cartItems.length}
-						<div
-							class="flex flex-col items-center justify-center w-full overflow-hidden">
-							<div class="my-20 text-xl font-bold text-center md:text-2xl">
-								<p>Košík je prázdný...</p>
-							</div>
+						<div class="py-16 text-xl font-bold text-center">
+							<p>Košík je prázdný...</p>
 						</div>
 					{:else}
-						{#each cartItems as cartItem, i (cartItem.id)}
-							<div class="mb-5 border rounded-lg bg-stone-100">
-								<div class="text-center rounded-lg bg-slate-300">
-									<p><strong>Den</strong></p>
-								</div>
-								<div class="m-2 text-center">
-									<p>
-										{formatDateDayMonth(cartItem.date)}
-									</p>
-								</div>
-								<hr />
-								<div class="m-5 font-light">
-									<p class="font-medium">
-										<strong>{cartItem.soup}</strong>
-									</p>
-								</div>
-								<hr />
-								<div class="m-5">
-									{#each cartItem.variants as variant}
-										<div class="flex justify-between items-center mb-2">
-											<span class="mr-2">
-												{variant.variant_number}. {truncateText(
-													variant.description,
-													50
-												)}
-											</span>
-											<button
-												class="hover:animate-spin"
-												onclick={(event) => {
-													event.preventDefault();
-													CartItemsStore.removeItem(cartItem.id, variant.id);
-												}}>
-												X
-											</button>
+						<div class="space-y-4">
+							{#each cartItems as cartItem (cartItem.id)}
+								{@const day = cartDayLabel(cartItem.date)}
+								{@const dayPieces = cartItem.variants.reduce(
+									(sum: number, variant: { quantity?: number }) => sum + (variant.quantity || 0),
+									0
+								)}
+								<article class="overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm">
+									<header class="flex items-center justify-between gap-3 px-4 py-3 text-white bg-green-800">
+										<div class="min-w-0">
+											<p class="text-lg font-semibold leading-tight">{day.title}</p>
+											<p class="text-sm text-green-100">{day.subtitle}</p>
 										</div>
-									{/each}
-								</div>
-								<div class="mt-5 font-light text-center">
-									<p><strong>Počet</strong></p>
-								</div>
-								<div class="mb-5 font-light text-center">
-									{#each cartItem.variants as variant}
-										<input
-											min="0"
-											max="99"
-											type="number"
-											bind:value={variant.quantity}
-											onchange={() =>
-												CartItemsStore.updateQuantity(
-													cartItem.id,
-													variant.id,
-													variant.quantity
-												)}
-											class="w-16 text-lg text-center bg-white border rounded-lg focus:outline-none focus:border-green-600" />
-									{/each}
-								</div>
-								<hr />
-								<div class="mt-5 font-light text-center">
-									<p><strong>Cena</strong></p>
-								</div>
-								<div class="pl-2 mb-5 font-light text-center">
-									{calculateVariantPrice(cartItem.variants)} Kč
-								</div>
-							</div>
-						{/each}
+										<div class="text-right shrink-0">
+											<p class="text-base font-semibold tabular-nums">
+												{calculateVariantPrice(cartItem.variants)} Kč
+											</p>
+											<p class="text-xs text-green-100">{dayPieces} ks</p>
+										</div>
+									</header>
+
+									{#if cartItem.soup}
+										<div class="px-4 py-3 border-b border-gray-100">
+											<p class="text-xs font-medium tracking-wide text-gray-500 uppercase">Polévka</p>
+											<p class="mt-1 text-sm leading-snug text-gray-800">{cartItem.soup}</p>
+										</div>
+									{/if}
+
+									<ul>
+										{#each cartItem.variants as variant (variant.id)}
+											<li class="px-4 py-3 border-b border-gray-100 last:border-b-0">
+												<div class="flex gap-3">
+													<span
+														class="flex items-center justify-center shrink-0 w-8 h-8 text-sm font-semibold rounded-full bg-slate-200"
+														aria-hidden="true">
+														{variant.variant_number}
+													</span>
+													<div class="min-w-0">
+														<p class="text-sm leading-snug text-gray-900">{variant.description}</p>
+														<p class="mt-1 text-xs text-gray-500">{variant.price || 0} Kč / ks</p>
+													</div>
+												</div>
+
+												<div class="flex flex-wrap items-center justify-between gap-3 mt-3">
+													<div
+														class="inline-flex items-center"
+														role="group"
+														aria-label="Počet porcí">
+														<button
+															type="button"
+															class="flex items-center justify-center w-10 h-10 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-l-lg disabled:opacity-40"
+															aria-label="Snížit počet"
+															disabled={(variant.quantity || 0) <= 1}
+															onclick={(event) => {
+																event.preventDefault();
+																changeQuantity(
+																	cartItem.id,
+																	variant.id,
+																	(variant.quantity || 1) - 1
+																);
+															}}>
+															−
+														</button>
+														<input
+															min="0"
+															max="99"
+															type="number"
+															inputmode="numeric"
+															aria-label={`Počet porcí: ${variant.description}`}
+															bind:value={variant.quantity}
+															onchange={() =>
+																changeQuantity(
+																	cartItem.id,
+																	variant.id,
+																	Number(variant.quantity) || 0
+																)}
+															class="w-12 h-10 text-center bg-white border-y border-gray-300 [appearance:textfield] focus:outline-none focus:border-green-700 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+														<button
+															type="button"
+															class="flex items-center justify-center w-10 h-10 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-r-lg disabled:opacity-40"
+															aria-label="Zvýšit počet"
+															disabled={(variant.quantity || 0) >= 99}
+															onclick={(event) => {
+																event.preventDefault();
+																changeQuantity(
+																	cartItem.id,
+																	variant.id,
+																	(variant.quantity || 0) + 1
+																);
+															}}>
+															+
+														</button>
+													</div>
+
+													<div class="flex items-center gap-3 ml-auto">
+														<p class="text-sm font-semibold tabular-nums">
+															{(variant.price || 0) * (variant.quantity || 0)} Kč
+														</p>
+														<button
+															type="button"
+															class="px-3 py-2 text-sm font-medium text-red-700 rounded-lg hover:bg-red-50"
+															aria-label={`Odebrat ${variant.description}`}
+															onclick={(event) => {
+																event.preventDefault();
+																CartItemsStore.removeItem(cartItem.id, variant.id);
+															}}>
+															Odebrat
+														</button>
+													</div>
+												</div>
+											</li>
+										{/each}
+									</ul>
+								</article>
+							{/each}
+						</div>
 					{/if}
 				</div>
 
