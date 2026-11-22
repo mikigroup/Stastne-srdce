@@ -76,8 +76,8 @@
 	<title>Obědy - {data.generalSettings?.shopName || 'Šťastné srdce'}</title>
 </svelte:head>
 
-<section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
-	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
+<section class="max-w-screen-xl px-4 py-6 sm:py-16 mx-auto mb-10 rounded-lg bg-stone-100">
+	<h1 class="mb-4 text-2xl font-extrabold tracking-tight text-center text-gray-900 sm:mb-8 sm:text-4xl md:text-5xl">
 		Obědy
 	</h1>
 	
@@ -92,8 +92,8 @@
 				<div class="p-3 border-b border-gray-200 bg-blue-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-blue-700">
 						<i class="fa-solid fa-clock"></i>
-						<span class="text-xs">
-							Objednávky na další den jsou možné do <strong class="text-lg leading-none">{data.productsSettings.nextDayMenuTime}</strong>
+						<span class="whitespace-nowrap text-xs">
+							Objednávky na další den jsou možné do <strong class="text-sm leading-none sm:text-lg">{data.productsSettings.nextDayMenuTime}</strong>
 						</span>
 					</div>
 				</div>
@@ -122,10 +122,10 @@
 							bind:checked={filterVegetarian}
 							onchange={() => (playMenuMotion = true)}
 						/>
-						<span class="text-sm md:text-lg font-medium">🌱 Pouze vegetariánská menu</span>
+						<span class="text-xs font-medium sm:text-sm md:text-lg">🌱 Pouze vegetariánská menu</span>
 					</label>
 					
-						<span class="text-sm text-gray-600">
+						<span class="shrink-0 whitespace-nowrap text-sm text-gray-600">
 							{filteredMenus.length} z {data.menus.length}
 						</span>
 					
@@ -133,7 +133,7 @@
 			</div>
 
 			<div class="pb-10 scroll-mt-28" id="menu-content">
-				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
+				<div class="mt-4 border sm:mt-10 md:mx-10 md:p-5 bg-orange-50 border-gray-300">
 					{#each filteredMenus as menu, index (menu.id)}
 						<div
 							class="flow-root"

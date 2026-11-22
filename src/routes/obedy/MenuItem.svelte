@@ -83,16 +83,16 @@
 </script>
 
 <div class="p-2 my-3 border rounded-lg bg-stone-100 border-gray-500">
-	<div class="py-1 bg-green-800 rounded-lg shadow-md sm:py-3 mt-5">
-		<p class="pl-3 text-2xl font-bold tracking-tight text-gray-200">
+	<div class="py-1 bg-green-800 rounded-lg shadow-md mt-2 sm:mt-5 sm:py-3">
+		<p class="pl-3 text-lg font-bold tracking-tight text-gray-200 sm:text-2xl">
 			{formatDate(menu.date)}
 		</p>
 	</div>
 
 	<div class="my-3 border border-gray-400 rounded-lg shadow-md md:p-8">
-		<p class="text-lg p-2">Polévka</p>
-		<div class="p-5 border rounded-2xl border-gray-400 bg-white">
-			<p class="p-2 text-lg">{menu.soup}</p>
+		<p class="text-base p-2 sm:text-lg">Polévka</p>
+		<div class="p-3 border rounded-2xl border-gray-400 bg-white sm:p-5">
+			<p class="p-2 text-base sm:text-lg">{menu.soup}</p>
 									{#if productsSettings?.showAllergens && menu.allergens && menu.allergens.length > 0}
 				<div class="mt-2 p-2">
 					<p class="text-xs text-gray-600">
