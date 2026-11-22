@@ -1,9 +1,10 @@
-import { error, fail, redirect } from "@sveltejs/kit";
+import { error, fail, isRedirect, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
 import { ProfileService } from '$lib/services/profileService';
+import { ROUTES } from '$lib/constants/routes';
 import { getAllDeliveryMethods } from '$lib/constants/deliveryMethods';
 import { getPaymentMethods } from '$lib/constants/paymentMethods';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -351,16 +352,10 @@ export const actions: Actions = {
 				// Don't fail the deletion request if email fails - log it for admin
 			}
 
-			// TODO: Log this request for GDPR compliance audit
-			// TODO: Schedule deletion process (cron job)
-
-			return {
-				message: {
-					success: true,
-					display: `Žádost o smazání dat byla podána. Máte 30 dní na rozmyšlenou do ${scheduledDate.toLocaleDateString('cs-CZ')}. Poslali jsme vám email s instrukcemi pro případné zrušení žádosti.`
-				}
-			};
+			await supabase.auth.signOut();
+			throw redirect(303, `${ROUTES.AUTH.LOGIN}?message=deletion_requested`);
 		} catch (error) {
+			if (isRedirect(error)) throw error;
 			console.error("Error in data deletion request:", error);
 			return fail(500, {
 				message: {

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { page } from "$app/state";
+	import { resolve } from "$app/paths";
 	import { fade } from "svelte/transition";
 	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
-	import { ROUTES } from "$lib/constants/routes";
 	
 	type FormData = {
 		message?: {
@@ -26,6 +26,7 @@
 	let user = $derived(data.user);
 
 	let message = $derived(page.data.message);
+	let generalSettings = $derived(data.generalSettings);
 
 	let loading = $state(false);
 
@@ -41,8 +42,6 @@
 			}
 		});
 	}
-
-	const { generalSettings } = data;
 </script>
 
 <svelte:head>
@@ -111,7 +110,7 @@
 
 			<!-- Forgot password link -->
 			<div class="flex justify-end">
-				<a href={ROUTES.AUTH.FORGOT} class="text-sm text-gray-500 underline hover:underline hover:text-black">
+				<a href={resolve("/auth/forgot")} class="text-sm text-gray-500 underline hover:underline hover:text-black">
 					Zapomněli jste heslo?
 				</a>
 			</div>
@@ -144,6 +143,14 @@
 			{#if message === "password_reset"}
 				<div class="w-full p-3 border border-green-200 rounded-lg bg-green-50">
 					<p class="text-green-700 text-sm">Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.</p>
+				</div>
+			{/if}
+
+			{#if message === "deletion_requested" || message === "deletion_pending"}
+				<div class="w-full p-3 border border-amber-200 rounded-lg bg-amber-50">
+					<p class="text-amber-900 text-sm">
+						Žádost o smazání osobních údajů je podaná a účet je pozastavený. Odkaz pro zrušení je v e-mailu. Přihlášení do 30 dnů žádost zruší.
+					</p>
 				</div>
 			{/if}
 

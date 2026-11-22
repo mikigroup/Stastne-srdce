@@ -61,13 +61,13 @@ const supabase: Handle = async ({ event, resolve }) => {
 			return { session: null, user: null };
 		}
 
-		// 🔧 NOVÁ LOGIKA: Auto-reaktivace suspended uživatelů s deletion request
+		// Kontrola členství v tenantovi a pozastavení účtu při žádosti o výmaz
 		if (user && session) {
 			try {
 				// Zkontrolovat, jestli má uživatel suspended účet s deletion request
 				const { data: profile, error: profileError } = await adminSupabase
 					.from('profiles')
-					.select('id, account_suspended, data_deletion_requested, data_deletion_token, data_deletion_scheduled, first_name, last_name, tenant_id')
+					.select('id, account_suspended, data_deletion_requested, tenant_id')
 					.eq('id', user.id)
 					.single();
 
@@ -126,49 +126,13 @@ const supabase: Handle = async ({ event, resolve }) => {
 					const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';
 					const isDeletionRequested = profile.data_deletion_requested === true || String(profile.data_deletion_requested) === 'true';
 
-					// Pokud je účet suspended kvůli deletion request, automaticky reaktivovat
+					// Žádost o výmaz ruší jen přihlášení heslem nebo odkaz z e-mailu.
+					// Tady se token nemaže, jen se ukončí zbylá session.
 					if (isAccountSuspended && isDeletionRequested) {
-						console.log('🔄 [AUTH] Auto-reactivating suspended account with deletion request:', user.id);
-
-						// Zkontrolovat, jestli je stále v grace period (30 dní)
-						const deletionScheduled = profile.data_deletion_scheduled ? new Date(profile.data_deletion_scheduled) : null;
-						const now = new Date();
-
-						if (deletionScheduled && now < deletionScheduled) {
-							// Stále v grace period - reaktivovat účet
-							const { error: updateError } = await adminSupabase
-								.from('profiles')
-								.update({
-									account_suspended: false,
-									data_deletion_requested: false,
-									data_deletion_date: null,
-									data_deletion_scheduled: null,
-									data_deletion_token: null,
-									updated_at: new Date().toISOString()
-								})
-								.eq('id', user.id);
-
-							if (!updateError) {
-								console.log('✅ [AUTH] Account successfully reactivated via login:', user.id);
-
-								// Poslat potvrzovací email o reaktivaci
-								try {
-									const { sendAccountReactivationEmail } = await import('$lib/services/gdprEmailService');
-									await sendAccountReactivationEmail({
-										email: user.email!,
-										firstName: profile.first_name || 'Vážený zákazníku',
-										lastName: profile.last_name || ''
-									});
-								} catch (emailError) {
-									console.error('⚠️ [AUTH] Failed to send reactivation email:', emailError);
-									// Pokračovat i když email selže
-								}
-							} else {
-								console.error('❌ [AUTH] Failed to reactivate account:', updateError);
-							}
-						} else {
-							console.log('⏰ [AUTH] Grace period expired, cannot auto-reactivate:', user.id);
-						}
+						console.log('🔒 [AUTH] Signing out session with pending data deletion:', user.id);
+						await event.locals.supabase.auth.signOut();
+						event.locals.accountDeletionPending = true;
+						return { session: null, user: null };
 					}
 				}
 			} catch (autoReactivationError) {
@@ -187,7 +151,7 @@ const supabase: Handle = async ({ event, resolve }) => {
 			tenant_id: PUBLIC_TENANT 
 		});
 		
-		// Nastavit tenant context i pro admin client (pro auto-reaktivaci)
+		// Nastavit tenant context i pro admin client (kontrola členství a žádosti o výmaz)
 		await adminSupabase.rpc('set_tenant_context', { 
 			tenant_id: PUBLIC_TENANT 
 		});
@@ -239,6 +203,10 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	const { session, user } = await event.locals.safeGetSession();
 	event.locals.session = session;
 	event.locals.user = user;
+
+	if (event.locals.accountDeletionPending && !event.url.pathname.startsWith('/auth')) {
+		throw redirect(303, '/auth/login?message=deletion_pending');
+	}
 
 	return resolve(event);
 };

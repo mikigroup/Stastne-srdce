@@ -143,18 +143,15 @@ export async function sendDataDeletionRequestEmail(params: DataDeletionEmailPara
                 </a>
             </p>
             
-            <h4>🔑 Možnost 2: Běžné přihlášení</h4>
-            <p>Můžete se také jednoduše <strong>přihlásit na váš účet</strong> na:</p>
+            <h4>Možnost 2: Přihlášení</h4>
+            <p>Přihlášení do <strong>${scheduledDateFormatted}</strong> žádost zruší a účet obnoví:</p>
             <p style="text-align: center;">
-                <a href="${baseUrl}/login" style="color: #3B82F6; text-decoration: underline;">
-                    ${baseUrl}/login
+                <a href="${baseUrl}/auth/login" style="color: #3B82F6; text-decoration: underline;">
+                    ${baseUrl}/auth/login
                 </a>
             </p>
-            <p style="font-size: 0.9em; color: #666;">
-                ⚠️ <strong>Pozor:</strong> Pokud máte problém s přihlášením kvůli pozastavení účtu, použijte reaktivační odkaz výše.
-            </p>
             
-            <p><strong>Upozornění:</strong> Tento odkaz je platný pouze do ${scheduledDateFormatted}.</p>
+            <p><strong>Upozornění:</strong> Odkaz i možnost zrušení přihlášením platí pouze do ${scheduledDateFormatted}.</p>
         </div>
 
         <h3>Co se stane s Vašimi daty:</h3>
@@ -166,9 +163,9 @@ export async function sendDataDeletionRequestEmail(params: DataDeletionEmailPara
 
         <h3>Co se stane s Vaším účtem:</h3>
         <ul>
-            <li>🚫 Účet je během 30 dní <strong>pozastaven</strong> - nelze se přihlásit</li>
-            <li>🚫 Nemůžete vytvářet nové objednávky</li>
-            <li>✅ Máte možnost účet kdykoliv obnovit (pomocí odkazu výše)</li>
+            <li>🚫 Účet je odhlášený a po dobu 30 dní <strong>pozastavený</strong></li>
+            <li>🚫 Do zrušení žádosti nebo uplynutí lhůty nelze vytvářet nové objednávky</li>
+            <li>✅ Přihlášení do ${scheduledDateFormatted} žádost zruší, stejně jako odkaz výše</li>
         </ul>
 
         <div class="legal-text">

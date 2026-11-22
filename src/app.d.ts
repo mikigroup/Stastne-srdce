@@ -12,6 +12,7 @@ declare global {
 			}>;
 			session: Session | null;
 			user: User | null;
+			accountDeletionPending?: boolean;
 			cartItems: Array<{
 				id: string;
 				product_id: string;

@@ -7,7 +7,7 @@
 	import { prefersReducedMotion } from "svelte/motion";
 	import { slide } from "svelte/transition";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
-	import { formatDateToCzech, formatDateTimeToCzechShort } from "$lib/utils/formatting";
+	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
 
 	type MethodOption = { value: string; label: string };
 
@@ -77,6 +77,8 @@
 	let openOrderId = $state<string | null>(null);
 	let loading = $state(false);
 	let deletionLoading = $state(false);
+	let deletionConfirmed = $state(false);
+	let legalUnderstanding = $state(false);
 	let attempted = $state(false);
 
 	let first_name = $state(untrack(() => profile?.first_name ?? ""));
@@ -97,6 +99,7 @@
 	let email = $derived(session?.user?.email ?? "");
 	let savedName = $derived([profile?.first_name, profile?.last_name].filter(Boolean).join(" "));
 	let showFieldErrors = $derived(attempted);
+	let deletionReady = $derived(deletionConfirmed && legalUnderstanding);
 
 	let deliveryMethodOptionsList = $derived.by(() => {
 		const base = [...deliveryMethodOptions];
@@ -714,10 +717,12 @@
 							>
 								<span class="min-w-0">
 									<span class="block font-semibold text-gray-900">č. {order.order_number}</span>
-									<span class="mt-0.5 block text-sm text-gray-600">
-										{#if order.created_at}{formatDateTimeToCzechShort(order.created_at)}{/if}
+									<span class="mt-1.5 flex flex-wrap items-center gap-2 text-sm font-medium text-gray-900">
+										{#if order.created_at}
+											<span class="font-semibold">{formatDateToCzechShort(order.created_at)}</span>
+										{/if}
 										{#if order.total_pieces != null}
-											<span aria-hidden="true"> · </span>{piecesLabel(order.total_pieces)}
+											<span class="text-sm font-medium text-gray-600">{piecesLabel(order.total_pieces)}</span>
 										{/if}
 									</span>
 								</span>
@@ -817,6 +822,7 @@
 									name="deletion_confirmed"
 									value="yes"
 									required
+									bind:checked={deletionConfirmed}
 									class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-green-800"
 								/>
 								<span>Žádám o smazání všech mých osobních údajů a rozumím, že mám 30 dní na zrušení této žádosti.</span>
@@ -827,6 +833,7 @@
 									name="legal_understanding"
 									value="yes"
 									required
+									bind:checked={legalUnderstanding}
 									class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-green-800"
 								/>
 								<span>Souhlasím s uchováním fakturačních údajů po zákonnou dobu (zákon č. 563/1991 Sb., o účetnictví).</span>
@@ -836,7 +843,7 @@
 							<button
 								type="submit"
 								class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-800 px-4 py-2.5 text-sm font-semibold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								disabled={deletionLoading}
+								disabled={!deletionReady || deletionLoading}
 							>
 								{deletionLoading ? "Odesílám…" : "Požádat o smazání dat"}
 							</button>
