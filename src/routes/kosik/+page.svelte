@@ -12,6 +12,7 @@
 	import { getAvailableTimeSlots, formatTimeSlot, type TimeSlotAvailability } from "$lib/services/timeSlotService";
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 	import { PUBLIC_TENANT } from "$env/static/public";
+	import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
 
 	interface Props {
 		data: any;
@@ -52,6 +53,11 @@
 	}, 0));
 
 	let deliveryMethodCode = $derived(String(profileData?.delivery_method ?? "").trim());
+	let shippingPrice = $derived(
+		shippingPriceForMethod(deliverySettings, deliveryMethodCode, totalPrice)
+	);
+	let totalPriceWithDelivery = $derived(totalPrice + shippingPrice);
+
 	let deliveryMethodLabel = $derived.by(() => {
 		if (!deliveryMethodCode) return "";
 		const methods = Array.isArray(deliverySettings?.shippingMethods)
@@ -529,9 +535,15 @@
 									</p>
 								{/if}
 
+								{#if shippingPrice > 0}
+									<p class="text-right">
+										Cena dopravy: <strong>{shippingPrice} Kč</strong>
+									</p>
+								{/if}
+
 								<p class="text-right text-lg border-t pt-5">
 									Celkově: <strong>{totalPieces} ks</strong> obědů za
-									<strong>{totalPrice} Kč</strong>
+									<strong>{totalPriceWithDelivery} Kč</strong>
 								</p>
 								
 								<!-- Chyba minimální hodnoty -->

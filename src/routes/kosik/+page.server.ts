@@ -8,6 +8,7 @@ import {
 	loadInventorySettings,
 	shouldEnforceSalesStockLimits
 } from "$lib/services/inventorySalesLimits";
+import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
 
 export const prerender = false;
 
@@ -211,6 +212,8 @@ export const actions: Actions = {
 			}
 
 			const shippingLabel = deliveryMethodLabel(shippingMethod, deliverySettings);
+			const shippingPrice = shippingPriceForMethod(deliverySettings, shippingMethod, totalPrice);
+			const totalPriceWithDelivery = totalPrice + shippingPrice;
 
 			// Create order using the stored procedure.
 			// Uloží se přesně kód z profilu, i když už není v aktuální nabídce.
@@ -228,7 +231,7 @@ export const actions: Actions = {
 				p_customer_email: email,
 				p_note: timeSlot ? `Čas vyzvednutí: ${timeSlot}${note ? `\nPoznámka: ${note}` : ''}` : note,
 				p_total_pieces: totalPieces,
-				p_total_price: totalPrice,
+				p_total_price: totalPriceWithDelivery,
 				p_currency: "CZK",
 				p_pay_state: false,
 				p_shipping_method: shippingMethod,
@@ -263,13 +266,23 @@ export const actions: Actions = {
 
 			const order = orderArray[0]; // Bereme první (a jediný) prvek pole
 
+			if (order.id && shippingPrice > 0) {
+				const { error: shippingError } = await supabase.rpc('snapshot_order_shipping_price', {
+					p_order_id: order.id,
+					p_shipping_price: shippingPrice
+				});
+				if (shippingError) {
+					console.error("Snímek ceny dopravy se nepodařilo uložit:", shippingError);
+				}
+			}
+
 			// Only send email after successful order creation
 			try {
 				await sendOrderConfirmationEmail(
 					email,
 					order.order_number?.toString() || order.id || 'unknown',
 					cartItems,
-					totalPrice,
+					totalPriceWithDelivery,
 					totalPieces,
 					note,
 					shippingLabel

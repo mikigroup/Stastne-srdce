@@ -1174,6 +1174,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      snapshot_order_shipping_price: {
+        Args: {
+          p_order_id: string
+          p_shipping_price: number
+        }
+        Returns: undefined
+      }
       create_order_with_items1: {
         Args: {
           p_created_at: string
