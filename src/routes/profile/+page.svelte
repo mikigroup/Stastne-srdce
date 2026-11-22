@@ -5,7 +5,7 @@
 	import { onMount, tick, untrack } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { prefersReducedMotion } from "svelte/motion";
-	import { slide } from "svelte/transition";
+	import { fade, fly, slide } from "svelte/transition";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
 
@@ -73,7 +73,19 @@
 
 	let reducedMotion = $derived(prefersReducedMotion.current);
 	let orderOpenDuration = $derived(reducedMotion ? 0 : 620);
+	let animateTabs = $state(false);
 	let tab = $state<TabId>("udaje");
+	let tabIndex = $derived(tabs.findIndex((item) => item.id === tab));
+	let tabEnter = $derived({
+		y: reducedMotion || !animateTabs ? 0 : 12,
+		duration: reducedMotion || !animateTabs ? 0 : 260,
+		opacity: 0,
+		easing: cubicOut
+	});
+	let tabLeave = $derived({
+		duration: reducedMotion || !animateTabs ? 0 : 160,
+		easing: cubicOut
+	});
 	let openOrderId = $state<string | null>(null);
 	let loading = $state(false);
 	let deletionLoading = $state(false);
@@ -290,12 +302,19 @@
 	onMount(() => {
 		const hash = window.location.hash.replace("#", "");
 		if (tabs.some((item) => item.id === hash)) tab = hash as TabId;
+		animateTabs = true;
 	});
 
 	function selectTab(next: TabId) {
+		if (next === tab) return;
 		tab = next;
 		const url = `${window.location.pathname}${window.location.search}#${next}`;
 		history.replaceState(history.state, "", url);
+	}
+
+	function hideLeavingPanel(event: Event) {
+		const node = event.currentTarget;
+		if (node instanceof HTMLElement) node.inert = true;
 	}
 
 	function onTabKeydown(event: KeyboardEvent, index: number) {
@@ -364,18 +383,19 @@
 	{/if}
 
 	<div
-		class="max-w-4xl mx-auto mb-6 grid grid-cols-3 gap-1 rounded-lg border border-gray-300 bg-white p-1 shadow-sm"
+		class="relative mx-auto mb-6 grid max-w-4xl grid-cols-3 gap-1 rounded-lg border border-gray-300 bg-white p-1 shadow-sm"
 		role="tablist"
 		aria-label="Části účtu"
 	>
+		<span class="tab-indicator" style:--tab-index={tabIndex} aria-hidden="true"></span>
 		{#each tabs as item, index (item.id)}
 			<button
 				type="button"
 				id={`tab-${item.id}`}
 				role="tab"
 				class={[
-					"inline-flex w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1 py-2.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 sm:gap-1.5 sm:px-2 sm:text-sm md:text-base",
-					tab === item.id ? "bg-green-800 text-white" : "text-gray-700 hover:bg-stone-100"
+					"relative z-10 inline-flex w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1 py-2.5 text-xs font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 motion-reduce:transition-none sm:gap-1.5 sm:px-2 sm:text-sm md:text-base",
+					tab === item.id ? "text-white" : "text-gray-700 hover:bg-stone-100"
 				]}
 				aria-selected={tab === item.id}
 				aria-controls={`panel-${item.id}`}
@@ -395,6 +415,9 @@
 		{/each}
 	</div>
 
+	<div class="tab-stage">
+		{#key tab}
+			<div class="tab-panel" in:fly={tabEnter} out:fade={tabLeave} onoutrostart={hideLeavingPanel}>
 	{#if tab === "udaje"}
 		<div role="tabpanel" id="panel-udaje" aria-labelledby="tab-udaje" class="max-w-4xl mx-auto">
 			<form class="space-y-4" method="post" action="?/update" use:enhance={handleSubmit} autocomplete="on">
@@ -858,4 +881,39 @@
 			</section>
 		</div>
 	{/if}
+			</div>
+		{/key}
+	</div>
 </section>
+
+<style>
+	.tab-indicator {
+		position: absolute;
+		top: 0.25rem;
+		bottom: 0.25rem;
+		left: 0.25rem;
+		z-index: 0;
+		width: calc((100% - 1rem) / 3);
+		border-radius: 0.375rem;
+		background-color: #166534;
+		pointer-events: none;
+		transform: translateX(calc(var(--tab-index) * (100% + 0.25rem)));
+		transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);
+	}
+
+	.tab-stage {
+		display: grid;
+	}
+
+	.tab-panel {
+		grid-area: 1 / 1;
+		min-width: 0;
+		background-color: #f5f5f4;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.tab-indicator {
+			transition: none;
+		}
+	}
+</style>

@@ -99,7 +99,7 @@
 	});
 </script>
 
-<header class="fixed top-0 left-0 w-full bg-white z-10">
+<header class="fixed top-0 left-0 w-full bg-white z-40">
 	<nav>
 		<div class="flex items-center justify-between w-full px-4 m-2 mx-auto xl:flex xl:justify-between max-w-8xl">
 			<!-- Logo a čas -->
@@ -168,16 +168,15 @@
 						type="button"
 						data-menu-button
 						onclick={toggleMenu}
-						class="relative z-20 rounded-full p-2 hover:bg-slate-50"
+						class={["menu-button relative z-20 rounded-full p-2 hover:bg-slate-50", menuVisible && "is-open"]}
 						aria-expanded={menuVisible}
+						aria-controls="mobile-menu"
 						aria-label={menuVisible ? "Zavřít menu" : "Otevřít menu"}>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							{#if menuVisible}
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-							{:else}
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-							{/if}
-						</svg>
+						<span class="menu-icon" aria-hidden="true">
+							<span></span>
+							<span></span>
+							<span></span>
+						</span>
 					</button>
 					{#if totalPieces}
 						<span class="ml-2 font-bold">{totalPieces}</span>
@@ -186,70 +185,186 @@
 			</div>
 		</div>
 
-		<!-- Mobile menu -->
-		{#if menuVisible}
-			<div
-				data-mobile-menu
-				class="border-t border-gray-100 bg-white px-4 pb-4 pt-3 xl:hidden">
-				<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
-				<ul class="flex flex-col gap-2">
-					{#each mobileLinks as link (link.href)}
-						<li>
+		<!-- Mobile menu: výška se animuje v CSS, aby zavírání nenechalo panel inertní -->
+		<div
+			id="mobile-menu"
+			data-mobile-menu
+			class={["mobile-menu", menuVisible && "is-open"]}
+			inert={!menuVisible}
+			aria-hidden={!menuVisible}>
+			<div class="mobile-menu-clip">
+				<div class="border-t border-gray-100 bg-white px-4 pb-4 pt-3">
+					<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
+						<ul class="flex flex-col gap-2">
+							{#each mobileLinks as link, index (link.href)}
+								<li style:--delay="{index * 35}ms">
+									<a
+										href={link.href}
+										onclick={closeMenu}
+										class="flex h-full items-center justify-center rounded-2xl px-3 py-3 text-center text-base font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
+										{link.label}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					</div>
+
+					<a
+						href="/kosik"
+						onclick={closeMenu}
+						style:--delay="210ms"
+						class="menu-piece mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-2xl px-3 py-3 text-base font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
+						Košík
+						{#if totalPieces}
+							<span
+								class="inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-2 text-sm {isCurrent('/kosik', pathname) ? 'bg-white text-green-800' : 'bg-green-800 text-white'}">
+								{totalPieces}
+							</span>
+						{/if}
+					</a>
+
+					<div class="menu-piece mx-auto mt-5 grid w-full max-w-[21rem] grid-cols-2 gap-2" style:--delay="250ms">
+						{#if page.data.session}
 							<a
-								href={link.href}
+								href="/profile"
 								onclick={closeMenu}
-								class="flex h-full items-center justify-center rounded-2xl px-3 py-3 text-center text-base font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
-								{link.label}
+								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+								Účet
 							</a>
-						</li>
-					{/each}
-				</ul>
-				</div>
-
-				<a
-					href="/kosik"
-					onclick={closeMenu}
-					class="mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-2xl px-3 py-3 text-base font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
-					Košík
-					{#if totalPieces}
-						<span
-							class="inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-2 text-sm {isCurrent('/kosik', pathname) ? 'bg-white text-green-800' : 'bg-green-800 text-white'}">
-							{totalPieces}
-						</span>
-					{/if}
-				</a>
-
-				<div class="mx-auto mt-5 grid w-full max-w-[21rem] grid-cols-2 gap-2">
-					{#if page.data.session}
-						<a
-							href="/profile"
-							onclick={closeMenu}
-							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
-							Účet
-						</a>
-						<button
-							onclick={signOut}
-							disabled={loading}
-							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white disabled:opacity-50">
-							Odhlásit
-						</button>
-					{:else}
-						<a
-							href={ROUTES.AUTH.LOGIN}
-							onclick={closeMenu}
-							class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
-							Přihlásit
-						</a>
-						<a
-							href={ROUTES.AUTH.SIGNUP}
-							onclick={closeMenu}
-							class="rounded-2xl bg-green-800 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-green-900">
-							Přidej se
-						</a>
-					{/if}
+							<button
+								onclick={signOut}
+								disabled={loading}
+								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white disabled:opacity-50">
+								Odhlásit
+							</button>
+						{:else}
+							<a
+								href={ROUTES.AUTH.LOGIN}
+								onclick={closeMenu}
+								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+								Přihlásit
+							</a>
+							<a
+								href={ROUTES.AUTH.SIGNUP}
+								onclick={closeMenu}
+								class="rounded-2xl bg-green-800 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-green-900">
+								Přidej se
+							</a>
+						{/if}
+					</div>
 				</div>
 			</div>
-		{/if}
+		</div>
 		<hr class="mx-4 border-t border-gray-200" />
 	</nav>
 </header>
+
+<style>
+	.menu-button {
+		transition: background-color 0.2s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.menu-button:active {
+		transform: scale(0.92);
+	}
+
+	.menu-icon {
+		position: relative;
+		display: block;
+		width: 1.75rem;
+		height: 1.75rem;
+	}
+
+	.menu-icon span {
+		position: absolute;
+		left: 0.25rem;
+		right: 0.25rem;
+		height: 2px;
+		border-radius: 999px;
+		background: currentColor;
+		transform-origin: center;
+		transition:
+			transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 0.28s ease,
+			top 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.menu-icon span:nth-child(1) {
+		top: 0.45rem;
+	}
+
+	.menu-icon span:nth-child(2) {
+		top: 0.8rem;
+	}
+
+	.menu-icon span:nth-child(3) {
+		top: 1.15rem;
+	}
+
+	.menu-button.is-open .menu-icon span:nth-child(1) {
+		top: 0.8rem;
+		transform: rotate(45deg);
+	}
+
+	.menu-button.is-open .menu-icon span:nth-child(2) {
+		opacity: 0;
+		transform: scaleX(0.2);
+	}
+
+	.menu-button.is-open .menu-icon span:nth-child(3) {
+		top: 0.8rem;
+		transform: rotate(-45deg);
+	}
+
+	.mobile-menu {
+		display: grid;
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.mobile-menu.is-open {
+		grid-template-rows: 1fr;
+	}
+
+	.mobile-menu-clip {
+		overflow: hidden;
+		min-height: 0;
+	}
+
+	.mobile-menu.is-open li,
+	.mobile-menu.is-open .menu-piece {
+		animation: menu-rise 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation-delay: var(--delay, 0ms);
+	}
+
+	@keyframes menu-rise {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (min-width: 80rem) {
+		.mobile-menu {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.menu-button,
+		.menu-icon span,
+		.mobile-menu {
+			transition: none;
+		}
+
+		.mobile-menu.is-open li,
+		.mobile-menu.is-open .menu-piece {
+			animation: none;
+		}
+	}
+</style>

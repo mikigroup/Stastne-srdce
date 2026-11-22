@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { version = import.meta.env.PUBLIC_VERSION || '1.2' } = $props();
+	let { version = import.meta.env.PUBLIC_VERSION || '1.5' } = $props();
 
 	let footerText = $derived(page.data.appearanceSettings?.footerText || '');
 	let socialSettings = $derived(page.data.socialSettings || {});

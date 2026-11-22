@@ -170,49 +170,7 @@
 						{/if}
 					</div>
 				</div>
-			</section>
-			<!--<div
-				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
-				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
-					Info na Prosinec 2022
-				</h3>
-				<hr class="mx-5" />
-				<p class="p-5 mb-5 text-gray-600 text-md">
-					Rok 2022 končí a my musíme vybrat ještě nějakou tu dovolenou, řádně
-					oslavit svátky a trochu se zklidnit . 23.12., 30.12. dovolená. 26.12.
-					Vánoční svátek. A 27.12., 28.12., 29.12. vaříme jen jedno jídlo.
-				</p>
-			</div>
-			<div
-				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
-				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
-					2023 a kudy kam
-				</h3>
-				<hr class="mx-5" />
-				<p class="p-5 mb-5 text-gray-600 text-md">
-					Kam si to v tom Šťastném srdci směřujeme? Vize "Kudy kam" pro další
-					roky máme. Zda je naplníme, je teď ve hvězdách. Nicméně trpělivě a
-					krok po kroku k naplnění míříme. A tak pro tento rok, chceme rozšířit
-					záhony s bylinami a zeleninou, pokračovat v uvědomělém kompostování
-					celé hory slupek zeleniny a ovoce, pravidelně vytvářet picles
-					(rychlokvašenou zeleninu) a zkusit používat na některé vařiče
-					bioplynku.
-				</p>
-			</div>-->
-			<!--<div
-				class="w-full px-4 rounded-lg shadow-lg sm:w-1/2 md:w-1/2 lg:w-1/4 bg-slate-50">
-				<h3 class="px-5 pt-10 text-3xl font-semibold text-gray-700 sm:text-xl">
-					Pro vegetariány a vegany!
-				</h3>
-				<hr class="mx-5" />
-				<p class="p-5 mb-5 text-gray-600 text-md">
-					Naše "bezmasé trojky", potřebují posunout na vyšší level. Strávníků,
-					kteří nechtějí jíst každý den maso přibývá. A my máme radost, že se
-					trojky svým množstvím vyrovnají masitým meníčkům. Jenomže k nám
-					nepřichází veganská (vegetariánská) inspirace a tak vyzýváme milovníky
-					zvířat, napište email, co byste rádi na jídelníčku.
-				</p>
-			</div>-->
+			</section>		
 		</div>
 	</div>
 </section>
