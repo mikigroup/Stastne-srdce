@@ -312,9 +312,15 @@
 			<div
 				class="max-w-screen-xl px-4 py-16 mx-auto mt-20 mb-10 rounded-lg bg-stone-100">
 				<h1
-					class="mb-10 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
+					class="mb-4 text-5xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">
 					Košík
 				</h1>
+				{#if timeSlotSettings?.nextDayMenuEnabled && timeSlotSettings?.nextDayMenuTime}
+					<p class="mb-10 text-xs text-right text-gray-500">
+						Objednávky na další den jsou možné do
+						<strong class="text-sm leading-none text-gray-500">{timeSlotSettings.nextDayMenuTime}</strong>
+					</p>
+				{/if}
 
 				<!-- Mobile cart -->
 				<div class="max-w-screen-xl px-4 py-4 mx-auto md:hidden bg-orange-50">
