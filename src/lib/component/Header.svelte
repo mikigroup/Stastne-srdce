@@ -83,9 +83,31 @@
 			document.removeEventListener("pointerdown", handlePointerDown);
 		};
 	});
+
+	// Dokud je menu otevřené, stránka pod ním zůstane na místě.
+	$effect(() => {
+		if (!menuVisible) return;
+
+		const scrollY = window.scrollY;
+		const { body } = document;
+		body.style.position = "fixed";
+		body.style.top = `-${scrollY}px`;
+		body.style.left = "0";
+		body.style.right = "0";
+		body.style.width = "100%";
+
+		return () => {
+			body.style.position = "";
+			body.style.top = "";
+			body.style.left = "";
+			body.style.right = "";
+			body.style.width = "";
+			window.scrollTo(0, scrollY);
+		};
+	});
 </script>
 
-<header class="fixed top-0 left-0 w-full bg-white z-40">
+<header class={["fixed top-0 left-0 w-full bg-white z-40", menuVisible && "is-menu-open"]}>
 	<nav>
 		<div class="flex items-center justify-between w-full px-4 m-2 mx-auto xl:flex xl:justify-between max-w-8xl">
 			<!-- Logo a čas -->
@@ -188,13 +210,13 @@
 			<div class="mobile-menu-clip">
 				<div class="border-t border-gray-100 bg-white px-4 pb-4 pt-3">
 					<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
-						<ul class="flex flex-col gap-2">
+						<ul class="flex flex-col gap-1.5">
 							{#each mobileLinks as link, index (link.href)}
 								<li style:--delay="{index * 35}ms">
 									<a
 										href={link.href}
 										onclick={closeMenu}
-										class="flex h-full items-center justify-center rounded-2xl px-3 py-3 text-center text-base font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
+										class="flex h-full items-center justify-center rounded-xl px-3 py-2 text-center text-sm font-medium leading-tight transition-colors duration-200 {itemClass(link.href, pathname)}">
 										{link.label}
 									</a>
 								</li>
@@ -206,7 +228,7 @@
 						href="/kosik"
 						onclick={closeMenu}
 						style:--delay="210ms"
-						class="menu-piece mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-2xl px-3 py-3 text-base font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
+						class="menu-piece mx-auto mt-2 flex w-full max-w-2xl items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-200 {itemClass('/kosik', pathname)}">
 						Košík
 						{#if totalPieces}
 							<span
@@ -221,13 +243,13 @@
 							<a
 								href="/profile"
 								onclick={closeMenu}
-								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+								class="rounded-xl border border-green-700 py-2 text-center text-sm font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 								Účet
 							</a>
 							<form method="POST" action={ROUTES.AUTH.LOGOUT} class="contents" data-sveltekit-reload>
 								<button
 									type="submit"
-									class="w-full rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+									class="w-full rounded-xl border border-green-700 py-2 text-center text-sm font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 									Odhlásit
 								</button>
 							</form>
@@ -235,13 +257,13 @@
 							<a
 								href={ROUTES.AUTH.LOGIN}
 								onclick={closeMenu}
-								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+								class="rounded-xl border border-green-700 py-2 text-center text-sm font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 								Přihlásit
 							</a>
 							<a
 								href={ROUTES.AUTH.SIGNUP}
 								onclick={closeMenu}
-								class="rounded-2xl bg-green-800 py-3 text-center text-base font-medium text-white transition-colors duration-200 hover:bg-green-900">
+								class="rounded-xl bg-green-800 py-2 text-center text-sm font-medium text-white transition-colors duration-200 hover:bg-green-900">
 								Přidej se
 							</a>
 						{/if}
@@ -323,6 +345,13 @@
 	.mobile-menu-clip {
 		overflow: hidden;
 		min-height: 0;
+	}
+
+	.is-menu-open .mobile-menu.is-open .mobile-menu-clip {
+		max-height: calc(100dvh - 4.25rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.mobile-menu.is-open li,
