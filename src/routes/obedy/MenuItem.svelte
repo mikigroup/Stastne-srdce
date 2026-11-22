@@ -4,15 +4,22 @@
 	import type { Menu } from "$lib/types/menu";
 	import type { Database } from "$lib/types/database.types";
 	import { ROUTES } from "$lib/constants/routes";
+	import { prefersReducedMotion } from "svelte/motion";
+	import { cubicOut } from "svelte/easing";
+	import { flip } from "svelte/animate";
+	import { menuEnter, menuSlide } from "./menu-motion";
 
 	type Allergen = Database["public"]["Tables"]["allergens"]["Row"];
 
 	interface Props {
 		menu: Menu;
 		productsSettings?: any;
+		animate?: boolean;
 	}
 
-	let { menu, productsSettings = {} }: Props = $props();
+	let { menu, productsSettings = {}, animate = false }: Props = $props();
+	let reducedMotion = $derived(prefersReducedMotion.current);
+	let motion = $derived(animate && !reducedMotion);
 
 
 	
@@ -100,8 +107,15 @@
 
 		<div class="py-2 text-lg rounded-2xl">
 			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
-			{#each menu.variants as variant (variant.id)}
-				<div class="border rounded-2xl p-5 mb-4 border-gray-400 bg-white">
+			{#each menu.variants as variant, index (variant.id)}
+				<div
+					class="border rounded-2xl p-5 mb-4 border-gray-400 bg-white"
+					animate:flip={{ duration: motion ? 420 : 0, easing: cubicOut }}
+					in:menuEnter={{
+						delay: motion ? Math.min(index, 3) * 55 : 0,
+						duration: motion ? 460 : 0
+					}}
+					out:menuSlide={{ duration: reducedMotion ? 0 : 280 }}>
 					<!--<div
 						class="rounded-3xl border w-3 px-4.5 py-1 flex justify-center bg-white mb-2">
 							{variant.variant_number}

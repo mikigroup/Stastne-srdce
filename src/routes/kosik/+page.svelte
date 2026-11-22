@@ -13,6 +13,7 @@
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 	import { PUBLIC_TENANT } from "$env/static/public";
 	import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
+	import type { Attachment } from "svelte/attachments";
 
 	interface Props {
 		data: any;
@@ -33,7 +34,6 @@
 	let selectedTimeSlot = $state('');
 	let availableTimeSlots: TimeSlotAvailability[] = $state([]);
 	let timeSlotSettings: any = $state(null);
-	let removeDialog = $state<HTMLDialogElement | null>(null);
 	let removeTarget = $state<{
 		itemId: string;
 		variantId: string;
@@ -274,6 +274,31 @@
 		CartItemsStore.updateQuantity(itemId, variantId, next);
 	}
 
+	const openRemoveDialog: Attachment<HTMLDialogElement> = (node) => {
+		$effect(() => {
+			if (removeTarget) {
+				if (!node.open) node.showModal();
+			} else if (node.open) {
+				node.close();
+			}
+		});
+	};
+
+	function askRemove(itemId: string, variantId: string, description: string, date: string) {
+		removeTarget = { itemId, variantId, description, date };
+	}
+
+	function confirmRemove() {
+		if (!removeTarget) return;
+		const target = removeTarget;
+		removeTarget = null;
+		CartItemsStore.removeItem(target.itemId, target.variantId);
+	}
+
+	function cancelRemove() {
+		removeTarget = null;
+	}
+
 	onMount(async () => {
 		await Promise.all([
 			getProfile(),
@@ -472,7 +497,12 @@
 															aria-label={`Odebrat ${variant.description}`}
 															onclick={(event) => {
 																event.preventDefault();
-																CartItemsStore.removeItem(cartItem.id, variant.id);
+																askRemove(
+																	cartItem.id,
+																	variant.id,
+																	variant.description,
+																	cartItem.date
+																);
 															}}>
 															Odebrat
 														</button>
@@ -574,9 +604,15 @@
 										<button
 											type="button"
 											class="hover:animate-spin"
+											aria-label={`Odebrat ${variant.description}`}
 											onclick={(event) => {
 												event.preventDefault();
-												CartItemsStore.removeItem(cartItem.id, variant.id);
+												askRemove(
+													cartItem.id,
+													variant.id,
+													variant.description,
+													cartItem.date
+												);
 											}}>
 											X
 										</button>
@@ -707,6 +743,46 @@
 		</div>
 	{/if}
 
+	<dialog
+		class="remove-dialog"
+		{@attach openRemoveDialog}
+		aria-labelledby="remove-dialog-title"
+		oncancel={(event) => {
+			event.preventDefault();
+			cancelRemove();
+		}}
+		onclick={(event) => {
+			if (event.target === event.currentTarget) cancelRemove();
+		}}>
+		<div class="p-6">
+			<h2 id="remove-dialog-title" class="text-xl font-semibold text-gray-900">
+				Odebrat z košíku
+			</h2>
+			<p class="mt-3 text-gray-700">
+				Opravdu chcete odebrat
+				{#if removeTarget}
+					<strong>{removeTarget.description}</strong>
+					({formatDateDayMonth(removeTarget.date)})
+				{/if}
+				z košíku?
+			</p>
+			<div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
+				<button
+					type="button"
+					class="px-4 py-2 font-medium text-gray-800 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+					onclick={cancelRemove}>
+					Zrušit
+				</button>
+				<button
+					type="button"
+					class="px-4 py-2 font-semibold text-white bg-red-700 rounded-lg hover:bg-red-800"
+					onclick={confirmRemove}>
+					Odebrat
+				</button>
+			</div>
+		</div>
+	</dialog>
+
 	<Modal 
 		bind:this={modal} 
 		onclose={() => {
@@ -732,3 +808,20 @@
 		{/if}
 	</Modal>
 </section>
+
+<style>
+	.remove-dialog {
+		border: none;
+		padding: 0;
+		margin: auto;
+		width: calc(100% - 2rem);
+		max-width: 28rem;
+		border-radius: 0.6em;
+		background: white;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+	}
+
+	.remove-dialog::backdrop {
+		background: rgba(0, 0, 0, 0.3);
+	}
+</style>

@@ -6,6 +6,7 @@
 	import type { Attachment } from "svelte/attachments";
 	import { prefersReducedMotion } from "svelte/motion";
 	import { fade, fly } from "svelte/transition";
+	import { menuSlide } from "./menu-motion";
 
 	interface Props {
 		data: {
@@ -26,7 +27,16 @@
 
 	let filterVegetarian = $state(false);
 	let showScrollTop = $state(false);
+	let playMenuMotion = $state(false);
 	let reducedMotion = $derived(prefersReducedMotion.current);
+
+	function enterDuration() {
+		return reducedMotion || !playMenuMotion ? 0 : 420;
+	}
+
+	function leaveDuration() {
+		return reducedMotion ? 0 : 300;
+	}
 
 	const observeFifthMenu: Attachment = (node) => {
 		const update = () => {
@@ -106,10 +116,11 @@
 			<div class="p-4 border-b border-gray-200 bg-gray-50 m-2">
 				<div class="flex items-center justify-between">
 					<label class="flex items-center gap-3 cursor-pointer">						
-						<input 
-							type="checkbox"							
-							class="checkbox" 
+						<input
+							type="checkbox"
+							class="checkbox"
 							bind:checked={filterVegetarian}
+							onchange={() => (playMenuMotion = true)}
 						/>
 						<span class="text-sm md:text-lg font-medium">🌱 Pouze vegetariánská menu</span>
 					</label>
@@ -123,22 +134,32 @@
 
 			<div class="pb-10 scroll-mt-28" id="menu-content">
 				<div class="mt-10 border md:mx-10 md:p-5 bg-orange-50 border-gray-300">
-					{#if filteredMenus?.length > 0}
-						{#each filteredMenus as menu, index (menu.id)}
+					{#each filteredMenus as menu, index (menu.id)}
+						<div
+							class="flow-root"
+							in:menuSlide={{ duration: enterDuration() }}
+							out:menuSlide={{ duration: leaveDuration() }}>
 							{#if index === 4}
-								<div class="h-px -mb-px w-full pointer-events-none" aria-hidden="true" {@attach observeFifthMenu}></div>
+								<div
+									class="h-px -mb-px w-full pointer-events-none"
+									aria-hidden="true"
+									{@attach observeFifthMenu}></div>
 							{/if}
-							<MenuItem {menu} productsSettings={data.productsSettings} />
-						{/each}
-					{:else if filterVegetarian}
-						<p class="p-4 text-center text-gray-600">
-							Žádná vegetariánská menu nenalezena.
-						</p>
+							<MenuItem
+								{menu}
+								productsSettings={data.productsSettings}
+								animate={playMenuMotion} />
+						</div>
 					{:else}
-						<p class="p-4 text-center text-gray-600">
-							Žádný jídelníček nenalezen pro následujících {data.visibleDays} menu.
+						<p
+							class="p-4 text-center text-gray-600"
+							in:menuSlide={{ duration: enterDuration() }}
+							out:menuSlide={{ duration: leaveDuration() }}>
+							{filterVegetarian
+								? "Žádná vegetariánská menu nenalezena."
+								: `Žádný jídelníček nenalezen pro následujících ${data.visibleDays} menu.`}
 						</p>
-					{/if}
+					{/each}
 				</div>
 			</div>
 		</div>
