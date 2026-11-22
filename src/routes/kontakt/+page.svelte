@@ -83,8 +83,8 @@
 	<meta name="description" content={pageDescription} />
 </svelte:head>
 
-<section class="max-w-screen-xl px-3 py-6 mx-auto mb-6 rounded-lg bg-stone-100 sm:px-4 sm:py-16 sm:mb-10">
-	<h1 class="mb-4 text-2xl font-extrabold tracking-tight text-center text-gray-900 sm:mb-8 sm:text-4xl md:text-5xl">
+<section class="max-w-screen-xl px-3 py-6 mx-auto mb-6 rounded-lg bg-stone-100 sm:px-4 md:py-16 md:mb-10">
+	<h1 class="mb-3 text-2xl font-extrabold tracking-tight text-center text-gray-900 md:mb-8 md:text-4xl lg:text-5xl">
 		Kontaktujte nás
 	</h1>
 
@@ -92,7 +92,7 @@
 		<div class="bg-white border rounded-lg shadow-md p-3 border-gray-400 sm:p-8">
 			<div class="grid gap-4 md:grid-cols-2 md:gap-8">
 				<!-- Levá strana - Kontaktní informace -->
-				<div class="min-w-0 space-y-4 sm:space-y-6">
+				<div class="order-2 min-w-0 space-y-4 sm:space-y-6 md:order-1">
 					<!-- Info karta -->
 					<div class="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200 sm:p-6 sm:space-y-4">
 						<div class="flex items-start gap-2 border-b pb-3 sm:gap-3 sm:pb-4">
@@ -200,7 +200,7 @@
 				</div>
 
 				<!-- Pravá strana - Kontaktní formulář -->
-				<div class="min-w-0 bg-gray-50 rounded-lg p-4 border border-gray-200 sm:p-6">
+				<div class="order-1 min-w-0 bg-gray-50 rounded-lg p-4 border border-gray-200 sm:p-6 md:order-2">
 					<h2 class="text-lg font-semibold text-gray-800 mb-4 sm:text-xl sm:mb-6">Napište nám</h2>
 					<form
 						method="POST"
