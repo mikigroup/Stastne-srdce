@@ -3,6 +3,9 @@
 	import "./banner.css";
 	import { page } from "$app/state";
 	import { browser } from "$app/environment";
+	import { cubicOut } from "svelte/easing";
+	import { prefersReducedMotion } from "svelte/motion";
+	import { fade, fly } from "svelte/transition";
 	import GDPR from "$lib/gdpr/Gdpr.svelte";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
@@ -72,6 +75,23 @@
 	let seoSettings = $derived(data.settings?.seo);
 	let generalSettings = $derived(data.settings?.general);
 	let appearanceSettings = $derived(data.settings?.appearance);
+
+	let reducedMotion = $derived(prefersReducedMotion.current);
+	let pageEnter = $derived({
+		y: reducedMotion ? 0 : 12,
+		duration: reducedMotion ? 0 : 260,
+		opacity: 0,
+		easing: cubicOut
+	});
+	let pageLeave = $derived({
+		duration: reducedMotion ? 0 : 160,
+		easing: cubicOut
+	});
+
+	function hideLeavingPage(event: Event) {
+		const node = event.currentTarget;
+		if (node instanceof HTMLElement) node.inert = true;
+	}
 </script>
 
 <svelte:head>
@@ -215,7 +235,11 @@
 <div class="pt-5 mt-20"></div>
 
 <main>
-	{@render children?.()}
+	{#key page.url.pathname}
+		<div class="page-stage" in:fly={pageEnter} out:fade={pageLeave} onoutrostart={hideLeavingPage}>
+			{@render children?.()}
+		</div>
+	{/key}
 </main>
 
 {#if showRegistrationBanner}
@@ -263,4 +287,13 @@
 {/if}
 
 <style lang="postcss">
+	main {
+		display: grid;
+	}
+
+	.page-stage {
+		grid-area: 1 / 1;
+		min-width: 0;
+		background-color: #fff;
+	}
 </style>
