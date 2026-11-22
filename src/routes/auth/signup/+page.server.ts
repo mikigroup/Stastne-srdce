@@ -2,7 +2,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { sendEmail } from "$lib/email";
 import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
-import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { verifyRecaptchaToken, getClientIP, getExpectedHostnames } from "$lib/server/recaptcha";
 import { isTemporaryEmail } from "$lib/utils/botDetection";
 import { signUpSchema } from "$lib/utils/validationSchemas";
 import { createClient } from '@supabase/supabase-js';
@@ -32,7 +32,12 @@ export const actions = {
 				}
 
 				const clientIP = getClientIP(request);
-				const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, clientIP, 0.5);
+				const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, {
+					remoteip: clientIP,
+					scoreThreshold: 0.5,
+					expectedAction: "signup",
+					expectedHostnames: getExpectedHostnames(request)
+				});
 				
 				if (!recaptchaResult.success) {
 					return fail(400, {

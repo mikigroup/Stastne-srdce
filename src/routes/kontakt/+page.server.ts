@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 import { getSetting } from "$lib/services/siteSettingsService";
-import { verifyRecaptchaToken, getClientIP } from "$lib/utils/recaptcha";
+import { verifyRecaptchaToken, getClientIP, getExpectedHostnames } from "$lib/server/recaptcha";
 import { sanitizeEmailText, sanitizeEmailAddress, sanitizePhone } from "$lib/utils/emailSanitization";
 import { contactFormSchema } from "$lib/utils/validationSchemas";
 
@@ -108,12 +108,12 @@ export const actions: Actions = {
 			}
 
 			const clientIP = getClientIP(request);
-			const recaptchaResult = await verifyRecaptchaToken(
-				recaptchaToken,
-				clientIP,
-				0.5,
-				"contact_form"
-			);
+			const recaptchaResult = await verifyRecaptchaToken(recaptchaToken, {
+				remoteip: clientIP,
+				scoreThreshold: 0.5,
+				expectedAction: "contact_form",
+				expectedHostnames: getExpectedHostnames(request)
+			});
 
 			if (!recaptchaResult.success) {
 				console.warn('⚠️ [KONTAKT] reCAPTCHA validation failed:', {

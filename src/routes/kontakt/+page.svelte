@@ -13,6 +13,7 @@
 		Globe
 	} from "@lucide/svelte";
 	import { PUBLIC_RECAPTCHA_SITE_KEY, PUBLIC_GOOGLE_MAPS_API_KEY } from "$env/static/public";
+	import { getRecaptchaToken } from "$lib/recaptcha/client";
 
 	interface Props {
 		data: any;
@@ -55,71 +56,12 @@
 	let submitting = $state(false);
 	let recaptchaError = $state("");
 
-	function recaptchaSrc(): string {
-		return `https://www.google.com/recaptcha/api.js?render=${PUBLIC_RECAPTCHA_SITE_KEY}`;
-	}
-
-	function findRecaptchaScript(): HTMLScriptElement | null {
-		return document.querySelector(`script[src="${recaptchaSrc()}"]`);
-	}
-
-	function ensureRecaptchaScript(): Promise<void> {
-		const grecaptcha = (window as Window & { grecaptcha?: unknown }).grecaptcha;
-		if (grecaptcha) return Promise.resolve();
-
-		const existing = findRecaptchaScript();
-		const script = existing ?? document.createElement("script");
-		if (!existing) {
-			script.src = recaptchaSrc();
-			script.async = true;
-			script.defer = true;
-			document.head.appendChild(script);
-		}
-
-		const alreadyLoaded =
-			!!existing &&
-			performance.getEntriesByType("resource").some((entry) => entry.name.startsWith(recaptchaSrc()));
-		if (alreadyLoaded) return Promise.resolve();
-
-		return new Promise((resolve, reject) => {
-			script.addEventListener("load", () => resolve(), { once: true });
-			script.addEventListener("error", () => reject(new Error("reCAPTCHA script failed")), { once: true });
-		});
-	}
-
-	async function getRecaptchaToken(): Promise<string | null> {
-		if (!PUBLIC_RECAPTCHA_SITE_KEY) return null;
-
-		try {
-			await ensureRecaptchaScript();
-			const grecaptcha = (window as Window & {
-				grecaptcha?: {
-					ready: (callback: () => void) => void;
-					execute: (siteKey: string, options: { action: string }) => Promise<string>;
-				};
-			}).grecaptcha;
-			if (!grecaptcha) return null;
-
-			return await new Promise((resolve) => {
-				grecaptcha.ready(() => {
-					grecaptcha
-						.execute(PUBLIC_RECAPTCHA_SITE_KEY, { action: "contact_form" })
-						.then((token) => resolve(token || null))
-						.catch(() => resolve(null));
-				});
-			});
-		} catch (error) {
-			console.error("❌ [RECAPTCHA] Chyba při získávání tokenu:", error);
-			return null;
-		}
-	}
-
 	const handleSubmit: SubmitFunction = async ({ formData, cancel }) => {
 		recaptchaError = "";
 		submitting = true;
 
 		if (PUBLIC_RECAPTCHA_SITE_KEY) {
-			const recaptchaToken = await getRecaptchaToken();
+			const recaptchaToken = await getRecaptchaToken("contact_form");
 			if (!recaptchaToken) {
 				submitting = false;
 				cancel();

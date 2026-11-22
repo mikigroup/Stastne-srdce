@@ -9,16 +9,21 @@ Tento dokument popisuje implementované ochranné mechanismy proti bot registrac
 ### 1. reCAPTCHA v3
 
 **Lokace:**
-- `src/lib/utils/recaptcha.ts` - Utility funkce pro validaci
-- `src/routes/auth/signup/+page.server.ts` - Customer signup
+- `src/lib/recaptcha/assess.ts` - Vyhodnocení odpovědi Google bez síťového volání
+- `src/lib/server/recaptcha.ts` - Ověření tokenu u Google API
+- `src/lib/recaptcha/client.ts` - Načtení skriptu a `execute` v prohlížeči
+- `src/routes/auth/signup/+page.server.ts` - Customer signup, akce `signup`
+- `src/routes/kontakt/+page.server.ts` - Kontaktní formulář, akce `contact_form`
 - `src/routes/+layout.svelte` - Globální načtení skriptu
 
 **Jak to funguje:**
 - Invisible reCAPTCHA v3 běží na pozadí
 - Při odeslání formuláře se vygeneruje token
 - Server ověří token u Google API
-- Minimální skóre: 0.5 (konfigurovatelné)
-- Akce: `signup` (customer)
+- Minimální skóre: 0.5
+- Akce se musí shodovat s formulářem (`signup` nebo `contact_form`)
+- Hostname z odpovědi Google se musí shodovat s hostitelem požadavku
+- Chybějící secret i hláška `Over free quota` ověření zamítnou
 
 **Konfigurace:**
 - `PUBLIC_RECAPTCHA_SITE_KEY` - Veřejný klíč (frontend)
@@ -170,7 +175,7 @@ PRIVATE_RECAPTCHA_SECRET_KEY=your_secret_key
 
 V `src/lib/utils/botDetection.ts`:
 - Bot detection threshold: `0.5` (50%)
-- reCAPTCHA score threshold: `0.5` (v `recaptcha.ts`)
+- reCAPTCHA score threshold: `0.5` (v `src/lib/server/recaptcha.ts`)
 
 ## Testování
 
