@@ -668,7 +668,7 @@
 							<div class="grid p-5 border-b justify-items-end">
 								{#if deliveryMethodLabel}
 									<p class="text-right">
-										Doprava: <strong>{deliveryMethodLabel}</strong>
+										{deliveryMethodLabel}
 									</p>
 								{:else if profileLoaded}
 									<p class="text-right text-sm text-red-600">
