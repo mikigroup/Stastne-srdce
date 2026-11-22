@@ -111,7 +111,10 @@ async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promis
 			registrationStatus.validationResult.missingFields.includes(
 				"Profil nenalezen - dokončete registraci"
 			);
-		event.locals.registrationRedirect = !registrationStatus.isComplete && !waitingForProfile;
+		// Účet se stavem completed, kterému chybí nově povinné pole, se upravuje v profilu.
+		// Jinak by odkaz z košíku skončil smyčkou dokončení registrace → homepage.
+		event.locals.registrationRedirect =
+			registrationStatus.actualStatus === "pending" && !waitingForProfile;
 	} catch (registrationError) {
 		console.error("[AUTH] Error checking registration status:", registrationError);
 		event.locals.registrationRedirect = false;
@@ -197,7 +200,11 @@ const authGuard: Handle = async ({ event, resolve }) => {
 		redirect(303, `${ROUTES.AUTH.LOGIN}?message=deletion_pending`);
 	}
 
-	if (event.locals.registrationRedirect && !authRoute) {
+	const profileRoute =
+		event.url.pathname === ROUTES.MAIN.PROFILE ||
+		event.url.pathname.startsWith(`${ROUTES.MAIN.PROFILE}/`);
+
+	if (event.locals.registrationRedirect && !authRoute && !profileRoute) {
 		redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
 	}
 

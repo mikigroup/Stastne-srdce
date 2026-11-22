@@ -9,6 +9,7 @@ import { detectBotRegistration, isTemporaryEmail } from "$lib/utils/botDetection
 import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 import { getPaymentMethods } from '$lib/constants/paymentMethods';
 import { ProfileService } from '$lib/services/profileService';
+import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
 
 // Admin Supabase klient pro načtení emailu z auth.users
 const adminSupabase = createClient<Database>(
@@ -49,7 +50,14 @@ export const load: PageServerLoad = async ({
 			.single();
 
 		if (profile?.registration_status === "completed") {
-			throw redirect(303, ROUTES.MAIN.HOME);
+			const validation = validateProfileForInvoicing({
+				...profile,
+				email: session.user.email
+			});
+			if (validation.isComplete) {
+				throw redirect(303, ROUTES.MAIN.HOME);
+			}
+			throw redirect(303, ROUTES.MAIN.PROFILE);
 		}
 
 		// Načtení možností dopravy z databáze

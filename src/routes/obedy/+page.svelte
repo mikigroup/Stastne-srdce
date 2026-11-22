@@ -38,7 +38,7 @@
 		return reducedMotion ? 0 : 300;
 	}
 
-	const observeFifthMenu: Attachment = (node) => {
+	const observeThirdMenu: Attachment = (node) => {
 		const update = () => {
 			const visible = node.getBoundingClientRect().top < window.innerHeight;
 			if (visible !== showScrollTop) showScrollTop = visible;
@@ -139,11 +139,11 @@
 							class="flow-root"
 							in:menuSlide={{ duration: enterDuration() }}
 							out:menuSlide={{ duration: leaveDuration() }}>
-							{#if index === 4}
+							{#if index === 2}
 								<div
 									class="h-px -mb-px w-full pointer-events-none"
 									aria-hidden="true"
-									{@attach observeFifthMenu}></div>
+									{@attach observeThirdMenu}></div>
 							{/if}
 							<MenuItem
 								{menu}

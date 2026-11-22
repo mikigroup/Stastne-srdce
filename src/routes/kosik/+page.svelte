@@ -5,6 +5,7 @@
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
+	import { resolve } from "$app/paths";
 	import { enhance } from "$app/forms";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
 	import { ROUTES } from "$lib/constants/routes";
@@ -672,7 +673,16 @@
 								{:else if profileLoaded}
 									<p class="text-right text-sm text-red-600">
 										V profilu chybí způsob dodání.
-										<a href="/profile" class="underline">Doplňte ho v profilu</a>.
+										<a
+											href={resolve("/profile")}
+											class="font-medium underline"
+											onclick={(event) => {
+												event.preventDefault();
+												void goto(resolve("/profile"));
+											}}
+										>
+											Doplňte ho v profilu
+										</a>.
 									</p>
 								{/if}
 

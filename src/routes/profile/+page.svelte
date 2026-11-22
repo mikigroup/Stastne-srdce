@@ -309,7 +309,16 @@
 
 	onMount(() => {
 		const hash = window.location.hash.replace("#", "");
-		if (tabs.some((item) => item.id === hash)) tab = hash as TabId;
+		if (tabs.some((item) => item.id === hash)) {
+			tab = hash as TabId;
+		} else if (!deliveryMethod.trim() || hash === "delivery_method") {
+			attempted = true;
+			void tick().then(() => {
+				const field = document.getElementById("delivery_method");
+				field?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+				field?.focus();
+			});
+		}
 		animateTabs = true;
 	});
 
@@ -496,6 +505,7 @@
 								aria-invalid={invalid(fieldErrors.delivery_method)}
 								aria-describedby={describedBy("delivery_method", fieldErrors.delivery_method)}
 							>
+								<option value="">Vyberte způsob dodání</option>
 								{#each deliveryMethodOptionsList as option (option.value)}
 									<option value={option.value}>{option.label}</option>
 								{/each}

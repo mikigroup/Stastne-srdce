@@ -33,6 +33,11 @@ a:hover {
 	text-decoration: none;
 }
 
+/* Odznak reCAPTCHA v3. Skript dál běží, viditelný badge ne. */
+.grecaptcha-badge {
+	visibility: hidden;
+}
+
 ::placeholder {
 	/* Chrome, Firefox, Opera, Safari 10.1+ */
 	color: rgba(224, 224, 224, 0.952) !important;

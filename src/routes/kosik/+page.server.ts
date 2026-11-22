@@ -287,7 +287,7 @@ export const actions: Actions = {
 					success: false,
 					type: "failure",
 					message:
-						'V profilu chybí způsob dodání. Doplňte ho v <a href="/profile" class="text-blue-600 underline">profilu</a> a objednávku odešlete znovu.'
+						'V profilu chybí způsob dodání. Doplňte ho v <a href="/profile#delivery_method" class="text-blue-600 underline">profilu</a> a objednávku odešlete znovu.'
 				};
 			}
 
