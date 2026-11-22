@@ -167,7 +167,12 @@
 						</span>
 					</button>
 					{#if totalPieces}
-						<span class="ml-2 font-bold">{totalPieces}</span>
+						<a
+							href="/kosik"
+							class="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full font-bold text-green-800"
+							aria-label="Košík, {totalPieces}">
+							{totalPieces}
+						</a>
 					{/if}
 				</div>
 			</div>
