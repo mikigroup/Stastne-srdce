@@ -436,7 +436,7 @@
 														aria-label="Počet porcí">
 														<button
 															type="button"
-															class="flex items-center justify-center w-10 h-10 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-l-lg disabled:opacity-40"
+															class="flex items-center justify-center w-8 h-8 text-base font-semibold text-gray-700 bg-white border border-gray-300 rounded-l-lg disabled:opacity-40"
 															aria-label="Snížit počet"
 															disabled={(variant.quantity || 0) <= 1}
 															onclick={(event) => {
@@ -462,10 +462,10 @@
 																	variant.id,
 																	Number(variant.quantity) || 0
 																)}
-															class="w-12 h-10 text-center bg-white border-y border-gray-300 [appearance:textfield] focus:outline-none focus:border-green-700 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+															class="w-10 h-8 text-sm text-center bg-white border-y border-gray-300 [appearance:textfield] focus:outline-none focus:border-green-700 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
 														<button
 															type="button"
-															class="flex items-center justify-center w-10 h-10 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-r-lg disabled:opacity-40"
+															class="flex items-center justify-center w-8 h-8 text-base font-semibold text-gray-700 bg-white border border-gray-300 rounded-r-lg disabled:opacity-40"
 															aria-label="Zvýšit počet"
 															disabled={(variant.quantity || 0) >= 99}
 															onclick={(event) => {
