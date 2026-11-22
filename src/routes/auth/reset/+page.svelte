@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { page } from "$app/state";
-	import { fade } from "svelte/transition";
-	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
 	import { ROUTES } from "$lib/constants/routes";
 	
@@ -11,8 +8,6 @@
 			success: boolean;
 			display: string;
 		};
-		password?: string;
-		repassword?: string;
 	};
 	
 	interface Props {
@@ -57,7 +52,6 @@
 					</svg>
 				</span>
 				<input
-					value={form?.password ?? ""}
 					type="password"
 					name="password"
 					id="password"
@@ -76,7 +70,6 @@
 					</svg>
 				</span>
 				<input
-					value={form?.repassword ?? ""}
 					type="password"
 					name="repassword"
 					id="repassword"

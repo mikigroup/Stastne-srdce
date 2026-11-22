@@ -2,8 +2,6 @@
 	import { enhance } from "$app/forms";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
-	import { fade } from "svelte/transition";
-	import type { Actions } from "@sveltejs/kit";
 	import AuthCard from "$lib/component/AuthCard.svelte";
 	
 	type FormData = {
@@ -21,27 +19,11 @@
 	}
 
 	let { form = null, data }: Props = $props();
-	let session = $derived(data.session);
-	let supabase = $derived(data.supabase);
-	let user = $derived(data.user);
 
 	let message = $derived(page.data.message);
 	let generalSettings = $derived(data.generalSettings);
 
 	let loading = $state(false);
-
-	async function signInWithGoogle() {
-		if (!supabase) return;
-		const { data, error } = await supabase.auth.signInWithOAuth({
-			provider: "google",
-			options: {
-				queryParams: {
-					access_type: "offline",
-					prompt: "consent"
-				}
-			}
-		});
-	}
 </script>
 
 <svelte:head>

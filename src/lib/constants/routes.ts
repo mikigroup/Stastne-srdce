@@ -6,6 +6,7 @@ export const ROUTES = {
 		SIGNUP: '/auth/signup',
 		SIGNUP_COMPLETE: '/auth/signup/complete',
 		CALLBACK: '/auth/callback',
+		LOGOUT: '/auth/logout',
 		ERROR: '/auth/error',
 		RESET: '/auth/reset',
 		FORGOT: '/auth/forgot',

@@ -33,8 +33,6 @@ export const actions: Actions = {
 
 		if (!password || password.length < 8) {
 			return fail(400, {
-				password,
-				repassword,
 				message: {
 					success: false,
 					display: "Heslo musí mít alespoň 8 znaků"
@@ -44,8 +42,6 @@ export const actions: Actions = {
 
 		if (password !== repassword) {
 			return fail(400, {
-				password,
-				repassword,
 				message: {
 					success: false,
 					display: "Hesla nejsou stejná"
@@ -81,8 +77,6 @@ export const actions: Actions = {
 				}
 
 				return fail(400, {
-					password,
-					repassword,
 					message: {
 						success: false,
 						display: displayMessage
@@ -99,8 +93,6 @@ export const actions: Actions = {
 			}
 			console.error("[RESET] Unexpected error:", error);
 			return fail(500, {
-				password,
-				repassword,
 				message: {
 					success: false,
 					display: "Došlo k neočekávané chybě. Zkuste to prosím znovu."

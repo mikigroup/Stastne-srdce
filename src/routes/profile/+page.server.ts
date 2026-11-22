@@ -9,7 +9,7 @@ import { getAllDeliveryMethods } from '$lib/constants/deliveryMethods';
 import { getPaymentMethods } from '$lib/constants/paymentMethods';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
-import type { Session, User } from '@supabase/supabase-js';
+import type { AuthSession, AuthUser } from '$lib/types/auth';
 
 export const prerender = false;
 
@@ -139,8 +139,7 @@ export const load: PageServerLoad = async ({
 		});
 	}
 
-	// Načtení možností dopravy z databáze (bez prázdné "Vyberte..." volby)
-	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false, false);
+	const deliveryMethodOptions = await getAllDeliveryMethods(supabase, false);
 	
 	// Načtení možností platby z databáze
 	const paymentMethodOptions = await getPaymentMethods(supabase);
@@ -160,8 +159,8 @@ export const actions: Actions = {
 		locals: {
 			supabase: SupabaseClient<Database>;
 			safeGetSession: () => Promise<{
-				session: Session | null;
-				user: User | null;
+				session: AuthSession | null;
+				user: AuthUser | null;
 			}>;
 		};
 	}) => {
@@ -267,8 +266,8 @@ export const actions: Actions = {
 		locals: {
 			supabase: SupabaseClient<Database>;
 			safeGetSession: () => Promise<{
-				session: Session | null;
-				user: User | null;
+				session: AuthSession | null;
+				user: AuthUser | null;
 			}>;
 		};
 	}) => {

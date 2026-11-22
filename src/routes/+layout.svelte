@@ -14,17 +14,17 @@
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 	import { cookieStore } from '$lib/stores/cookieStore';
 	import type { Profile } from "$lib/types/profile";
-	import type { Session, User } from '@supabase/supabase-js';
 	import type { SupabaseClient } from '@supabase/supabase-js';
+	import type { AuthSession, AuthUser } from '$lib/types/auth';
 	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 	import { ROUTES } from "$lib/constants/routes";
 	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 
 	interface Props {
 		data: {
-		session: Session | null;
+		session: AuthSession | null;
 		supabase: SupabaseClient | null;
-		user: User | null;
+		user: AuthUser | null;
 		settings: {
 			general: any;
 			contact: any;

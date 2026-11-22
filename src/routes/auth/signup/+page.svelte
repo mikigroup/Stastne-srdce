@@ -17,8 +17,6 @@
 	}
 
 	let { form = null, data }: Props = $props();
-	let session = $derived(data.session);
-	let supabase = $derived(data.supabase);
 
 	let loading = $state(false);
 	let agreedToTerms = $state(false);
@@ -149,52 +147,6 @@
 			}
 			await update();
 		};
-	}
-
-	async function signInWithGoogle() {
-		if (!supabase) return;
-
-		try {
-			loading = true;
-			const { error } = await supabase.auth.signInWithOAuth({
-				provider: "google",
-				options: {
-					queryParams: {
-						access_type: "offline",
-						prompt: "consent"
-					},
-					redirectTo: `${window.location.origin}/auth/callback`
-				}
-			});
-			if (error) throw error;
-		} catch (error) {
-			console.error("Chyba při přihlášení pomocí Google:", error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function signInWithFacebook() {
-		if (!supabase) return;
-
-		try {
-			loading = true;
-			const { error } = await supabase.auth.signInWithOAuth({
-				provider: "facebook",
-				options: {
-					queryParams: {
-						access_type: "offline",
-						prompt: "consent"
-					},
-					redirectTo: `${window.location.origin}/auth/callback`
-				}
-			});
-			if (error) throw error;
-		} catch (error) {
-			console.error("Chyba při přihlášení pomocí Google:", error);
-		} finally {
-			loading = false;
-		}
 	}
 
 	const { generalSettings } = data;

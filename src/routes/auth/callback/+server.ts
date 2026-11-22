@@ -3,17 +3,30 @@ import { redirect } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { ROUTES } from "$lib/constants/routes";
 import { ensurePendingCustomerProfile } from "$lib/services/signupConfirmService";
+import { safeInternalPath } from "$lib/utils/safeInternalPath";
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get("token_hash");
 	const type = url.searchParams.get("type") as EmailOtpType | null;
-	const next = url.searchParams.get("next") ?? "/";
+	const code = url.searchParams.get("code");
+	const next = safeInternalPath(url.searchParams.get("next"), "/");
+
+	if (code) {
+		const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+		if (exchangeError) {
+			const failed = new URL("/auth/error", url.origin);
+			failed.searchParams.set("error", exchangeError.message);
+			redirect(303, failed);
+		}
+		redirect(303, new URL(next, url.origin));
+	}
 
 	const redirectTo = new URL(url);
 	redirectTo.pathname = next;
 	redirectTo.searchParams.delete("token_hash");
 	redirectTo.searchParams.delete("type");
 	redirectTo.searchParams.delete("next");
+	redirectTo.searchParams.delete("code");
 
 	if (!token_hash || !type) {
 		redirectTo.pathname = ROUTES.AUTH.ERROR;

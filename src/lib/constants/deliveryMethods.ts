@@ -88,19 +88,12 @@ export async function getRegistrationDeliveryMethods(
 /** Všechny aktivní způsoby dopravy ze settings. */
 export async function getAllDeliveryMethods(
 	supabase: SupabaseClient<Database> | null,
-	withDescriptions = false,
-	includeEmpty = false
+	withDescriptions = false
 ): Promise<DeliveryOption[]> {
-	let options: DeliveryOption[] = [];
-
-	if (supabase) {
-		const settings = await loadDeliverySettingsFromDB(supabase);
-		options = convertShippingMethodsToOptions(settings?.shippingMethods, withDescriptions);
+	if (!supabase) {
+		return [];
 	}
 
-	if (includeEmpty) {
-		return [{ value: "", label: "Vyberte způsob dodání" }, ...options];
-	}
-
-	return options;
+	const settings = await loadDeliverySettingsFromDB(supabase);
+	return convertShippingMethodsToOptions(settings?.shippingMethods, withDescriptions);
 }

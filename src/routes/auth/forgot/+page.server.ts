@@ -37,6 +37,9 @@ async function sendCustomEmail(to: string, subject: string, body: string) {
 	}
 }
 
+const RESET_REQUEST_MESSAGE =
+	"Pokud je tento e-mail u nás registrovaný, poslali jsme na něj instrukce k obnovení hesla.";
+
 export const actions: Actions = {
 	resetRequest: async ({ request, url }) => {
 		const formData = await request.formData();
@@ -52,21 +55,24 @@ export const actions: Actions = {
 			});
 		}
 
+		const sent = {
+			message: {
+				success: true,
+				display: RESET_REQUEST_MESSAGE
+			},
+			email
+		};
+
 		try {
 			const { data: profileData, error: profileError } = await supabaseAdmin
 				.from("profiles")
 				.select("id, email")
 				.eq("email", email)
-				.single();
+				.maybeSingle();
 
 			if (profileError || !profileData) {
-				return fail(400, {
-					message: {
-						success: false,
-						display: "Tento email není zaregistrován v našem systému."
-					},
-					email
-				});
+				if (profileError) console.error("[FORGOT] Profile lookup failed:", profileError);
+				return sent;
 			}
 
 			const { data, error } = await supabaseAdmin.auth.admin.generateLink({
@@ -74,33 +80,20 @@ export const actions: Actions = {
 				email
 			});
 
-			if (error) {
-				console.error("Chyba při generování odkazu pro reset hesla:", error);
+			const token_hash = data?.properties?.hashed_token;
+
+			if (error || !token_hash) {
+				console.error("[FORGOT] Recovery link failed:", error);
 				return fail(500, {
 					message: {
 						success: false,
-						display: "Vyskytla se chyba při generování odkazu pro reset hesla."
+						display: "Vyskytla se chyba při odesílání e-mailu. Zkuste to prosím znovu."
 					},
 					email
 				});
 			}
 
-			const originalLink = data.properties.action_link;
-			const urlParams = new URL(originalLink).searchParams;
-			const token_hash = urlParams.get("token_hash") || urlParams.get("token");
-
-			if (!token_hash) {
-				console.error("[FORGOT] Token not found in URL:", originalLink);
-				return fail(500, {
-					message: {
-						success: false,
-						display: "Vyskytla se chyba při generování odkazu pro reset hesla."
-					},
-					email
-				});
-			}
-
-			const resetLink = `${url.origin}/auth/callback?token_hash=${token_hash}&type=recovery&next=/auth/reset`;
+			const resetLink = `${url.origin}/auth/callback?token_hash=${encodeURIComponent(token_hash)}&type=recovery&next=/auth/reset`;
 
 			const emailBody = `
 				<p>Dobrý den,</p>
@@ -137,13 +130,7 @@ export const actions: Actions = {
 				});
 			}
 
-			return {
-				message: {
-					success: true,
-					display: "Do emailové schránky jsme ti poslali instrukce."
-				},
-				email
-			};
+			return sent;
 		} catch (error) {
 			console.error("Nečekaná chyba při resetu hesla:", error);
 			return fail(500, {

@@ -113,8 +113,16 @@
 	let showFieldErrors = $derived(attempted);
 	let deletionReady = $derived(deletionConfirmed && legalUnderstanding);
 
+	function withoutPlaceholder(options: MethodOption[]) {
+		return options.filter((option) => {
+			const value = option.value.trim();
+			const label = option.label.trim();
+			return value !== "" && !/^vyberte\b/i.test(label);
+		});
+	}
+
 	let deliveryMethodOptionsList = $derived.by(() => {
-		const base = [...deliveryMethodOptions];
+		const base = withoutPlaceholder(deliveryMethodOptions);
 		if (deliveryMethod && !base.some((option) => option.value === deliveryMethod)) {
 			base.push({ value: deliveryMethod, label: deliveryMethod });
 		}
@@ -122,7 +130,7 @@
 	});
 
 	let paymentMethodOptionsList = $derived.by(() => {
-		const base = [...paymentMethodOptions];
+		const base = withoutPlaceholder(paymentMethodOptions);
 		if (paymentMethod && !base.some((option) => option.value === paymentMethod)) {
 			base.push({ value: paymentMethod, label: paymentMethod });
 		}
@@ -423,7 +431,6 @@
 			<form class="space-y-4" method="post" action="?/update" use:enhance={handleSubmit} autocomplete="on">
 				<section class={cardClass}>
 					<h2 class="text-xl font-semibold text-gray-800">Osobní údaje</h2>
-					<p class="mt-1 text-sm text-gray-600">Jméno a telefon používáme při rozvozu.</p>
 					<div class="mt-5 grid gap-4 sm:grid-cols-2">
 						<div>
 							<label class={labelClass} for="first_name">Jméno <span class="text-red-700" aria-hidden="true">*</span></label>
@@ -478,9 +485,6 @@
 
 				<section class={cardClass}>
 					<h2 class="text-xl font-semibold text-gray-800">Dodání a platba</h2>
-					<p class="mt-1 text-sm text-gray-600">
-						Tyto volby se použijí u každé objednávky. V košíku je změnit nejde.
-					</p>
 					<div class="mt-5 grid gap-4 sm:grid-cols-2">
 						<div>
 							<label class={labelClass} for="delivery_method">Dodání <span class="text-red-700" aria-hidden="true">*</span></label>
@@ -492,7 +496,6 @@
 								aria-invalid={invalid(fieldErrors.delivery_method)}
 								aria-describedby={describedBy("delivery_method", fieldErrors.delivery_method)}
 							>
-								<option value="" disabled>Vyberte způsob dodání</option>
 								{#each deliveryMethodOptionsList as option (option.value)}
 									<option value={option.value}>{option.label}</option>
 								{/each}
@@ -509,7 +512,6 @@
 								aria-invalid={invalid(fieldErrors.payment_method)}
 								aria-describedby={describedBy("payment_method", fieldErrors.payment_method)}
 							>
-								<option value="" disabled>Vyberte způsob platby</option>
 								{#each paymentMethodOptionsList as option (option.value)}
 									<option value={option.value}>{option.label}</option>
 								{/each}
@@ -521,7 +523,6 @@
 
 				<section class={cardClass}>
 					<h2 class="text-xl font-semibold text-gray-800">Doručovací adresa</h2>
-					<p class="mt-1 text-sm text-gray-600">Kam máme obědy přivézt.</p>
 					<div class="mt-5 grid gap-4 sm:grid-cols-6">
 						<div class="sm:col-span-4">
 							<label class={labelClass} for="street">Ulice <span class="text-red-700" aria-hidden="true">*</span></label>
@@ -638,13 +639,11 @@
 
 				<section class={cardClass}>
 					<h2 class="text-xl font-semibold text-gray-800">Fakturační údaje</h2>
-					<p class="mt-1 text-sm text-gray-600">
-						{#if invoicePayment}
+					{#if invoicePayment}
+						<p class="mt-1 text-sm text-gray-600">
 							U platby fakturou uveďte firmu, IČO a DIČ, ať jde faktura vystavit.
-						{:else}
-							Vyplňte jen tehdy, když chcete fakturu na firmu.
-						{/if}
-					</p>
+						</p>
+					{/if}
 					<div class="mt-5 grid gap-4 sm:grid-cols-2">
 						<div class="sm:col-span-2">
 							<label class={labelClass} for="company">Firma</label>

@@ -1,25 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { totalPiecesStore } from "$lib/stores/store";
-	import { beforeNavigate, goto } from "$app/navigation";
+	import { beforeNavigate } from "$app/navigation";
 	import { readable } from "svelte/store";
 	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/constants/routes";
 
 	let { data } = $props();
-	let supabase = $derived(data.supabase);
-	let session = $derived(data.session);
-	let user = $derived(data.user);
-
-	async function signOut() {
-		try {
-			const { error } = await supabase.auth.signOut();
-			if (error) throw error;
-			await goto("/");
-		} catch (error) {
-			console.error("Error logging out:", error);
-		}
-	}
 
 	// Logo ze site settings, fallback na default  
 	let src = $derived(data.settings?.appearance?.logo || "/srdce.png");
@@ -41,7 +28,6 @@
 	});
 
 	let menuVisible = $state(false);
-	let loading = false;
 	let totalPieces = $derived($totalPiecesStore);
 
 	let generalSettings = $derived(data.generalSettings ?? data.settings?.general);
@@ -152,7 +138,9 @@
 							<span class="text-sm">{#if totalPieces}<strong>{totalPieces}</strong>{/if}</span>
 						</a>
 						<a href="/profile" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Účet</a>
-						 <button onclick={signOut} disabled={loading} id="signOut" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200 disabled:opacity-50">Odhlásit</button>
+						<form method="POST" action={ROUTES.AUTH.LOGOUT} data-sveltekit-reload>
+							<button type="submit" id="signOut" class="p-2 px-6 text-green-800 border border-green-700 rounded-3xl hover:bg-green-800 hover:text-white transition-colors duration-200">Odhlásit</button>
+						</form>
 					</div>
 				{:else}
 					<!-- Desktop nav for guests -->
@@ -231,12 +219,13 @@
 								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
 								Účet
 							</a>
-							<button
-								onclick={signOut}
-								disabled={loading}
-								class="rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white disabled:opacity-50">
-								Odhlásit
-							</button>
+							<form method="POST" action={ROUTES.AUTH.LOGOUT} class="contents" data-sveltekit-reload>
+								<button
+									type="submit"
+									class="w-full rounded-2xl border border-green-700 py-3 text-center text-base font-medium text-green-800 transition-colors duration-200 hover:bg-green-800 hover:text-white">
+									Odhlásit
+								</button>
+							</form>
 						{:else}
 							<a
 								href={ROUTES.AUTH.LOGIN}

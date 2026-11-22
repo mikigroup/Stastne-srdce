@@ -4,11 +4,22 @@ import { ROUTES } from '$lib/constants/routes';
 import {
 	ensurePendingCustomerProfile,
 } from '$lib/services/signupConfirmService';
+import { safeInternalPath } from '$lib/utils/safeInternalPath';
 
 export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 	const token_hash = url.searchParams.get('token_hash');
 	const type = url.searchParams.get('type');
 	const email = url.searchParams.get('email');
+	const code = url.searchParams.get('code');
+	const next = safeInternalPath(url.searchParams.get('next'), ROUTES.AUTH.LOGIN);
+
+	if (code) {
+		const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+		if (exchangeError) {
+			redirect(303, '/auth/error?error=invalid_token');
+		}
+		redirect(303, next);
+	}
 
 	// Zákaznický signup – zpětná kompatibilita se starými odkazy v emailech
 	if (type === 'customer_signup' && email && token_hash) {
@@ -54,7 +65,7 @@ export const GET: RequestHandler = async ({ url, locals: { supabase } }) => {
 			if (type === 'recovery') {
 				return redirect(303, ROUTES.AUTH.RESET);
 			}
-			return redirect(303, ROUTES.AUTH.LOGIN);
+			return redirect(303, next);
 		}
 	}
 
