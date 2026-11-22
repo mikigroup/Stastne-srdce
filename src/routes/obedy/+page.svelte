@@ -92,9 +92,9 @@
 			{#if data.productsSettings?.nextDayMenuEnabled}
 				<div class="p-3 border-b border-gray-200 bg-blue-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-blue-700">
-						<Icon name="clock" />
-						<span class="whitespace-nowrap text-xs">
-							Objednávky na další den jsou možné do <strong class="text-sm leading-none sm:text-lg">{data.productsSettings.nextDayMenuTime}</strong>
+						<Icon name="clock" class="max-sm:hidden" />
+						<span class="whitespace-nowrap text-[0.625rem]">
+							Objednávky na další den jsou možné do <strong class="text-xs leading-none sm:text-lg">{data.productsSettings.nextDayMenuTime}</strong>
 						</span>
 					</div>
 				</div>

@@ -232,7 +232,7 @@
 
 <Header {data} />
 
-<main class="pt-16">
+<main class="pt-12 sm:pt-16">
 	{#key page.url.pathname}
 		<div class="page-stage" in:fly={pageEnter} out:fade={pageLeave} onoutrostart={hideLeavingPage}>
 			{@render children?.()}
