@@ -125,9 +125,9 @@
 
 <header class={["fixed top-0 left-0 w-full bg-white z-40", menuVisible && "is-menu-open"]}>
 	<nav>
-		<div class="flex items-center justify-between w-full px-3 py-1 mx-auto sm:my-2 sm:px-4 xl:flex xl:justify-between max-w-8xl">
-			<!-- Logo -->
-			<div class="flex min-w-0 items-center lg:px-8">
+		<div class="flex items-center justify-between w-full px-3 py-1 mx-auto sm:my-2 sm:px-4 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:justify-normal max-w-8xl">
+			<!-- Logo a čas -->
+			<div class="flex min-w-0 items-center gap-2 sm:gap-3 lg:pl-4">
 				<div class="flex items-center gap-1.5 sm:gap-2">
 					<h1 class="text-base font-semibold sm:text-xl">
 						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap [word-spacing:-0.12em] sm:[word-spacing:normal]">
@@ -136,35 +136,32 @@
 					</h1>
 					<img {src} alt="stastne srdce" class="h-4 w-4 shrink-0 sm:h-[22px] sm:w-[22px]" width="22" height="22" />
 				</div>
-			</div>
-
-			<div class="hidden sm:flex flex-1 justify-center px-4">
-				<time class="text-base tabular-nums">{formatter.format($time)}</time>
+				<time class="hidden text-base tabular-nums sm:block">{formatter.format($time)}</time>
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="items-center hidden text-center border-2 rounded-full xl:grid xl:grid-cols-6 bg-slate-50 border-green-700 h-[3.5rem] ">
+			<div class="hidden h-[3.5rem] items-center justify-self-center rounded-full border-2 border-green-700 bg-slate-50 text-center xl:grid xl:grid-cols-6">
 				<div class="border-r-2 border-green-700">
-					<a href="/" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">O nás</a>
+					<a href="/" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">O nás</a>
 				</div>
 				<div class="border-r-2 border-green-700">
-					<a href="/obedy" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">Obědy</a>
+					<a href="/obedy" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Obědy</a>
 				</div>
 				<div class="border-r-2 border-green-700">
-					<a href="/poradna" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">Poradna</a>
+					<a href="/poradna" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Poradna</a>
 				</div>
 				<div class="border-r-2 border-green-700">
-					<a href="/haccp" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">HACCP</a>
+					<a href="/haccp" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">HACCP</a>
 				</div>
-				<div class="border-r-2 border-green-700 h-[40px] flex items-center justify-center">
-					<a href="/prednasky-a-kurzy" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2 text-xs lg:text-sm">Přednášky a kurzy</a>
+				<div class="flex h-[40px] items-center justify-center border-r-2 border-green-700">
+					<a href="/prednasky-a-kurzy" class="block px-1 py-2 text-xs transition-colors duration-200 hover:text-green-800 lg:px-2 lg:text-sm">Přednášky a kurzy</a>
 				</div>
 				<div class="text-slate-600">
-					<a href="/kontakt" class="block py-2 hover:text-green-800 transition-colors duration-200 px-1 lg:px-2">Kontakt</a>
+					<a href="/kontakt" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Kontakt</a>
 				</div>
 			</div>
 			<!-- Right section -->
-			<div class="flex items-center justify-self-end gap-1 sm:gap-2">
+			<div class="flex items-center justify-self-end gap-1 sm:gap-2 xl:justify-self-end">
 				{#if page.data.session}
 					<!-- Desktop nav for logged users -->
 					<div class="hidden xl:flex items-center gap-2">
