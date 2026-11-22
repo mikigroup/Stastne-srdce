@@ -242,9 +242,7 @@
 
 <Header {data} />
 
-<div class="pt-5 mt-20"></div>
-
-<main>
+<main class="pt-16">
 	{#key page.url.pathname}
 		<div class="page-stage" in:fly={pageEnter} out:fade={pageLeave} onoutrostart={hideLeavingPage}>
 			{@render children?.()}
