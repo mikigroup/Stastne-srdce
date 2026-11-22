@@ -13,6 +13,7 @@
 	import Footer from "$lib/component/Footer.svelte";
 	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 	import { cookieStore } from '$lib/stores/cookieStore';
+	import { syncClarity } from '$lib/analytics/clarity';
 	import type { Profile } from "$lib/types/profile";
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { AuthSession, AuthUser } from '$lib/types/auth';
@@ -48,6 +49,9 @@
 
 	onMount(() => {
 		injectSpeedInsights();
+		const stopClarity = cookieStore.subscribe((categories) => {
+			void syncClarity(categories);
+		});
 
 		if (supabase) {
 			const authStateChange = supabase.auth.onAuthStateChange((event) => {
@@ -57,6 +61,7 @@
 			});
 
 			return () => {
+				stopClarity();
 				try {
 					if (authStateChange?.data?.subscription) {
 						authStateChange.data.subscription.unsubscribe();
@@ -66,6 +71,8 @@
 				}
 			};
 		}
+
+		return () => stopClarity();
 	});
 
 	const cookieName = 'stastne_srdce_cookies';

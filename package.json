@@ -46,6 +46,7 @@
   "dependencies": {
     "@faker-js/faker": "^10.6.0",
     "@lucide/svelte": "^1.70.0",
+    "@microsoft/clarity": "^1.0.2",
     "@sentry/sveltekit": "^11.11.0",
     "@types/node": "^20.11.19",
     "@vercel/speed-insights": "^1.0.12",

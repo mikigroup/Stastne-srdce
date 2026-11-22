@@ -24,6 +24,7 @@ declare global {
 		interface Window {
 			dataLayer: any[];
 			fbq: any;
+			clarity?: (...args: unknown[]) => void;
 		}
 
 		interface PageData {
@@ -36,6 +37,27 @@ declare global {
 			VITE_APP_NAME: string;
 		}
 	}
+}
+
+declare module "@microsoft/clarity" {
+	const Clarity: {
+		init(projectId: string): void;
+		consent(consent?: boolean): void;
+		consentV2(consentOptions?: {
+			ad_Storage: "granted" | "denied";
+			analytics_Storage: "granted" | "denied";
+		}): void;
+		identify(
+			customId: string,
+			customSessionId?: string,
+			customPageId?: string,
+			friendlyName?: string
+		): void;
+		setTag(key: string, value: string | string[]): void;
+		event(eventName: string): void;
+		upgrade(reason: string): void;
+	};
+	export default Clarity;
 }
 
 export {};
