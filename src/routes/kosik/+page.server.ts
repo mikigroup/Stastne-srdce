@@ -1,7 +1,9 @@
 import type { Actions, RequestEvent } from "./$types";
+import { fail } from "@sveltejs/kit";
 import nodemailer from "nodemailer";
 import { PRIVATE_seznam_key } from "$env/static/private";
 import { PUBLIC_TENANT } from "$env/static/public";
+import { sendDeveloperAlert, type OrderFailurePhase } from "$lib/email";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import {
 	checkOrderVariantCapacity,
@@ -21,6 +23,53 @@ const transporter = nodemailer.createTransport({
 		pass: PRIVATE_seznam_key
 	}
 });
+
+type CartLine = { variantId: string; quantity: number; price: number };
+
+function cartLinesFrom(cartItems: unknown): CartLine[] {
+	if (!Array.isArray(cartItems)) return [];
+	return cartItems.flatMap((item) => {
+		if (!item || typeof item !== "object") return [];
+		const variants = (item as { variants?: unknown }).variants;
+		if (!Array.isArray(variants)) return [];
+		return variants.map((variant) => {
+			const row =
+				variant && typeof variant === "object" ? (variant as Record<string, unknown>) : {};
+			return {
+				variantId: String(row.id ?? ""),
+				quantity: Number(row.quantity) || 0,
+				price: Number(row.price) || 0
+			};
+		});
+	});
+}
+
+function errorParts(error: unknown): {
+	code: string;
+	message: string;
+	details: string;
+	hint: string;
+} {
+	if (error && typeof error === "object") {
+		const record = error as Record<string, unknown>;
+		const message =
+			typeof record.message === "string"
+				? record.message
+				: error instanceof Error
+					? error.message
+					: "Neznámá chyba";
+		return {
+			code: typeof record.code === "string" ? record.code : "",
+			message,
+			details: typeof record.details === "string" ? record.details : "",
+			hint: typeof record.hint === "string" ? record.hint : ""
+		};
+	}
+	if (error instanceof Error) {
+		return { code: "", message: error.message, details: "", hint: "" };
+	}
+	return { code: "", message: error ? String(error) : "Neznámá chyba", details: "", hint: "" };
+}
 
 export const actions: Actions = {
 	sendOrder: async ({ request, locals: { supabase, safeGetSession, tenantId } }: RequestEvent) => {
@@ -44,6 +93,38 @@ export const actions: Actions = {
 			};
 		}
 
+		let reportCart: unknown[] = [];
+		let reportPieces = 0;
+		let reportPrice = 0;
+		let reportTenant = tenantId ?? PUBLIC_TENANT;
+
+		const reportFailure = async (phase: OrderFailurePhase, message: string, cause?: unknown) => {
+			const parts = errorParts(cause);
+			let developerNotified = false;
+			try {
+				developerNotified = await sendDeveloperAlert({
+					phase,
+					tenantId: reportTenant,
+					userId: user.id,
+					customerEmail: email,
+					errorCode: parts.code,
+					errorMessage: parts.message,
+					errorDetails: parts.details,
+					errorHint: parts.hint,
+					cartLines: cartLinesFrom(reportCart),
+					totalPieces: reportPieces,
+					totalPrice: reportPrice
+				});
+			} catch (notifyError) {
+				console.error("Hlášení vývojáři se nepodařilo odeslat:", notifyError);
+			}
+			return fail(500, {
+				success: false,
+				message,
+				developerNotified
+			});
+		};
+
 		try {
 			const formData = await request.formData();
 			const note = formData.get("note") as string;
@@ -59,6 +140,7 @@ export const actions: Actions = {
 			}
 
 			const cartItems = JSON.parse(cartItemsStr as string);
+			reportCart = cartItems;
 			const totalPieces = cartItems.reduce(
 				(sum: number, item: any) =>
 					sum +
@@ -80,6 +162,8 @@ export const actions: Actions = {
 					),
 				0
 			);
+			reportPieces = totalPieces;
+			reportPrice = totalPrice;
 
 			// Načtení nastavení dopravy pro validaci
 			const { data: deliveryData } = await supabase
@@ -152,14 +236,11 @@ export const actions: Actions = {
 
 			if (customerError || !customer) {
 				console.error("Chyba při načítání dat zákazníka:", customerError);
-				return {
-					success: false,
-					type: 'failure',
-					message: "Nepodařilo se načíst data zákazníka."
-				};
+				return reportFailure("profil", "Nepodařilo se načíst data zákazníka.", customerError);
 			}
 
 			const resolvedTenantId = tenantId ?? PUBLIC_TENANT;
+			reportTenant = resolvedTenantId;
 
 			// Limity skladu/kapacity: výchozí je sellWithoutStockLimit=true → žádná kontrola (jako dosud).
 			// Enforce jen když inventory.enabled && salesLimits.sellWithoutStockLimit === false.
@@ -179,12 +260,11 @@ export const actions: Actions = {
 				);
 				if (capacityCheck.error) {
 					console.error("Kontrola kapacity selhala:", capacityCheck.error);
-					return {
-						success: false,
-						type: "failure",
-						message:
-							"Nepodařilo se ověřit dostupnost porcí. Zkuste to prosím znovu, nebo kontaktujte provozovatele."
-					};
+					return reportFailure(
+						"kapacita",
+						"Nepodařilo se ověřit dostupnost porcí. Zkuste to prosím znovu, nebo kontaktujte provozovatele.",
+						capacityCheck.error
+					);
 				}
 				if (!capacityCheck.ok) {
 					const detail = capacityCheck.violations
@@ -214,6 +294,7 @@ export const actions: Actions = {
 			const shippingLabel = deliveryMethodLabel(shippingMethod, deliverySettings);
 			const shippingPrice = shippingPriceForMethod(deliverySettings, shippingMethod, totalPrice);
 			const totalPriceWithDelivery = totalPrice + shippingPrice;
+			reportPrice = totalPriceWithDelivery;
 
 			// Create order using the stored procedure.
 			// Uloží se přesně kód z profilu, i když už není v aktuální nabídce.
@@ -247,21 +328,15 @@ export const actions: Actions = {
 
 			if (orderError) {
 				console.error("Chyba při vytváření objednávky:", orderError);
-				return {
-					success: false,
-					type: 'failure',
-					message: "Chyba při vytváření objednávky.",
-					error: orderError.message
-				};
+				return reportFailure("rpc", "Chyba při vytváření objednávky.", orderError);
 			}
 
 			if (!orderArray || !Array.isArray(orderArray) || orderArray.length === 0) {
 				console.error("Objednávka nebyla vytvořena - žádná data nebyla vrácena");
-				return {
-					success: false,
-					type: 'failure',
-					message: "Objednávku se nepodařilo vytvořit - zkuste to prosím znovu"
-				};
+				return reportFailure(
+					"prazdna_odpoved",
+					"Objednávku se nepodařilo vytvořit - zkuste to prosím znovu"
+				);
 			}
 
 			const order = orderArray[0]; // Bereme první (a jediný) prvek pole
@@ -298,11 +373,10 @@ export const actions: Actions = {
 
 			if (!orderId) {
 				console.error("Missing order ID:", orderArray);
-				return {
-					success: false,
-					type: 'failure',
-					message: "Chyba při vytváření objednávky - chybí číslo objednávky."
-				};
+				return reportFailure(
+					"chybi_cislo",
+					"Chyba při vytváření objednávky - chybí číslo objednávky."
+				);
 			}
 
 			// Return a properly structured response with the actual order number
@@ -315,12 +389,11 @@ export const actions: Actions = {
 			};
 		} catch (error) {
 			console.error("Chyba při zpracování objednávky:", error);
-			return {
-				success: false,
-				type: 'failure',
-				message: "Při zpracování objednávky došlo k chybě.",
-				error: error instanceof Error ? error.message : "Neznámá chyba"
-			};
+			return reportFailure(
+				"vyjimka",
+				"Při zpracování objednávky došlo k chybě.",
+				error
+			);
 		}
 	}
 };

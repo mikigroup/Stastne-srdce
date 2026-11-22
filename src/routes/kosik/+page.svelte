@@ -289,7 +289,19 @@
 						await goto(redirectUrl, { replaceState: true });
 					} else {
 						console.error('Order submission error:', result);
-						errorMessage = result.type === 'failure' ? String(result.data?.message || 'Došlo k chybě při zpracování objednávky.') : 'Došlo k chybě při zpracování objednávky.';
+						const data =
+							result.type === 'failure' || result.type === 'success' ? result.data : undefined;
+						const record =
+							data && typeof data === 'object'
+								? (data as { message?: unknown; developerNotified?: unknown })
+								: null;
+						const serverMessage =
+							record?.message != null && String(record.message).trim()
+								? String(record.message)
+								: 'Došlo k chybě při zpracování objednávky.';
+						errorMessage = record?.developerNotified
+							? `${serverMessage} Hlášení bylo odesláno vývojáři k opravě.`
+							: serverMessage;
 					}
 					
 					isSubmitting = false;
