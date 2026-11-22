@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Icon from '$lib/component/Icon.svelte';
 
 	let {
 		version = import.meta.env.PUBLIC_VERSION || '1.5',
@@ -39,27 +40,27 @@
 				<div class="flex justify-center gap-4">
 					{#if socialSettings.facebook}
 						<a href="{socialSettings.facebook}" target="_blank" rel="noopener" aria-label="Facebook" class="text-gray-500 hover:text-green-700 text-2xl">
-							<i class="fab fa-facebook"></i>
+							<Icon name="facebook" />
 						</a>
 					{/if}
 					{#if socialSettings.instagram}
 						<a href="{socialSettings.instagram}" target="_blank" rel="noopener" aria-label="Instagram" class="text-gray-500 hover:text-green-700 text-2xl">
-							<i class="fab fa-instagram"></i>
+							<Icon name="instagram" />
 						</a>
 					{/if}
 					{#if socialSettings.twitter}
 						<a href="{socialSettings.twitter}" target="_blank" rel="noopener" aria-label="Twitter" class="text-gray-500 hover:text-green-700 text-2xl">
-							<i class="fab fa-twitter"></i>
+							<Icon name="twitter" />
 						</a>
 					{/if}
 					{#if socialSettings.linkedin}
 						<a href="{socialSettings.linkedin}" target="_blank" rel="noopener" aria-label="LinkedIn" class="text-gray-500 hover:text-green-700 text-2xl">
-							<i class="fab fa-linkedin"></i>
+							<Icon name="linkedin" />
 						</a>
 					{/if}
 					{#if socialSettings.youtube}
 						<a href="{socialSettings.youtube}" target="_blank" rel="noopener" aria-label="YouTube" class="text-gray-500 hover:text-green-700 text-2xl">
-							<i class="fab fa-youtube"></i>
+							<Icon name="youtube" />
 						</a>
 					{/if}
 				</div>
@@ -76,7 +77,7 @@
 			<div class="flex items-center justify-center space-x-2">
 				<span class="text-gray-500 text-xs">Vytvořeno s</span>
 				<a href="https://www.malyleo.cz/" target="_blank" class="text-sm flex items-center">
-					<i class="fa fa-regular fa-hand-spock mr-1"></i> MalyLeo
+					<Icon name="hand-spock" class="mr-1" /> MalyLeo
 				</a>
 				<span class="text-gray-400 text-xs">core{version}</span>
 			</div>

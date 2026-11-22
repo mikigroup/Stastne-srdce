@@ -19,7 +19,6 @@
 	import type { AuthSession, AuthUser } from '$lib/types/auth';
 	import type { GeneralSettings } from '$lib/constants/defaultSettings';
 	import { ROUTES } from "$lib/constants/routes";
-	import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
 
 	interface Props {
 		data: {
@@ -194,22 +193,6 @@
 
 	{#if seoSettings?.webManifest}
 		<link rel="manifest" href={seoSettings.webManifest} />
-	{/if}
-
-	<script
-		src="https://kit.fontawesome.com/e5ce1babf6.js"
-		crossorigin="anonymous"></script>
-
-	<script
-		src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
-		type="module"></script>
-
-	{#if PUBLIC_RECAPTCHA_SITE_KEY}
-		<script
-			src="https://www.google.com/recaptcha/api.js?render={PUBLIC_RECAPTCHA_SITE_KEY}"
-			async
-			defer
-		></script>
 	{/if}
 
 	{#if seoSettings?.customHeadScripts}

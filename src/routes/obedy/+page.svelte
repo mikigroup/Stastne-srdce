@@ -7,6 +7,7 @@
 	import { prefersReducedMotion } from "svelte/motion";
 	import { fade, fly } from "svelte/transition";
 	import { menuSlide } from "./menu-motion";
+	import Icon from "$lib/component/Icon.svelte";
 
 	interface Props {
 		data: {
@@ -91,7 +92,7 @@
 			{#if data.productsSettings?.nextDayMenuEnabled}
 				<div class="p-3 border-b border-gray-200 bg-blue-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-blue-700">
-						<i class="fa-solid fa-clock"></i>
+						<Icon name="clock" />
 						<span class="whitespace-nowrap text-xs">
 							Objednávky na další den jsou možné do <strong class="text-sm leading-none sm:text-lg">{data.productsSettings.nextDayMenuTime}</strong>
 						</span>
@@ -103,7 +104,7 @@
 			{#if data.loadingStats.failed > 0}
 				<div class="p-3 border-b border-gray-200 bg-yellow-50 m-2">
 					<div class="flex items-center gap-2 text-sm text-yellow-700">
-						<i class="fa-solid fa-exclamation-triangle"></i>
+						<Icon name="triangle-exclamation" />
 						<span class="text-sm">
 							Zobrazuje se {data.loadingStats.successfullyLoaded} z {data.loadingStats.totalRequested} menu 
 							({data.loadingStats.failed} menu nebylo možné načíst)
@@ -184,6 +185,6 @@
 		aria-label="Skoč nahoru"
 		in:fly={{ x: reducedMotion ? 0 : 24, duration: reducedMotion ? 0 : 200 }}
 		out:fade={{ duration: reducedMotion ? 0 : 150 }}>
-		<i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+		<Icon name="chevron-up" />
 	</button>
 {/if}
