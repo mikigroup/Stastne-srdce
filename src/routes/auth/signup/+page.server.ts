@@ -184,12 +184,12 @@ export const actions = {
 			const baseUrl = new URL(request.url).origin;
 			const confirmationLink = `${baseUrl}/auth/callback?token_hash=${encodeURIComponent(token_hash)}&type=signup&next=${encodeURIComponent(ROUTES.AUTH.SIGNUP_COMPLETE)}`;
 
-			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink, email.trim());
-			
+			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink);
+
 			try {
 				await sendEmail({
 					to: email.trim(),
-					subject: "Šťastné srdce - Potvrďte svou registraci",
+					subject: "Šťastné srdce — potvrďte registraci",
 					html: emailHtml
 				});
 			} catch (emailError) {

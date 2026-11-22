@@ -1,9 +1,8 @@
 import type { Actions, RequestEvent } from "./$types";
 import { fail } from "@sveltejs/kit";
-import nodemailer from "nodemailer";
-import { PRIVATE_seznam_key } from "$env/static/private";
 import { PUBLIC_TENANT } from "$env/static/public";
-import { sendDeveloperAlert, type OrderFailurePhase } from "$lib/email";
+import { sendDeveloperAlert, sendEmail, type OrderFailurePhase } from "$lib/email";
+import { createOrderConfirmationEmailTemplate } from "$lib/emailTemplates/orderConfirmationTemplate";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import {
 	checkOrderVariantCapacity,
@@ -11,18 +10,9 @@ import {
 	shouldEnforceSalesStockLimits
 } from "$lib/services/inventorySalesLimits";
 import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
+import { ROUTES } from "$lib/constants/routes";
 
 export const prerender = false;
-
-const transporter = nodemailer.createTransport({
-	host: "smtp.seznam.cz",
-	port: 465,
-	secure: true,
-	auth: {
-		user: "info@stastnesrdce.cz",
-		pass: PRIVATE_seznam_key
-	}
-});
 
 type CartLine = { variantId: string; quantity: number; price: number };
 
@@ -72,7 +62,7 @@ function errorParts(error: unknown): {
 }
 
 export const actions: Actions = {
-	sendOrder: async ({ request, locals: { supabase, safeGetSession, tenantId } }: RequestEvent) => {
+	sendOrder: async ({ request, url, locals: { supabase, safeGetSession, tenantId } }: RequestEvent) => {
 		const { session, user } = await safeGetSession();
 
 		if (!session || !user) {
@@ -351,20 +341,19 @@ export const actions: Actions = {
 				}
 			}
 
-			// Only send email after successful order creation
 			try {
 				await sendOrderConfirmationEmail(
 					email,
-					order.order_number?.toString() || order.id || 'unknown',
+					order.order_number?.toString() || order.id || "unknown",
 					cartItems,
 					totalPriceWithDelivery,
 					totalPieces,
 					note,
-					shippingLabel
+					shippingLabel,
+					`${url.origin}${ROUTES.MAIN.PROFILE}`
 				);
 			} catch (emailError) {
 				console.error("Chyba při odesílání potvrzovacího emailu:", emailError);
-				// Don't fail the order if just email fails
 			}
 
 			// Get the order details
@@ -398,7 +387,6 @@ export const actions: Actions = {
 	}
 };
 
-// Definice funkce odesílání
 function deliveryMethodLabel(
 	code: string,
 	settings: { shippingMethods?: Array<{ code?: string; name?: string }> } | null
@@ -408,154 +396,27 @@ function deliveryMethodLabel(
 	return match?.name || code;
 }
 
-function escapeHtml(value: string): string {
-	return value
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;");
-}
-
 async function sendOrderConfirmationEmail(
 	email: string,
 	orderId: string,
-	items: any[],
+	items: Parameters<typeof createOrderConfirmationEmailTemplate>[0]["items"],
 	totalPrice: number,
 	totalPieces: number,
-	note: string,
-	shippingLabel: string
+	note: string | null,
+	shippingLabel: string,
+	orderUrl: string
 ) {
-	const mailOptions = {
-		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
+	await sendEmail({
 		to: email,
-		subject: `Šťastné srdce - Potvrzení objednávky`,
-		html: `
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            padding: 20px;
-            background-color: #4A5568;
-            color: white;
-            border-radius: 8px 8px 0 0;
-        }
-        .content {
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-        .order-item {
-            background-color: #f8fafc;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .variant {
-            padding-left: 20px;
-            border-left: 3px solid #4A5568;
-            margin: 10px 0;
-        }
-        .total {
-            background-color: #4A5568;
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .note {
-            background-color: #FEF3C7;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #666666;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Potvrzení objednávky #${orderId}</h1>
-    </div>
-    
-    <div class="content">
-        <p>Vážený zákazníku,</p>
-        <p>děkujeme za Vaši objednávku. Níže najdete detaily své objednávky:</p>
-        
-        ${items
-					.map(
-						(item) => `
-            <div class="order-item">
-                <h3>📅 ${new Date(item.date).toLocaleDateString("cs-CZ", {
-									weekday: "long",
-									year: "numeric",
-									month: "long",
-									day: "numeric"
-								})}</h3>
-                <p>🥣 <strong>Polévka:</strong> ${item.soup}</p>
-                ${item.variants
-									.map(
-										(variant: any) => `
-                    <div class="variant">
-                        <p><strong>${variant.variant_number}.</strong> ${variant.description}</p>
-                        <p>Množství: ${variant.quantity} ks</p>
-                        <p>Cena: ${variant.price * variant.quantity} Kč</p>
-                    </div>
-                `
-									)
-									.join("")}
-            </div>
-        `
-					)
-					.join("")}
-
-        <div class="total">
-            <p><strong>Způsob dodání:</strong> ${escapeHtml(shippingLabel)}</p>
-            <p><strong>Celkový počet kusů:</strong> ${totalPieces}</p>
-            <p><strong>Celková cena:</strong> ${totalPrice} Kč</p>
-        </div>
-
-        ${
-					note
-						? `
-            <div class="note">
-                <p><strong>Poznámka k objednávce:</strong></p>
-                <p>${note}</p>
-            </div>
-        `
-						: ""
-				}
-    </div>
-
-    <div class="footer">
-        <p>Šťastné srdce<br>
-        info@stastnesrdce.cz<br>
-        www.stastnesrdce.cz</p>
-        <p>Děkujeme za Vaši důvěru!</p>
-    </div>
-</body>
-</html>
-    `
-	};
-
-	try {
-		await transporter.sendMail(mailOptions);
-		console.log("E-mail s potvrzením objednávky byl odeslán");
-	} catch (error) {
-		console.error("Chyba při odesílání e-mailu:", error);
-	}
+		subject: `Šťastné srdce — objednávka ${orderId}`,
+		html: createOrderConfirmationEmailTemplate({
+			orderId,
+			items,
+			totalPrice,
+			totalPieces,
+			note,
+			shippingLabel,
+			orderUrl
+		})
+	});
 }

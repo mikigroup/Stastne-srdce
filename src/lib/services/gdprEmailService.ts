@@ -1,16 +1,8 @@
-import nodemailer from "nodemailer";
-import { PRIVATE_seznam_key } from "$env/static/private";
-
-// Reuse the same transporter configuration as in kosik
-const transporter = nodemailer.createTransport({
-	host: "smtp.seznam.cz",
-	port: 465,
-	secure: true,
-	auth: {
-		user: "info@stastnesrdce.cz",
-		pass: PRIVATE_seznam_key
-	}
-});
+import { sendEmail } from "$lib/email";
+import {
+	createAccountReactivationEmailTemplate,
+	createDataDeletionEmailTemplate
+} from "$lib/emailTemplates/accountEmailTemplates";
 
 interface DataDeletionEmailParams {
 	email: string;
@@ -22,281 +14,62 @@ interface DataDeletionEmailParams {
 	baseUrl: string;
 }
 
-/**
- * Send data deletion request confirmation email with reactivation link
- */
+function formatCzechDate(value: string): string {
+	return new Date(value).toLocaleDateString("cs-CZ", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		timeZone: "Europe/Prague"
+	});
+}
+
 export async function sendDataDeletionRequestEmail(params: DataDeletionEmailParams) {
 	const { email, firstName, lastName, deletionDate, scheduledDate, reactivationToken, baseUrl } = params;
-	
-	const reactivationUrl = `${baseUrl}/auth/reactivate?token=${reactivationToken}`;
-	console.log('📧 Generated reactivation URL:', reactivationUrl);
-	const deletionDateFormatted = new Date(deletionDate).toLocaleDateString('cs-CZ', {
-		weekday: 'long',
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
-	});
-	const scheduledDateFormatted = new Date(scheduledDate).toLocaleDateString('cs-CZ', {
-		weekday: 'long',
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
-	});
-
-	const mailOptions = {
-		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
-		to: email,
-		subject: 'Žádost o smazání osobních dat - máte 30 dní na rozmyšlenou',
-		html: `
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            padding: 20px;
-            background-color: #374151;
-            color: white;
-            border-radius: 8px 8px 0 0;
-        }
-        .content {
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-        .alert-box {
-            background-color: #FEF3C7;
-            border: 1px solid #F59E0B;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .info-box {
-            background-color: #DBEAFE;
-            border: 1px solid #3B82F6;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .reactivation-button {
-            display: inline-block;
-            background-color: #10B981;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #666666;
-            font-size: 0.9em;
-        }
-        .legal-text {
-            font-size: 0.8em;
-            color: #666666;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🔒 Žádost o smazání osobních dat</h1>
-    </div>
-    
-    <div class="content">
-        <p>Dobrý den ${firstName} ${lastName},</p>
-        
-        <p>obdrželi jsme Vaši žádost o <strong>smazání osobních údajů</strong> v souladu s GDPR (EU 2016/679).</p>
-
-        <div class="alert-box">
-            <h3>⏰ Důležité informace:</h3>
-            <ul>
-                <li><strong>Žádost podána:</strong> ${deletionDateFormatted}</li>
-                <li><strong>Plánované smazání:</strong> ${scheduledDateFormatted}</li>
-                <li><strong>Doba na rozmyšlenou:</strong> 30 dní</li>
-            </ul>
-        </div>
-
-        <div class="info-box">
-            <h3>💡 Možnost zrušení žádosti</h3>
-            <p>Pokud si to rozmyslíte, můžete žádost o smazání <strong>zrušit kdykoliv do ${scheduledDateFormatted}</strong>:</p>
-            
-            <h4>🔗 Možnost 1: Reaktivační odkaz (doporučeno)</h4>
-            <p style="text-align: center;">
-                <a href="${reactivationUrl}" class="reactivation-button">
-                    🔓 Zrušit žádost a obnovit účet
-                </a>
-            </p>
-            
-            <h4>Možnost 2: Přihlášení</h4>
-            <p>Přihlášení do <strong>${scheduledDateFormatted}</strong> žádost zruší a účet obnoví:</p>
-            <p style="text-align: center;">
-                <a href="${baseUrl}/auth/login" style="color: #3B82F6; text-decoration: underline;">
-                    ${baseUrl}/auth/login
-                </a>
-            </p>
-            
-            <p><strong>Upozornění:</strong> Odkaz i možnost zrušení přihlášením platí pouze do ${scheduledDateFormatted}.</p>
-        </div>
-
-        <h3>Co se stane s Vašimi daty:</h3>
-        <ul>
-            <li>✅ <strong>Osobní údaje</strong> budou po 30 dnech úplně smazány</li>
-            <li>✅ <strong>Faktury a účetní doklady</strong> zůstanou uloženy 10 let (zákonná povinnost)</li>
-            <li>✅ <strong>Anonymizované statistiky</strong> mohou zůstat zachovány (bez osobních údajů)</li>
-        </ul>
-
-        <h3>Co se stane s Vaším účtem:</h3>
-        <ul>
-            <li>🚫 Účet je odhlášený a po dobu 30 dní <strong>pozastavený</strong></li>
-            <li>🚫 Do zrušení žádosti nebo uplynutí lhůty nelze vytvářet nové objednávky</li>
-            <li>✅ Přihlášení do ${scheduledDateFormatted} žádost zruší, stejně jako odkaz výše</li>
-        </ul>
-
-        <div class="legal-text">
-            <p><strong>Právní základ:</strong></p>
-            <p>Zpracování probíhá v souladu s:</p>
-            <ul>
-                <li>GDPR (EU 2016/679) - Článek 17 "Právo na výmaz"</li>
-                <li>Zákon č. 110/2019 Sb., o zpracování osobních údajů</li>
-                <li>Zákon č. 563/1991 Sb., o účetnictví (uchovávání faktur)</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>Šťastné srdce<br>
-        info@stastnesrdce.cz<br>
-        www.stastnesrdce.cz</p>
-        
-        <p>V případě dotazů nás neváhejte kontaktovat.</p>
-    </div>
-</body>
-</html>
-        `
-	};
+	const reactivationUrl = `${baseUrl}/auth/reactivate?token=${encodeURIComponent(reactivationToken)}`;
+	const loginUrl = `${baseUrl}/auth/login`;
 
 	try {
-		await transporter.sendMail(mailOptions);
-		console.log(`GDPR deletion request email sent to: ${email}`);
+		await sendEmail({
+			to: email,
+			subject: "Šťastné srdce — žádost o smazání účtu",
+			html: createDataDeletionEmailTemplate({
+				firstName,
+				lastName,
+				deletionDate: formatCzechDate(deletionDate),
+				scheduledDate: formatCzechDate(scheduledDate),
+				reactivationUrl,
+				loginUrl
+			})
+		});
 		return { success: true };
 	} catch (error) {
-		console.error("Error sending GDPR deletion email:", error);
+		console.error("Chyba při odesílání e-mailu o smazání účtu:", error);
 		return { success: false, error };
 	}
 }
 
-/**
- * Send account reactivation confirmation email
- */
-export async function sendAccountReactivationEmail(params: { 
-	email: string; 
-	firstName: string; 
-	lastName: string; 
+export async function sendAccountReactivationEmail(params: {
+	email: string;
+	firstName: string;
+	lastName: string;
+	baseUrl: string;
 }) {
-	const { email, firstName, lastName } = params;
-
-	const mailOptions = {
-		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
-		to: email,
-		subject: 'Váš účet byl úspěšně obnoven',
-		html: `
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            padding: 20px;
-            background-color: #10B981;
-            color: white;
-            border-radius: 8px 8px 0 0;
-        }
-        .content {
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-        .success-box {
-            background-color: #D1FAE5;
-            border: 1px solid #10B981;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #666666;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>✅ Účet byl obnoven</h1>
-    </div>
-    
-    <div class="content">
-        <p>Dobrý den ${firstName} ${lastName},</p>
-        
-        <div class="success-box">
-            <h3>🎉 Váš účet byl úspěšně obnoven!</h3>
-            <p>Žádost o smazání osobních dat byla <strong>zrušena</strong>. Můžete se opět přihlásit a používat náš systém jako obvykle.</p>
-        </div>
-
-        <p>Co se obnovilo:</p>
-        <ul>
-            <li>✅ Přístup k vašemu účtu</li>
-            <li>✅ Možnost vytvářet objednávky</li>
-            <li>✅ Historie objednávek</li>
-            <li>✅ Všechny vaše osobní údaje</li>
-        </ul>
-
-        <p>Děkujeme, že jste se rozhodli zůstat s námi!</p>
-    </div>
-
-    <div class="footer">
-        <p>Šťastné srdce<br>
-        info@stastnesrdce.cz<br>
-        www.stastnesrdce.cz</p>
-    </div>
-</body>
-</html>
-        `
-	};
+	const { email, firstName, lastName, baseUrl } = params;
 
 	try {
-		await transporter.sendMail(mailOptions);
-		console.log(`Account reactivation email sent to: ${email}`);
+		await sendEmail({
+			to: email,
+			subject: "Šťastné srdce — účet je obnovený",
+			html: createAccountReactivationEmailTemplate({
+				firstName,
+				lastName,
+				loginUrl: `${baseUrl}/auth/login`
+			})
+		});
 		return { success: true };
 	} catch (error) {
-		console.error("Error sending reactivation email:", error);
+		console.error("Chyba při odesílání e-mailu o obnovení účtu:", error);
 		return { success: false, error };
 	}
-} 
+}

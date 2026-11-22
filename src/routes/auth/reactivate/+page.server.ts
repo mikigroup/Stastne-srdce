@@ -132,7 +132,8 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 		await sendAccountReactivationEmail({
 			email: profile.email || '',
 			firstName: profile.first_name || 'Vážený',
-			lastName: profile.last_name || 'zákazníku'
+			lastName: profile.last_name || 'zákazníku',
+			baseUrl: url.origin
 		});
 		console.log('📧 [REACTIVATE LOAD] Reactivation email sent successfully');
 	} catch (emailError) {

@@ -3,7 +3,6 @@ import { PRIVATE_seznam_key } from "$env/static/private";
 
 const DEVELOPER_ALERT_EMAIL = "mikigroup@gmail.com";
 
-// Konfigurace nodemailer transporteru
 const transporter = nodemailer.createTransport({
 	host: "smtp.seznam.cz",
 	port: 465,
@@ -14,7 +13,6 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-// Funkce pro odesílání e-mailů
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
 	const mailOptions = {
 		from: '"Šťastné srdce" <info@stastnesrdce.cz>',

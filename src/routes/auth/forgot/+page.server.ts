@@ -1,8 +1,9 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { createClient } from "@supabase/supabase-js";
-import { PRIVATE_seznam_key, PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
-import nodemailer from "nodemailer";
+import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
+import { sendEmail } from "$lib/email";
+import { createPasswordResetEmailTemplate } from "$lib/emailTemplates/passwordResetTemplate";
 
 const supabaseAdmin = createClient(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
 	auth: {
@@ -10,32 +11,6 @@ const supabaseAdmin = createClient(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
 		persistSession: false
 	}
 });
-
-async function sendCustomEmail(to: string, subject: string, body: string) {
-	try {
-		const transporter = nodemailer.createTransport({
-			host: "smtp.seznam.cz",
-			port: 465,
-			secure: true,
-			auth: {
-				user: "info@stastnesrdce.cz",
-				pass: PRIVATE_seznam_key
-			}
-		});
-
-		await transporter.sendMail({
-			from: "info@stastnesrdce.cz",
-			to,
-			subject,
-			html: body
-		});
-
-		return true;
-	} catch (err) {
-		console.error("Chyba při odesílání e-mailu:", err);
-		return false;
-	}
-}
 
 const RESET_REQUEST_MESSAGE =
 	"Pokud je tento e-mail u nás registrovaný, poslali jsme na něj instrukce k obnovení hesla.";
@@ -95,30 +70,17 @@ export const actions: Actions = {
 
 			const resetLink = `${url.origin}/auth/callback?token_hash=${encodeURIComponent(token_hash)}&type=recovery&next=/auth/reset`;
 
-			const emailBody = `
-				<p>Dobrý den,</p>
-				<p>obdrželi jsme žádost o resetování hesla k Vašemu účtu na stránce stastnesrdce.cz.
-				Pokud jste o změnu hesla skutečně požádal(a), klikněte prosím na tlačítko níže.</p>
-				<p>Pokud jste o změnu hesla nežádal(a), ignorujte prosím tento e-mail. Vaše stávající heslo zůstane aktivní.</p>
-				<p style="margin: 30px 0; text-align: center;">
-					<a href="${resetLink}" style="background-color: #4CAF50; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; border-radius: 5px;">
-						Resetovat heslo
-					</a>
-				</p>
-				<p>Při vytváření nového hesla doporučujeme:</p>
-				<ul>
-					<li>heslo by mělo mít alespoň 8 znaků</li>
-					<li>použijte kombinaci malých a velkých písmen, číslic a symbolů</li>
-					<li>nepoužívejte snadno odhadnutelná hesla</li>
-				</ul>
-				<p>S pozdravem,<br>Tým Šťastné srdce</p>
-			`;
-
-			const emailSent = await sendCustomEmail(
-				email,
-				"Reset hesla pro Šťastné srdce",
-				emailBody
-			);
+			let emailSent = false;
+			try {
+				await sendEmail({
+					to: email,
+					subject: "Šťastné srdce — obnovení hesla",
+					html: createPasswordResetEmailTemplate(resetLink)
+				});
+				emailSent = true;
+			} catch (err) {
+				console.error("Chyba při odesílání e-mailu:", err);
+			}
 
 			if (!emailSent) {
 				return fail(500, {

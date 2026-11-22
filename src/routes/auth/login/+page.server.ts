@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ url }) => {
 };
 
 export const actions: Actions = {
-	handleLogin: async ({ request, locals: { supabase } }) => {
+	handleLogin: async ({ request, url, locals: { supabase } }) => {
 		const formData = await request.formData();
 		const email = (formData.get("email") as string)?.trim().toLowerCase();
 		const password = (formData.get("password") as string)?.trim();
@@ -101,7 +101,8 @@ export const actions: Actions = {
 									await sendAccountReactivationEmail({
 										email: profile.email || data.user.email!,
 										firstName: profile.first_name || 'Vážený',
-										lastName: profile.last_name || 'zákazníku'
+										lastName: profile.last_name || 'zákazníku',
+										baseUrl: url.origin
 									});
 									console.log('📧 [LOGIN] Reactivation email sent successfully');
 								} catch (emailError) {
