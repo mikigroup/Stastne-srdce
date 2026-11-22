@@ -92,14 +92,14 @@
 			<div class="flex items-center justify-between w-full lg:w-auto lg:px-8 gap-8">
 				<div class="flex items-center gap-2">
 					<h1 class="text-xl font-semibold">
-						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap">
+						<a href="/" class="hover:text-gray-600 transition-colors duration-200 whitespace-nowrap [word-spacing:-0.12em] sm:[word-spacing:normal]">
 							{generalSettings?.shopName ?? "Šťastné srdce"}
 						</a>
 					</h1>
 					<img {src} alt="stastne srdce" class="shrink-0" width="22" height="22" />
 				</div>
 				<div class="mx-auto">
-					<time>{formatter.format($time)}</time>
+					<time class="text-xs sm:text-base">{formatter.format($time)}</time>
 				</div>
 			</div>
 
