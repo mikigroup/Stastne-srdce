@@ -659,7 +659,7 @@
 
 							<div class="grid p-5 border-b justify-items-end">
 								{#if deliveryMethodLabel}
-									<p class="text-right">
+									<p class="w-full pb-4 text-center">
 										{deliveryMethodLabel}
 									</p>
 								{:else if profileLoaded}
