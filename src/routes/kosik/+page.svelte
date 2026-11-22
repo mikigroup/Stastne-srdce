@@ -147,7 +147,6 @@
 	}
 
 	async function loadTimeSlots() {
-		console.log('🔍 Debug - loadTimeSlots called, cartItems.length:', cartItems.length);
 
 		const client = supabase;
 		if (!client) return;
@@ -161,8 +160,6 @@
 				.eq('tenant_id', PUBLIC_TENANT)
 				.single();
 
-			console.log('🔍 Debug - productsSettings:', productsSettings);
-			console.log('🔍 Debug - productsSettings.value:', productsSettings?.value);
 
 			if (productsSettings?.value) {
 				timeSlotSettings = typeof productsSettings.value === 'string'
@@ -193,10 +190,8 @@
 
 	function handleSubmit(e: Event) {
 		e.preventDefault(); // Zastavíme výchozí odeslání formuláře
-		console.log('handleSubmit called');
 		
 		if (isSubmitting) {
-			console.log('Already submitting, returning');
 			return;
 		}
 
@@ -336,10 +331,8 @@
 			}}
 			use:enhance={() => {
 				return async ({ result }) => {
-					console.log('Form action result:', result);
 					
 					if (result.type === 'success' && result.data?.success) {
-						console.log('Order successful, clearing cart...');
 						CartItemsStore.clear();
 						
 						const orderId = result.data?.orderId;
@@ -350,7 +343,6 @@
 						}
 						
 						const redirectUrl = `/thankyou?order=${orderId}`;
-						console.log('Redirecting to:', redirectUrl);
 						await goto(redirectUrl, { replaceState: true });
 					} else {
 						console.error('Order submission error:', result);

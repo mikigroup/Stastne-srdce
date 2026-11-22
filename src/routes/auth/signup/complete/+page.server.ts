@@ -102,10 +102,6 @@ export const actions: Actions = {
 			// Získat email - pokud není v session, načíst z auth.users přes Admin API
 			let emailToUse = session.user.email;
 
-			console.log('📧 [SIGNUP COMPLETE] Email check:', {
-				sessionEmail: session.user.email,
-				userId: session.user.id
-			});
 
 			// Pokud email není v session, načíst ho z auth.users
 			if (!emailToUse) {
@@ -121,7 +117,6 @@ export const actions: Actions = {
 
 					if (authUser?.user?.email) {
 						emailToUse = authUser.user.email;
-						console.log('✅ [SIGNUP COMPLETE] Email loaded from auth.users:', emailToUse);
 					} else {
 						console.error('❌ [SIGNUP COMPLETE] No email found in auth.users for user:', session.user.id);
 					}
@@ -295,10 +290,8 @@ export const actions: Actions = {
 					if (!existingProfile.email || existingProfile.email.trim() === '') {
 						// Pokud v profilu není email, přidat ho
 						updateData.email = emailToUse;
-						console.log('📧 [SIGNUP COMPLETE] Adding email to existing profile:', emailToUse);
 					} else {
 						// Pokud v profilu už email je, zachovat ho (může být jiný než v auth.users)
-						console.log('📧 [SIGNUP COMPLETE] Preserving existing email in profile:', existingProfile.email);
 					}
 				} else {
 					console.warn('⚠️ [SIGNUP COMPLETE] Email not available for update, keeping existing:', existingProfile.email);
@@ -312,7 +305,6 @@ export const actions: Actions = {
 				error = result.error;
 			} else {
 				// Profil neexistuje - použít INSERT (vytvořit nový)
-				console.log('📝 [SIGNUP COMPLETE] Creating new profile for user:', session.user.id);
 				const insertData = {
 					...profileData,
 					registration_status: "completed",

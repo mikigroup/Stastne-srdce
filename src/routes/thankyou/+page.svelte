@@ -22,7 +22,6 @@
 		// Vyčištění košíku po úspěšném zobrazení souhrnu
 		setTimeout(() => {
 			CartItemsStore.clear();
-			console.log("Košík byl vyčištěn po zobrazení souhrnu objednávky");
 		}, 1500);
 	});
 

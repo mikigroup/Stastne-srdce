@@ -60,7 +60,6 @@
 	function handleSubmit() {
 		loading = true;
 		return async ({ result }: { result: any }) => {
-			console.log('Form result:', result);
 			
 			// Zjednodušená kontrola - pokud není failure, považujeme za úspěch
 			if (result.type !== 'failure') {

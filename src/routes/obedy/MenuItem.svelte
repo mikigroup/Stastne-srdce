@@ -21,7 +21,7 @@
 	let reducedMotion = $derived(prefersReducedMotion.current);
 	let motion = $derived(animate && !reducedMotion);
 	const actionButtonClass =
-		"py-2 px-4 border rounded-lg shadow-md hover:bg-green-800 hover:text-white hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 mt-5";
+		"inline-flex items-center gap-1.5 py-1 px-2.5 mt-1.5 border rounded-lg shadow-sm hover:bg-green-800 hover:text-white hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 sm:mt-4 sm:gap-2 sm:py-1.5 sm:px-3 sm:shadow-md";
 
 
 	
@@ -82,17 +82,17 @@
 	}
 </script>
 
-<div class="p-2 my-3 border rounded-lg bg-stone-100 border-gray-500">
-	<div class="py-1 bg-green-800 rounded-lg shadow-md mt-2 sm:mt-5 sm:py-3">
-		<p class="pl-3 text-lg font-bold tracking-tight text-gray-200 sm:text-2xl">
+<div class="p-1.5 my-2 border rounded-lg bg-stone-100 border-gray-500 sm:p-2 sm:my-3">
+	<div class="py-1 bg-green-800 rounded-lg shadow-md sm:mt-5 sm:py-3">
+		<p class="pl-3 text-base font-bold tracking-tight text-gray-200 sm:text-2xl">
 			{formatDate(menu.date)}
 		</p>
 	</div>
 
-	<div class="my-3 border border-gray-400 rounded-lg shadow-md md:p-8">
-		<p class="text-base p-2 sm:text-lg">Polévka</p>
-		<div class="p-3 border rounded-2xl border-gray-400 bg-white sm:p-5">
-			<p class="p-2 text-base sm:text-lg">{menu.soup}</p>
+	<div class="my-2 border border-gray-400 rounded-lg shadow-md sm:my-3 md:p-8">
+		<p class="p-2 text-sm sm:text-lg">Polévka</p>
+		<div class="mx-2 mb-2 p-2.5 border rounded-2xl border-gray-400 bg-white sm:m-0 sm:p-5">
+			<p class="text-sm leading-snug sm:p-2 sm:text-lg sm:leading-normal">{menu.soup}</p>
 									{#if productsSettings?.showAllergens && menu.allergens && menu.allergens.length > 0}
 				<div class="mt-2 p-2">
 					<p class="text-xs text-gray-600">
@@ -107,11 +107,11 @@
 			{/if}
 		</div>
 
-		<div class="py-2 text-lg rounded-2xl">
-			<p class="text-lg mt-5 p-2">Hlavní jídlo</p>
+		<div class="py-1 text-base rounded-2xl sm:py-2 sm:text-lg">
+			<p class="mt-3 p-2 text-base sm:mt-5 sm:text-lg">Hlavní jídlo</p>
 			{#each menu.variants as variant, index (variant.id)}
 				<div
-					class="border rounded-2xl p-5 mb-4 border-gray-400 bg-white"
+					class="mx-2 border rounded-2xl p-3 mb-2 border-gray-400 bg-white sm:mx-0 sm:mb-4 sm:p-5"
 					animate:flip={{ duration: motion ? 420 : 0, easing: cubicOut }}
 					in:menuEnter={{
 						delay: motion ? Math.min(index, 3) * 55 : 0,
@@ -122,20 +122,20 @@
 						class="rounded-3xl border w-3 px-4.5 py-1 flex justify-center bg-white mb-2">
 							{variant.variant_number}
 						</div>-->
-					<div class="p-2 text-lg">
-						<div class="flex col-2 items-start">
-							<div class="border rounded-3xl py-1 px-3 bg-slate-200">{variant.variant_number}</div>
-							<div class="ml-4 flex items-center gap-2">
+					<div class="text-sm leading-snug sm:p-2 sm:text-lg sm:leading-normal">
+						<div class="flex items-start gap-2">
+							<div class="shrink-0 border rounded-3xl py-0.5 px-2 text-sm bg-slate-200 sm:py-1 sm:px-3 sm:text-base">{variant.variant_number}</div>
+							<div class="flex min-w-0 items-start gap-1.5">
 								{variant.description}
 								{#if variant.vegetarian}
-									<span class="inline-flex items-center px-2 py-2 rounded-full text-xs font-medium bg-green-100 text-green-800">
+									<span class="inline-flex shrink-0 items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 sm:px-2 sm:py-1">
 										🌱
 									</span>
 								{/if}
 							</div>
 						</div>
 						{#if productsSettings?.showAllergens && variant.allergens && variant.allergens.length > 0}
-							<div class="mt-3">
+							<div class="mt-1.5 sm:mt-3">
 								<p class="text-xs text-gray-600">
 									Alergeny: 
 									<span 
@@ -148,26 +148,24 @@
 						{/if}
 					</div>
 					{#if !page.data.session}
-						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-2">
+						<a href={ROUTES.AUTH.LOGIN} class="flex justify-end pt-1 sm:pt-2">
 							<div class={actionButtonClass}>
 								{#if productsSettings?.showPrices}
-									<p class="text-base text-right">{variant.price} Kč</p>
+									<p class="text-xs font-medium sm:text-sm">{variant.price} Kč</p>
 								{/if}
-								<div class="text-base">Přihlaš se</div>
+								<span class="text-xs sm:text-sm">Přihlaš se</span>
 							</div>
 						</a>
 					{:else}
 						<div
-							class="flex justify-end pt-2"
+							class="flex justify-end pt-1 sm:pt-2"
 							role="button"
 							onclick={() => addToCart(variant)}
 							onkeydown={(e) => e.key === "Enter" && addToCart(variant)}
 							tabindex="0">
 							<div class={actionButtonClass}>
-								<div class="">
-									<p class="text-base justify-end flex">{variant.price} Kč</p>
-									<p class="text-sm uppercase">Do košíku</p>
-								</div>
+								<p class="text-xs font-medium sm:text-sm">{variant.price} Kč</p>
+								<span class="text-xs uppercase sm:text-sm">Do košíku</span>
 							</div>
 						</div>
 					{/if}

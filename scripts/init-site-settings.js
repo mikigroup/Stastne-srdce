@@ -28,7 +28,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function initializeSettings() {
   // Use unified default settings from the central source
   const DEFAULT_SETTINGS = await getDefaultSettingsForInit();
-  console.log('🚀 Inicializace výchozích nastavení...');
 
   try {
     // Načteme existující nastavení
@@ -45,11 +44,9 @@ async function initializeSettings() {
     const missingSettings = DEFAULT_SETTINGS.filter(s => !existingKeys.has(s.key));
 
     if (missingSettings.length === 0) {
-      console.log('✅ Všechna nastavení již existují');
       return;
     }
 
-    console.log(`📝 Přidávám ${missingSettings.length} chybějících nastavení...`);
 
     // Přidáme timestamp
     const settingsToInsert = missingSettings.map(setting => ({
@@ -65,14 +62,6 @@ async function initializeSettings() {
       console.error('❌ Chyba při vkládání nastavení:', insertError);
       return;
     }
-
-    console.log('✅ Výchozí nastavení byla úspěšně inicializována');
-    
-    // Vypíšeme přidaná nastavení
-    missingSettings.forEach(s => {
-      console.log(`  - ${s.key}`);
-    });
-
   } catch (error) {
     console.error('❌ Neočekávaná chyba:', error);
   }

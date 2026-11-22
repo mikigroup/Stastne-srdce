@@ -72,11 +72,6 @@ async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promis
 
 			const hasAccessToTenant = !!membership || profile.tenant_id === PUBLIC_TENANT;
 			if (!hasAccessToTenant) {
-				console.log("[AUTH] User does not have access to current tenant:", {
-					userId: user.id,
-					currentTenant: PUBLIC_TENANT,
-					userTenantId: profile.tenant_id
-				});
 				await event.locals.supabase.auth.signOut();
 				return emptyAuth;
 			}
@@ -88,7 +83,6 @@ async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promis
 				String(profile.data_deletion_requested) === "true";
 
 			if (isAccountSuspended && isDeletionRequested) {
-				console.log("[AUTH] Signing out session with pending data deletion:", user.id);
 				await event.locals.supabase.auth.signOut();
 				event.locals.accountDeletionPending = true;
 				return emptyAuth;

@@ -62,13 +62,6 @@ export async function verifyRecaptchaToken(
 
 		const data = await response.json();
 
-		console.log("📊 [RECAPTCHA] Verification result:", {
-			success: data.success,
-			score: data.score,
-			action: data.action,
-			hostname: data.hostname,
-			hasErrors: !!data["error-codes"]
-		});
 
 		const result = assessRecaptchaVerification({
 			secret: secretKey,

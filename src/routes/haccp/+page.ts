@@ -9,7 +9,6 @@ export const load: PageLoad = async ({ parent }) => {
 	// Kontrola cache
 	const now = Date.now();
 	if (dataCache && (now - lastCacheUpdate) < CACHE_DURATION) {
-		console.log("Používám cache pro HACCP data");
 		return dataCache;
 	}
 

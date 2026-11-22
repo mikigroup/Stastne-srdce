@@ -59,7 +59,6 @@ export const actions: Actions = {
 		if (data.user) {
 			// 🔧 KROK 2: Po úspěšném loginem reaktivovat suspended účet
 			try {
-				console.log('🔍 [LOGIN] Post-login checking for suspended account:', data.user.id);
 				
 				const { data: profile, error: profileError } = await supabase
 					.from('profiles')
@@ -73,7 +72,6 @@ export const actions: Actions = {
 
 					// Pokud je účet suspended kvůli deletion request, reaktivovat PO loginem
 					if (isAccountSuspended && isDeletionRequested) {
-						console.log('🔄 [LOGIN] Post-login reactivating suspended account:', profile.id);
 
 						// Zkontrolovat, jestli je stále v grace period (30 dní)
 						const deletionScheduled = profile.data_deletion_scheduled ? new Date(profile.data_deletion_scheduled) : null;
@@ -94,7 +92,6 @@ export const actions: Actions = {
 								.eq('id', profile.id);
 
 							if (!updateError) {
-								console.log('✅ [LOGIN] Account post-reactivated successfully:', profile.id);
 
 								// Poslat potvrzovací email o reaktivaci
 								try {
@@ -104,7 +101,6 @@ export const actions: Actions = {
 										lastName: profile.last_name || 'zákazníku',
 										baseUrl: url.origin
 									});
-									console.log('📧 [LOGIN] Reactivation email sent successfully');
 								} catch (emailError) {
 									console.error('⚠️ [LOGIN] Failed to send reactivation email:', emailError);
 									// Pokračovat i když email selže
@@ -113,7 +109,6 @@ export const actions: Actions = {
 								console.error('❌ [LOGIN] Failed to post-reactivate account:', updateError);
 							}
 						} else {
-							console.log('⏰ [LOGIN] Grace period expired, cannot post-reactivate:', profile.id);
 						}
 					}
 				}
@@ -133,7 +128,6 @@ export const actions: Actions = {
 				if (!profileError && profile) {
 					// Pokud je registrace nedokončená, přesměrovat na complete stránku
 					if (profile.registration_status !== 'completed') {
-						console.log('📝 [LOGIN] Registration not completed, redirecting to complete page');
 						throw redirect(303, ROUTES.AUTH.SIGNUP_COMPLETE);
 					}
 				}

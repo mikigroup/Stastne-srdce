@@ -23,7 +23,6 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 
 	try {
 		await transporter.sendMail(mailOptions);
-		console.log("E-mail byl úspěšně odeslán na:", to);
 	} catch (error) {
 		console.error("Chyba při odesílání e-mailu:", error);
 		throw error;
@@ -113,7 +112,6 @@ export async function sendDeveloperAlert(alert: DeveloperOrderAlert): Promise<bo
 			subject: "Šťastné srdce — objednávku se nepodařilo vytvořit",
 			html
 		});
-		console.log("Hlášení o neúspěšné objednávce bylo odesláno vývojáři.");
 		return true;
 	} catch (error) {
 		console.error("Hlášení vývojáři se nepodařilo odeslat:", error);

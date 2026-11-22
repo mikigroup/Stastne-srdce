@@ -358,7 +358,6 @@ export const actions: Actions = {
 
 			// Get the order details
 			const orderId = order.order_number || order.id;
-			console.log('Created order:', orderArray);
 
 			if (!orderId) {
 				console.error("Missing order ID:", orderArray);

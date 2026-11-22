@@ -33,13 +33,10 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 		};
 	}
 
-	console.log('🔍 [REACTIVATE LOAD] Processing token:', token);
 
 	// Find profile with this reactivation token
-	console.log('🔍 [REACTIVATE LOAD] Searching for profile with token...');
 	
 	// Create admin supabase client to bypass RLS for suspended users
-	console.log('🔧 [REACTIVATE LOAD] Creating admin client to bypass RLS...');
 	const adminSupabase = createAdminSupabaseClient();
 	
 	const { data: profile, error } = await adminSupabase
@@ -49,28 +46,19 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 		.single();
 
 	if (error || !profile) {
-		console.log('❌ [REACTIVATE LOAD] Profile not found or error:', error);
 		return {
 			isValid: false,
 			message: 'Neplatný nebo expirovaný reaktivační token'
 		};
 	}
 
-	console.log('✅ [REACTIVATE LOAD] Profile found:', profile.id);
 
 	// Check conditions for reactivation (must be pending deletion)
 	const isDeletionRequested = profile.data_deletion_requested === true || String(profile.data_deletion_requested) === 'true';
 	const isAccountSuspended = profile.account_suspended === true || String(profile.account_suspended) === 'true';
 
-	console.log('🔍 [REACTIVATE LOAD] Checking conditions:', {
-		isDeletionRequested,
-		isAccountSuspended,
-		data_deletion_requested_type: typeof profile.data_deletion_requested,
-		account_suspended_type: typeof profile.account_suspended
-	});
 
 	if (!isDeletionRequested || !isAccountSuspended) {
-		console.log('✅ [REACTIVATE LOAD] Account already reactivated');
 		return {
 			isValid: true,
 			alreadyReactivated: true,
@@ -87,24 +75,16 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 	const now = new Date();
 
 	if (!deletionScheduled || now >= deletionScheduled) {
-		console.log('⏰ [REACTIVATE LOAD] Grace period expired');
 		return {
 			isValid: false,
 			message: 'Grace period (30 dní) již vypršela. Kontaktujte zákaznickou podporu.'
 		};
 	}
 
-	const msRemaining = deletionScheduled.getTime() - now.getTime();
-	const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
-
-	console.log('⏰ [REACTIVATE LOAD] Days remaining:', daysRemaining);
-
 	// 🚀 AUTOMATICKÁ REAKTIVACE - provést okamžitě při validním tokenu
-	console.log('🔄 [REACTIVATE LOAD] Starting automatic reactivation...');
-	
 	const adminSupabaseForUpdate = createAdminSupabaseClient();
-	
-	const { data: updateResult, error: updateError } = await adminSupabaseForUpdate
+
+	const { error: updateError } = await adminSupabaseForUpdate
 		.from('profiles')
 		.update({
 			data_deletion_requested: false,
@@ -114,8 +94,7 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 			account_suspended: false,
 			updated_at: new Date().toISOString()
 		})
-		.eq('id', profile.id)
-		.select('id, data_deletion_requested, account_suspended, data_deletion_token');
+		.eq('id', profile.id);
 
 	if (updateError) {
 		console.error('❌ [REACTIVATE LOAD] Failed to reactivate account:', updateError);
@@ -125,7 +104,6 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 		};
 	}
 
-	console.log('✅ [REACTIVATE LOAD] Account successfully reactivated:', updateResult);
 
 	// Send reactivation confirmation email
 	try {
@@ -135,7 +113,6 @@ export const load: PageServerLoad = async ({ url, locals: { supabase } }) => {
 			lastName: profile.last_name || 'zákazníku',
 			baseUrl: url.origin
 		});
-		console.log('📧 [REACTIVATE LOAD] Reactivation email sent successfully');
 	} catch (emailError) {
 		console.error('⚠️ [REACTIVATE LOAD] Failed to send reactivation email:', emailError);
 		// Continue even if email fails

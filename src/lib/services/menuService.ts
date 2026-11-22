@@ -234,12 +234,6 @@ export async function loadMenu(
 	menuId: string
 ) {
 	try {
-		console.log(`🔄 Načítání menu pro ID: ${menuId}`);
-		
-		// Debug: Zkontrolovat tenant context (pokud existuje RPC funkce)
-		// const { data: tenantContext } = await supabase.rpc('get_current_tenant');
-		// console.log(`🏢 Aktuální tenant context:`, tenantContext);
-
 		// 1. Nejprve získáme aktuální verzi menu
 		const { data: currentVersionId, error: versionError } = await supabase.rpc(
 			"get_current_menu_version",
@@ -252,15 +246,8 @@ export async function loadMenu(
 			return null;
 		}
 
-		console.log(`📋 Aktuální verze menu ${menuId}:`, {
-			versionId: currentVersionId,
-			versionIdType: typeof currentVersionId,
-			versionIdIsNull: currentVersionId === null,
-			versionIdIsUndefined: currentVersionId === undefined
-		});
 
 		// 2. Načteme samotné menu (s alergeny)
-		console.log(`🔍 Načítání menu ${menuId} z databáze...`);
 		
 		const { data: menu, error: menuError } = await supabase
 			.from("menus")
@@ -318,25 +305,11 @@ export async function loadMenu(
 				return null;
 			}
 			
-			console.log(`📋 Načtená verze menu ${menuId}:`, {
-				versionId: currentVersionId,
-				versionData: versionData ? {
-					id: versionData.id,
-					menu_id: versionData.menu_id,
-					date: versionData.date,
-					active: versionData.active,
-					created_at: versionData.created_at
-				} : null,
-				versionDataIsNull: versionData === null
-			});
 			
 			currentVersion = versionData;
 		}
 
 		// 5. Načteme varianty
-		console.log(
-			`🍽️ Načítání variant pro menu_id: ${menuId}, menu_version_id: ${currentVersionId || 'žádná verze'}`
-		);
 
 		let finalVariants = [];
 
@@ -368,7 +341,6 @@ export async function loadMenu(
 			finalVariants = variants || [];
 		} else {
 			// Pokud menu nemá verzi, zkusíme načíst všechny varianty pro toto menu
-			console.log(`Menu ${menuId} nemá verzi - zkouším načíst všechny varianty`);
 			
 			const { data: allVariants, error: allVariantsError } = await supabase
 				.from("menu_variants")
@@ -419,7 +391,6 @@ export async function loadMenu(
 						return aNum - bNum;
 					}) || []
 		};
-		console.log(`✅ Menu ${menuId} úspěšně načteno s ${finalVariants.length} variantami`);
 		return formattedMenu;
 	} catch (error) {
 		console.error(`❌ Nečekaná chyba při načítání menu ${menuId}:`, error);
@@ -448,13 +419,6 @@ export async function loadMenuList(
 			showDeleted = false
 		} = options;
 
-		console.log(`--- Načítání menu - stránka ${page} ---`);
-		console.log(`Parametry:`, {
-			itemsPerPage,
-			searchQuery,
-			sort,
-			showDeleted
-		});
 
 		// Základní dotaz pro nalezení všech relevantních menu - BEZ STRÁNKOVÁNÍ
 		let baseQuery = supabase.from("menus").select("*").eq("tenant_id", PUBLIC_TENANT);
@@ -466,7 +430,6 @@ export async function loadMenuList(
 
 		// Přidání fulltextového vyhledávání, pokud je zadán search query
 		if (searchQuery) {
-			console.log(`Provádím vyhledávání pro: ${searchQuery}`);
 
 			// Nejdřív získáme všechny menu_id z variant, které obsahují hledaný text
 			const { data: variantResults } = await supabase
@@ -475,7 +438,6 @@ export async function loadMenuList(
 				.ilike("description", `%${searchQuery}%`);
 
 			const menuIds = variantResults?.map((v) => v.menu_id) || [];
-			console.log(`Nalezená menu_id z variant:`, menuIds);
 
 			// Pak vytvoříme podmínku pro vyhledávání
 			if (menuIds.length > 0) {
@@ -495,7 +457,6 @@ export async function loadMenuList(
 			throw menusError;
 		}
 
-		console.log(`Celkový počet načtených menu: ${allMenus.length}`);
 
 		// Pro každé menu načteme aktuální verzi pomocí RPC funkce
 		const menusWithVersions = await Promise.all(

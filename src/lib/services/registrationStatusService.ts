@@ -34,7 +34,6 @@ export async function checkAndUpdateRegistrationStatus(
 		if (error) {
 			// Pokud je chyba PGRST116, znamená to, že uživatel nemá vytvořený profil
 			if (error.code === 'PGRST116') {
-				console.log("User profile not found - user needs to complete registration:", userId);
 				return {
 					isComplete: false,
 					actualStatus: 'pending',
@@ -55,7 +54,6 @@ export async function checkAndUpdateRegistrationStatus(
 		}
 
 		if (!profile) {
-			console.log("Profile is null - user needs to complete registration:", userId);
 			return {
 				isComplete: false,
 				actualStatus: 'pending',
@@ -98,7 +96,6 @@ export async function checkAndUpdateRegistrationStatus(
 
 			if (!updateError) {
 				wasUpdated = true;
-				console.log(`Auto-updated registration_status to completed for user ${userId}`);
 			} else {
 				console.error("Error auto-updating registration status:", updateError);
 			}

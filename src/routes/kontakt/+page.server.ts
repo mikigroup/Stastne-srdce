@@ -87,12 +87,6 @@ export const actions: Actions = {
 		const recaptchaToken = formData.get("recaptcha_token")?.toString() || "";
 		const submitted = { email, tel, name, content };
 
-		console.log('📧 Kontakt - Odesílání formuláře:', {
-			email: email ? email.substring(0, 20) + '...' : 'prázdné',
-			tel: tel ? tel.substring(0, 10) + '...' : 'prázdné',
-			name: name ? name.substring(0, 20) + '...' : 'prázdné',
-			content: content ? `${content.substring(0, 50)}...` : 'prázdné'
-		});
 
 		if (PUBLIC_RECAPTCHA_SITE_KEY) {
 			if (!recaptchaToken) {
@@ -130,16 +124,12 @@ export const actions: Actions = {
 				});
 			}
 
-			console.log('✅ [KONTAKT] reCAPTCHA validation passed:', {
-				score: recaptchaResult.score
-			});
 		}
 
 		// Validace pomocí Zod
 		const validationResult = contactFormSchema.safeParse(submitted);
 		
 		if (!validationResult.success) {
-			console.log('❌ Kontakt - Chyba validace:', validationResult.error.issues);
 			const errors = validationResult.error.issues.reduce(
 				(acc, err) => {
 					const key = String(err.path[0] ?? "");
@@ -149,7 +139,6 @@ export const actions: Actions = {
 				{} as Record<string, string>
 			);
 
-			console.log('❌ Kontakt - Chybové zprávy:', errors);
 
 			return fail(400, {
 				errors,
@@ -161,7 +150,6 @@ export const actions: Actions = {
 			});
 		}
 
-		console.log('✅ Kontakt - Validace prošla úspěšně');
 
 		const { contact, shopName } = await readContactPageSettings(supabase);
 		const recipient = recipientFromContact(contact as { email?: string } | null);
@@ -204,9 +192,7 @@ Obsah zprávy:
 ${sanitizedContent}`
 			};
 
-			console.log('📧 Kontakt - Odesílám email...');
 			await transporter.sendMail(options);
-			console.log('✅ Kontakt - Email úspěšně odeslán');
 
 			return {
 				success: true,
