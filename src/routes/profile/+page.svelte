@@ -31,7 +31,7 @@
 		created_at: string | null;
 		total_price: number | null;
 		currency: string | null;
-		total_pieces: number | null;
+		state: string | null;
 		note: string | null;
 		order_items: OrderItem[];
 		grouped_items?: Array<{ date: string; items: OrderItem[] }>;
@@ -215,6 +215,15 @@
 		return showFieldErrors && message ? "true" : undefined;
 	}
 
+	function orderStateClass(state: string) {
+		const name = state.trim().toLocaleLowerCase("cs");
+		if (name === "nová") return "bg-sky-100 text-sky-800";
+		if (name === "expedovaná") return "bg-amber-100 text-amber-900";
+		if (name === "fakturovaná") return "bg-green-100 text-green-800";
+		if (name === "stornovaná") return "bg-red-100 text-red-800";
+		return "bg-stone-100 text-gray-700";
+	}
+
 	function ordersLabel(count: number) {
 		if (count === 1) return "1 objednávka";
 		if (count >= 2 && count <= 4) return `${count} objednávky`;
@@ -248,11 +257,6 @@
 		const description = item.variant?.description;
 		if (number && description) return `${number}. ${description}`;
 		return description || "Položka";
-	}
-
-	function menuDateLabel(date: string) {
-		if (!date) return "Položky";
-		return formatDateToCzech(date) || date;
 	}
 
 	function scrollToStatus() {
@@ -367,9 +371,8 @@
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<header class="mb-8 text-center">
 		<h1 class="text-4xl font-extrabold tracking-tight text-gray-900 md:text-5xl">Účet</h1>
-		<p class="mt-3 text-lg text-gray-600">Údaje pro rozvoz, platbu a vaše objednávky</p>
 		{#if email}
-			<p class="mt-2 text-gray-800">
+			<p class="mt-3 text-gray-800">
 				{#if savedName}<span class="font-semibold">{savedName}</span>{/if}
 				{#if savedName}<span class="text-gray-400" aria-hidden="true"> · </span>{/if}
 				{email}
@@ -753,8 +756,15 @@
 										{#if order.created_at}
 											<span class="font-semibold">{formatDateToCzechShort(order.created_at)}</span>
 										{/if}
-										{#if order.total_pieces != null}
-											<span class="text-sm font-medium text-gray-600">{piecesLabel(order.total_pieces)}</span>
+										{#if order.state}
+											<span
+												class={[
+													"rounded-full px-2.5 py-0.5 text-xs font-semibold",
+													orderStateClass(order.state)
+												]}
+											>
+												{order.state}
+											</span>
 										{/if}
 									</span>
 								</span>
@@ -793,9 +803,8 @@
 									{#each dayGroups(order) as group (group.date || "bez-data")}
 										{@const soup = group.items.map(itemSoup).find(Boolean) ?? ""}
 										<div class="rounded-lg bg-stone-50 p-4">
-											<h3 class="font-semibold text-gray-900">{menuDateLabel(group.date)}</h3>
 											{#if soup}
-												<p class="mt-1 text-sm text-gray-600">Polévka: {soup}</p>
+												<p class="text-sm text-gray-600">Polévka: {soup}</p>
 											{/if}
 											<ul class="mt-2 divide-y divide-gray-200">
 												{#each group.items as item (item.id)}
