@@ -41,6 +41,7 @@
 		description: string;
 		date: string;
 	} | null>(null);
+	let clearCartOpen = $state(false);
 	
 	// Nové proměnné pro dopravu
 	let deliverySettings: any = $state(null);
@@ -295,6 +296,29 @@
 		removeTarget = null;
 	}
 
+	const openClearDialog: Attachment<HTMLDialogElement> = (node) => {
+		$effect(() => {
+			if (clearCartOpen) {
+				if (!node.open) node.showModal();
+			} else if (node.open) {
+				node.close();
+			}
+		});
+	};
+
+	function askClearCart() {
+		clearCartOpen = true;
+	}
+
+	function confirmClearCart() {
+		clearCartOpen = false;
+		CartItemsStore.clear();
+	}
+
+	function cancelClearCart() {
+		clearCartOpen = false;
+	}
+
 	onMount(async () => {
 		await Promise.all([
 			getProfile(),
@@ -507,6 +531,17 @@
 									</ul>
 								</article>
 							{/each}
+							<div class="flex justify-end">
+								<button
+									type="button"
+									class="text-sm font-medium text-red-800 underline-offset-2 hover:underline"
+									onclick={(event) => {
+										event.preventDefault();
+										askClearCart();
+									}}>
+									Vyprázdnit košík
+								</button>
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -614,6 +649,17 @@
 								</div>
 							</div>
 						{/each}
+						<div class="flex justify-end pt-3">
+							<button
+								type="button"
+								class="text-sm font-medium text-red-800 underline-offset-2 hover:underline"
+								onclick={(event) => {
+									event.preventDefault();
+									askClearCart();
+								}}>
+								Vyprázdnit košík
+							</button>
+						</div>
 					{/if}
 				</div>
 
@@ -781,6 +827,41 @@
 					class="px-4 py-2 font-semibold text-white bg-red-700 rounded-lg hover:bg-red-800"
 					onclick={confirmRemove}>
 					Odebrat
+				</button>
+			</div>
+		</div>
+	</dialog>
+
+	<dialog
+		class="remove-dialog"
+		{@attach openClearDialog}
+		aria-labelledby="clear-cart-title"
+		oncancel={(event) => {
+			event.preventDefault();
+			cancelClearCart();
+		}}
+		onclick={(event) => {
+			if (event.target === event.currentTarget) cancelClearCart();
+		}}>
+		<div class="p-6">
+			<h2 id="clear-cart-title" class="text-xl font-semibold text-gray-900">
+				Vyprázdnit košík
+			</h2>
+			<p class="mt-3 text-gray-700">
+				Opravdu chcete odebrat všechny položky z košíku?
+			</p>
+			<div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
+				<button
+					type="button"
+					class="px-4 py-2 font-medium text-gray-800 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+					onclick={cancelClearCart}>
+					Zrušit
+				</button>
+				<button
+					type="button"
+					class="px-4 py-2 font-semibold text-white bg-red-700 rounded-lg hover:bg-red-800"
+					onclick={confirmClearCart}>
+					Vyprázdnit
 				</button>
 			</div>
 		</div>

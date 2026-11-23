@@ -125,7 +125,7 @@
 
 <header class={["fixed top-0 left-0 w-full bg-white z-40", menuVisible && "is-menu-open"]}>
 	<nav>
-		<div class="flex items-center justify-between w-full px-3 py-1 mx-auto sm:my-2 sm:px-4 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:justify-normal max-w-8xl">
+		<div class="flex items-center justify-between w-full px-4 py-1 mx-auto sm:my-2 sm:px-4 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:justify-normal max-w-8xl">
 			<!-- Logo a čas -->
 			<div class="flex min-w-0 items-center gap-2 sm:gap-3 lg:pl-4">
 				<div class="flex items-center gap-1.5 sm:gap-2">
