@@ -151,14 +151,6 @@ const supabase: Handle = async ({ event, resolve }) => {
 		});
 
 		event.locals.tenantId = PUBLIC_TENANT;
-
-		const { data: tenant } = await event.locals.supabase
-			.from("tenants")
-			.select("*")
-			.eq("id", PUBLIC_TENANT)
-			.single();
-
-		event.locals.tenant = tenant;
 	} catch (tenantError) {
 		console.error("[TENANT] Error setting tenant context:", tenantError);
 		try {
