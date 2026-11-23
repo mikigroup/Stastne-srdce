@@ -30,9 +30,11 @@ function isAuthRoute(routeId: string | null, pathname: string) {
 async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promise<AuthResult> {
 	const { data, error: claimsError } = await event.locals.supabase.auth.getClaims();
 	if (claimsError || !data?.claims?.sub) {
-		const status = claimsError && "status" in claimsError ? claimsError.status : undefined;
-		if (status === 401 || status === 403) {
-			await event.locals.supabase.auth.signOut({ scope: "local" });
+		// Nevolat signOut. Paralelní požadavek mohl token právě otočit a odpověď
+		// s mazáním cookies by platnou relaci smazala, když dorazí jako poslední.
+		if (claimsError) {
+			const status = "status" in claimsError ? claimsError.status : undefined;
+			console.error("[AUTH] Session check failed:", { status, message: claimsError.message });
 		}
 		return emptyAuth;
 	}
@@ -120,18 +122,18 @@ const supabase: Handle = async ({ event, resolve }) => {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
 			setAll: (cookiesToSet, headers) => {
+				// Prázdná hodnota má maxAge: 0 a musí jít přes set. delete neshodí
+				// stejné atributy a v prohlížeči zůstane starý kus cookie.
 				cookiesToSet.forEach(({ name, value, options }) => {
-					if (value) {
-						event.cookies.set(name, value, { ...options, httpOnly: false, path: "/" });
-					} else {
-						event.cookies.delete(name, { ...options, path: "/" });
-					}
+					event.cookies.set(name, value, { ...options, httpOnly: false, path: "/" });
 				});
 
-				try {
-					event.setHeaders(headers);
-				} catch (headerError) {
-					console.error("[AUTH] Failed to set cache headers:", headerError);
+				if (headers && Object.keys(headers).length > 0) {
+					try {
+						event.setHeaders(headers);
+					} catch (headerError) {
+						console.error("[AUTH] Failed to set cache headers:", headerError);
+					}
 				}
 			}
 		}

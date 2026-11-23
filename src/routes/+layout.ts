@@ -33,7 +33,14 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 	}
 
 	const supabase = createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-		global: { fetch }
+		global: { fetch },
+		auth: {
+			// Relaci obnovuje jen server v hooks přes getClaims. Druhý refresh
+			// z prohlížeče otočí stejný refresh token a Supabase celou rodinu zruší.
+			autoRefreshToken: false,
+			persistSession: true,
+			detectSessionInUrl: false
+		}
 	});
 
 	return {
