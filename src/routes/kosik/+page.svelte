@@ -323,6 +323,7 @@
 <section>
 	{#if page.data.session}
 		<form
+			id="order-form"
 			method="POST"
 			action="?/sendOrder"
 			onsubmit={(event) => {
@@ -659,7 +660,7 @@
 
 							<div class="grid p-5 border-b justify-items-end">
 								{#if deliveryMethodLabel}
-									<p class="w-full pb-4 text-center">
+									<p class="w-full pb-4 text-right">
 										{deliveryMethodLabel}
 									</p>
 								{:else if profileLoaded}
@@ -791,12 +792,11 @@
 			if (modal) modal.close();
 		}}
 		onconfirm={() => {
+			const form = document.getElementById("order-form");
+			if (!(form instanceof HTMLFormElement)) return;
 			isSubmitting = true;
-			const form = document.querySelector('form');
-			if (form) {
-				modal?.close();
-				form.requestSubmit();
-			}
+			modal?.close();
+			form.requestSubmit();
 		}}
 	>
 		{#if errorMessage}
