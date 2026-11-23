@@ -66,14 +66,12 @@ async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promis
 
 			if (membershipError) {
 				console.error("[AUTH] Error fetching tenant membership:", membershipError);
-				await event.locals.supabase.auth.signOut();
-				return emptyAuth;
-			}
-
-			const hasAccessToTenant = !!membership || profile.tenant_id === PUBLIC_TENANT;
-			if (!hasAccessToTenant) {
-				await event.locals.supabase.auth.signOut();
-				return emptyAuth;
+			} else {
+				const hasAccessToTenant = !!membership || profile.tenant_id === PUBLIC_TENANT;
+				if (!hasAccessToTenant) {
+					await event.locals.supabase.auth.signOut({ scope: "local" });
+					return emptyAuth;
+				}
 			}
 
 			const isAccountSuspended =
@@ -90,8 +88,6 @@ async function resolveRequestAuth(event: Parameters<Handle>[0]["event"]): Promis
 		}
 	} catch (authError) {
 		console.error("[AUTH] Error while checking account access:", authError);
-		await event.locals.supabase.auth.signOut();
-		return emptyAuth;
 	}
 
 	try {
