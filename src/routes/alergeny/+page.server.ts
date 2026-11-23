@@ -25,5 +25,4 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	}
 };
 
-// Nastavení pro možnost statického prerenderu
-export const prerender = true;
+export const prerender = false;

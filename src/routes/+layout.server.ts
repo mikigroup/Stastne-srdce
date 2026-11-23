@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from "./$types";
 import type { Profile } from "$lib/types/profile";
-import { getSetting } from "$lib/services/siteSettingsService";
+import { getPublicSettings } from "$lib/services/siteSettingsService";
 import { getDefaultSettings } from "$lib/constants/defaultSettings";
 import type { AuthUser } from "$lib/types/auth";
 
@@ -12,14 +12,18 @@ function publicUser(user: AuthUser | null): AuthUser | null {
 export const load: LayoutServerLoad = async ({ locals: { session, user, supabase } }) => {
 	const publicSessionUser = publicUser(user ?? session?.user ?? null);
 
-	// Načteme společná nastavení pro všechny stránky
-	const [generalSettings, appearanceSettings, contactSettings, socialSettings, seoSettings] = await Promise.all([
-		getSetting(supabase, 'general').then(data => data || getDefaultSettings('general')),
-		getSetting(supabase, 'appearance').then(data => data || getDefaultSettings('appearance')),
-		getSetting(supabase, 'contact').then(data => data || getDefaultSettings('contact')),
-		getSetting(supabase, 'social').then(data => data || getDefaultSettings('social')),
-		getSetting(supabase, 'seo').then(data => data || getDefaultSettings('seo'))
+	const publicSettings = await getPublicSettings([
+		"general",
+		"appearance",
+		"contact",
+		"social",
+		"seo"
 	]);
+	const generalSettings = publicSettings.general || getDefaultSettings("general");
+	const appearanceSettings = publicSettings.appearance || getDefaultSettings("appearance");
+	const contactSettings = publicSettings.contact || getDefaultSettings("contact");
+	const socialSettings = publicSettings.social || getDefaultSettings("social");
+	const seoSettings = publicSettings.seo || getDefaultSettings("seo");
 
 	if (publicSessionUser) {
 		const { data: profile } = await supabase

@@ -2,8 +2,28 @@ import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import { loadMenu } from "$lib/services/menuService";
 import { getSetting } from "$lib/services/siteSettingsService";
-import type { Menu } from "$lib/types/menu";
+import { readShortCache, writeShortCache } from "$lib/server/shortCache";
 import { PUBLIC_TENANT } from "$env/static/public";
+
+type LoadedMenu = NonNullable<Awaited<ReturnType<typeof loadMenu>>>;
+
+type ObedyPage = {
+	menus: LoadedMenu[];
+	visibleDays: number;
+	texts: { text?: string | null } | null;
+	allergens: unknown[];
+	productsSettings: {
+		nextDayMenuEnabled: boolean;
+		nextDayMenuTime: string;
+		isNextDayMenu: boolean;
+		menuStatus: string;
+	};
+	loadingStats: {
+		totalRequested: number;
+		successfullyLoaded: number;
+		failed: number;
+	};
+};
 
 export const prerender = false;
 
@@ -50,8 +70,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				isNextDayMenu = false;
 				menuStatus = 'pozítří (objednávky na zítřek uzavřeny)';
 			}
-		} else {
 		}
+
+		const cacheKey = `obedy:${PUBLIC_TENANT}:${formatDate(currentDate)}`;
+		const cached = readShortCache<ObedyPage>(cacheKey);
+		if (cached) return cached;
 
 		// Výpočet koncového data (větší rozsah pro nalezení dostatečného počtu menu)
 		const searchRangeDays = Math.max(visibleDays * 2, 100);
@@ -122,8 +145,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		]);
 
 
-		return {
-			menus: loadedMenus,
+		return writeShortCache<ObedyPage>(cacheKey, {
+			menus: loadedMenus.flatMap((menu) => (menu ? [menu] : [])),
 			visibleDays,
 			texts: textsResult.data?.[0] || null,
 			allergens: allergensResult.data || [],
@@ -139,7 +162,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				successfullyLoaded: allLoadedMenus.length,
 				failed: failedMenus.length
 			}
-		};
+		});
 	} catch (err) {
 		console.error("Chyba při načítání jídelníčku:", err);
 		throw error(500, "Nastala chyba při načítání dat");

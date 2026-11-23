@@ -5,7 +5,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TENANT } from "$env/static/public";
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
-import { clearCorruptedSupabaseCookies } from "$lib/utils/supabaseCookies";
+import { clearCorruptedSupabaseCookies, hasSupabaseAuthCookie } from "$lib/utils/supabaseCookies";
 import { getRegistrationStatus } from "$lib/services/registrationStatusService";
 import { ROUTES } from "$lib/constants/routes";
 import type { Database } from "$lib/types/database.types";
@@ -162,9 +162,14 @@ const supabase: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	const auth = await event.locals.safeGetSession();
-	event.locals.session = auth.session;
-	event.locals.user = auth.user;
+	if (hasSupabaseAuthCookie(event.cookies)) {
+		const auth = await event.locals.safeGetSession();
+		event.locals.session = auth.session;
+		event.locals.user = auth.user;
+	} else {
+		event.locals.session = null;
+		event.locals.user = null;
+	}
 
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {

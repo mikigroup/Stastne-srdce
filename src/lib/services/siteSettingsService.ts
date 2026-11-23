@@ -10,6 +10,15 @@ const RESTRICTED_SETTING_KEYS = new Set(["email", "integrations"]);
 
 let publicSettingsClient: TypedSupabaseClient | null = null;
 
+const PUBLIC_SETTINGS_TTL_MS = 60_000;
+
+type PublicSettingsCacheEntry = {
+	expires: number;
+	values: Record<string, any>;
+};
+
+const publicSettingsCache = new Map<string, PublicSettingsCacheEntry>();
+
 /**
  * Čtení veřejných site_settings bez uživatelské session.
  * Politika site_settings_anon_public_read platí jen pro roli anon.
@@ -72,6 +81,68 @@ async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string
         console.error('Error getting default tenant ID:', e);
         return null;
     }
+}
+
+function publicSettingsCacheKey(tenantId: string, keys: string[]): string {
+	return `${tenantId}:${[...keys].sort().join(",")}`;
+}
+
+function readPublicValue(key: string, value: unknown) {
+	const parsed = deserializeSettingValue(value);
+	if (key === "integrations") {
+		const validation = validateIntegrationsSettings(parsed);
+		if (!validation.success) {
+			console.error("Invalid integrations settings:", validation.error);
+			return getDefaultSettings("integrations");
+		}
+		return validation.data;
+	}
+	return parsed;
+}
+
+/**
+ * Veřejné klíče jedním dotazem. Výsledek platí 60 s v paměti instance.
+ * Klíč cache je tenant a seznam klíčů. Omezené klíče (e-mail, integrace) sem nepatří.
+ */
+export async function getPublicSettings(
+	keys: string[],
+	tenantId: string = PUBLIC_TENANT
+): Promise<Record<string, any>> {
+	const uniqueKeys = [...new Set(keys)].filter((key) => !RESTRICTED_SETTING_KEYS.has(key));
+	if (!tenantId || uniqueKeys.length === 0) return {};
+
+	const cacheKey = publicSettingsCacheKey(tenantId, uniqueKeys);
+	const now = Date.now();
+	const hit = publicSettingsCache.get(cacheKey);
+	if (hit && hit.expires > now) return hit.values;
+
+	try {
+		const { data, error } = await getPublicSettingsClient()
+			.from("site_settings")
+			.select("key, value")
+			.eq("tenant_id", tenantId)
+			.in("key", uniqueKeys);
+
+		if (error) {
+			console.error("Error loading public settings:", error);
+			return {};
+		}
+
+		const values: Record<string, any> = {};
+		for (const row of data ?? []) {
+			if (!row.key) continue;
+			values[row.key] = readPublicValue(row.key, row.value);
+		}
+
+		publicSettingsCache.set(cacheKey, {
+			expires: now + PUBLIC_SETTINGS_TTL_MS,
+			values
+		});
+		return values;
+	} catch (e) {
+		console.error("Error loading public settings:", e);
+		return {};
+	}
 }
 
 /**

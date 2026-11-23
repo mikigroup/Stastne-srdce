@@ -1,6 +1,7 @@
 export const prerender = false;
 export const trailingSlash = "always";
 import type { PageServerLoad } from "./$types";
+import { readShortCache, writeShortCache } from "$lib/server/shortCache";
 import { PUBLIC_TENANT } from "$env/static/public";
 
 const HOME_POSITIONS = ["left", "center", "right"] as const;
@@ -11,9 +12,15 @@ type HomeText = {
 	text: string | null;
 };
 
+type HomePage = { texts: Array<HomeText | null> };
+
 export const load: PageServerLoad = async ({
 	locals: { supabase }
 }) => {
+	const cacheKey = `home-texts:${PUBLIC_TENANT}`;
+	const cached = readShortCache<HomePage>(cacheKey);
+	if (cached) return cached;
+
 	let texts: Array<HomeText | null> = HOME_POSITIONS.map(() => null);
 
 	try {
@@ -31,9 +38,8 @@ export const load: PageServerLoad = async ({
 		);
 	} catch (error) {
 		console.error("Chyba při načítání textů:", error);
+		return { texts };
 	}
 
-	return {
-		texts
-	};
+	return writeShortCache(cacheKey, { texts });
 };

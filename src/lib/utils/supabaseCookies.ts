@@ -5,6 +5,10 @@ import type { Cookies } from "@sveltejs/kit";
  * vracel JSON.stringify(session) místo skutečných cookie hodnot.
  * Jinak auth-js spadne: "Cannot create property 'user' on string".
  */
+export function hasSupabaseAuthCookie(cookies: Cookies): boolean {
+	return cookies.getAll().some((cookie) => cookie.name.includes("auth-token"));
+}
+
 export function clearCorruptedSupabaseCookies(cookies: Cookies) {
 	for (const { name, value } of cookies.getAll()) {
 		if (

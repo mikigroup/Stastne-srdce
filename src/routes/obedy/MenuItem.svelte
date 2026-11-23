@@ -21,7 +21,7 @@
 	let reducedMotion = $derived(prefersReducedMotion.current);
 	let motion = $derived(animate && !reducedMotion);
 	const actionButtonClass =
-		"inline-flex items-center gap-1.5 py-1 px-2.5 mt-1.5 border rounded-lg shadow-sm hover:bg-green-800 hover:text-white hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 sm:mt-4 sm:gap-2 sm:py-1.5 sm:px-3 sm:shadow-md";
+		"inline-flex items-center gap-1.5 py-1.5 px-3.5 mt-1.5 border rounded-lg shadow-sm hover:bg-green-800 hover:text-white hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer active:bg-white border-gray-400 bg-stone-100 sm:mt-4 sm:gap-2 sm:py-2 sm:px-4 sm:shadow-md";
 
 
 	
