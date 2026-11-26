@@ -59,6 +59,13 @@
 		{#if order.order_number}
 			<p class="mt-2 text-lg">Číslo objednávky: <strong>{order.order_number}</strong></p>
 		{/if}
+		{#if order.delivery_street}
+			<p class="mt-2 text-lg">
+				Dodací adresa:
+				{[order.delivery_street, order.delivery_street_number].filter(Boolean).join(" ")},
+				{[order.delivery_zip_code, order.delivery_city].filter(Boolean).join(" ")}
+			</p>
+		{/if}
 		<p class="text-sm mt-2">Potvrzení bylo zasláno na Váš e-mail</p>
 	</div>
 

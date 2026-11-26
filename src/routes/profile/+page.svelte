@@ -33,6 +33,13 @@
 		currency: string | null;
 		state: string | null;
 		note: string | null;
+		delivery_first_name: string | null;
+		delivery_last_name: string | null;
+		delivery_telephone: string | null;
+		delivery_street: string | null;
+		delivery_street_number: string | null;
+		delivery_city: string | null;
+		delivery_zip_code: string | null;
 		order_items: OrderItem[];
 		grouped_items?: Array<{ date: string; items: OrderItem[] }>;
 	};
@@ -48,7 +55,7 @@
 	const cardClass = "bg-white border rounded-lg shadow-md border-gray-300 p-6 sm:p-8";
 	const labelClass = "mb-1.5 block text-sm font-semibold text-gray-800";
 	const controlClass =
-		"w-full rounded-lg border bg-white px-4 py-2.5 text-base text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700";
+		"w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700";
 
 	const errorFields = [
 		["first_name", "first_name"],
@@ -60,6 +67,10 @@
 		["street_number", "street_number"],
 		["city", "city"],
 		["zip_code", "zip_code"],
+		["delivery_street", "delivery_street"],
+		["delivery_street_number", "delivery_street_number"],
+		["delivery_city", "delivery_city"],
+		["delivery_zip_code", "delivery_zip_code"],
 		["allergies_description", "allergiesDescription"]
 	] as const;
 
@@ -100,6 +111,14 @@
 	let street_number = $state(untrack(() => profile?.street_number ?? ""));
 	let city = $state(untrack(() => profile?.city ?? ""));
 	let zip_code = $state(untrack(() => profile?.zip_code ?? ""));
+	let separateDelivery = $state(untrack(() => Boolean(profile?.delivery_street)));
+	let deliveryFirstName = $state(untrack(() => profile?.delivery_first_name ?? ""));
+	let deliveryLastName = $state(untrack(() => profile?.delivery_last_name ?? ""));
+	let deliveryTelephone = $state(untrack(() => profile?.delivery_telephone ?? ""));
+	let deliveryStreet = $state(untrack(() => profile?.delivery_street ?? ""));
+	let deliveryStreetNumber = $state(untrack(() => profile?.delivery_street_number ?? ""));
+	let deliveryCity = $state(untrack(() => profile?.delivery_city ?? ""));
+	let deliveryZipCode = $state(untrack(() => profile?.delivery_zip_code ?? ""));
 	let ico = $state(untrack(() => profile?.ico ?? ""));
 	let dic = $state(untrack(() => profile?.dic ?? ""));
 	let company = $state(untrack(() => profile?.company ?? ""));
@@ -158,7 +177,11 @@
 			delivery_method: deliveryMethod,
 			payment_method: paymentMethod,
 			allergies: allergies === "yes",
-			allergies_description: allergiesDescription
+			allergies_description: allergiesDescription,
+			delivery_street: separateDelivery ? deliveryStreet : "",
+			delivery_street_number: separateDelivery ? deliveryStreetNumber : "",
+			delivery_city: separateDelivery ? deliveryCity : "",
+			delivery_zip_code: separateDelivery ? deliveryZipCode : ""
 		})
 	);
 
@@ -176,6 +199,10 @@
 		street_number: missing(street_number, "Číslo popisné je povinné"),
 		city: missing(city, "Město je povinné"),
 		zip_code: missing(zip_code, "PSČ je povinné"),
+		delivery_street: separateDelivery ? missing(deliveryStreet, "Dodací ulice je povinná") : "",
+		delivery_street_number: separateDelivery ? missing(deliveryStreetNumber, "Dodací číslo popisné je povinné") : "",
+		delivery_city: separateDelivery ? missing(deliveryCity, "Dodací město je povinné") : "",
+		delivery_zip_code: separateDelivery ? missing(deliveryZipCode, "Dodací PSČ je povinné") : "",
 		allergies_description:
 			allergies === "yes" && !allergiesDescription.trim() ? "Popis alergií je povinný" : ""
 	});
@@ -197,7 +224,16 @@
 			allergies !== (profile?.allergies ? "yes" : "no") ||
 			currentDescription !== savedDescription ||
 			deliveryMethod !== (profile?.delivery_method ?? "") ||
-			paymentMethod !== (profile?.payment_method ?? "")
+			paymentMethod !== (profile?.payment_method ?? "") ||
+			separateDelivery !== Boolean(profile?.delivery_street) ||
+			(separateDelivery &&
+				(deliveryFirstName !== (profile?.delivery_first_name ?? "") ||
+					deliveryLastName !== (profile?.delivery_last_name ?? "") ||
+					deliveryTelephone !== (profile?.delivery_telephone ?? "") ||
+					deliveryStreet !== (profile?.delivery_street ?? "") ||
+					deliveryStreetNumber !== (profile?.delivery_street_number ?? "") ||
+					deliveryCity !== (profile?.delivery_city ?? "") ||
+					deliveryZipCode !== (profile?.delivery_zip_code ?? "")))
 		);
 	});
 
@@ -222,6 +258,14 @@
 		if (name === "fakturovaná") return "bg-green-100 text-green-800";
 		if (name === "stornovaná") return "bg-red-100 text-red-800";
 		return "bg-stone-100 text-gray-700";
+	}
+
+	function deliveryAddressLine(order: OrderView) {
+		if (!order.delivery_street) return "";
+		const who = [order.delivery_first_name, order.delivery_last_name].filter(Boolean).join(" ");
+		const street = [order.delivery_street, order.delivery_street_number].filter(Boolean).join(" ");
+		const place = [order.delivery_zip_code, order.delivery_city].filter(Boolean).join(" ");
+		return [who, street, place, order.delivery_telephone].filter(Boolean).join(", ");
 	}
 
 	function ordersLabel(count: number) {
@@ -489,7 +533,7 @@
 						</div>
 						<div>
 							<p class={labelClass}>E-mail</p>
-							<p class="rounded-lg border border-gray-200 bg-stone-50 px-4 py-2.5 text-base text-gray-800">{email}</p>
+							<p class="rounded-lg border border-gray-200 bg-stone-50 px-3 py-2 text-sm text-gray-800">{email}</p>
 							<p class="mt-1.5 text-sm text-gray-600">E-mail je přihlašovací údaj, nejde ho změnit.</p>
 						</div>
 					</div>
@@ -535,7 +579,8 @@
 				</section>
 
 				<section class={cardClass}>
-					<h2 class="text-xl font-semibold text-gray-800">Doručovací adresa</h2>
+					<h2 class="text-xl font-semibold text-gray-800">Fakturační adresa</h2>
+					<p class="mt-1 text-xs text-gray-500">Toto je zároveň výchozí dodací adresa.</p>
 					<div class="mt-5 grid gap-4 sm:grid-cols-6">
 						<div class="sm:col-span-4">
 							<label class={labelClass} for="street">Ulice <span class="text-red-700" aria-hidden="true">*</span></label>
@@ -596,6 +641,48 @@
 						</div>
 					</div>
 				</section>
+
+				<details class={cardClass} bind:open={separateDelivery}>
+					<summary class="cursor-pointer text-xl font-semibold text-gray-800">Jiná dodací adresa</summary>
+					<p class="mt-2 text-sm text-gray-600">Volitelné. Otevřete ji, jen když se obědy vozí jinam než na fakturační adresu.</p>
+					{#if separateDelivery}
+						<input type="hidden" name="separate_delivery" value="yes" />
+						<div class="mt-5 grid gap-4 sm:grid-cols-6">
+							<div class="sm:col-span-3">
+								<label class={labelClass} for="delivery_first_name">Jméno příjemce</label>
+								<input bind:value={deliveryFirstName} name="delivery_first_name" id="delivery_first_name" type="text" autocomplete="shipping name" class="{controlClass} border-gray-300" />
+							</div>
+							<div class="sm:col-span-3">
+								<label class={labelClass} for="delivery_last_name">Příjmení příjemce</label>
+								<input bind:value={deliveryLastName} name="delivery_last_name" id="delivery_last_name" type="text" autocomplete="shipping family-name" class="{controlClass} border-gray-300" />
+							</div>
+							<div class="sm:col-span-6">
+								<label class={labelClass} for="delivery_telephone">Telefon příjemce</label>
+								<input bind:value={deliveryTelephone} name="delivery_telephone" id="delivery_telephone" type="tel" autocomplete="shipping tel" class="{controlClass} border-gray-300" />
+							</div>
+							<div class="sm:col-span-4">
+								<label class={labelClass} for="delivery_street">Ulice <span class="text-red-700" aria-hidden="true">*</span></label>
+								<input bind:value={deliveryStreet} name="delivery_street" id="delivery_street" type="text" autocomplete="shipping address-line1" class={controlClasses(fieldErrors.delivery_street)} aria-invalid={invalid(fieldErrors.delivery_street)} aria-describedby={describedBy("delivery_street", fieldErrors.delivery_street)} />
+								{@render fieldError("delivery_street", fieldErrors.delivery_street)}
+							</div>
+							<div class="sm:col-span-2">
+								<label class={labelClass} for="delivery_street_number">Číslo popisné <span class="text-red-700" aria-hidden="true">*</span></label>
+								<input bind:value={deliveryStreetNumber} name="delivery_street_number" id="delivery_street_number" type="text" autocomplete="shipping address-line2" class={controlClasses(fieldErrors.delivery_street_number)} aria-invalid={invalid(fieldErrors.delivery_street_number)} aria-describedby={describedBy("delivery_street_number", fieldErrors.delivery_street_number)} />
+								{@render fieldError("delivery_street_number", fieldErrors.delivery_street_number)}
+							</div>
+							<div class="sm:col-span-4">
+								<label class={labelClass} for="delivery_city">Město <span class="text-red-700" aria-hidden="true">*</span></label>
+								<input bind:value={deliveryCity} name="delivery_city" id="delivery_city" type="text" autocomplete="shipping address-level2" class={controlClasses(fieldErrors.delivery_city)} aria-invalid={invalid(fieldErrors.delivery_city)} aria-describedby={describedBy("delivery_city", fieldErrors.delivery_city)} />
+								{@render fieldError("delivery_city", fieldErrors.delivery_city)}
+							</div>
+							<div class="sm:col-span-2">
+								<label class={labelClass} for="delivery_zip_code">PSČ <span class="text-red-700" aria-hidden="true">*</span></label>
+								<input bind:value={deliveryZipCode} name="delivery_zip_code" id="delivery_zip_code" type="text" autocomplete="shipping postal-code" inputmode="numeric" class={controlClasses(fieldErrors.delivery_zip_code)} aria-invalid={invalid(fieldErrors.delivery_zip_code)} aria-describedby={describedBy("delivery_zip_code", fieldErrors.delivery_zip_code)} />
+								{@render fieldError("delivery_zip_code", fieldErrors.delivery_zip_code)}
+							</div>
+						</div>
+					{/if}
+				</details>
 
 				<section class={cardClass}>
 					<h2 class="text-xl font-semibold text-gray-800">Alergie</h2>
@@ -799,6 +886,9 @@
 								>
 									{#if order.note?.trim()}
 										<p class="whitespace-pre-line rounded-lg bg-stone-50 px-4 py-3 text-sm text-gray-700">{order.note}</p>
+									{/if}
+									{#if deliveryAddressLine(order)}
+										<p class="rounded-lg bg-stone-50 px-4 py-3 text-sm text-gray-700">Dodací adresa: {deliveryAddressLine(order)}</p>
 									{/if}
 									{#each dayGroups(order) as group (group.date || "bez-data")}
 										{@const soup = group.items.map(itemSoup).find(Boolean) ?? ""}

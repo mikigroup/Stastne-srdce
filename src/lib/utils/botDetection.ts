@@ -161,6 +161,9 @@ export function detectBotRegistration(data: {
 	street_number?: string | null;
 	city?: string | null;
 	zip_code?: string | null;
+	delivery_street?: string | null;
+	delivery_city?: string | null;
+	delivery_zip_code?: string | null;
 	telephone?: string | null;
 	ico?: string | null;
 	dic?: string | null;
@@ -188,15 +191,30 @@ export function detectBotRegistration(data: {
 		confidence += 0.2;
 	}
 
+	if (isRandomString(data.delivery_street)) {
+		reasons.push('Dodací ulice vypadá jako náhodný řetězec');
+		confidence += 0.2;
+	}
+
 	// Kontrola města
 	if (isRandomString(data.city)) {
 		reasons.push('Město vypadá jako náhodný řetězec');
 		confidence += 0.2;
 	}
 
+	if (isRandomString(data.delivery_city)) {
+		reasons.push('Dodací město vypadá jako náhodný řetězec');
+		confidence += 0.2;
+	}
+
 	// Kontrola PSČ
 	if (data.zip_code && !isValidCzechPostalCode(data.zip_code)) {
 		reasons.push('PSČ není ve správném formátu (očekáváno: 5 číslic nebo 123 45)');
+		confidence += 0.2;
+	}
+
+	if (data.delivery_zip_code && !isValidCzechPostalCode(data.delivery_zip_code)) {
+		reasons.push('Dodací PSČ není ve správném formátu (očekáváno: 5 číslic nebo 123 45)');
 		confidence += 0.2;
 	}
 
@@ -236,6 +254,8 @@ export function detectBotRegistration(data: {
 		data.last_name,
 		data.street,
 		data.city,
+		data.delivery_street,
+		data.delivery_city,
 		data.company
 	].filter(f => f && f.trim() !== '');
 

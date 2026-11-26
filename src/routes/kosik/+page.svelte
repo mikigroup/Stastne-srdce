@@ -105,9 +105,11 @@
 			const { data: customerData, error } = await client
 				.from("profiles")
 				.select(`
-					first_name, last_name, street, street_number, city, zip_code, 
-					telephone, delivery_method, payment_method, company, ico, dic, 
-					allergies, allergies_description
+					first_name, last_name, street, street_number, city, zip_code,
+					telephone, delivery_method, payment_method, company, ico, dic,
+					allergies, allergies_description,
+					delivery_first_name, delivery_last_name, delivery_telephone,
+					delivery_street, delivery_street_number, delivery_city, delivery_zip_code
 				`)
 				.eq("id", user.id)
 				.single();
@@ -693,6 +695,18 @@
 						{/if}
 
 						{#if cartItems.length}
+							{#if profileData?.delivery_street}
+								<p class="px-5 pt-5 text-right text-gray-800">
+									Dodací adresa:
+									{[profileData.delivery_street, profileData.delivery_street_number].filter(Boolean).join(" ")},{" "}
+									{[profileData.delivery_zip_code, profileData.delivery_city].filter(Boolean).join(" ")}
+								</p>
+							{:else if profileData?.street}
+								<p class="px-5 pt-5 text-right text-gray-800">
+									Rozvoz na fakturační adresu:
+									{[profileData.street, profileData.street_number, profileData.city, profileData.zip_code].filter(Boolean).join(", ")}
+								</p>
+							{/if}
 							<div class="grid p-5 border-b">
 								<label for="note">Poznámka</label>
 								<textarea

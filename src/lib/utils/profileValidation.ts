@@ -3,6 +3,37 @@ export interface ProfileValidationResult {
   missingFields: string[];
 }
 
+export type DeliveryFields = {
+  delivery_first_name: string | null;
+  delivery_last_name: string | null;
+  delivery_telephone: string | null;
+  delivery_street: string | null;
+  delivery_street_number: string | null;
+  delivery_city: string | null;
+  delivery_zip_code: string | null;
+};
+
+/** Vrátí dodací údaje jen když je sekce otevřená. Sbalená sekce uloženou adresu nemění. */
+export function deliveryFieldsFromForm(
+  separate: boolean,
+  read: (name: keyof DeliveryFields) => string | null | undefined
+): DeliveryFields | null {
+  if (!separate) return null;
+  const text = (name: keyof DeliveryFields) => {
+    const trimmed = read(name)?.trim() ?? "";
+    return trimmed || null;
+  };
+  return {
+    delivery_first_name: text("delivery_first_name"),
+    delivery_last_name: text("delivery_last_name"),
+    delivery_telephone: text("delivery_telephone"),
+    delivery_street: text("delivery_street"),
+    delivery_street_number: text("delivery_street_number"),
+    delivery_city: text("delivery_city"),
+    delivery_zip_code: text("delivery_zip_code")
+  };
+}
+
 export function validateProfileForInvoicing(profile: {
   first_name?: string | null;
   last_name?: string | null;
@@ -19,6 +50,10 @@ export function validateProfileForInvoicing(profile: {
   allergies_description?: string | null;
   delivery_method?: string | null;
   payment_method?: string | null;
+  delivery_street?: string | null;
+  delivery_street_number?: string | null;
+  delivery_city?: string | null;
+  delivery_zip_code?: string | null;
 }): ProfileValidationResult {
   const missingFields: string[] = [];
   
@@ -54,6 +89,21 @@ export function validateProfileForInvoicing(profile: {
     if (!profile.allergies_description || profile.allergies_description.trim() === '') {
       missingFields.push('Popis alergií');
     }
+  }
+
+  const deliveryParts = [
+    { field: profile.delivery_street, name: 'Dodací ulice' },
+    { field: profile.delivery_street_number, name: 'Dodací číslo popisné' },
+    { field: profile.delivery_city, name: 'Dodací město' },
+    { field: profile.delivery_zip_code, name: 'Dodací PSČ' }
+  ];
+  const hasDeliveryAddress = deliveryParts.some(({ field }) => field && field.trim() !== '');
+  if (hasDeliveryAddress) {
+    deliveryParts.forEach(({ field, name }) => {
+      if (!field || field.trim() === '') {
+        missingFields.push(name);
+      }
+    });
   }
 
   return {

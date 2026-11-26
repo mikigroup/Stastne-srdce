@@ -1,6 +1,6 @@
 import { error, fail, isRedirect, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { validateProfileForInvoicing } from '$lib/utils/profileValidation';
+import { deliveryFieldsFromForm, validateProfileForInvoicing } from '$lib/utils/profileValidation';
 import { checkAndUpdateRegistrationStatus } from '$lib/services/registrationStatusService';
 import { sendDataDeletionRequestEmail } from '$lib/services/gdprEmailService';
 import { ProfileService } from '$lib/services/profileService';
@@ -61,6 +61,13 @@ interface ProfileData {
 	allergies_description: string | null;
 	delivery_method: string;
 	payment_method: string;
+	delivery_first_name?: string | null;
+	delivery_last_name?: string | null;
+	delivery_telephone?: string | null;
+	delivery_street?: string | null;
+	delivery_street_number?: string | null;
+	delivery_city?: string | null;
+	delivery_zip_code?: string | null;
 	updated_at: string;
 	registration_status?: string; // Přidáno pro zachování statusu
 }
@@ -193,6 +200,12 @@ export const actions: Actions = {
 						: null,
 				delivery_method: (formData.get("delivery_method") as string) || "",
 				payment_method: (formData.get("payment_method") as string) || "",
+				...(() => {
+					const separateDelivery = formData.get("separate_delivery") === "yes";
+					return (
+						deliveryFieldsFromForm(separateDelivery, (name) => formData.get(name) as string) ?? {}
+					);
+				})(),
 				updated_at: new Date().toISOString()
 			};
 

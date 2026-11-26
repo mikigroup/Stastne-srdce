@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database.types';
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from '$env/static/private';
 import { detectBotRegistration, isTemporaryEmail } from "$lib/utils/botDetection";
+import { deliveryFieldsFromForm } from "$lib/utils/profileValidation";
 import { getRegistrationDeliveryMethods } from '$lib/constants/deliveryMethods';
 import { getPaymentMethods } from '$lib/constants/paymentMethods';
 import { ProfileService } from '$lib/services/profileService';
@@ -139,6 +140,9 @@ export const actions: Actions = {
 				});
 			}
 
+			const separateDelivery = formData.get("separate_delivery") === "yes";
+			const deliveryFields = deliveryFieldsFromForm(separateDelivery, (name) => formData.get(name) as string);
+
 			// Data z formuláře (bez statusu)
 			const profileData = {
 				id: session.user.id,
@@ -158,7 +162,8 @@ export const actions: Actions = {
 				payment_method: formData.get("payment_method") as string,
 				user_role: "customer",
 				email: emailToUse,
-				updated_at: new Date().toISOString()
+				updated_at: new Date().toISOString(),
+				...(deliveryFields ?? {})
 			};
 
 			// Důkladnější validace povinných polí
@@ -175,6 +180,19 @@ export const actions: Actions = {
 			];
 
 			const missingFields = requiredFields.filter((f) => !f.field);
+			if (separateDelivery) {
+				const deliveryRequired = [
+					{ field: deliveryFields?.delivery_street, name: "Dodací ulice" },
+					{ field: deliveryFields?.delivery_street_number, name: "Dodací číslo popisné" },
+					{ field: deliveryFields?.delivery_city, name: "Dodací město" },
+					{ field: deliveryFields?.delivery_zip_code, name: "Dodací PSČ" }
+				];
+				missingFields.push(
+					...deliveryRequired
+						.filter((item) => !item.field)
+						.map((item) => ({ field: item.field ?? "", name: item.name }))
+				);
+			}
 
 			// NOVÉ: Kontrola alergií jako povinného pole
 			if (formData.get("allergies") === null || formData.get("allergies") === undefined || formData.get("allergies") === "") {
@@ -204,6 +222,9 @@ export const actions: Actions = {
 				street_number: profileData.street_number,
 				city: profileData.city,
 				zip_code: profileData.zip_code,
+				delivery_street: deliveryFields?.delivery_street,
+				delivery_city: deliveryFields?.delivery_city,
+				delivery_zip_code: deliveryFields?.delivery_zip_code,
 				telephone: profileData.telephone,
 				allergies_description: profileData.allergies_description
 			});
@@ -278,6 +299,7 @@ export const actions: Actions = {
 					allergies_description: profileData.allergies_description,
 					delivery_method: profileData.delivery_method,
 					payment_method: profileData.payment_method,
+					...(deliveryFields ?? {}),
 					user_role: profileData.user_role,
 					registration_status: "completed",
 					tenant_id: tenantId,

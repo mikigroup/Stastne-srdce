@@ -24,9 +24,11 @@ export async function checkAndUpdateRegistrationStatus(
 		const { data: profile, error } = await supabase
 			.from("profiles")
 			.select(`
-				first_name, last_name, street, street_number, city, zip_code, 
-				telephone, delivery_method, payment_method, company, ico, dic, 
-				allergies, allergies_description, registration_status
+				first_name, last_name, street, street_number, city, zip_code,
+				telephone, delivery_method, payment_method, company, ico, dic,
+				allergies, allergies_description, registration_status,
+				delivery_first_name, delivery_last_name, delivery_telephone,
+				delivery_street, delivery_street_number, delivery_city, delivery_zip_code
 			`)
 			.eq("id", userId)
 			.single();

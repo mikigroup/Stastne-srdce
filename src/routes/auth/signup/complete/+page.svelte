@@ -15,6 +15,14 @@
 		city?: string;
 		zip_code?: string;
 		telephone?: string;
+		separate_delivery?: string;
+		delivery_first_name?: string;
+		delivery_last_name?: string;
+		delivery_telephone?: string;
+		delivery_street?: string;
+		delivery_street_number?: string;
+		delivery_city?: string;
+		delivery_zip_code?: string;
 		allergies?: boolean;
 		allergies_description?: string;
 		delivery_method?: string;
@@ -39,6 +47,18 @@
 	let city = $state(form?.city ?? data.profile?.city ?? "");
 	let zip_code = $state(form?.zip_code ?? data.profile?.zip_code ?? "");
 	let telephone = $state(form?.telephone ?? data.profile?.telephone ?? "");
+	let separateDelivery = $state(
+		form?.separate_delivery === "yes" || Boolean(form?.delivery_street ?? data.profile?.delivery_street)
+	);
+	let delivery_first_name = $state(form?.delivery_first_name ?? data.profile?.delivery_first_name ?? "");
+	let delivery_last_name = $state(form?.delivery_last_name ?? data.profile?.delivery_last_name ?? "");
+	let delivery_telephone = $state(form?.delivery_telephone ?? data.profile?.delivery_telephone ?? "");
+	let delivery_street = $state(form?.delivery_street ?? data.profile?.delivery_street ?? "");
+	let delivery_street_number = $state(
+		form?.delivery_street_number ?? data.profile?.delivery_street_number ?? ""
+	);
+	let delivery_city = $state(form?.delivery_city ?? data.profile?.delivery_city ?? "");
+	let delivery_zip_code = $state(form?.delivery_zip_code ?? data.profile?.delivery_zip_code ?? "");
 	let company = form?.company ?? data.profile?.company ?? "";
 	let ico = form?.ico ?? data.profile?.ico ?? "";
 	let dic = form?.dic ?? data.profile?.dic ?? "";
@@ -143,7 +163,8 @@
 				</div>
 				
 				<div class="space-y-4">
-					<h3 class="text-lg font-medium">Dodací adresa</h3>
+					<h3 class="text-lg font-medium">Fakturační adresa</h3>
+					<p class="text-xs text-gray-500">Toto je zároveň výchozí doručovací adresa.</p>
 
 					<div class="flex flex-col">
 						<input
@@ -205,6 +226,23 @@
 						/>
 					</div>
 				</div>
+
+				<details class="rounded-lg border border-gray-300 bg-white px-4 py-3" bind:open={separateDelivery}>
+					<summary class="cursor-pointer text-lg font-medium text-gray-800">Jiná dodací adresa</summary>
+					<p class="mt-2 text-sm text-gray-600">Volitelné. Vyplňte ji, jen když se obědy vozí jinam než na fakturační adresu.</p>
+					{#if separateDelivery}
+						<input type="hidden" name="separate_delivery" value="yes" />
+						<div class="mt-4 space-y-4">
+							<input bind:value={delivery_first_name} name="delivery_first_name" type="text" autocomplete="shipping name" placeholder="Jméno příjemce" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_last_name} name="delivery_last_name" type="text" autocomplete="shipping family-name" placeholder="Příjmení příjemce" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_telephone} name="delivery_telephone" type="tel" autocomplete="shipping tel" placeholder="Telefon příjemce" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_street} name="delivery_street" type="text" autocomplete="shipping address-line1" placeholder="Ulice" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_street_number} name="delivery_street_number" type="text" autocomplete="shipping address-line2" placeholder="Číslo popisné" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_city} name="delivery_city" type="text" autocomplete="shipping address-level2" placeholder="Město" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+							<input bind:value={delivery_zip_code} name="delivery_zip_code" type="text" autocomplete="shipping postal-code" inputmode="numeric" placeholder="PSČ" class="w-full px-4 py-2 text-base text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:outline-none focus:border-green-600" />
+						</div>
+					{/if}
+				</details>
 			
 				<div class="space-y-4 py-5">
 					<h3 class="text-lg font-medium">Alergie <span class="text-red-500">*</span></h3>
