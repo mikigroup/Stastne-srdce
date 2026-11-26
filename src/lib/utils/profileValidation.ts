@@ -50,10 +50,6 @@ export function validateProfileForInvoicing(profile: {
   allergies_description?: string | null;
   delivery_method?: string | null;
   payment_method?: string | null;
-  delivery_street?: string | null;
-  delivery_street_number?: string | null;
-  delivery_city?: string | null;
-  delivery_zip_code?: string | null;
 }): ProfileValidationResult {
   const missingFields: string[] = [];
   
@@ -89,21 +85,6 @@ export function validateProfileForInvoicing(profile: {
     if (!profile.allergies_description || profile.allergies_description.trim() === '') {
       missingFields.push('Popis alergií');
     }
-  }
-
-  const deliveryParts = [
-    { field: profile.delivery_street, name: 'Dodací ulice' },
-    { field: profile.delivery_street_number, name: 'Dodací číslo popisné' },
-    { field: profile.delivery_city, name: 'Dodací město' },
-    { field: profile.delivery_zip_code, name: 'Dodací PSČ' }
-  ];
-  const hasDeliveryAddress = deliveryParts.some(({ field }) => field && field.trim() !== '');
-  if (hasDeliveryAddress) {
-    deliveryParts.forEach(({ field, name }) => {
-      if (!field || field.trim() === '') {
-        missingFields.push(name);
-      }
-    });
   }
 
   return {

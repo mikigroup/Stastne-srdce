@@ -180,19 +180,6 @@ export const actions: Actions = {
 			];
 
 			const missingFields = requiredFields.filter((f) => !f.field);
-			if (separateDelivery) {
-				const deliveryRequired = [
-					{ field: deliveryFields?.delivery_street, name: "Dodací ulice" },
-					{ field: deliveryFields?.delivery_street_number, name: "Dodací číslo popisné" },
-					{ field: deliveryFields?.delivery_city, name: "Dodací město" },
-					{ field: deliveryFields?.delivery_zip_code, name: "Dodací PSČ" }
-				];
-				missingFields.push(
-					...deliveryRequired
-						.filter((item) => !item.field)
-						.map((item) => ({ field: item.field ?? "", name: item.name }))
-				);
-			}
 
 			// NOVÉ: Kontrola alergií jako povinného pole
 			if (formData.get("allergies") === null || formData.get("allergies") === undefined || formData.get("allergies") === "") {

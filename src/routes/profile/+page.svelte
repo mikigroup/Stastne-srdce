@@ -67,10 +67,6 @@
 		["street_number", "street_number"],
 		["city", "city"],
 		["zip_code", "zip_code"],
-		["delivery_street", "delivery_street"],
-		["delivery_street_number", "delivery_street_number"],
-		["delivery_city", "delivery_city"],
-		["delivery_zip_code", "delivery_zip_code"],
 		["allergies_description", "allergiesDescription"]
 	] as const;
 
@@ -177,11 +173,7 @@
 			delivery_method: deliveryMethod,
 			payment_method: paymentMethod,
 			allergies: allergies === "yes",
-			allergies_description: allergiesDescription,
-			delivery_street: separateDelivery ? deliveryStreet : "",
-			delivery_street_number: separateDelivery ? deliveryStreetNumber : "",
-			delivery_city: separateDelivery ? deliveryCity : "",
-			delivery_zip_code: separateDelivery ? deliveryZipCode : ""
+			allergies_description: allergiesDescription
 		})
 	);
 
@@ -199,10 +191,6 @@
 		street_number: missing(street_number, "Číslo popisné je povinné"),
 		city: missing(city, "Město je povinné"),
 		zip_code: missing(zip_code, "PSČ je povinné"),
-		delivery_street: separateDelivery ? missing(deliveryStreet, "Dodací ulice je povinná") : "",
-		delivery_street_number: separateDelivery ? missing(deliveryStreetNumber, "Dodací číslo popisné je povinné") : "",
-		delivery_city: separateDelivery ? missing(deliveryCity, "Dodací město je povinné") : "",
-		delivery_zip_code: separateDelivery ? missing(deliveryZipCode, "Dodací PSČ je povinné") : "",
 		allergies_description:
 			allergies === "yes" && !allergiesDescription.trim() ? "Popis alergií je povinný" : ""
 	});
@@ -639,6 +627,48 @@
 							/>
 							{@render fieldError("zip_code", fieldErrors.zip_code)}
 						</div>
+						<div class="sm:col-span-6">
+							<h3 class="text-base font-semibold text-gray-800">Fakturační údaje</h3>
+							{#if invoicePayment}
+								<p class="mt-1 text-sm text-gray-600">
+									U platby fakturou uveďte firmu, IČO a DIČ, ať jde faktura vystavit.
+								</p>
+							{/if}
+						</div>
+						<div class="sm:col-span-6">
+							<label class={labelClass} for="company">Firma</label>
+							<input
+								bind:value={company}
+								type="text"
+								name="company"
+								id="company"
+								autocomplete="organization"
+								class="{controlClass} border-gray-300"
+							/>
+						</div>
+						<div class="sm:col-span-3">
+							<label class={labelClass} for="ico">IČO</label>
+							<input
+								bind:value={ico}
+								type="text"
+								name="ico"
+								id="ico"
+								inputmode="numeric"
+								autocomplete="off"
+								class="{controlClass} border-gray-300"
+							/>
+						</div>
+						<div class="sm:col-span-3">
+							<label class={labelClass} for="dic">DIČ</label>
+							<input
+								bind:value={dic}
+								type="text"
+								name="dic"
+								id="dic"
+								autocomplete="off"
+								class="{controlClass} border-gray-300"
+							/>
+						</div>
 					</div>
 				</section>
 
@@ -661,24 +691,20 @@
 								<input bind:value={deliveryTelephone} name="delivery_telephone" id="delivery_telephone" type="tel" autocomplete="shipping tel" class="{controlClass} border-gray-300" />
 							</div>
 							<div class="sm:col-span-4">
-								<label class={labelClass} for="delivery_street">Ulice <span class="text-red-700" aria-hidden="true">*</span></label>
-								<input bind:value={deliveryStreet} name="delivery_street" id="delivery_street" type="text" autocomplete="shipping address-line1" class={controlClasses(fieldErrors.delivery_street)} aria-invalid={invalid(fieldErrors.delivery_street)} aria-describedby={describedBy("delivery_street", fieldErrors.delivery_street)} />
-								{@render fieldError("delivery_street", fieldErrors.delivery_street)}
+								<label class={labelClass} for="delivery_street">Ulice</label>
+								<input bind:value={deliveryStreet} name="delivery_street" id="delivery_street" type="text" autocomplete="shipping address-line1" class="{controlClass} border-gray-300" />
 							</div>
 							<div class="sm:col-span-2">
-								<label class={labelClass} for="delivery_street_number">Číslo popisné <span class="text-red-700" aria-hidden="true">*</span></label>
-								<input bind:value={deliveryStreetNumber} name="delivery_street_number" id="delivery_street_number" type="text" autocomplete="shipping address-line2" class={controlClasses(fieldErrors.delivery_street_number)} aria-invalid={invalid(fieldErrors.delivery_street_number)} aria-describedby={describedBy("delivery_street_number", fieldErrors.delivery_street_number)} />
-								{@render fieldError("delivery_street_number", fieldErrors.delivery_street_number)}
+								<label class={labelClass} for="delivery_street_number">Číslo popisné</label>
+								<input bind:value={deliveryStreetNumber} name="delivery_street_number" id="delivery_street_number" type="text" autocomplete="shipping address-line2" class="{controlClass} border-gray-300" />
 							</div>
 							<div class="sm:col-span-4">
-								<label class={labelClass} for="delivery_city">Město <span class="text-red-700" aria-hidden="true">*</span></label>
-								<input bind:value={deliveryCity} name="delivery_city" id="delivery_city" type="text" autocomplete="shipping address-level2" class={controlClasses(fieldErrors.delivery_city)} aria-invalid={invalid(fieldErrors.delivery_city)} aria-describedby={describedBy("delivery_city", fieldErrors.delivery_city)} />
-								{@render fieldError("delivery_city", fieldErrors.delivery_city)}
+								<label class={labelClass} for="delivery_city">Město</label>
+								<input bind:value={deliveryCity} name="delivery_city" id="delivery_city" type="text" autocomplete="shipping address-level2" class="{controlClass} border-gray-300" />
 							</div>
 							<div class="sm:col-span-2">
-								<label class={labelClass} for="delivery_zip_code">PSČ <span class="text-red-700" aria-hidden="true">*</span></label>
-								<input bind:value={deliveryZipCode} name="delivery_zip_code" id="delivery_zip_code" type="text" autocomplete="shipping postal-code" inputmode="numeric" class={controlClasses(fieldErrors.delivery_zip_code)} aria-invalid={invalid(fieldErrors.delivery_zip_code)} aria-describedby={describedBy("delivery_zip_code", fieldErrors.delivery_zip_code)} />
-								{@render fieldError("delivery_zip_code", fieldErrors.delivery_zip_code)}
+								<label class={labelClass} for="delivery_zip_code">PSČ</label>
+								<input bind:value={deliveryZipCode} name="delivery_zip_code" id="delivery_zip_code" type="text" autocomplete="shipping postal-code" inputmode="numeric" class="{controlClass} border-gray-300" />
 							</div>
 						</div>
 					{/if}
@@ -735,51 +761,6 @@
 							</p>
 						</div>
 					{/if}
-				</section>
-
-				<section class={cardClass}>
-					<h2 class="text-xl font-semibold text-gray-800">Fakturační údaje</h2>
-					{#if invoicePayment}
-						<p class="mt-1 text-sm text-gray-600">
-							U platby fakturou uveďte firmu, IČO a DIČ, ať jde faktura vystavit.
-						</p>
-					{/if}
-					<div class="mt-5 grid gap-4 sm:grid-cols-2">
-						<div class="sm:col-span-2">
-							<label class={labelClass} for="company">Firma</label>
-							<input
-								bind:value={company}
-								type="text"
-								name="company"
-								id="company"
-								autocomplete="organization"
-								class="{controlClass} border-gray-300"
-							/>
-						</div>
-						<div>
-							<label class={labelClass} for="ico">IČO</label>
-							<input
-								bind:value={ico}
-								type="text"
-								name="ico"
-								id="ico"
-								inputmode="numeric"
-								autocomplete="off"
-								class="{controlClass} border-gray-300"
-							/>
-						</div>
-						<div>
-							<label class={labelClass} for="dic">DIČ</label>
-							<input
-								bind:value={dic}
-								type="text"
-								name="dic"
-								id="dic"
-								autocomplete="off"
-								class="{controlClass} border-gray-300"
-							/>
-						</div>
-					</div>
 				</section>
 
 				<div>
