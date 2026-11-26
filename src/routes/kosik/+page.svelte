@@ -14,6 +14,7 @@
 	import { getDefaultSettings } from "$lib/constants/defaultSettings";
 	import { PUBLIC_TENANT } from "$env/static/public";
 	import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
+	import { labelForDeliveryMethod } from "$lib/constants/deliveryMethods";
 	import type { Attachment } from "svelte/attachments";
 
 	interface Props {
@@ -67,17 +68,9 @@
 	);
 	let totalPriceWithDelivery = $derived(totalPrice + shippingPrice);
 
-	let deliveryMethodLabel = $derived.by(() => {
-		if (!deliveryMethodCode) return "";
-		const methods = Array.isArray(deliverySettings?.shippingMethods)
-			? deliverySettings.shippingMethods
-			: [];
-		const match = methods.find(
-			(method: { code?: string; name?: string }) =>
-				method?.code === deliveryMethodCode || method?.name === deliveryMethodCode
-		);
-		return String(match?.name || deliveryMethodCode);
-	});
+	let deliveryMethodLabel = $derived(
+		labelForDeliveryMethod(deliveryMethodCode, deliverySettings?.shippingMethods)
+	);
 
 	// Funkce pro výpočet ceny variant
 	function calculateVariantPrice(variants: any[]): number {

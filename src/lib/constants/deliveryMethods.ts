@@ -9,6 +9,28 @@ import { PUBLIC_TENANT } from "$env/static/public";
 
 type DeliveryOption = { value: string; label: string; price?: number };
 
+/** Názvy, které zákazník vidí v profilu u pole Dodání, i když kód už není v aktuální nabídce. */
+const PROFILE_DELIVERY_LABELS: Record<string, string> = {
+	own: "Vlastní nosič",
+	reBox: "REkrabička",
+	delivery: "Doručení",
+	menuBox: "Menu Box",
+	personal: "Osobní odběr"
+};
+
+/** Český název pro zobrazení. Do databáze se ukládá kód, ne tento text. */
+export function labelForDeliveryMethod(
+	value: string | null | undefined,
+	methods?: Array<{ code?: string | null; name?: string | null }> | null
+): string {
+	const raw = (value ?? "").trim();
+	if (!raw) return "";
+	const match = (methods ?? []).find((method) => method?.code === raw || method?.name === raw);
+	const name = match?.name?.trim();
+	if (name) return name;
+	return PROFILE_DELIVERY_LABELS[raw] ?? raw;
+}
+
 function slugifyCode(name: string): string {
 	return name
 		.normalize("NFD")

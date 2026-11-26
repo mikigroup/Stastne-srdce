@@ -10,6 +10,7 @@ import {
 	shouldEnforceSalesStockLimits
 } from "$lib/services/inventorySalesLimits";
 import { shippingPriceForMethod } from "$lib/utils/deliveryPricing";
+import { labelForDeliveryMethod } from "$lib/constants/deliveryMethods";
 import { ROUTES } from "$lib/constants/routes";
 
 export const prerender = false;
@@ -283,13 +284,14 @@ export const actions: Actions = {
 				};
 			}
 
-			const shippingLabel = deliveryMethodLabel(shippingMethod, deliverySettings);
+			// Jen text do potvrzovacího e-mailu. Objednávka si nechá kód.
+			const shippingLabel = labelForDeliveryMethod(shippingMethod, deliverySettings?.shippingMethods);
 			const shippingPrice = shippingPriceForMethod(deliverySettings, shippingMethod, totalPrice);
 			const totalPriceWithDelivery = totalPrice + shippingPrice;
 			reportPrice = totalPriceWithDelivery;
 
 			// Create order using the stored procedure.
-			// Uloží se přesně kód z profilu, i když už není v aktuální nabídce.
+			// Do objednávky se uloží kód z profilu. Český název se doplní až při zobrazení.
 			const { data: orderArray, error: orderError } = await supabase.rpc('create_order_with_items1', {
 				p_user_id: user.id,
 				p_created_at: new Date().toISOString(),
@@ -387,15 +389,6 @@ export const actions: Actions = {
 		}
 	}
 };
-
-function deliveryMethodLabel(
-	code: string,
-	settings: { shippingMethods?: Array<{ code?: string; name?: string }> } | null
-): string {
-	const methods = Array.isArray(settings?.shippingMethods) ? settings.shippingMethods : [];
-	const match = methods.find((method) => method?.code === code || method?.name === code);
-	return match?.name || code;
-}
 
 async function sendOrderConfirmationEmail(
 	email: string,

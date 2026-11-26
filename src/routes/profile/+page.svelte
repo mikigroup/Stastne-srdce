@@ -7,6 +7,7 @@
 	import { prefersReducedMotion } from "svelte/motion";
 	import { fade, fly, slide } from "svelte/transition";
 	import { validateProfileForInvoicing } from "$lib/utils/profileValidation";
+	import { labelForDeliveryMethod } from "$lib/constants/deliveryMethods";
 	import { formatDateToCzech, formatDateToCzechShort } from "$lib/utils/formatting";
 
 	type MethodOption = { value: string; label: string };
@@ -139,7 +140,7 @@
 	let deliveryMethodOptionsList = $derived.by(() => {
 		const base = withoutPlaceholder(deliveryMethodOptions);
 		if (deliveryMethod && !base.some((option) => option.value === deliveryMethod)) {
-			base.push({ value: deliveryMethod, label: deliveryMethod });
+			base.push({ value: deliveryMethod, label: labelForDeliveryMethod(deliveryMethod) });
 		}
 		return base;
 	});
