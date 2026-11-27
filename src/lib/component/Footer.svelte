@@ -71,12 +71,6 @@
 					{/if}
 				</div>
 			{/if}
-
-			{#if footerText}
-				<div class="text-center text-xs text-gray-500 md:text-sm">
-					<p>{footerText}</p>
-				</div>
-			{/if}
 		</div>
 
 		<div class="mt-2 border-t border-gray-200 pt-2 text-center text-[0.6875rem] leading-tight text-gray-400 md:mt-4 md:pt-4 md:text-xs md:leading-normal">
@@ -97,6 +91,9 @@
 					Upravit nastavení cookies.
 				</button>
 			</p>
+			{#if footerText}
+				<p class="mt-1 text-xs text-gray-500 md:text-sm">{footerText}</p>
+			{/if}
 		</div>
 	</div>
 </footer>

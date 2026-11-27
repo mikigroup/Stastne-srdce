@@ -7,8 +7,6 @@
 	let { data, params = {} }: Props = $props();
 	let texts = $derived((data.texts ?? []) as any[]);
 
-	const { generalSettings } = data;
-
 	let src = "/srdce.png";
 
 	function scrollToInfoKoutek(event: MouseEvent) {

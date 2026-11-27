@@ -159,7 +159,7 @@
 				<div class="cookie-settings">
 					<div class="cookie-header">
 						<h2>Nastavení cookies</h2>
-						<button class="cookie-btn-close" onclick={() => closeSettings(false)}>
+						<button type="button" class="cookie-btn-close" aria-label="Zavřít" onclick={() => closeSettings(false)}>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 							</svg>
