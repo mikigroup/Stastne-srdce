@@ -914,8 +914,8 @@
 						<p class="text-sm font-semibold text-gray-900">Co se stane</p>
 						<ul class="mt-2 space-y-1.5 text-xs text-gray-700">
 							<li>30 dní na rozmyšlenou a možnost žádost zrušit.</li>
-							<li>Po uplynutí lhůty smažeme osobní údaje.</li>
-							<li>Faktury zůstanou uložené 10 let (zákon č. 563/1991 Sb., o účetnictví).</li>
+							<li>Po uplynutí lhůty anonymizujeme údaje v účtu. Údaje v objednávce zůstávají.</li>
+							<li>Daňový doklad (faktura) zůstane uložený 10 let od konce zdaňovacího období (§ 35 zákona č. 235/2004 Sb., o DPH). Účetní doklad 5 let od konce účetního období, účetní závěrka 10 let (§ 31 odst. 2 zákona č. 563/1991 Sb., o účetnictví).</li>
 							<li>Anonymizované statistiky mohou zůstat zachované.</li>
 						</ul>
 					</div>
@@ -942,7 +942,7 @@
 									bind:checked={legalUnderstanding}
 									class="mt-0.5 h-4 w-4 rounded border-gray-300 accent-green-800"
 								/>
-								<span>Souhlasím s uchováním fakturačních údajů po zákonnou dobu (zákon č. 563/1991 Sb., o účetnictví).</span>
+								<span>Beru na vědomí, že údaje na daňovém dokladu zůstávají 10 let podle zákona o DPH a účetní doklady 5 let podle zákona o účetnictví.</span>
 							</label>
 						</div>
 						<div class="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center">
