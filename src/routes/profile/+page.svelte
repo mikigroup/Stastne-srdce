@@ -629,7 +629,6 @@
 							{@render fieldError("zip_code", fieldErrors.zip_code)}
 						</div>
 						<div class="sm:col-span-6">
-							<h3 class="text-base font-semibold text-gray-800">Fakturační údaje</h3>
 							{#if invoicePayment}
 								<p class="mt-1 text-sm text-gray-600">
 									U platby fakturou uveďte firmu, IČO a DIČ, ať jde faktura vystavit.

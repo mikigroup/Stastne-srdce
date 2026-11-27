@@ -2,7 +2,7 @@ import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { createClient } from "@supabase/supabase-js";
 import { PRIVATE_SBUrl, PRIVATE_ServiceKey } from "$env/static/private";
-import { sendEmail } from "$lib/email";
+import { sendCustomerMail } from "$lib/server/tenantEmail";
 import { createPasswordResetEmailTemplate } from "$lib/emailTemplates/passwordResetTemplate";
 
 const supabaseAdmin = createClient(PRIVATE_SBUrl, PRIVATE_ServiceKey, {
@@ -72,10 +72,12 @@ export const actions: Actions = {
 
 			let emailSent = false;
 			try {
-				await sendEmail({
+				await sendCustomerMail({
 					to: email,
 					subject: "Šťastné srdce — obnovení hesla",
-					html: createPasswordResetEmailTemplate(resetLink)
+					templateKey: "forgotEmailTemplate",
+					variables: { resetLink },
+					fallbackHtml: createPasswordResetEmailTemplate(resetLink)
 				});
 				emailSent = true;
 			} catch (err) {

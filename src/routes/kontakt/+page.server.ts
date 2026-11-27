@@ -1,27 +1,14 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import nodemailer from "nodemailer";
-import { PRIVATE_seznam_key } from "$env/static/private";
 import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
+import { escapeEmailHtml } from "$lib/emailTemplates/layout";
 import { getSetting } from "$lib/services/siteSettingsService";
 import { verifyRecaptchaToken, getClientIP, getExpectedHostnames } from "$lib/server/recaptcha";
+import { sendCustomerMail } from "$lib/server/tenantEmail";
 import { sanitizeEmailText, sanitizeEmailAddress, sanitizePhone } from "$lib/utils/emailSanitization";
 import { contactFormSchema } from "$lib/utils/validationSchemas";
 
 export const prerender = false;
-
-// Konfigurace nodemailer transporteru
-const MAILBOX = "info@stastnesrdce.cz";
-
-const transporter = nodemailer.createTransport({
-	host: "smtp.seznam.cz",
-	port: 465,
-	secure: true,
-	auth: {
-		user: MAILBOX,
-		pass: PRIVATE_seznam_key
-	}
-});
 
 function fulfilledValue<T>(result: PromiseSettledResult<T>): T | null {
 	return result.status === "fulfilled" && result.value ? result.value : null;
@@ -176,23 +163,25 @@ export const actions: Actions = {
 				? `byla Vám poslána zpráva přes formulář ${brand}.`
 				: "byla Vám poslána zpráva přes kontaktní formulář.";
 
-			const options = {
-				from: MAILBOX,
+			const fallbackHtml = `<p>Dobrý den,</p>
+<p>${escapeEmailHtml(intro)}</p>
+<p><strong>Kontaktní osoba:</strong> ${escapeEmailHtml(sanitizedName)}</p>
+<p><strong>Email:</strong> ${escapeEmailHtml(sanitizedEmail)}</p>
+<p><strong>Telefon:</strong> ${escapeEmailHtml(sanitizedTel)}</p>
+<p><strong>Obsah zprávy:</strong><br>${escapeEmailHtml(sanitizedContent)}</p>`;
+
+			await sendCustomerMail({
 				to: recipient,
 				subject,
-				text: `Dobrý den,
-
-${intro}
-
-Kontaktní osoba: ${sanitizedName}
-Email: ${sanitizedEmail}
-Telefon: ${sanitizedTel}
-
-Obsah zprávy:
-${sanitizedContent}`
-			};
-
-			await transporter.sendMail(options);
+				templateKey: "contactEmailTemplate",
+				variables: {
+					name: sanitizedName,
+					email: sanitizedEmail,
+					tel: sanitizedTel,
+					content: sanitizedContent
+				},
+				fallbackHtml
+			});
 
 			return {
 				success: true,

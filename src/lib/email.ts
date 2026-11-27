@@ -13,16 +13,18 @@ const transporter = nodemailer.createTransport({
 	}
 });
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-	const mailOptions = {
+export async function sendViaLegacyMailbox({ to, subject, html }: { to: string; subject: string; html: string }) {
+	await transporter.sendMail({
 		from: '"Šťastné srdce" <info@stastnesrdce.cz>',
 		to,
 		subject,
 		html
-	};
+	});
+}
 
+export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
 	try {
-		await transporter.sendMail(mailOptions);
+		await sendViaLegacyMailbox({ to, subject, html });
 	} catch (error) {
 		console.error("Chyba při odesílání e-mailu:", error);
 		throw error;

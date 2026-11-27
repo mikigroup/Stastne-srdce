@@ -1,4 +1,5 @@
 import { sendEmail } from "$lib/email";
+import { sendCustomerMail } from "$lib/server/tenantEmail";
 import {
 	createAccountReactivationEmailTemplate,
 	createDataDeletionEmailTemplate
@@ -58,10 +59,12 @@ export async function sendAccountReactivationEmail(params: {
 	const { email, firstName, lastName, baseUrl } = params;
 
 	try {
-		await sendEmail({
+		await sendCustomerMail({
 			to: email,
 			subject: "Šťastné srdce — účet je obnovený",
-			html: createAccountReactivationEmailTemplate({
+			templateKey: "reactivationTemplate",
+			variables: { firstName, lastName },
+			fallbackHtml: createAccountReactivationEmailTemplate({
 				firstName,
 				lastName,
 				loginUrl: `${baseUrl}/auth/login`

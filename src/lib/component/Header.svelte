@@ -5,6 +5,7 @@
 	import { readable } from "svelte/store";
 	import { onMount } from "svelte";
 	import { ROUTES } from "$lib/constants/routes";
+	import { DEFAULT_MENU_LINKS, readSiteLinks } from "$lib/siteLinks";
 
 	let { data } = $props();
 
@@ -34,14 +35,9 @@
 	let generalSettings = $derived(data.generalSettings ?? data.settings?.general);
 	let pathname = $derived(page.url.pathname);
 
-	const mobileLinks = [
-		{ href: "/", label: "Úvod" },
-		{ href: "/obedy", label: "Obědy" },
-		{ href: "/poradna", label: "Poradna" },
-		{ href: "/haccp", label: "HACCP" },
-		{ href: "/prednasky-a-kurzy", label: "Přednášky a kurzy" },
-		{ href: "/kontakt", label: "Kontakt" }
-	];
+	let menuLinks = $derived(
+		readSiteLinks(data.settings?.appearance?.menuLinks, DEFAULT_MENU_LINKS)
+	);
 
 	function isCurrent(href: string, path: string) {
 		if (href === "/") return path === "/";
@@ -140,26 +136,23 @@
 			</div>
 
 			<!-- Desktop menu -->
-			<div class="hidden h-[3.5rem] items-center justify-self-center rounded-full border-2 border-green-700 bg-slate-50 text-center xl:grid xl:grid-cols-6">
-				<div class="border-r-2 border-green-700">
-					<a href="/" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">O nás</a>
+			{#if menuLinks.length > 0}
+				<div
+					class="hidden h-[3.5rem] items-center justify-self-center rounded-full border-2 border-green-700 bg-slate-50 text-center xl:grid"
+					style:grid-template-columns="repeat({menuLinks.length}, minmax(0, 1fr))"
+				>
+					{#each menuLinks as link, index (link.href + link.label)}
+						<div class={index < menuLinks.length - 1 ? "border-r-2 border-green-700" : "text-slate-600"}>
+							<a
+								href={link.href}
+								class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2 {link.label.length > 12 ? 'text-xs lg:text-sm' : ''}"
+								target={link.href.startsWith('http') ? '_blank' : undefined}
+								rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+							>{link.label}</a>
+						</div>
+					{/each}
 				</div>
-				<div class="border-r-2 border-green-700">
-					<a href="/obedy" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Obědy</a>
-				</div>
-				<div class="border-r-2 border-green-700">
-					<a href="/poradna" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Poradna</a>
-				</div>
-				<div class="border-r-2 border-green-700">
-					<a href="/haccp" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">HACCP</a>
-				</div>
-				<div class="flex h-[40px] items-center justify-center border-r-2 border-green-700">
-					<a href="/prednasky-a-kurzy" class="block px-1 py-2 text-xs transition-colors duration-200 hover:text-green-800 lg:px-2 lg:text-sm">Přednášky a kurzy</a>
-				</div>
-				<div class="text-slate-600">
-					<a href="/kontakt" class="block px-1 py-2 transition-colors duration-200 hover:text-green-800 lg:px-2">Kontakt</a>
-				</div>
-			</div>
+			{/if}
 			<!-- Right section -->
 			<div class="flex items-center justify-self-end gap-1 sm:gap-2 xl:justify-self-end">
 				{#if page.data.session}
@@ -226,11 +219,13 @@
 				<div class="border-t border-gray-100 bg-white px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
 					<div class="mx-auto flex w-full max-w-[21rem] flex-col gap-2">
 						<ul class="flex flex-col gap-1.5">
-							{#each mobileLinks as link, index (link.href)}
+							{#each menuLinks as link, index (link.href + link.label)}
 								<li style:--delay="{index * 16}ms">
 									<a
 										href={link.href}
 										onclick={closeMenu}
+										target={link.href.startsWith('http') ? '_blank' : undefined}
+										rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
 										class="flex h-full items-center justify-center rounded-xl px-3 py-1.5 text-center text-sm font-medium leading-tight transition-colors duration-200 sm:py-2 {itemClass(link.href, pathname)}">
 										{link.label}
 									</a>

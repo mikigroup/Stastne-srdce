@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Icon from '$lib/component/Icon.svelte';
+	import { DEFAULT_FOOTER_LINKS, readSiteLinks } from '$lib/siteLinks';
 
 	let {
 		version = import.meta.env.PUBLIC_VERSION || '1.5',
@@ -10,8 +11,10 @@
 		onEditCookies?: () => void;
 	} = $props();
 
-	let footerText = $derived(page.data.appearanceSettings?.footerText || '');
-	let socialSettings = $derived(page.data.socialSettings || {});
+	let appearance = $derived(page.data.settings?.appearance ?? page.data.appearanceSettings);
+	let footerText = $derived(appearance?.footerText || '');
+	let footerLinks = $derived(readSiteLinks(appearance?.footerLinks, DEFAULT_FOOTER_LINKS));
+	let socialSettings = $derived(page.data.settings?.social ?? page.data.socialSettings ?? {});
 	let hasSocial = $derived(Boolean(
 		socialSettings.facebook ||
 			socialSettings.instagram ||
@@ -24,17 +27,20 @@
 <footer class="bg-gradient-to-r from-gray-50 to-gray-100 shadow-inner md:pt-20">
 	<div class="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-6">
 		<div class="flex w-full flex-col items-center justify-center gap-2 md:flex-row md:gap-6">
-			<div class="flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 md:gap-6">
-				<a href="/obchodni-podminky" class="text-center text-xs font-medium text-gray-600 transition-colors duration-200 hover:text-green-700 hover:underline md:text-sm">
-					Obchodní podmínky
-				</a>
-				<a href="/kontakt" class="text-center text-xs font-medium text-gray-600 transition-colors duration-200 hover:text-green-700 hover:underline md:text-sm">
-					Kontakt
-				</a>
-				<a href="/gdpr" class="text-center text-xs font-medium text-gray-600 transition-colors duration-200 hover:text-green-700 hover:underline md:text-sm">
-					GDRP
-				</a>
-			</div>
+			{#if footerLinks.length > 0}
+				<div class="flex flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1 md:gap-6">
+					{#each footerLinks as link (link.href + link.label)}
+						<a
+							href={link.href}
+							class="text-center text-xs font-medium text-gray-600 transition-colors duration-200 hover:text-green-700 hover:underline md:text-sm"
+							target={link.href.startsWith('http') ? '_blank' : undefined}
+							rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+						>
+							{link.label}
+						</a>
+					{/each}
+				</div>
+			{/if}
 
 			{#if hasSocial}
 				<div class="flex justify-center gap-4">

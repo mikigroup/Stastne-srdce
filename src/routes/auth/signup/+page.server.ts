@@ -1,6 +1,6 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import { sendEmail } from "$lib/email";
+import { sendCustomerMail } from "$lib/server/tenantEmail";
 import { createCustomerSignupEmailTemplate } from "$lib/emailTemplates/customerSignupTemplate";
 import { verifyRecaptchaToken, getClientIP, getExpectedHostnames } from "$lib/server/recaptcha";
 import { isTemporaryEmail } from "$lib/utils/botDetection";
@@ -184,13 +184,13 @@ export const actions = {
 			const baseUrl = new URL(request.url).origin;
 			const confirmationLink = `${baseUrl}/auth/callback?token_hash=${encodeURIComponent(token_hash)}&type=signup&next=${encodeURIComponent(ROUTES.AUTH.SIGNUP_COMPLETE)}`;
 
-			const emailHtml = createCustomerSignupEmailTemplate(confirmationLink);
-
 			try {
-				await sendEmail({
+				await sendCustomerMail({
 					to: email.trim(),
 					subject: "Šťastné srdce — potvrďte registraci",
-					html: emailHtml
+					templateKey: "registrationEmailTemplate",
+					variables: { confirmationLink },
+					fallbackHtml: createCustomerSignupEmailTemplate(confirmationLink)
 				});
 			} catch (emailError) {
 				throw emailError;

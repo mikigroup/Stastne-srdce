@@ -1,8 +1,12 @@
 import type { Actions, RequestEvent } from "./$types";
 import { fail } from "@sveltejs/kit";
 import { PUBLIC_TENANT } from "$env/static/public";
-import { sendDeveloperAlert, sendEmail, type OrderFailurePhase } from "$lib/email";
-import { createOrderConfirmationEmailTemplate } from "$lib/emailTemplates/orderConfirmationTemplate";
+import { sendDeveloperAlert, type OrderFailurePhase } from "$lib/email";
+import {
+	buildOrderItemsEmailHtml,
+	createOrderConfirmationEmailTemplate
+} from "$lib/emailTemplates/orderConfirmationTemplate";
+import { sendCustomerMail } from "$lib/server/tenantEmail";
 import { checkAndUpdateRegistrationStatus } from "$lib/services/registrationStatusService";
 import {
 	checkOrderVariantCapacity,
@@ -400,10 +404,18 @@ async function sendOrderConfirmationEmail(
 	shippingLabel: string,
 	orderUrl: string
 ) {
-	await sendEmail({
+	await sendCustomerMail({
 		to: email,
 		subject: `Šťastné srdce — objednávka ${orderId}`,
-		html: createOrderConfirmationEmailTemplate({
+		templateKey: "orderConfirmEmailTemplate",
+		variables: {
+			orderNumber: orderId,
+			orderItems: buildOrderItemsEmailHtml(items),
+			totalPieces,
+			orderTotal: totalPrice,
+			orderNote: note ?? ""
+		},
+		fallbackHtml: createOrderConfirmationEmailTemplate({
 			orderId,
 			items,
 			totalPrice,

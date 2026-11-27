@@ -82,7 +82,20 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     brandColors: {
       fill: '#166534',
       line: '#15803d'
-    }
+    },
+    menuLinks: [
+      { label: 'O nás', href: '/' },
+      { label: 'Obědy', href: '/obedy' },
+      { label: 'Poradna', href: '/poradna' },
+      { label: 'HACCP', href: '/haccp' },
+      { label: 'Přednášky a kurzy', href: '/prednasky-a-kurzy' },
+      { label: 'Kontakt', href: '/kontakt' }
+    ],
+    footerLinks: [
+      { label: 'Obchodní podmínky', href: '/obchodni-podminky' },
+      { label: 'Kontakt', href: '/kontakt' },
+      { label: 'GDPR', href: '/gdpr' }
+    ]
   },
 
   business: {

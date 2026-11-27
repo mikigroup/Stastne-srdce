@@ -35,6 +35,10 @@ function lineTotal(quantity: number | undefined, price: number | undefined): num
 	return qty * unit;
 }
 
+export function buildOrderItemsEmailHtml(items: OrderEmailItem[]): string {
+	return orderItemsHtml(items);
+}
+
 function orderItemsHtml(items: OrderEmailItem[]): string {
 	const rows = items
 		.map((item, index) => {

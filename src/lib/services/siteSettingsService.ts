@@ -42,9 +42,6 @@ function getPublicSettingsClient(): TypedSupabaseClient {
     return publicSettingsClient;
 }
 
-/**
- * Helper funkce pro deserializaci hodnoty z site_settings
- */
 export function deserializeSettingValue(value: any): any {
     if (value === null || value === undefined) {
         return null;
@@ -54,10 +51,8 @@ export function deserializeSettingValue(value: any): any {
         if (typeof value === 'string') {
             return JSON.parse(value);
         } else if (typeof value === 'object') {
-            // Return object values as-is, they're already deserialized
             return value;
         } else {
-            // For other types, convert to string representation
             return String(value);
         }
     } catch (e) {
@@ -66,12 +61,8 @@ export function deserializeSettingValue(value: any): any {
     }
 }
 
-/**
- * Získá default tenant ID pro zpětnou kompatibilitu
- */
-async function getDefaultTenantId(supabase: TypedSupabaseClient): Promise<string | null> {
+async function getDefaultTenantId(): Promise<string | null> {
     try {
-        // Použijeme pouze PUBLIC_TENANT, žádný fallback
         if (PUBLIC_TENANT) {
             return PUBLIC_TENANT;
         }
@@ -145,9 +136,6 @@ export async function getPublicSettings(
 	}
 }
 
-/**
- * Načte nastavení z databáze s podporou tenant_id
- */
 export async function getSetting(supabase: TypedSupabaseClient, key: string, tenantId?: string) {
     try {
         const client = RESTRICTED_SETTING_KEYS.has(key) ? supabase : getPublicSettingsClient();
@@ -155,13 +143,11 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string, ten
             .from('site_settings')
             .select('value')
             .eq('key', key);
-        
-        // Pokud máme tenant_id, použijeme ho
+                
         if (tenantId) {
             query = query.eq('tenant_id', tenantId);
         } else {
-            // Pro zpětnou kompatibilitu použijeme default tenant
-            const defaultTenantId = await getDefaultTenantId(supabase);
+            const defaultTenantId = await getDefaultTenantId();
             if (defaultTenantId) {
                 query = query.eq('tenant_id', defaultTenantId);
             }
@@ -182,7 +168,6 @@ export async function getSetting(supabase: TypedSupabaseClient, key: string, ten
         
         const value = deserializeSettingValue(data?.value);
 
-        // Validace pro integrations
         if (key === 'integrations') {
             const validation = validateIntegrationsSettings(value);
             if (!validation.success) {
