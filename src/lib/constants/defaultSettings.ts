@@ -78,7 +78,11 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     fontAwesomeEnabled: true,
     fontAwesomeKit: 'e5ce1babf6',
     // Lottie player
-    lottiePlayerEnabled: true
+    lottiePlayerEnabled: true,
+    brandColors: {
+      fill: '#166534',
+      line: '#15803d'
+    }
   },
 
   business: {

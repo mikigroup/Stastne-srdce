@@ -985,7 +985,7 @@
 		z-index: 0;
 		width: calc((100% - 1rem) / 3);
 		border-radius: 0.375rem;
-		background-color: #166534;
+		background-color: var(--brand-800, #166534);
 		pointer-events: none;
 		transform: translateX(calc(var(--tab-index) * (100% + 0.25rem)));
 		transition: transform 260ms cubic-bezier(0.33, 1, 0.68, 1);

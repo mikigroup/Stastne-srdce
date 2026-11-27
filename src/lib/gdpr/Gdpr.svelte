@@ -288,12 +288,12 @@
     }
 
     .cookie-btn-accept {
-        background-color: #15803d;
+        background-color: var(--brand-700, #15803d);
         color: white;
     }
 
     .cookie-btn-accept:hover {
-        background-color: #166534;
+        background-color: var(--brand-800, #166534);
     }
 
     .cookie-btn-settings {
@@ -411,7 +411,7 @@
     }
 
     input:checked + .cookie-slider {
-        background-color: #15803d;
+        background-color: var(--brand-700, #15803d);
     }
 
     input:checked + .cookie-slider:before {
@@ -444,7 +444,7 @@
     }
 
     .cookie-btn-toggle:hover {
-        background-color: #15803d;
+        background-color: var(--brand-700, #15803d);
         transform: scale(1.05);
     }
 

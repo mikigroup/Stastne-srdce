@@ -18,6 +18,7 @@
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { AuthSession, AuthUser } from '$lib/types/auth';
 	import type { GeneralSettings } from '$lib/constants/defaultSettings';
+	import { brandScale } from '$lib/brandColors';
 	import { ROUTES } from "$lib/constants/routes";
 
 	interface Props {
@@ -91,6 +92,10 @@
 	let seoSettings = $derived(data.settings?.seo);
 	let generalSettings = $derived(data.settings?.general);
 	let appearanceSettings = $derived(data.settings?.appearance);
+	let brand = $derived.by(() => {
+		const colors = appearanceSettings?.brandColors;
+		return brandScale(colors?.fill, colors?.line);
+	});
 
 	let reducedMotion = $derived(prefersReducedMotion.current);
 	let pageEnter = $derived({
@@ -109,6 +114,17 @@
 		if (node instanceof HTMLElement) node.inert = true;
 	}
 </script>
+
+<svelte:body
+	style:--brand-50={brand[50]}
+	style:--brand-100={brand[100]}
+	style:--brand-200={brand[200]}
+	style:--brand-500={brand[500]}
+	style:--brand-600={brand[600]}
+	style:--brand-700={brand[700]}
+	style:--brand-800={brand[800]}
+	style:--brand-900={brand[900]}
+/>
 
 <svelte:head>
 	{#if seoSettings?.metaAuthor}

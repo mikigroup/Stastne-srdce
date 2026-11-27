@@ -227,9 +227,9 @@
 	}
 	.welcome-news {
 		margin-top: 1.25rem;
-		border: 1px solid #bbf7d0;
+		border: 1px solid var(--brand-200, #bbf7d0);
 		border-radius: 0.5rem;
-		background-color: #f0fdf4;
+		background-color: var(--brand-50, #f0fdf4);
 		padding: 1rem 1rem 1.1rem;
 	}
 	.welcome-news h3 {
@@ -237,7 +237,7 @@
 		font-size: 1.25rem;
 		font-weight: 700;
 		line-height: 1.3;
-		color: #166534;
+		color: var(--brand-800, #166534);
 	}
 	.welcome-news p {
 		margin: 0.6rem 0 0.9rem;
@@ -251,9 +251,9 @@
 		justify-content: center;
 		max-width: 100%;
 		padding: 0.5rem 1.15rem;
-		border: 1px solid #15803d;
+		border: 1px solid var(--brand-700, #15803d);
 		border-radius: 1.5rem;
-		color: #166534;
+		color: var(--brand-800, #166534);
 		font-weight: 700;
 		line-height: 1.35;
 		text-align: center;
@@ -261,7 +261,7 @@
 		transition: background-color 0.2s ease, color 0.2s ease;
 	}
 	.welcome-news-link:hover {
-		background-color: #166534;
+		background-color: var(--brand-800, #166534);
 		color: #fff;
 	}
 	.info-koutek-heading {
