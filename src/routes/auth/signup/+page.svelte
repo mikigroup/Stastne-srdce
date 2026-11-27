@@ -13,10 +13,9 @@
 
 	interface Props {
 		form?: ActionData;
-		data: any;
 	}
 
-	let { form = null, data }: Props = $props();
+	let { form = null }: Props = $props();
 
 	let loading = $state(false);
 	let agreedToTerms = $state(false);
@@ -120,14 +119,7 @@
 			await update();
 		};
 	}
-
-	const { generalSettings } = data;
 </script>
-
-<svelte:head>
-	<title>Vytvoření nového účtu - {generalSettings?.shopName}</title>
-	<meta name="description" content="Registrace nového účtu" />
-</svelte:head>
 
 <AuthCard 
 	title="Vytvoření nového účtu"

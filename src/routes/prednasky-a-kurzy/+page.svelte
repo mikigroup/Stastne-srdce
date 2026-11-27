@@ -1,14 +1,3 @@
-<script lang="ts">
-	let { data } = $props();
-
-	const { generalSettings } = data;
-</script>
-
-<svelte:head>
-	<title>Přednášky a kurzy - {generalSettings?.shopName}</title>
-	<meta name="description" content="Nabízíme odborné přednášky o výživě a zdravém životním stylu pro školy, zájmové skupiny a firmy, a také workshopy pro školní kuchyně." />
-</svelte:head>
-
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<h1 class="mb-8 text-4xl font-extrabold tracking-tight text-center text-gray-900 md:text-5xl">
 		Přednášky a školení

@@ -1,14 +1,3 @@
-<script lang="ts">
-	let { data } = $props();
-
-	const { generalSettings } = data;
-</script>
-
-<svelte:head>
-	<title>Mgr. Bc. Kamila Forejtová - {generalSettings?.shopName}</title>
-	<meta name="description" content="Mgr. Bc. Kamila Forejtová - dietoložka, zakladatelka Šťastného srdce a specialistka na zdravou výživu s 15 letou praxí." />
-</svelte:head>
-
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<div class="max-w-3xl mx-auto">
 		<div class="bg-white border rounded-lg p-6">

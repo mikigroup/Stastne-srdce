@@ -73,10 +73,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Obědy - {data.generalSettings?.shopName || 'Šťastné srdce'}</title>
-</svelte:head>
-
 <section class="max-w-screen-xl md:px-4 pb-6 sm:py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<h1 class="mb-0 text-2xl font-extrabold leading-none tracking-tight text-center text-gray-900 sm:mb-8 sm:text-4xl sm:leading-tight md:text-5xl">
 		Obědy

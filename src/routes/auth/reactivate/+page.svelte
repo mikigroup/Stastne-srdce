@@ -22,10 +22,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Reaktivace účtu - Šťastné srdce</title>
-</svelte:head>
-
 <div class="max-w-2xl mx-auto p-6">
 	<div class="bg-white shadow-md rounded-lg p-8">
 		{#if !data.isValid}

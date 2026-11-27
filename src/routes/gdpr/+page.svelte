@@ -1,14 +1,3 @@
-<script lang="ts">	
-	let { data } = $props();
-
-	const { generalSettings } = data;
-</script>
-
-<svelte:head>
-	<title>GDPR - {generalSettings?.shopName}</title>
-	<meta name="description" content="GDPR - Zásady ochrany osobních údajů" />
-</svelte:head>
-
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<h1
 		class="mb-10 text-4xl font-extrabold tracking-tight text-center text-gray-900 animate__animated animate__rubberBand">

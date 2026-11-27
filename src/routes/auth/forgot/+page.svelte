@@ -25,14 +25,7 @@
 	let user = $derived(data.user);
 
 	let loading = $state(false);
-
-	const { generalSettings } = data;
 </script>
-
-<svelte:head>
-	<title>Zapomenuté heslo - {generalSettings?.shopName}</title>
-	<meta name="description" content="Obnovení hesla" />
-</svelte:head>
 
 <AuthCard 
 	title="Zapomenuté heslo"

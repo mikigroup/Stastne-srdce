@@ -39,7 +39,31 @@ export const UNIFIED_DEFAULT_SETTINGS = {
     googleAnalyticsId: '',
     googleAnalyticsEnabled: false,
     facebookPixelEnabled: false,
-    facebookPixelId: ''
+    facebookPixelId: '',
+    pages: {
+      '/': { title: 'Úvod', description: '' },
+      '/obedy': { title: 'Obědy', description: '' },
+      '/poradna': { title: 'Dietologická poradna', description: '' },
+      '/haccp': { title: 'HACCP', description: '' },
+      '/prednasky-a-kurzy': { title: 'Přednášky a kurzy', description: '' },
+      '/kontakt': { title: 'Kontakt', description: '' },
+      '/cenik': { title: 'Ceník', description: '' },
+      '/gdpr': { title: 'GDPR', description: '' },
+      '/obchodni-podminky': { title: 'Obchodní podmínky', description: '' },
+      '/alergeny': { title: 'Alergeny', description: '' },
+      '/olga-bednarova': { title: 'Olga Bednářová', description: '' },
+      '/mgr-martin-forejt-phd': { title: 'Mgr. Martin Forejt, Ph.D.', description: '' },
+      '/mgr-bc-kamila-forejtova': { title: 'Mgr. Bc. Kamila Forejtová', description: '' },
+      '/kosik': { title: 'Košík', description: '' },
+      '/profile': { title: 'Účet', description: '' },
+      '/thankyou': { title: 'Děkujeme za objednávku', description: '' },
+      '/auth/login': { title: 'Login', description: '' },
+      '/auth/signup': { title: 'Vytvoření nového účtu', description: '' },
+      '/auth/signup/complete': { title: 'Dokončení registrace', description: '' },
+      '/auth/reset': { title: 'Obnovení hesla', description: '' },
+      '/auth/forgot': { title: 'Zapomenuté heslo', description: '' },
+      '/auth/reactivate': { title: 'Reaktivace účtu', description: '' }
+    }
   },
 
   contact: {

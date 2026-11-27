@@ -1,14 +1,3 @@
-<script lang="ts">
-  let { data } = $props();
-
-  const { generalSettings } = data;
-</script>
-
-<svelte:head>
-  <title>Olga Bednářová - {generalSettings?.shopName}</title>
-  <meta name="description" content="Olga Bednářová - kuchařka Šťastného srdce, která od roku 2010 připravuje výživná a chutná jídla." />
-</svelte:head>
-
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
   <div class="max-w-3xl mx-auto">
     <div class="bg-white border rounded-lg p-6">

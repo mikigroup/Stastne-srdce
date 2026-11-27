@@ -25,13 +25,7 @@
 		}, 1500);
 	});
 
-	const { generalSettings } = data;
 </script>
-
-<svelte:head>
-	<title>Děkujeme za objednávku - {generalSettings?.shopName}</title>
-	<meta name="description" content="Děkujeme za objednávku" />
-</svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-orange-50">
 	<div class="letter-container">

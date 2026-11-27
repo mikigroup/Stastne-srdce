@@ -329,15 +329,7 @@
 		}
 	});
 
-	const { generalSettings } = data;
-
-
 </script>
-
-<svelte:head>
-	<title>Košík - {generalSettings?.shopName ?? 'Obchod'}</title>
-	<meta name="description" content="Košík" />
-</svelte:head>
 
 <section>
 	{#if page.data.session}

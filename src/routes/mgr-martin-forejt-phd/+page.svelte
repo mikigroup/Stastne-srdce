@@ -1,15 +1,3 @@
-<script lang="ts">
-  import { page } from "$app/state";
-  let { data } = $props();
-
-  const { generalSettings } = data;
-</script>
-
-<svelte:head>
-  <title>Mgr. Martin Forejt, Ph.D. - {generalSettings?.shopName}</title>
-  <meta name="description" content="Mgr. Martin Forejt, Ph.D. - odborný asistent Lékařské fakulty Masarykovy univerzity v Brně, výzkumník a specialista na výživu a preventivní lékařství." />
-</svelte:head>
-
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
   <div class="max-w-3xl mx-auto">
     <div class="bg-white border rounded-lg p-6">

@@ -12,19 +12,12 @@
 	
 	interface Props {
 		form?: FormData | null;
-		data: any;
 	}
 
-	let { form = null, data }: Props = $props();
-	let generalSettings = $derived(data.generalSettings);
+	let { form = null }: Props = $props();
 
 	let loading = $state(false);
 </script>
-
-<svelte:head>
-	<title>Obnovení hesla - {generalSettings?.shopName}</title>
-	<meta name="description" content="Obnovení hesla" />
-</svelte:head>
 
 <AuthCard 
 	title="Obnovení hesla"

@@ -75,7 +75,6 @@
 	let session = $derived(data.session);
 	let profile = $derived(data.profile);
 	let orders = $derived((data.orders ?? []) as OrderView[]);
-	let generalSettings = $derived(data.generalSettings);
 	let deliveryMethodOptions = $derived((data.deliveryMethodOptions ?? []) as MethodOption[]);
 	let paymentMethodOptions = $derived((data.paymentMethodOptions ?? []) as MethodOption[]);
 
@@ -395,11 +394,6 @@
 		<p id="{id}-error" class="mt-1.5 text-sm text-red-700">{message}</p>
 	{/if}
 {/snippet}
-
-<svelte:head>
-	<title>Účet - {generalSettings?.shopName ?? "Účet"}</title>
-	<meta name="description" content="Údaje účtu, objednávky a správa osobních údajů." />
-</svelte:head>
 
 <section class="max-w-screen-xl px-4 py-16 mx-auto mb-10 rounded-lg bg-stone-100">
 	<header class="mb-8 text-center">

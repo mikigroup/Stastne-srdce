@@ -88,16 +88,7 @@
 			loading = false;
 		};
 	}
-
-	const { generalSettings } = data;
-
-
 </script>
-
-<svelte:head>
-	<title>Dokončení registrace - {generalSettings?.shopName ?? 'Šťastné srdce'}</title>
-	<meta name="description" content="Dokončení registrace" />
-</svelte:head>
 
 <section>
 	<div class="footer_fix mt-5">

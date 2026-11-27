@@ -15,21 +15,13 @@
 	
 	interface Props {
 		form?: FormData | null;
-		data: any;
 	}
 
-	let { form = null, data }: Props = $props();
+	let { form = null }: Props = $props();
 
 	let message = $derived(page.data.message);
-	let generalSettings = $derived(data.generalSettings);
-
 	let loading = $state(false);
 </script>
-
-<svelte:head>
-	<title>Login - {generalSettings?.shopName}</title>
-	<meta name="description" content="Login" />
-</svelte:head>
 
 <AuthCard 
 	title="Přihlášení do účtu"

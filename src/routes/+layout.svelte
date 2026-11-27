@@ -91,6 +91,28 @@
 
 	let seoSettings = $derived(data.settings?.seo);
 	let generalSettings = $derived(data.settings?.general);
+	let pagePath = $derived(page.url.pathname === "/" ? "/" : page.url.pathname.replace(/\/$/, ""));
+	let pageEntry = $derived.by(() => {
+		const pages = seoSettings?.pages;
+		if (!pages || typeof pages !== "object") return null;
+		const entry = pages[pagePath];
+		if (!entry || typeof entry !== "object") return null;
+		return entry as { title?: unknown; description?: unknown };
+	});
+	let pageTitle = $derived(typeof pageEntry?.title === "string" ? pageEntry.title.trim() : "");
+	let pageDescription = $derived(
+		typeof pageEntry?.description === "string" ? pageEntry.description.trim() : ""
+	);
+	let shopName = $derived(
+		typeof generalSettings?.shopName === "string" ? generalSettings.shopName.trim() : ""
+	);
+	let documentTitle = $derived.by(() => {
+		if (pageTitle) return shopName ? `${pageTitle} - ${shopName}` : pageTitle;
+		if (seoSettings?.metaTitle) return shopName ? `${seoSettings.metaTitle} - ${shopName}` : seoSettings.metaTitle;
+		if (shopName) return `Zdravé stravování a rozvoz jídla - ${shopName}`;
+		return "";
+	});
+	let documentDescription = $derived(pageDescription || seoSettings?.metaDescription || "");
 	let appearanceSettings = $derived(data.settings?.appearance);
 	let brand = $derived.by(() => {
 		const colors = appearanceSettings?.brandColors;
@@ -139,10 +161,8 @@
 		<meta name="robots" content={seoSettings.metaRobots} />
 	{/if}
 
-	{#if seoSettings?.metaTitle}
-		<title>{seoSettings.metaTitle} - {generalSettings?.shopName}</title>
-	{:else if generalSettings?.shopName}
-		<title>Zdravé stravování a rozvoz jídla - {generalSettings.shopName}</title>
+	{#if documentTitle && !page.error}
+		<title>{documentTitle}</title>
 	{/if}
 
 	<link rel="canonical" href="https://www.stastnesrdce.cz{page.url.pathname}" />
@@ -151,8 +171,8 @@
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 
-	{#if seoSettings?.metaDescription && page.url.pathname !== "/kontakt"}
-		<meta name="description" content={seoSettings.metaDescription} />
+	{#if documentDescription}
+		<meta name="description" content={documentDescription} />
 	{/if}
 
 	{#if seoSettings?.metaKeywords}
@@ -171,14 +191,12 @@
 		<meta property="og:locale" content={seoSettings.ogLocale} />
 	{/if}
 
-	{#if seoSettings?.metaTitle}
-		<meta property="og:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
-	{:else if generalSettings?.shopName}
-		<meta property="og:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
+	{#if documentTitle}
+		<meta property="og:title" content={documentTitle} />
 	{/if}
 
-	{#if seoSettings?.metaDescription}
-		<meta property="og:description" content={seoSettings.metaDescription} />
+	{#if documentDescription}
+		<meta property="og:description" content={documentDescription} />
 	{/if}
 
 	{#if seoSettings?.ogImage}
@@ -189,14 +207,12 @@
 		<meta name="twitter:card" content={seoSettings.twitterCard} />
 	{/if}
 
-	{#if seoSettings?.metaTitle}
-		<meta name="twitter:title" content="{seoSettings.metaTitle} - {generalSettings?.shopName}" />
-	{:else if generalSettings?.shopName}
-		<meta name="twitter:title" content="Zdravé stravování a rozvoz jídla - {generalSettings.shopName}" />
+	{#if documentTitle}
+		<meta name="twitter:title" content={documentTitle} />
 	{/if}
 
-	{#if seoSettings?.metaDescription}
-		<meta name="twitter:description" content={seoSettings.metaDescription} />
+	{#if documentDescription}
+		<meta name="twitter:description" content={documentDescription} />
 	{/if}
 
 	{#if appearanceSettings && 'favicon' in appearanceSettings && appearanceSettings.favicon}

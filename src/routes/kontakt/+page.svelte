@@ -35,10 +35,6 @@
 		const fromBusiness = [streetLine, cityLine].filter(Boolean).join(", ");
 		return fromBusiness || String(contact?.address || "").trim() || "Adresa není k dispozici";
 	});
-	let shopName = $derived(String(settings?.shopName || "").trim());
-	let pageTitle = $derived(shopName ? `${shopName} - Kontakt` : "Kontakt");
-	let pageDescription = $derived(shopName ? `Kontaktujte nás - ${shopName}` : "Kontaktujte nás");
-	
 	// Title pro mapu z nastavení
 	let mapQuery = $derived(String(contact?.address || '').trim());
 	let mapTitle = $derived(business?.companyName && mapQuery ? 
@@ -77,11 +73,6 @@
 		};
 	};
 </script>
-
-<svelte:head>
-	<title>{pageTitle}</title>
-	<meta name="description" content={pageDescription} />
-</svelte:head>
 
 <section class="max-w-screen-xl px-3 py-6 mx-auto mb-6 rounded-lg bg-stone-100 sm:px-4 md:py-16 md:mb-10">
 	<h1 class="mb-3 text-2xl font-extrabold tracking-tight text-center text-gray-900 md:mb-8 md:text-4xl lg:text-5xl">
